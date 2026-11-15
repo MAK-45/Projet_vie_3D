@@ -14,13 +14,16 @@ Mondes isométriques vivants en three.js, rendu pixel art moderne, et une créat
 ```
 npm install
 npm run dev        # galerie « Atelier Vie 3D » : tous les assets, en 3D pixel art, avec leur code
-npm run artifact   # page autonome à publier (dist-artifact/atelier-vie-3d.html)
+npm run check      # vérifie que chaque asset respecte son contrat
+npm run sheet -- nature/trees/birch   # planche de contrôle d'un asset (variantes × graines)
+npm run artifact   # catalogue + page autonome à publier (dist-artifact/atelier-vie-3d.html)
 ```
 
 ## Skills Claude Code (`.claude/skills/`)
 
 | Skill | Usage |
 |---|---|
+| `create-asset` | dès qu'on demande un nouvel asset : « génère un chêne », « dessine un mur en pierre » |
 | `threejs-*` | toujours, dès qu'on code du rendu |
 | `/grill-me` (+ `grilling`) | sur demande : interrogatoire pour cerner un objectif |
 | `/pixelfx` | sur demande : effets pixel art (bibliothèque dans `vendor/pixelfx/`) |

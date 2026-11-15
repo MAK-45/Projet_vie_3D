@@ -250,7 +250,8 @@ export class Viewer {
   }
 
   _groundSize() {
-    return Math.round((this.footprint.radius * 2 + 0.6) * 2) / 2;
+    // Un peu plus étroit que l'asset : une couronne d'arbre déborde du socle.
+    return Math.round((this.footprint.radius * 1.6 + 0.6) * 2) / 2;
   }
 
   _buildGround() {

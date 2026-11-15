@@ -8,7 +8,9 @@
     "build": "npm run catalog && vite build",
     "preview": "vite preview",
     "catalog": "node scripts/build-catalog.mjs",
-    "artifact": "npm run catalog && node scripts/build-artifact.mjs"
+    "artifact": "npm run catalog && node scripts/build-artifact.mjs",
+    "check": "node scripts/check-assets.mjs",
+    "sheet": "node scripts/asset-sheet.mjs"
   },
   "dependencies": {
     "three": "^0.186.0"

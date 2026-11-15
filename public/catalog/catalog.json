@@ -126,7 +126,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 9145
+      "bytes": 9606
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -177,8 +177,8 @@
       "added": "2026-11-15",
       "units": "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
       "footprint": {
-        "radius": 2.6,
-        "height": 8.2
+        "radius": 3.2,
+        "height": 8.4
       },
       "animated": [
         "wind"
@@ -201,13 +201,13 @@
             "autumn",
             "winter"
           ],
-          "label": "Saison",
           "labels": {
             "spring": "Printemps",
             "summer": "Été",
             "autumn": "Automne",
             "winter": "Hiver"
           },
+          "label": "Saison",
           "description": "Couleur et densité du feuillage ; l'hiver, l'arbre est nu."
         },
         "height": {
@@ -267,7 +267,9 @@
         "src/engine/toon-material.js",
         "src/assets/kit/geometry.js",
         "src/assets/kit/params.js",
-        "src/assets/kit/rng.js"
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
       ],
       "stats": {
         "default": {
@@ -297,8 +299,8 @@
         }
       },
       "bytes": {
-        "source": 12476,
-        "standalone": 27966
+        "source": 11898,
+        "standalone": 28135
       }
     }
   ]

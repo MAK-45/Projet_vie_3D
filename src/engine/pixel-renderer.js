@@ -62,20 +62,29 @@ void main() {
   float crease = 0.0;
   float hasCrease = step(color.a, 0.9);
   vec3 n = viewNormal(aux);
+  // Voisins : droite, gauche, haut, bas. Le voisin opposé sert à reconnaître une surface plane vue en biais,
+  // dont la profondeur change régulièrement d'un pixel à l'autre sans qu'il y ait de bord.
   vec2 offsets[4] = vec2[4](vec2(1.0, 0.0), vec2(-1.0, 0.0), vec2(0.0, 1.0), vec2(0.0, -1.0));
+  vec4 auxNear[4];
+  float depthNear[4];
   for (int i = 0; i < 4; i++) {
     vec2 uv = vUv + offsets[i] * uTexel;
-    vec4 auxN = texture(tAux, uv);
-    float diff = texture(tDepth, uv).r * uDepthRange - depth;
+    auxNear[i] = texture(tAux, uv);
+    depthNear[i] = texture(tDepth, uv).r * uDepthRange;
+  }
+  for (int i = 0; i < 4; i++) {
+    vec4 auxN = auxNear[i];
+    float diff = depthNear[i] - depth;
+    float slope = max(depth - depthNear[i ^ 1], 0.0); // pente déjà présente de l'autre côté
     float otherId = step(0.002, abs(auxN.a - aux.a));
     // Entre deux parties du même objet, le matériau peut demander un seuil plus large (feuillage).
     float threshold = mix(max(uDepthThreshold, max(aux.z, auxN.z) * 4.0), uDepthThreshold, otherId);
     // Contour intérieur : on assombrit le pixel de l'objet le plus proche de la caméra.
-    edge = max(edge, step(threshold, diff));
+    edge = max(edge, step(threshold, diff - slope));
     edge = max(edge, otherId * step(auxN.a, aux.a) * step(-uDepthThreshold, diff));
     // Arête vive d'un même objet : liseré clair du côté tourné vers le haut-gauche.
     vec3 nN = viewNormal(auxN);
-    float sameSurface = (1.0 - otherId) * step(abs(diff), uDepthThreshold);
+    float sameSurface = (1.0 - otherId) * step(abs(diff - slope), uDepthThreshold);
     float turned = step(0.35, 1.0 - dot(n, nN)) * step(0.0, dot(n - nN, vec3(-0.6, 1.0, 0.6)));
     crease = max(crease, sameSurface * turned * hasCrease);
   }

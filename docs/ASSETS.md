@@ -10,7 +10,8 @@ de modèle, tout est construit par du code à partir d'une graine. Tous les asse
 src/assets/
   index.js            registre : la liste de tous les assets + findAssets()
   taxonomy.js         catégories et sous-catégories autorisées, biomes
-  kit/                outils partagés : rng (graine), geometry (tubes, feuilles, fusion), params
+  kit/                outils partagés : rng (graine), geometry (tubes, feuilles, fusion), params,
+                      variation (axes partagés : graine, saison, pierre, bois), palettes (matières)
   <catégorie>/<sous-catégorie>/<nom>.js     un fichier par asset
 src/engine/           toon-material (matériau à palette), pixel-renderer (basse réso + contours), iso-camera
 src/gallery/          la galerie web (visionneuse, catalogue, fiche, code)
@@ -47,6 +48,14 @@ Le rendu pixel art complet (basse résolution, contours) demande `PixelRenderer`
 ## Contrat d'un module d'asset
 
 ```js
+import { numberParam, seasonParam, seedParam, variantsOf } from "../../kit/variation.js";
+
+const params = {                   // la galerie fabrique un contrôle par paramètre
+  seed: seedParam("Change la silhouette : inclinaison du tronc, branches, touffes."),
+  season: seasonParam("Couleur et densité du feuillage ; l'hiver, l'arbre est nu."),
+  height: numberParam("Hauteur", 7.5, 5, 9.5, "Hauteur du tronc.", { step: 0.5, unit: "m" }),
+};
+
 export const meta = {
   id: "nature/trees/birch",        // = chemin du fichier
   name: "Bouleau",                 // nom affiché, en français
@@ -56,17 +65,13 @@ export const meta = {
   description: "…",                // une ou deux phrases : ce qu'on voit, ce qui varie
   tags: ["arbre", "bouleau", …, "tree", "birch", …],   // voir ci-dessous
   biomes: ["forest", "meadow"],    // parmi `biomes` de taxonomy.js
-  version: 1,                      // +1 à chaque changement visible
+  version: 1,                      // +1 à chaque changement visible du dessin
   added: "2026-11-15",
   units: "…",
-  footprint: { radius: 2.6, height: 8.2 },   // encombrement en mètres (cadrage, placement)
+  footprint: { radius: 3.2, height: 8.4 },   // encombrement réel en mètres (cadrage, placement)
   animated: ["wind"],              // ou []
-  params: {                        // la galerie fabrique un contrôle par paramètre
-    seed:   { type: "int", default: 1, min: 0, max: 9999, label: "Graine", description: "…" },
-    season: { type: "enum", default: "summer", values: [...], labels: {...}, label: "Saison", description: "…" },
-    height: { type: "number", default: 7.5, min: 5, max: 9.5, step: 0.5, unit: "m", label: "Hauteur", description: "…" },
-  },
-  variants: [{ id: "autumn", name: "Automne", params: { season: "autumn" } }],   // formes à mesurer et montrer
+  params,
+  variants: variantsOf("season", params.season),   // les formes montrées et mesurées dans le catalogue
 };
 
 export function create(params = {}) { … return group; }   // THREE.Group ; group.userData.asset = { id, params }
@@ -97,16 +102,38 @@ Minuscules, en **français puis en anglais** (les deux, pour être trouvé dans 
 3. ce qu'il sait faire : `vent`, `saisons`, `procedural` ;
 4. où il va : `extérieur` / `intérieur` (les biomes vont dans `biomes`, pas dans les tags).
 
-## Ajouter un asset : la marche à suivre
+## Graine et axes de variation
 
-1. Relire `docs/ART-DIRECTION.md` et `docs/PERFORMANCE.md`, charger les skills three.js.
-2. Choisir catégorie et sous-catégorie dans `src/assets/taxonomy.js` (n'en créer une que si aucune ne convient).
-3. Écrire `src/assets/<catégorie>/<sous-catégorie>/<nom>.js` en suivant le contrat ci-dessus
-   (modèle : `src/assets/nature/trees/birch.js`).
-4. L'ajouter à la liste de `src/assets/index.js`.
-5. Regarder le résultat : `npm run dev`, puis capture
-   `node scripts/capture.cjs "http://127.0.0.1:5173/dev/test.html?asset=<id>" /tmp/x.png 412 915 2`
-   (mobile) et en 1440×900 (desktop). Tester chaque variante, la vue de face, le mode sans pixel art.
-6. `npm run artifact` (régénère aussi `public/catalog/`), puis publier `dist-artifact/atelier-vie-3d.html`
-   sur l'Artifact « Atelier Vie 3D » (lien dans `CLAUDE.md`) et donner le lien à l'utilisateur.
-7. Commit : le fichier de l'asset, `index.js`, et `public/catalog/`.
+Tous les assets ont une **graine** (`seed`) qui change leur silhouette : on peut poser dix fois le même asset
+sans répétition visible, et la même graine redonne toujours la même forme. Ils ont en plus les axes de leur
+famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/variation.js`) :
+
+| Famille | Axes |
+|---|---|
+| Végétation, terrain | `season` : spring, summer, autumn, winter |
+| Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate |
+| Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch |
+| Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
+
+Les rampes de couleurs des matières communes sont dans `src/assets/kit/palettes.js`. Le détail par famille est
+dans `.claude/skills/create-asset/references/variation-axes.md`.
+
+## Vérifier un asset
+
+- `npm run check [-- <id>]` : fiche complète, rangement, graine déterministe et qui change la forme, chaque
+  variante et chaque réglage extrême, matériaux, budget, emprise, catalogue à jour.
+- `npm run sheet -- <id> [sortie.png]` : une image avec chaque variante en ligne, plusieurs graines en colonnes,
+  plus les vues de face et de dessus. À regarder avant de publier.
+- `dev/test.html?asset=<id>&…` avec `npm run dev` : l'asset seul en plein écran, pour un gros plan.
+
+## Ajouter un asset
+
+Avec Claude Code : demander l'asset (« génère un chêne »), le skill `create-asset` déroule toute la marche
+(`.claude/skills/create-asset/SKILL.md`). En résumé :
+
+1. choisir le rangement, les traits qui font reconnaître l'objet, ce que change la graine, les axes de variation ;
+2. écrire `src/assets/<catégorie>/<sous-catégorie>/<nom>.js` à partir du modèle du skill, l'inscrire dans
+   `src/assets/index.js` ;
+3. `npm run check`, `npm run sheet`, regarder, corriger, recommencer ;
+4. `npm run artifact`, publier la page sur l'Artifact « Atelier Vie 3D » (lien dans `CLAUDE.md`) ;
+5. committer le fichier de l'asset, `index.js`, `public/catalog/` et les outils ajoutés au kit.

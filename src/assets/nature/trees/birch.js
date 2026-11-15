@@ -6,8 +6,16 @@ import { createToonMaterial } from "../../../engine/toon-material.js";
 import { buildLeafGeometry, buildTube, mergeGeometries } from "../../kit/geometry.js";
 import { resolveParams } from "../../kit/params.js";
 import { createRng } from "../../kit/rng.js";
+import { numberParam, seasonParam, seedParam, variantsOf } from "../../kit/variation.js";
 
 export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-material.js";
+
+const params = {
+  seed: seedParam("Change la silhouette : inclinaison du tronc, branches, touffes."),
+  season: seasonParam("Couleur et densité du feuillage ; l'hiver, l'arbre est nu."),
+  height: numberParam("Hauteur", 7.5, 5, 9.5, "Hauteur du tronc ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densité du feuillage", 1, 0.5, 1.4, "Quantité de feuilles (et de triangles)."),
+};
 
 export const meta = {
   id: "nature/trees/birch",
@@ -26,33 +34,10 @@ export const meta = {
   version: 1,
   added: "2026-11-15",
   units: "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
-  footprint: { radius: 2.6, height: 8.2 },
+  footprint: { radius: 3.2, height: 8.4 },
   animated: ["wind"],
-  params: {
-    seed: {
-      type: "int", default: 1, min: 0, max: 9999, label: "Graine",
-      description: "Change la silhouette : inclinaison du tronc, branches, touffes.",
-    },
-    season: {
-      type: "enum", default: "summer", values: ["spring", "summer", "autumn", "winter"], label: "Saison",
-      labels: { spring: "Printemps", summer: "Été", autumn: "Automne", winter: "Hiver" },
-      description: "Couleur et densité du feuillage ; l'hiver, l'arbre est nu.",
-    },
-    height: {
-      type: "number", default: 7.5, min: 5, max: 9.5, step: 0.5, unit: "m", label: "Hauteur",
-      description: "Hauteur du tronc ; tout l'arbre garde ses proportions.",
-    },
-    fullness: {
-      type: "number", default: 1, min: 0.5, max: 1.4, step: 0.1, label: "Densité du feuillage",
-      description: "Quantité de feuilles (et de triangles).",
-    },
-  },
-  variants: [
-    { id: "summer", name: "Été", params: { season: "summer" } },
-    { id: "spring", name: "Printemps", params: { season: "spring" } },
-    { id: "autumn", name: "Automne", params: { season: "autumn" } },
-    { id: "winter", name: "Hiver", params: { season: "winter" } },
-  ],
+  params,
+  variants: variantsOf("season", params.season),
 };
 
 // Rampes de couleurs, de l'ombre vers la lumière.

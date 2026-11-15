@@ -13,6 +13,17 @@ Objectif : **fluide sur téléphone** (60 fps visés, jamais sous 30) et **poids
 | Textures GPU | < 16 Mo au total, KTX2 si texture > 64 px |
 | Téléchargement d'un monde | < 300 Ko hors three.js (idéal : quelques Ko, tout procédural) |
 
+## Budget par asset
+
+| Mesure | Budget |
+|---|---|
+| Triangles | < 5 000 (quelques centaines pour ce qui se pose en grand nombre : herbe, fleur, galet) |
+| Draw calls | ≤ 3 (géométries fusionnées par matériau) |
+| Textures | aucune : motifs procéduraux du matériau toon |
+| Code du module autonome | quelques dizaines de Ko |
+
+`npm run check` mesure chaque asset et signale les dépassements.
+
 Mesurer avec `renderer.info` (draw calls, triangles, géométries, textures) et le noter dans la PR/le message.
 
 ## Formats : du plus léger au plus lourd

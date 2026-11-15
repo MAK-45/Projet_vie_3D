@@ -27,6 +27,19 @@ nettes, éléments animés (vent, eau, lumières). On garde ce rendu même quand
    points ou sprites pixel, lumières qui vacillent. Animations à cadence réduite possible (12 fps) pour l'effet
    « sprite ».
 
+## Où c'est codé
+
+| Technique | Fichier |
+|---|---|
+| Rendu basse résolution, contours, fond tramé | `src/engine/pixel-renderer.js` |
+| Caméra orthographique orbitale, alignement sur la grille de pixels | `src/engine/iso-camera.js` |
+| Ombrage par rampe de couleurs, ombres nettes, vent, motifs (écorce, grain) | `src/engine/toon-material.js` |
+| Scène de présentation (soleil, socle), exemple complet d'utilisation | `src/gallery/viewer.js` |
+
+Repères chiffrés : 16 pixels d'art par mètre au zoom 1 ; rampes de 4 ou 5 couleurs avec glissement de teinte
+(ombres froides, lumières chaudes) ; animations du décor à 12 images par seconde. Les recettes éprouvées asset
+par asset sont dans `.claude/skills/create-asset/references/recipes.md`.
+
 ## À éviter
 
 - Antialiasing, bloom flou, textures haute résolution, ombres douces PCF larges, dégradés lisses partout.

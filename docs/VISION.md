@@ -15,6 +15,14 @@ librement ou en plan cadré sur le personnage.
 - Diorama isométrique : un îlot/une pièce de taille bornée, lisible d'un coup d'œil.
 - Passage de monde en monde (portails, portes, transitions).
 
+## Les assets
+
+Les mondes sont assemblés à partir d'une bibliothèque de **dessins 3D en JavaScript** (arbres, plantes, pierres,
+éléments de construction, bâtiments, meubles, objets, véhicules, vaisseaux...). Chaque asset a une **graine** qui
+change sa forme, pour ne jamais répéter deux fois le même, et des variations propres à sa famille : saisons pour
+la nature, type de pierre ou de bois pour le bâti. Ils sont visibles et rangés par catégorie dans la galerie
+« Atelier Vie 3D », et décrits dans un catalogue que d'autres IA peuvent lire (`docs/ASSETS.md`).
+
 ## La créature
 
 Humanoïde, stylisée, lisible à petite taille. Actions prévues : marcher, explorer, observer, dormir, étudier/lire,

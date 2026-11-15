@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: rock-with-stone-types
+expected_outcome: |
+  Un nouveau module src/assets/nature/rocks/<nom>.js existe et figure dans src/assets/index.js. Sa fiche a un
+  paramètre seed et un paramètre stone construit avec stoneParam (valeurs de kit/palettes.js), des tags en
+  français et en anglais, et des variantes par type de pierre. `npm run check -- <id>` passe sans erreur, une
+  planche de contrôle a été générée avec `npm run sheet` et regardée, et public/catalog/ a été régénéré.

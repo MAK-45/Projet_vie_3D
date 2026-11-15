@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: stone-wall-element
+expected_outcome: |
+  Un nouveau module sous src/assets/buildings/structure/ décrit un tronçon de muret. La graine change la
+  disposition des pierres, un axe de matière (stone) change le type de pierre, et les deux extrémités du tronçon
+  permettent de le répéter bout à bout. Les outils de géométrie ajoutés sont dans src/assets/kit/geometry.js et
+  non dans le fichier de l'asset. `npm run check` passe, une planche a été regardée, le catalogue est régénéré.

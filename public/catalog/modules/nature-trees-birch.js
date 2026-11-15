@@ -489,7 +489,30 @@ function createRng(seed) {
   };
 }
 
+// src/assets/kit/variation.js
+var SEASONS = ["spring", "summer", "autumn", "winter"];
+var SEASON_LABELS = { spring: "Printemps", summer: "\xC9t\xE9", autumn: "Automne", winter: "Hiver" };
+function seedParam(description) {
+  return { type: "int", default: 1, min: 0, max: 9999, label: "Graine", description };
+}
+function seasonParam(description, defaultSeason = "summer") {
+  return { type: "enum", default: defaultSeason, values: SEASONS, labels: SEASON_LABELS, label: "Saison", description };
+}
+function numberParam(label, defaultValue, min, max, description, { step = 0.1, unit } = {}) {
+  return { type: "number", default: defaultValue, min, max, step, ...unit ? { unit } : {}, label, description };
+}
+function variantsOf(name, spec) {
+  const values = [spec.default, ...spec.values.filter((value) => value !== spec.default)];
+  return values.map((value) => ({ id: value, name: spec.labels?.[value] ?? value, params: { [name]: value } }));
+}
+
 // src/assets/nature/trees/birch.js
+var params = {
+  seed: seedParam("Change la silhouette : inclinaison du tronc, branches, touffes."),
+  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, l'arbre est nu."),
+  height: numberParam("Hauteur", 7.5, 5, 9.5, "Hauteur du tronc ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.4, "Quantit\xE9 de feuilles (et de triangles).")
+};
 var meta = {
   id: "nature/trees/birch",
   name: "Bouleau",
@@ -521,55 +544,14 @@ var meta = {
   version: 1,
   added: "2026-11-15",
   units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
-  footprint: { radius: 2.6, height: 8.2 },
+  footprint: { radius: 3.2, height: 8.4 },
   animated: ["wind"],
-  params: {
-    seed: {
-      type: "int",
-      default: 1,
-      min: 0,
-      max: 9999,
-      label: "Graine",
-      description: "Change la silhouette : inclinaison du tronc, branches, touffes."
-    },
-    season: {
-      type: "enum",
-      default: "summer",
-      values: ["spring", "summer", "autumn", "winter"],
-      label: "Saison",
-      labels: { spring: "Printemps", summer: "\xC9t\xE9", autumn: "Automne", winter: "Hiver" },
-      description: "Couleur et densit\xE9 du feuillage ; l'hiver, l'arbre est nu."
-    },
-    height: {
-      type: "number",
-      default: 7.5,
-      min: 5,
-      max: 9.5,
-      step: 0.5,
-      unit: "m",
-      label: "Hauteur",
-      description: "Hauteur du tronc ; tout l'arbre garde ses proportions."
-    },
-    fullness: {
-      type: "number",
-      default: 1,
-      min: 0.5,
-      max: 1.4,
-      step: 0.1,
-      label: "Densit\xE9 du feuillage",
-      description: "Quantit\xE9 de feuilles (et de triangles)."
-    }
-  },
-  variants: [
-    { id: "summer", name: "\xC9t\xE9", params: { season: "summer" } },
-    { id: "spring", name: "Printemps", params: { season: "spring" } },
-    { id: "autumn", name: "Automne", params: { season: "autumn" } },
-    { id: "winter", name: "Hiver", params: { season: "winter" } }
-  ]
+  params,
+  variants: variantsOf("season", params.season)
 };
 var BARK_RAMP = ["#77728f", "#b0aec2", "#e0dfe6", "#fbf8ee"];
 var BARK_INK = "#2a2233";
-var SEASONS = {
+var SEASONS2 = {
   spring: { ramp: ["#2a6350", "#3f8a52", "#63ad55", "#96cf5e", "#d2ec84"], density: 0.78, leafSize: 0.92 },
   summer: { ramp: ["#1d4945", "#2a6947", "#3f8d45", "#6db348", "#b3da5b"], density: 1, leafSize: 1 },
   autumn: { ramp: ["#7b3d1d", "#b3651e", "#da9422", "#f2bf3a", "#ffe889"], density: 0.86, leafSize: 1 },
@@ -578,9 +560,9 @@ var SEASONS = {
 var TAU = Math.PI * 2;
 var UP = new THREE3.Vector3(0, 1, 0);
 var lerp = THREE3.MathUtils.lerp;
-function create(params = {}) {
-  const p = resolveParams(meta.params, params);
-  const season = SEASONS[p.season];
+function create(params2 = {}) {
+  const p = resolveParams(meta.params, params2);
+  const season = SEASONS2[p.season];
   const rng = createRng(p.seed * 7919 + 17);
   const s = p.height / 7.5;
   const leanAzimuth = rng.range(0, TAU);
