@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Atelier Vie 3D</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="/src/gallery/style.css" />
+  </head>
+  <body>
+    <!--app:start-->
+    <div class="app" id="app" data-view="sheet">
+      <header class="topbar">
+        <a class="brand" href="#catalogue">Atelier Vie 3D</a>
+        <p class="topbar-note" id="asset-count"></p>
+      </header>
+      <main class="layout">
+        <section class="catalogue" id="catalogue" aria-label="Catalogue des dessins"></section>
+        <article class="sheet" id="sheet" aria-live="polite"></article>
+      </main>
+    </div>
+    <!--app:end-->
+    <!--pv3d-catalog-->
+    <script type="module" src="/src/gallery/main.js"></script>
+  </body>
+</html>

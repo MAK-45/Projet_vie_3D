@@ -1,0 +1,42 @@
+<!doctype html>
+<!-- Page de capture : un asset seul, plein écran. Exemples :
+     /dev/test.html?asset=nature/trees/birch&season=autumn&seed=3&view=front&px=3
+     options : pixelArt, outline, wireframe, ground, wind (0 ou 1), px (taille des pixels), zoom, view -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Capture d'asset</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #15111e; }
+      #viewer { position: relative; overflow: hidden; width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <script type="module">
+      import { assets, getAsset } from "/src/assets/index.js";
+      import { Viewer } from "/src/gallery/viewer.js";
+
+      const query = new URLSearchParams(location.search);
+      const module = getAsset(query.get("asset")) ?? assets[0];
+      const params = {};
+      for (const name of Object.keys(module.meta.params)) if (query.has(name)) params[name] = query.get(name);
+
+      const viewer = new Viewer(document.getElementById("viewer"));
+      for (const name of ["pixelArt", "outline", "wireframe", "ground", "wind"]) {
+        if (query.has(name)) viewer.setOption(name, query.get(name) === "1");
+      }
+      if (query.has("px")) viewer.setOption("pixelSize", Number(query.get("px")));
+      viewer.resize();
+      viewer.setAsset(module, params);
+      if (query.has("view")) viewer.resetView(query.get("view"));
+      if (query.has("zoom")) {
+        viewer.iso.camera.zoom = Number(query.get("zoom"));
+        viewer.iso.camera.updateProjectionMatrix();
+      }
+      viewer.start();
+      window.viewer = viewer;
+    </script>
+  </body>
+</html>

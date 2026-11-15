@@ -1,0 +1,305 @@
+{
+  "schema": "pv3d-catalog/1",
+  "project": "Projet Vie 3D",
+  "three": "0.186.0",
+  "conventions": {
+    "units": "1 unité = 1 mètre ; Y vers le haut ; l'origine d'un asset est au sol, au centre de son emprise",
+    "pixelsPerUnit": 16,
+    "id": "<catégorie>/<sous-catégorie>/<nom> = chemin du module sous src/assets/, sans .js",
+    "module": "chaque module exporte meta, create(params) → THREE.Group, tick(secondes) pour le vent, setWind(force) et dispose(objet)",
+    "rendering": "les matériaux écrivent des couleurs sRGB brutes et une 2e sortie (normales + identifiants) : pour le rendu pixel art avec contours, utiliser PixelRenderer et IsoCamera (voir engine)"
+  },
+  "taxonomy": {
+    "nature": {
+      "label": "Nature",
+      "description": "Végétation, minéraux et terrain des mondes extérieurs.",
+      "subcategories": {
+        "trees": {
+          "label": "Arbres",
+          "description": "Arbres entiers, feuillus et conifères."
+        },
+        "plants": {
+          "label": "Plantes",
+          "description": "Buissons, fleurs, herbes, champignons, plantes en pot."
+        },
+        "rocks": {
+          "label": "Roches",
+          "description": "Rochers, pierres, falaises."
+        },
+        "terrain": {
+          "label": "Terrain",
+          "description": "Sols, îlots, chemins, eau."
+        }
+      }
+    },
+    "buildings": {
+      "label": "Bâtiments",
+      "description": "Constructions et leurs éléments.",
+      "subcategories": {
+        "houses": {
+          "label": "Maisons",
+          "description": "Bâtiments entiers."
+        },
+        "structure": {
+          "label": "Structure",
+          "description": "Murs, toits, portes, fenêtres, escaliers, clôtures."
+        }
+      }
+    },
+    "furniture": {
+      "label": "Mobilier",
+      "description": "Meubles d'intérieur et d'extérieur.",
+      "subcategories": {
+        "seating": {
+          "label": "Assises",
+          "description": "Chaises, bancs, canapés."
+        },
+        "tables": {
+          "label": "Tables",
+          "description": "Tables, bureaux, établis."
+        },
+        "storage": {
+          "label": "Rangements",
+          "description": "Étagères, coffres, bibliothèques."
+        },
+        "beds": {
+          "label": "Lits",
+          "description": "Lits et couchages."
+        },
+        "lighting": {
+          "label": "Luminaires",
+          "description": "Lampes, lanternes, bougies, cheminées."
+        }
+      }
+    },
+    "props": {
+      "label": "Objets",
+      "description": "Petits objets posés dans le décor ou tenus par la créature.",
+      "subcategories": {
+        "books": {
+          "label": "Livres",
+          "description": "Livres, parchemins, grimoires."
+        },
+        "tools": {
+          "label": "Outils",
+          "description": "Outils de construction, de jardin, de cuisine."
+        },
+        "magic": {
+          "label": "Magie",
+          "description": "Baguettes, cristaux, chaudrons, portails."
+        },
+        "decor": {
+          "label": "Décoration",
+          "description": "Vases, tapis, cadres, pots."
+        }
+      }
+    },
+    "creatures": {
+      "label": "Créatures",
+      "description": "La créature humanoïde et les animaux d'ambiance.",
+      "subcategories": {
+        "humanoid": {
+          "label": "Humanoïde",
+          "description": "Le personnage principal et ses variantes."
+        },
+        "critters": {
+          "label": "Animaux",
+          "description": "Oiseaux, insectes, petits animaux."
+        }
+      }
+    }
+  },
+  "biomes": [
+    "forest",
+    "meadow",
+    "garden",
+    "village",
+    "desert",
+    "snow",
+    "swamp",
+    "beach",
+    "mountain",
+    "cave",
+    "interior"
+  ],
+  "engine": [
+    {
+      "path": "src/engine/pixel-renderer.js",
+      "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
+      "bytes": 9145
+    },
+    {
+      "path": "src/engine/iso-camera.js",
+      "role": "Caméra isométrique orbitale alignée sur la grille de pixels.",
+      "bytes": 3995
+    },
+    {
+      "path": "src/engine/toon-material.js",
+      "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
+      "bytes": 12202
+    }
+  ],
+  "assets": [
+    {
+      "id": "nature/trees/birch",
+      "name": "Bouleau",
+      "nameEn": "Birch tree",
+      "category": "nature",
+      "subcategory": "trees",
+      "description": "Bouleau au tronc blanc marqué de tirets sombres, feuillage léger en touffes avec des brins pendants qui bougent au vent. Quatre saisons, forme différente pour chaque graine.",
+      "tags": [
+        "arbre",
+        "bouleau",
+        "feuillu",
+        "végétation",
+        "tronc blanc",
+        "feuillage",
+        "vent",
+        "saisons",
+        "extérieur",
+        "tree",
+        "birch",
+        "deciduous",
+        "vegetation",
+        "foliage",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village"
+      ],
+      "version": 1,
+      "added": "2026-11-15",
+      "units": "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
+      "footprint": {
+        "radius": 2.6,
+        "height": 8.2
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : inclinaison du tronc, branches, touffes."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "label": "Saison",
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "description": "Couleur et densité du feuillage ; l'hiver, l'arbre est nu."
+        },
+        "height": {
+          "type": "number",
+          "default": 7.5,
+          "min": 5,
+          "max": 9.5,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du tronc ; tout l'arbre garde ses proportions."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.4,
+          "step": 0.1,
+          "label": "Densité du feuillage",
+          "description": "Quantité de feuilles (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-trees-birch",
+      "path": "src/assets/nature/trees/birch.js",
+      "module": "public/catalog/modules/nature-trees-birch.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4052,
+          "vertices": 9446,
+          "drawCalls": 2
+        },
+        "summer": {
+          "triangles": 4052,
+          "vertices": 9446,
+          "drawCalls": 2
+        },
+        "spring": {
+          "triangles": 3603,
+          "vertices": 8099,
+          "drawCalls": 2
+        },
+        "autumn": {
+          "triangles": 3796,
+          "vertices": 8678,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 1202,
+          "vertices": 896,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 12476,
+        "standalone": 27966
+      }
+    }
+  ]
+}

@@ -24,25 +24,43 @@ fichiers) en anglais.
 4. Le poids et la perf aussi : relire `docs/PERFORMANCE.md` avant de créer un asset, un monde ou un effet.
 5. **Fin de tâche avec rendu graphique → publier un Artifact** (page HTML autonome, three.js depuis
    cdn.jsdelivr.net/npm/ avec version exacte) pour que l'utilisateur voie le résultat, et donner le lien.
+   Pour les assets, c'est toujours le même Artifact, « Atelier Vie 3D » :
+   https://claude.ai/artifact/C8NQjFucdBRX4bo9eT4Jim — `npm run artifact`, puis publier
+   `dist-artifact/atelier-vie-3d.html` en passant ce lien comme `url` (sinon un nouvel Artifact est créé).
 6. Vérifier visuellement avant de dire « c'est fait » : capture Playwright (Chromium préinstallé) en viewport
    mobile et desktop, et regarder l'image.
 
-## Organisation (cible)
+## Organisation
 
 ```
 src/
-  engine/     renderer, pipeline pixel art (render target basse réso + upscale), caméra iso, boucle
-  worlds/     un fichier par monde/biome : génération procédurale + données
-  creature/   modèle, squelette/animations, actions (marcher, dormir, lancer un sort...)
-  script/     moteur de scénario : timeline d'actions décidées à l'avance
-  fx/         effets (dont conversions pixelfx en 3D, voir docs/PIXELFX-3D.md)
-public/assets/  GLB (meshopt/Draco) et KTX2 seulement si la génération procédurale ne suffit pas
-vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/README.md
+  engine/     toon-material (matériau à palette + vent), pixel-renderer (basse réso + contours), iso-camera
+  assets/     les dessins 3D en JS : registre, taxonomie, kit, un fichier par asset (voir docs/ASSETS.md)
+  gallery/    « Atelier Vie 3D » : galerie web des assets (visionneuse, catalogue par catégorie, code, fiche)
+  worlds/     (à venir) un fichier par monde/biome : génération procédurale + données
+  creature/   (à venir) modèle, squelette/animations, actions (marcher, dormir, lancer un sort...)
+  script/     (à venir) moteur de scénario : timeline d'actions décidées à l'avance
+  fx/         (à venir) effets (dont conversions pixelfx en 3D, voir docs/PIXELFX-3D.md)
+scripts/      catalogue (catalog-lib, build-catalog), page Artifact (build-artifact), capture Playwright
+public/catalog/  GÉNÉRÉ et versionné : catalog.json + un module autonome par asset, pour les agents IA
+public/assets/   GLB (meshopt/Draco) et KTX2 seulement si la génération procédurale ne suffit pas
+dev/test.html    page de capture d'un asset seul (options dans l'URL)
+vendor/pixelfx/  bibliothèque d'effets 2D (source des conversions), voir vendor/README.md
 ```
+
+## Assets
+
+Tout nouveau dessin suit `docs/ASSETS.md` : contrat du module (`meta` + `create`), catégories, tags, budget,
+marche à suivre. Un asset n'est terminé que s'il est dans le registre, visible dans la galerie, présent dans
+`public/catalog/` et publié sur l'Artifact.
 
 ## Commandes
 
-À créer avec le premier code : `npm run dev`, `npm run build`, `npm run preview`. Mettre à jour ici.
+- `npm run dev` : galerie en local (http://127.0.0.1:5173), page de capture sur `/dev/test.html`.
+- `npm run catalog` : régénère `public/catalog/` (à faire après tout changement d'asset ou du moteur).
+- `npm run artifact` : catalogue + page autonome `dist-artifact/atelier-vie-3d.html` (three.js depuis jsDelivr).
+- `npm run build` / `npm run preview` : build Vite classique de la galerie dans `dist/`.
+- `node scripts/capture.cjs <url> <sortie.png> [largeur] [hauteur] [dpr]` : capture Playwright.
 
 ## Git
 
