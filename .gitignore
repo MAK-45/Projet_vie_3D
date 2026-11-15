@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.env*
+# rendus locaux pixelfx
+vendor/pixelfx/records/
+# réglages perso Claude Code
+.claude/settings.local.json
+CLAUDE.local.md
