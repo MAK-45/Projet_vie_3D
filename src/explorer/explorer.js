@@ -1,4 +1,4 @@
-// Explorateur de monde : on configure la prairie d'été puis on s'y promène avec une barre rouge de 1,80 m, la
+// Explorateur de monde : on configure la prairie d'été puis on s'y promène avec le personnage choisi (barre rouge de 1,80 m ou blob en lévitation), la
 // caméra isométrique suit. Un seul objet, montable dans n'importe quel bloc : il vit dans la fiche de l'asset
 // « Prairie d'été » de l'Atelier, et passe en plein écran pour la balade.
 
@@ -10,7 +10,7 @@ import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
 import { createSummerMeadow, MEADOW_SIZES } from "../worlds/summer-meadow.js";
 import { WalkInput } from "./input.js";
-import { Walker, WALKER_HEIGHT } from "./walker.js";
+import { CHARACTERS, Walker } from "./walker.js";
 
 const STORAGE_KEY = "pv3d-meadow";
 const MIN_ELEVATION = THREE.MathUtils.degToRad(11);
@@ -34,7 +34,12 @@ const AMOUNTS = [
 ];
 
 export const DEFAULT_SETTINGS = {
-  seed: 1, size: "medium", relief: 1.8, trees: 1, rocks: 1, grass: 1, flowers: 1, moment: "day", weather: "clear", camera: "fixed",
+  seed: 1, size: "medium", relief: 1.8, trees: 1, rocks: 1, grass: 1, flowers: 1, moment: "day", weather: "clear", camera: "fixed", character: "bar",
+};
+
+const SIZE_NOTES = {
+  bar: "La barre rouge mesure 1,80 m.",
+  blob: "Le blob lévite à 1 m du sol (0,90 m de diamètre).",
 };
 
 const choice = (name, label, options) => `
@@ -69,6 +74,7 @@ const TEMPLATE = `
   <div class="x-joystick" data-ref="joystick" aria-hidden="true"><span class="x-knob"></span></div>
 
   <div class="x-panel x-actions">
+    <div class="x-row"><span class="x-label">Personnage</span>${choice("character", "Personnage", CHARACTERS)}</div>
     <div class="x-row">
       <button type="button" class="x-button" data-ref="stroll" aria-pressed="false">Balade auto</button>
       <span class="x-label">Caméra</span>${choice("camera", "Caméra pendant la balade", CAMERAS)}
@@ -84,7 +90,7 @@ const TEMPLATE = `
   <p class="x-hint">
     <span class="x-hint-keys">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner d'un cran · souris : tourner, incliner · molette : zoom</span>
     <span class="x-hint-touch">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</span>
-    <span>La barre rouge mesure 1,80 m.</span>
+    <span data-ref="sizeNote"></span>
   </p>
 
   <button type="button" class="x-reveal" data-ref="reveal" aria-label="Afficher l'interface">Interface</button>
@@ -121,7 +127,7 @@ export class Explorer {
 
     const ref = (name) => this.root.querySelector(`[data-ref="${name}"]`);
     this.ui = Object.fromEntries(
-      ["stage", "settings", "summary", "seed", "reroll", "note", "joystick", "stroll", "recenter", "hide", "immersive", "stats", "reveal", "loading"].map((name) => [name, ref(name)]),
+      ["stage", "settings", "summary", "seed", "reroll", "note", "joystick", "stroll", "recenter", "hide", "immersive", "stats", "reveal", "loading", "sizeNote"].map((name) => [name, ref(name)]),
     );
 
     // --- Rendu
@@ -141,7 +147,8 @@ export class Explorer {
     controls.rotateSpeed = 0.6;
 
     this.scene = new THREE.Scene();
-    this.walker = new Walker();
+    this.walker = new Walker(this.settings.character);
+    this.ui.sizeNote.textContent = SIZE_NOTES[this.walker.kind];
     this.scene.add(this.walker.object);
     this.input = new WalkInput(this.ui.joystick);
     this.life = createAmbientLife();
@@ -217,7 +224,7 @@ export class Explorer {
   setView({ azimuth, elevation, zoom, x, z }) {
     if (x !== undefined || z !== undefined) {
       this.walker.placeAt(this.world, x ?? this.walker.position.x, z ?? this.walker.position.z);
-      this.look.set(this.walker.position.x, this.walker.position.y + WALKER_HEIGHT * 0.55, this.walker.position.z);
+      this.look.set(this.walker.position.x, this.walker.position.y + this.walker.lookHeight, this.walker.position.z);
       this.iso.follow(this.look);
       this.life.reset(this.world, this.walker.position);
     }
@@ -262,6 +269,11 @@ export class Explorer {
       moment: () => this._applyMood(),
       weather: () => this._applyMood(),
       camera: () => this._save(),
+      character: () => {
+        this.walker.setCharacter(settings.character);
+        ui.sizeNote.textContent = SIZE_NOTES[this.walker.kind];
+        this._save();
+      },
     };
     for (const group of this.root.querySelectorAll("[data-choice]")) {
       const name = group.dataset.choice;
@@ -328,6 +340,7 @@ export class Explorer {
     if (!(s.moment in MOMENTS)) s.moment = DEFAULT_SETTINGS.moment;
     if (!(s.weather in WEATHERS)) s.weather = DEFAULT_SETTINGS.weather;
     if (!(s.camera in CAMERAS)) s.camera = DEFAULT_SETTINGS.camera;
+    if (!(s.character in CHARACTERS)) s.character = DEFAULT_SETTINGS.character;
     for (const [name, , min, max] of AMOUNTS) {
       const value = Number(s[name]);
       s[name] = Number.isFinite(value) ? clamp(value, min, max) : DEFAULT_SETTINGS[name];
@@ -370,7 +383,7 @@ export class Explorer {
     this.world = createSummerMeadow(this.settings);
     this.scene.add(this.world.group);
     walker.placeAt(this.world, place?.x ?? this.world.spawn.x, place?.z ?? this.world.spawn.z);
-    look.set(walker.position.x, walker.position.y + WALKER_HEIGHT * 0.55, walker.position.z);
+    look.set(walker.position.x, walker.position.y + walker.lookHeight, walker.position.z);
     this.iso.follow(look);
     if (!place) {
       this.resetView();
@@ -496,7 +509,7 @@ export class Explorer {
     if (this.strolling && this._stroll.pause <= 0) this._stroll.stuck = walker.speed < 0.3 ? this._stroll.stuck + dt : 0;
 
     // La caméra suit le buste ; sa hauteur est lissée pour ne pas tressauter sur les bosses.
-    const height = walker.position.y + WALKER_HEIGHT * 0.55;
+    const height = walker.position.y + walker.lookHeight;
     look.set(walker.position.x, look.y + (height - look.y) * Math.min(1, dt * 5), walker.position.z);
     iso.follow(look);
     this._steerCamera(dt, walker.speed > 0.5);

@@ -100,14 +100,22 @@ finale (les rampes de couleurs des assets ne changent pas) et dessine la pluie �
 
 `new Explorer(container, { settings })` monte tout dans un bloc : la scène, le panneau de réglages (graine,
 taille, abondances, relief, moment, météo), les actions (balade auto, caméra, vue de départ, masquer
-l'interface, plein écran). Le promeneur est une barre rouge de 1,80 m : flèches ou ZQSD (WASD), Maj pour courir,
-A / E pour tourner la vue d'un cran ; au doigt, une manette ronde.
+l'interface, plein écran, **personnage**). Flèches ou ZQSD (WASD), Maj pour courir, A / E pour tourner la vue d'un
+cran ; au doigt, une manette ronde.
+
+Le personnage (`src/explorer/walker.js`, réglage `character`) se choisit dans le panneau d'actions :
+- **Barre 1,80 m** : barre rouge pour juger des proportions, sans inertie, collée au sol.
+- **Blob** : la Couveuse (`creatures/spirits/couveuse-blob`) en lévitation. Il prend son élan et freine en glissant,
+  survole le relief avec un ressort amorti (il lit le sol 0,45 s devant lui pour ne pas buter dans les montées), se
+  penche en avant en accélérant et s'incline dans les virages ; il éclaire le décor la nuit.
+
+Un nouveau personnage = un corps (`create…()` d'un asset) et une conduite dans `STYLES` de `walker.js`.
 
 Caméra pendant la balade auto : **Fixe** (ne tourne pas), **Pivote** (un cran toutes les 9 secondes), **Suit**
 (se replace derrière le promeneur quand il change de cap).
 
 `explorer.html` le montre seul, en plein écran, pour les captures :
-`?seed=1&size=small&moment=night&weather=rain&camera=follow&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
+`?seed=1&size=small&moment=night&weather=rain&camera=follow&character=blob&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
 
 ## Mesures (carte moyenne, vue de départ, moyenne par image)
 
