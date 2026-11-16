@@ -90,7 +90,7 @@ Règles :
   qui doit être cernée séparément (tronc 10, feuillage 11...). Pas de `MeshStandardMaterial` : il n'écrit pas les
   données dont la passe de contours a besoin.
 - **Budget** : viser < 5 000 triangles et ≤ 3 draw calls par asset (fusionner avec `mergeGeometries`) ; aucune
-  texture si un motif procédural suffit (`pattern: "bark" | "speckle"`).
+  texture si un motif procédural suffit (`pattern: "bark" | "furrow" | "speckle"`).
 - **Ombres** : `castShadow` / `receiveShadow` sur les maillages ; le feuillage a besoin de
   `mesh.customDepthMaterial = material.userData.depthMaterial`.
 

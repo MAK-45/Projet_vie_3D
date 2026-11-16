@@ -39,7 +39,7 @@ uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s
   varying vec3 vLeaf;
 #endif
 
-#ifdef PATTERN_BARK
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   attribute float aRadius;
   varying float vRadius;
   varying vec2 vUv;
@@ -85,7 +85,7 @@ void main() {
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
-  #ifdef PATTERN_BARK
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     vRadius = aRadius;
     vUv = uv;
   #endif
@@ -127,7 +127,7 @@ varying vec3 vObjPos;
   uniform vec2 uLeafShade; // x : \xE9clat al\xE9atoire par feuille, y : assombrissement du c\u0153ur
 #endif
 
-#ifdef PATTERN_BARK
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   varying float vRadius;
   varying vec2 vUv;
 #endif
@@ -186,6 +186,22 @@ void main() {
     lit -= 0.14 * step(0.82, hash12(vec2(floor(col / 2.0) + uSeed, floor(row / 4.0))));
   #endif
 
+  #ifdef PATTERN_FURROW
+    // \xC9corce crevass\xE9e (ch\xEAne, tilleul) : fissures verticales d'un pixel de large qui serpentent, s\xE9par\xE9es par
+    // des plaques dont certaines sont un cran plus claires. Taille constante dans le monde.
+    float density = uPattern.x;
+    float spacing = uPattern.y;
+    float row = floor(vUv.y * density);
+    float lanes = max(2.0, floor(6.2832 * vRadius * density / spacing));
+    float col = floor(fract(vUv.x) * lanes * spacing);
+    float lane = floor(col / spacing);
+    float seg = floor(row / 3.0 + hash12(vec2(lane, uSeed + 4.2)) * 3.0);
+    float crackAt = floor(hash12(vec2(lane + uSeed, seg)) * spacing);
+    float bridge = step(hash12(vec2(lane + uSeed * 3.1, floor(row / 2.0))), uPattern.w);
+    ink = step(abs(mod(col, spacing) - crackAt), 0.5) * (1.0 - bridge);
+    lit += uPattern.z * step(hash12(vec2(lane + uSeed * 1.7, floor(row / 5.0))), 0.3);
+  #endif
+
   #ifdef PATTERN_SPECKLE
     // Grain : quelques cellules d'un pixel d\xE9cal\xE9es d'un cran de lumi\xE8re.
     vec3 cell = floor(vObjPos * uPattern.x + 0.001);
@@ -220,6 +236,9 @@ var PATTERNS = {
   none: { define: null, value: [0, 0, 0, 0] },
   // density (pixels par unité), fréquence des tirets (0..1), hauteur du pied sombre (unités), densité du pied (0..1)
   bark: { define: "PATTERN_BARK", value: [16, 0.3, 1, 0.8] },
+  // density (pixels par unité), écart entre deux fissures (pixels), éclat des plaques claires (en lumière),
+  // part de fissures interrompues (0..1)
+  furrow: { define: "PATTERN_FURROW", value: [16, 3, 0.1, 0.25] },
   // density (cellules par unité), probabilité (0..1), amplitude (en lumière), part de grains sombres (0..1)
   speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] }
 };

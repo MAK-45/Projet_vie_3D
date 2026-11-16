@@ -8,7 +8,7 @@
 // - Sortie 0 : couleur. Sortie 1 : normale + identifiant de contour, lus par la passe de contours
 //   (src/engine/pixel-renderer.js).
 // - Variante `foliage` : chaque feuille est un petit triangle toujours face à la caméra, animé par le vent.
-// - Motifs procéduraux (`pattern`) : `bark` (tirets d'écorce) et `speckle` (grain de pixels), sans texture.
+// - Motifs procéduraux (`pattern`) : `bark` (tirets d'écorce), `furrow` (écorce crevassée) et `speckle` (grain de pixels), sans texture.
 
 import * as THREE from "three";
 
@@ -54,7 +54,7 @@ uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y
   varying vec3 vLeaf;
 #endif
 
-#ifdef PATTERN_BARK
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   attribute float aRadius;
   varying float vRadius;
   varying vec2 vUv;
@@ -100,7 +100,7 @@ void main() {
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
-  #ifdef PATTERN_BARK
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     vRadius = aRadius;
     vUv = uv;
   #endif
@@ -140,7 +140,7 @@ varying vec3 vObjPos;
   uniform vec2 uLeafShade; // x : éclat aléatoire par feuille, y : assombrissement du cœur
 #endif
 
-#ifdef PATTERN_BARK
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   varying float vRadius;
   varying vec2 vUv;
 #endif
@@ -199,6 +199,22 @@ void main() {
     lit -= 0.14 * step(0.82, hash12(vec2(floor(col / 2.0) + uSeed, floor(row / 4.0))));
   #endif
 
+  #ifdef PATTERN_FURROW
+    // Écorce crevassée (chêne, tilleul) : fissures verticales d'un pixel de large qui serpentent, séparées par
+    // des plaques dont certaines sont un cran plus claires. Taille constante dans le monde.
+    float density = uPattern.x;
+    float spacing = uPattern.y;
+    float row = floor(vUv.y * density);
+    float lanes = max(2.0, floor(6.2832 * vRadius * density / spacing));
+    float col = floor(fract(vUv.x) * lanes * spacing);
+    float lane = floor(col / spacing);
+    float seg = floor(row / 3.0 + hash12(vec2(lane, uSeed + 4.2)) * 3.0);
+    float crackAt = floor(hash12(vec2(lane + uSeed, seg)) * spacing);
+    float bridge = step(hash12(vec2(lane + uSeed * 3.1, floor(row / 2.0))), uPattern.w);
+    ink = step(abs(mod(col, spacing) - crackAt), 0.5) * (1.0 - bridge);
+    lit += uPattern.z * step(hash12(vec2(lane + uSeed * 1.7, floor(row / 5.0))), 0.3);
+  #endif
+
   #ifdef PATTERN_SPECKLE
     // Grain : quelques cellules d'un pixel décalées d'un cran de lumière.
     vec3 cell = floor(vObjPos * uPattern.x + 0.001);
@@ -231,6 +247,9 @@ const PATTERNS = {
   none: { define: null, value: [0, 0, 0, 0] },
   // density (pixels par unité), fréquence des tirets (0..1), hauteur du pied sombre (unités), densité du pied (0..1)
   bark: { define: "PATTERN_BARK", value: [16, 0.3, 1.0, 0.8] },
+  // density (pixels par unité), écart entre deux fissures (pixels), éclat des plaques claires (en lumière),
+  // part de fissures interrompues (0..1)
+  furrow: { define: "PATTERN_FURROW", value: [16, 3, 0.1, 0.25] },
   // density (cellules par unité), probabilité (0..1), amplitude (en lumière), part de grains sombres (0..1)
   speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] },
 };
@@ -248,7 +267,7 @@ function defaultSteps(count) {
  * @param {Array<string|number>} options.ramp couleurs de l'ombre vers la lumière (2 à 6)
  * @param {number[]} [options.steps] seuils de lumière (0..1) entre deux couleurs ; `ramp.length - 1` valeurs
  * @param {string|number} [options.ink] couleur des marques du motif (écorce)
- * @param {"none"|"bark"|"speckle"} [options.pattern]
+ * @param {"none"|"bark"|"furrow"|"speckle"} [options.pattern]
  * @param {number[]} [options.patternParams] 4 nombres, voir PATTERNS
  * @param {number} [options.seed] graine du motif
  * @param {boolean} [options.foliage] feuilles en triangles face caméra (géométrie de `buildLeafGeometry`)

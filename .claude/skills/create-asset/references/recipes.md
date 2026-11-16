@@ -9,7 +9,7 @@ c'est ce fichier qui fait progresser les assets suivants.
 1. Échelle et lisibilité
 2. Couleurs et lumière
 3. Contours
-4. Végétal : tronc, branches, feuillage (éprouvé sur le bouleau)
+4. Végétal : tronc, branches, feuillage (éprouvé sur le bouleau, le chêne, le tilleul)
 5. Vent (éprouvé)
 5 bis. Herbes, pelouses, fleurs (éprouvé)
 6. Roches (éprouvé sur le rocher posé et la roche enterrée) ; pistes : bâti, véhicules
@@ -74,6 +74,24 @@ c'est ce fichier qui fait progresser les assets suivants.
   est fausse.
 - Pour un autre arbre, changer ce qui fait son identité : port (rond pour un chêne, en cône pour un sapin, en
   parasol pour un pin), densité, taille et forme des touffes, couleur et motif de l'écorce.
+
+- **Chêne** (`nature/trees/oak`) : fût court et épais (rayon 0,46–0,54 m, pied évasé), 3 à 5 charpentières qui
+  partent du haut du fût (élévation 0,35–0,8 rad) + une branche basse presque horizontale une graine sur deux +
+  une flèche pour le dôme. Fonction `limb` à coudes tirés au hasard : c'est elle qui donne le côté tortueux.
+  Premier jet avec des feuilles de bouleau (0,085–0,14) et 100 × r² feuilles : couronne en confettis, lue comme un
+  olivier. Ce qui a marché : **touffes plus grosses (1,15–1,6 m), feuilles plus grandes (0,12–0,19) mais moins
+  nombreuses (64 × r²), feuilles poussées vers la coque (`shell: 0.55`), cœur 0,5** : masses nettes et moins de
+  triangles. Hiver (marcescence) : feuilles mortes seulement sur 40 % des touffes, réduites : des paquets, pas
+  de la poussière.
+- **Tilleul** (`nature/trees/linden`) : flèche droite jusqu'à 82 % de la couronne, branches en spirale dont la
+  pointe est calée sur une **enveloppe en ogive** (rayon max 3,1–3,8 m au tiers bas) + touffes de remplissage
+  posées juste sous l'enveloppe : silhouette régulière. Enveloppe à 2,5–3,2 m : colonne, pas un tilleul.
+  Fleurs : 3e matériau (`foliage`), grappes de 2–3 feuilles de 0,10–0,13 m accrochées aux points de surface
+  rendus par `fillClump`, seulement sur le dessus ; à 0,075–0,095 m, le contour les mangeait. Rejets au pied :
+  petites touffes de 0,35 m sur tiges collées au tronc.
+- Outils partagés : `kit/foliage.js` (`fillClump`, `fallenLeaves`, `leafNormal`) ; motif `furrow` (écorce
+  crevassée, fissures verticales qui serpentent) dans le matériau : `[16, 3, 0.1, 0.2]` chêne, `[16, 4, 0.05, 0.4]`
+  tilleul. Éclat des plaques > 0,08 sur une écorce grise : taches blanches façon bouleau.
 
 ## 5. Vent (éprouvé)
 

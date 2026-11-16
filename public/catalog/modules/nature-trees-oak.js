@@ -1,0 +1,849 @@
+// Projet Vie 3D — Chêne (nature/trees/oak), version 1
+// Module autonome : seule dépendance, three@0.186.0 (import "three").
+// Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
+
+// src/assets/nature/trees/oak.js
+import * as THREE4 from "three";
+
+// src/engine/toon-material.js
+import * as THREE from "three";
+var sharedUniforms = {
+  uTime: { value: 0 },
+  uWindDir: { value: new THREE.Vector2(0.92, 0.38) },
+  uWindStrength: { value: 1 }
+};
+function tick(seconds, fps = 12) {
+  sharedUniforms.uTime.value = fps > 0 ? Math.floor(seconds * fps) / fps : seconds;
+}
+function setWind(strength) {
+  sharedUniforms.uWindStrength.value = strength;
+}
+function rgb(hex) {
+  const c = typeof hex === "string" ? parseInt(hex.replace("#", ""), 16) : hex;
+  return new THREE.Vector3((c >> 16 & 255) / 255, (c >> 8 & 255) / 255, (c & 255) / 255);
+}
+var VERTEX = (
+  /* glsl */
+  `
+#include <common>
+#include <shadowmap_pars_vertex>
+
+uniform float uTime;
+uniform vec2 uWindDir;
+uniform float uWindStrength;
+uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
+
+#ifdef FOLIAGE
+  attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
+  attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
+  varying vec3 vLeaf;
+#endif
+
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+  attribute float aRadius;
+  varying float vRadius;
+  varying vec2 vUv;
+#endif
+
+varying vec3 vNormal;
+varying vec3 vObjPos;
+
+void main() {
+  #include <beginnormal_vertex>
+  #include <defaultnormal_vertex>
+  vNormal = transformedNormal;
+
+  #include <begin_vertex>
+  vObjPos = transformed;
+
+  mat4 toWorld = modelMatrix;
+  #ifdef USE_INSTANCING
+    toWorld = modelMatrix * instanceMatrix;
+  #endif
+  vec3 origin = toWorld[3].xyz;
+
+  // Balancement de l'ensemble (tronc, branches, feuilles) : nul au sol, maximal en haut.
+  float phase = origin.x * 0.37 + origin.z * 0.23;
+  float gust = sin(uTime * 1.1 + phase) * 0.6 + sin(uTime * 2.3 + phase * 1.7) * 0.4;
+  float h = clamp(transformed.y / max(uSway.y, 0.001), 0.0, 1.2);
+  transformed.xz += uWindDir * ((0.3 + 0.7 * gust) * uSway.x * uWindStrength * h * h);
+
+  #ifdef FOLIAGE
+    vLeaf = aLeaf.xyz;
+    // Fr\xE9missement propre \xE0 chaque feuille, port\xE9 par une vague qui traverse le feuillage.
+    float wave = sin(uTime * 2.4 - dot(transformed.xz + origin.xz, uWindDir) * 1.6 + aLeaf.x * 2.0);
+    float flutter = sin(uTime * 5.0 + aLeaf.x * 6.2831);
+    float bendLeaf = aLeaf.w * uWindStrength;
+    transformed.xz += uWindDir * (wave * 0.05 + flutter * 0.03) * bendLeaf;
+    transformed.y += flutter * 0.025 * bendLeaf;
+  #endif
+
+  #include <project_vertex>
+
+  #ifdef FOLIAGE
+    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
+    gl_Position = projectionMatrix * mvPosition;
+  #endif
+
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+    vRadius = aRadius;
+    vUv = uv;
+  #endif
+
+  #ifndef DEPTH_ONLY
+    #include <worldpos_vertex>
+    #include <shadowmap_vertex>
+  #endif
+}
+`
+);
+var FRAGMENT = (
+  /* glsl */
+  `
+#include <common>
+#include <packing>
+#include <bsdfs>
+#include <lights_pars_begin>
+#include <shadowmap_pars_fragment>
+#include <shadowmask_pars_fragment>
+
+layout(location = 1) out highp vec4 gAux; // xy : normale vue, z : seuil de contour interne, w : identifiant de contour
+
+uniform vec3 uRamp[RAMP_SIZE];
+uniform float uSteps[RAMP_SIZE - 1];
+uniform vec3 uInk;
+uniform float uId;
+uniform float uCrease;
+uniform float uSelfEdge;
+uniform float uShadowLit;
+uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
+uniform float uSeed;
+
+varying vec3 vNormal;
+varying vec3 vObjPos;
+
+#ifdef FOLIAGE
+  varying vec3 vLeaf;
+  uniform vec2 uLeafShade; // x : \xE9clat al\xE9atoire par feuille, y : assombrissement du c\u0153ur
+#endif
+
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+  varying float vRadius;
+  varying vec2 vUv;
+#endif
+
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float hash13(vec3 p3) {
+  p3 = fract(p3 * 0.1031);
+  p3 += dot(p3, p3.zyx + 31.32);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+void main() {
+  vec3 N = normalize(vNormal);
+  #if defined(DOUBLE_SIDED) && !defined(FOLIAGE)
+    if (!gl_FrontFacing) N = -N;
+  #endif
+
+  #if NUM_DIR_LIGHTS > 0
+    vec3 L = directionalLights[0].direction;
+  #else
+    vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
+  #endif
+
+  float lit = dot(N, L) * 0.5 + 0.5;
+  float ink = 0.0;
+
+  #ifdef FOLIAGE
+    lit += (vLeaf.z - 0.5) * uLeafShade.x;
+    lit *= mix(1.0 - uLeafShade.y, 1.0, vLeaf.y);
+  #endif
+
+  #ifdef PATTERN_BARK
+    // Tirets horizontaux d'un \xAB pixel \xBB de haut, de taille constante dans le monde quel que soit le diam\xE8tre.
+    float density = uPattern.x;
+    float row = floor(vUv.y * density);
+    float cols = max(4.0, floor(6.2832 * vRadius * density));
+    float col = floor(fract(vUv.x) * cols);
+    float start = floor(hash12(vec2(row, uSeed + 1.3)) * cols);
+    float len = 1.0 + floor(hash12(vec2(row, uSeed + 2.7)) * 0.45 * cols);
+    float dcol = mod(col - start + cols, cols);
+    ink = step(hash12(vec2(row, uSeed)), uPattern.y) * step(dcol, len - 0.5);
+    // N\u0153uds plus \xE9pais, rares.
+    float row2 = floor(row / 2.0);
+    float start2 = floor(hash12(vec2(row2, uSeed + 5.1)) * cols);
+    float dcol2 = mod(col - start2 + cols, cols);
+    ink = max(ink, step(hash12(vec2(row2, uSeed + 7.9)), uPattern.y * 0.22) * step(dcol2, 1.5));
+    // Pied du tronc : \xE9corce sombre et crevass\xE9e.
+    float foot = 1.0 - smoothstep(0.0, uPattern.z, vObjPos.y);
+    ink = max(ink, step(hash12(vec2(col * 3.0 + uSeed, floor(row / 3.0))), foot * uPattern.w));
+    // Plaques gris\xE9es.
+    lit -= 0.14 * step(0.82, hash12(vec2(floor(col / 2.0) + uSeed, floor(row / 4.0))));
+  #endif
+
+  #ifdef PATTERN_FURROW
+    // \xC9corce crevass\xE9e (ch\xEAne, tilleul) : fissures verticales d'un pixel de large qui serpentent, s\xE9par\xE9es par
+    // des plaques dont certaines sont un cran plus claires. Taille constante dans le monde.
+    float density = uPattern.x;
+    float spacing = uPattern.y;
+    float row = floor(vUv.y * density);
+    float lanes = max(2.0, floor(6.2832 * vRadius * density / spacing));
+    float col = floor(fract(vUv.x) * lanes * spacing);
+    float lane = floor(col / spacing);
+    float seg = floor(row / 3.0 + hash12(vec2(lane, uSeed + 4.2)) * 3.0);
+    float crackAt = floor(hash12(vec2(lane + uSeed, seg)) * spacing);
+    float bridge = step(hash12(vec2(lane + uSeed * 3.1, floor(row / 2.0))), uPattern.w);
+    ink = step(abs(mod(col, spacing) - crackAt), 0.5) * (1.0 - bridge);
+    lit += uPattern.z * step(hash12(vec2(lane + uSeed * 1.7, floor(row / 5.0))), 0.3);
+  #endif
+
+  #ifdef PATTERN_SPECKLE
+    // Grain : quelques cellules d'un pixel d\xE9cal\xE9es d'un cran de lumi\xE8re.
+    vec3 cell = floor(vObjPos * uPattern.x + 0.001);
+    float r = hash13(cell + uSeed);
+    lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
+  #endif
+
+  float shadow = getShadowMask();
+  lit = mix(min(lit, uShadowLit), lit, shadow);
+
+  vec3 color = uRamp[0];
+  for (int i = 0; i < RAMP_SIZE - 1; i++) {
+    if (lit > uSteps[i]) color = uRamp[i + 1];
+  }
+  color = mix(color, uInk, ink);
+
+  // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives (0 = fond, jamais \xE9crit ici).
+  gl_FragColor = vec4(color, 1.0 - 0.25 * uCrease);
+  gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
+}
+`
+);
+var DEPTH_FRAGMENT = (
+  /* glsl */
+  `
+void main() {
+  gl_FragColor = vec4(1.0);
+}
+`
+);
+var PATTERNS = {
+  none: { define: null, value: [0, 0, 0, 0] },
+  // density (pixels par unité), fréquence des tirets (0..1), hauteur du pied sombre (unités), densité du pied (0..1)
+  bark: { define: "PATTERN_BARK", value: [16, 0.3, 1, 0.8] },
+  // density (pixels par unité), écart entre deux fissures (pixels), éclat des plaques claires (en lumière),
+  // part de fissures interrompues (0..1)
+  furrow: { define: "PATTERN_FURROW", value: [16, 3, 0.1, 0.25] },
+  // density (cellules par unité), probabilité (0..1), amplitude (en lumière), part de grains sombres (0..1)
+  speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] }
+};
+function defaultSteps(count) {
+  const steps = [];
+  for (let i = 1; i < count; i++) steps.push(0.3 + 0.5 * (i - 1) / Math.max(1, count - 2));
+  return steps;
+}
+function createToonMaterial(options) {
+  const {
+    ramp,
+    steps = defaultSteps(ramp.length),
+    ink = "#241c2e",
+    pattern = "none",
+    patternParams,
+    seed = 0,
+    foliage = false,
+    leafShade = [0.12, 0.45],
+    id = 1,
+    crease = false,
+    selfEdge = foliage ? 1.1 : 0,
+    shadowLit = 0.36,
+    sway = { amplitude: 0, height: 1 },
+    side = foliage ? THREE.DoubleSide : THREE.FrontSide
+  } = options;
+  if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
+  if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
+  const patternInfo = PATTERNS[pattern];
+  const defines = { RAMP_SIZE: ramp.length };
+  if (foliage) defines.FOLIAGE = "";
+  if (patternInfo.define) defines[patternInfo.define] = "";
+  const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
+  const material = new THREE.ShaderMaterial({
+    name: foliage ? "ToonFoliage" : "Toon",
+    defines,
+    lights: true,
+    side,
+    uniforms: {
+      ...THREE.UniformsUtils.clone(THREE.UniformsLib.lights),
+      ...sharedUniforms,
+      uSway: swayUniform,
+      uRamp: { value: ramp.map(rgb) },
+      uSteps: { value: steps.slice() },
+      uInk: { value: rgb(ink) },
+      uId: { value: id },
+      uCrease: { value: crease ? 1 : 0 },
+      uSelfEdge: { value: selfEdge },
+      uShadowLit: { value: shadowLit },
+      uPattern: { value: new THREE.Vector4(...patternParams ?? patternInfo.value) },
+      uSeed: { value: seed },
+      uLeafShade: { value: new THREE.Vector2(...leafShade) }
+    },
+    vertexShader: VERTEX,
+    fragmentShader: FRAGMENT
+  });
+  if (foliage) {
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonFoliageDepth",
+      defines: { FOLIAGE: "", DEPTH_ONLY: "" },
+      side: THREE.DoubleSide,
+      uniforms: { ...sharedUniforms, uSway: swayUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT
+    });
+  }
+  return material;
+}
+function disposeObject(root) {
+  root.traverse((child) => {
+    child.geometry?.dispose();
+    for (const material of [child.material ?? []].flat()) {
+      material.userData.depthMaterial?.dispose();
+      material.dispose();
+    }
+    child.customDepthMaterial?.dispose();
+  });
+}
+
+// src/assets/kit/foliage.js
+import * as THREE2 from "three";
+var TAU = Math.PI * 2;
+var UP = new THREE2.Vector3(0, 1, 0);
+var DOWN = new THREE2.Vector3(0, -1, 0);
+function leafNormal(position, direction, canopyCenter, canopyWeight = 0.4) {
+  return direction.clone().addScaledVector(position.clone().sub(canopyCenter).normalize(), canopyWeight).addScaledVector(UP, 0.25).normalize();
+}
+function fillClump(rng, leaves, {
+  center,
+  radius,
+  count,
+  canopyCenter,
+  leafSize,
+  squash = 0.85,
+  sag = 0.35,
+  canopyWeight = 0.4,
+  core = true,
+  flex = [0.55, 1],
+  coreSize = 0.44,
+  shell = 0.4
+}) {
+  if (core) {
+    for (const rotation of [0, Math.PI]) {
+      leaves.push({ position: center, normal: DOWN, size: radius * coreSize, rotation, phase: rng.next(), occlusion: 0, variation: 0, flex: 0.3 });
+    }
+  }
+  const surface = [];
+  const scale = new THREE2.Vector3();
+  for (let i = 0; i < count; i++) {
+    const y = rng.range(-1, 1);
+    const angle = rng.range(0, TAU);
+    const ring = Math.sqrt(1 - y * y);
+    const direction = new THREE2.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
+    const k = shell + (1 - shell) * Math.sqrt(rng.next());
+    scale.set(radius * k, radius * k * squash, radius * k);
+    const position = center.clone().add(direction.clone().multiply(scale));
+    if (y < 0) position.y -= y * y * radius * sag;
+    leaves.push({
+      position,
+      normal: leafNormal(position, direction, canopyCenter, canopyWeight),
+      size: leafSize(),
+      rotation: rng.range(-0.9, 0.9),
+      phase: rng.next(),
+      occlusion: THREE2.MathUtils.smoothstep(k, shell, 0.95) * (0.8 + 0.2 * (y * 0.5 + 0.5)),
+      variation: rng.next(),
+      flex: rng.range(flex[0], flex[1])
+    });
+    if (k > 0.85) surface.push({ position, direction });
+  }
+  return surface;
+}
+function fallenLeaves(rng, leaves, { count, minRadius, maxRadius, leafSize }) {
+  for (let i = 0; i < count; i++) {
+    const angle = rng.range(0, TAU);
+    const distance = rng.range(minRadius, maxRadius);
+    leaves.push({
+      position: new THREE2.Vector3(Math.cos(angle) * distance, 0.04, Math.sin(angle) * distance),
+      normal: UP,
+      size: leafSize(),
+      rotation: rng.range(0, TAU),
+      phase: rng.next(),
+      occlusion: 1,
+      variation: rng.next(),
+      flex: 0
+    });
+  }
+}
+
+// src/assets/kit/geometry.js
+import * as THREE3 from "three";
+var _tangent = new THREE3.Vector3();
+var _normal = new THREE3.Vector3();
+var _binormal = new THREE3.Vector3();
+var _previousTangent = new THREE3.Vector3();
+var _axis = new THREE3.Vector3();
+var _point = new THREE3.Vector3();
+function buildTube(points, radiusAt, { radialSegments = 6, lengthSegments = 8, vOffset = 0 } = {}) {
+  const curve = new THREE3.CatmullRomCurve3(points, false, "centripetal");
+  const rings = lengthSegments + 1;
+  const ringSize = radialSegments + 1;
+  const vertexCount = rings * ringSize;
+  const positions = new Float32Array(vertexCount * 3);
+  const normals = new Float32Array(vertexCount * 3);
+  const uvs = new Float32Array(vertexCount * 2);
+  const radii = new Float32Array(vertexCount);
+  const indices = [];
+  let travelled = 0;
+  const previousPoint = new THREE3.Vector3();
+  for (let i = 0; i < rings; i++) {
+    const t = i / lengthSegments;
+    curve.getPoint(t, _point);
+    curve.getTangent(t, _tangent);
+    if (i === 0) {
+      _normal.set(1, 0, 0);
+      if (Math.abs(_tangent.x) > 0.9) _normal.set(0, 0, 1);
+      _normal.addScaledVector(_tangent, -_normal.dot(_tangent)).normalize();
+    } else {
+      _axis.crossVectors(_previousTangent, _tangent);
+      const sin = _axis.length();
+      if (sin > 1e-6) {
+        _axis.divideScalar(sin);
+        _normal.applyAxisAngle(_axis, Math.asin(Math.min(1, sin)));
+      }
+      _normal.addScaledVector(_tangent, -_normal.dot(_tangent)).normalize();
+      travelled += _point.distanceTo(previousPoint);
+    }
+    _binormal.crossVectors(_tangent, _normal);
+    _previousTangent.copy(_tangent);
+    previousPoint.copy(_point);
+    const radius = Math.max(5e-4, radiusAt(t));
+    for (let j = 0; j < ringSize; j++) {
+      const angle = j / radialSegments * Math.PI * 2;
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      const nx = _normal.x * cos + _binormal.x * sin;
+      const ny = _normal.y * cos + _binormal.y * sin;
+      const nz = _normal.z * cos + _binormal.z * sin;
+      const v = i * ringSize + j;
+      positions[v * 3] = _point.x + nx * radius;
+      positions[v * 3 + 1] = _point.y + ny * radius;
+      positions[v * 3 + 2] = _point.z + nz * radius;
+      normals[v * 3] = nx;
+      normals[v * 3 + 1] = ny;
+      normals[v * 3 + 2] = nz;
+      uvs[v * 2] = j / radialSegments;
+      uvs[v * 2 + 1] = vOffset + travelled;
+      radii[v] = radius;
+    }
+  }
+  for (let i = 0; i < lengthSegments; i++) {
+    for (let j = 0; j < radialSegments; j++) {
+      const a = i * ringSize + j;
+      const b = a + ringSize;
+      indices.push(a, a + 1, b, a + 1, b + 1, b);
+    }
+  }
+  const geometry = new THREE3.BufferGeometry();
+  geometry.setAttribute("position", new THREE3.BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE3.BufferAttribute(normals, 3));
+  geometry.setAttribute("uv", new THREE3.BufferAttribute(uvs, 2));
+  geometry.setAttribute("aRadius", new THREE3.BufferAttribute(radii, 1));
+  geometry.setIndex(indices);
+  geometry.userData.curve = curve;
+  return geometry;
+}
+function mergeGeometries(geometries) {
+  const merged = new THREE3.BufferGeometry();
+  const names = Object.keys(geometries[0].attributes);
+  let vertexCount = 0;
+  let indexCount = 0;
+  for (const geometry of geometries) {
+    vertexCount += geometry.attributes.position.count;
+    indexCount += geometry.index.count;
+  }
+  for (const name of names) {
+    const itemSize = geometries[0].attributes[name].itemSize;
+    const array = new Float32Array(vertexCount * itemSize);
+    let offset = 0;
+    for (const geometry of geometries) {
+      array.set(geometry.attributes[name].array, offset);
+      offset += geometry.attributes[name].array.length;
+    }
+    merged.setAttribute(name, new THREE3.BufferAttribute(array, itemSize));
+  }
+  const index = vertexCount > 65535 ? new Uint32Array(indexCount) : new Uint16Array(indexCount);
+  let indexOffset = 0;
+  let vertexOffset = 0;
+  for (const geometry of geometries) {
+    const source = geometry.index.array;
+    for (let i = 0; i < source.length; i++) index[indexOffset + i] = source[i] + vertexOffset;
+    indexOffset += source.length;
+    vertexOffset += geometry.attributes.position.count;
+    geometry.dispose();
+  }
+  merged.setIndex(new THREE3.BufferAttribute(index, 1));
+  return merged;
+}
+var LEAF_SHAPE = [0, -1, 0.8, 0.62, -0.8, 0.62];
+function buildLeafGeometry(leaves) {
+  const count = leaves.length;
+  const positions = new Float32Array(count * 9);
+  const normals = new Float32Array(count * 9);
+  const corners = new Float32Array(count * 6);
+  const data = new Float32Array(count * 12);
+  for (let i = 0; i < count; i++) {
+    const leaf = leaves[i];
+    const cos = Math.cos(leaf.rotation) * leaf.size;
+    const sin = Math.sin(leaf.rotation) * leaf.size;
+    for (let k = 0; k < 3; k++) {
+      const v = i * 3 + k;
+      positions[v * 3] = leaf.position.x;
+      positions[v * 3 + 1] = leaf.position.y;
+      positions[v * 3 + 2] = leaf.position.z;
+      normals[v * 3] = leaf.normal.x;
+      normals[v * 3 + 1] = leaf.normal.y;
+      normals[v * 3 + 2] = leaf.normal.z;
+      const x = LEAF_SHAPE[k * 2];
+      const y = LEAF_SHAPE[k * 2 + 1];
+      corners[v * 2] = x * cos - y * sin;
+      corners[v * 2 + 1] = x * sin + y * cos;
+      data[v * 4] = leaf.phase;
+      data[v * 4 + 1] = leaf.occlusion;
+      data[v * 4 + 2] = leaf.variation;
+      data[v * 4 + 3] = leaf.flex;
+    }
+  }
+  const geometry = new THREE3.BufferGeometry();
+  geometry.setAttribute("position", new THREE3.BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE3.BufferAttribute(normals, 3));
+  geometry.setAttribute("aCorner", new THREE3.BufferAttribute(corners, 2));
+  geometry.setAttribute("aLeaf", new THREE3.BufferAttribute(data, 4));
+  return geometry;
+}
+var _rockPoint = new THREE3.Vector3();
+var _rockEuler = new THREE3.Euler();
+
+// src/assets/kit/params.js
+function resolveParams(schema, given = {}) {
+  const result = {};
+  for (const [name, spec] of Object.entries(schema)) {
+    let value = given[name] ?? spec.default;
+    if (spec.type === "int" || spec.type === "number") {
+      value = Number(value);
+      if (!Number.isFinite(value)) value = spec.default;
+      if (spec.type === "int") value = Math.round(value);
+      if (spec.min !== void 0) value = Math.max(spec.min, value);
+      if (spec.max !== void 0) value = Math.min(spec.max, value);
+    } else if (spec.type === "enum" && !spec.values.includes(value)) {
+      value = spec.default;
+    } else if (spec.type === "boolean") {
+      value = Boolean(value);
+    }
+    result[name] = value;
+  }
+  return result;
+}
+
+// src/assets/kit/rng.js
+function createRng(seed) {
+  let state = (Math.floor(seed) ^ 2654435769) >>> 0;
+  const next = () => {
+    state = state + 1831565813 >>> 0;
+    let t = state;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  return {
+    /** nombre dans [0, 1[ */
+    next,
+    /** nombre dans [min, max[ */
+    range: (min, max) => min + (max - min) * next(),
+    /** entier dans [min, max] */
+    int: (min, max) => Math.floor(min + (max - min + 1) * next()),
+    /** vrai avec la probabilité donnée */
+    chance: (probability) => next() < probability,
+    /** élément au hasard */
+    pick: (items) => items[Math.floor(next() * items.length)]
+  };
+}
+
+// src/assets/kit/palettes.js
+var COVERS = {
+  moss: { label: "Mousse", ramp: ["#22473c", "#33663e", "#4f8a3f", "#86b44a"], ink: "#142a26" },
+  snow: { label: "Neige", ramp: ["#8a97b8", "#b9c3dc", "#e2e8f2", "#fbfbf6"], ink: "#5a6584" }
+};
+var GROUNDS = {
+  dirt: { label: "Terre", ramp: ["#3e2a2c", "#5d3f33", "#7f5a3f", "#a07a52"], ink: "#24181b" }
+};
+var SNOWS = {
+  fresh: { label: "Fra\xEEche", ramp: COVERS.snow.ramp, ink: COVERS.snow.ink },
+  old: { label: "Tass\xE9e", ramp: ["#6b7390", "#959db4", "#bfc4d0", "#dddcd4"], ink: "#454b63" }
+};
+var MOSSES = {
+  spring: { label: "Printemps", ramp: ["#285640", "#3f7d40", "#69a645", "#a6cf60"], ink: "#16302a" },
+  summer: { label: "\xC9t\xE9", ramp: COVERS.moss.ramp, ink: COVERS.moss.ink },
+  autumn: { label: "Automne", ramp: ["#45452c", "#68652f", "#93863a", "#bfa854"], ink: "#29281b" },
+  winter: { label: "Hiver", ramp: ["#2a3c43", "#3f574f", "#5d775b", "#8ba283"], ink: "#18242a" }
+};
+GROUNDS.clay = { label: "Argile", ramp: ["#4a2724", "#7a3e2c", "#a65b39", "#c98552"], ink: "#2a1517" };
+GROUNDS.mud = { label: "Boue", ramp: ["#2a2026", "#3e2f2f", "#574236", "#735a44"], ink: "#18121a" };
+
+// src/assets/kit/variation.js
+var SEASONS = ["spring", "summer", "autumn", "winter"];
+var SEASON_LABELS = { spring: "Printemps", summer: "\xC9t\xE9", autumn: "Automne", winter: "Hiver" };
+function seedParam(description) {
+  return { type: "int", default: 1, min: 0, max: 9999, label: "Graine", description };
+}
+function seasonParam(description, defaultSeason = "summer") {
+  return { type: "enum", default: defaultSeason, values: SEASONS, labels: SEASON_LABELS, label: "Saison", description };
+}
+function numberParam(label, defaultValue, min, max, description, { step = 0.1, unit } = {}) {
+  return { type: "number", default: defaultValue, min, max, step, ...unit ? { unit } : {}, label, description };
+}
+function variantsOf(name, spec) {
+  const values = [spec.default, ...spec.values.filter((value) => value !== spec.default)];
+  return values.map((value) => ({ id: value, name: spec.labels?.[value] ?? value, params: { [name]: value } }));
+}
+
+// src/assets/nature/trees/oak.js
+var params = {
+  seed: seedParam("Change la silhouette : nombre et direction des grosses branches, torsions, masses de feuillage."),
+  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, il garde quelques feuilles mortes."),
+  height: numberParam("Hauteur", 9, 6, 12, "Hauteur de l'arbre ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.3, "Quantit\xE9 de feuilles (et de triangles).")
+};
+var meta = {
+  id: "nature/trees/oak",
+  name: "Ch\xEAne",
+  nameEn: "Oak tree",
+  category: "nature",
+  subcategory: "trees",
+  description: "Ch\xEAne trapu au tronc sombre et crevass\xE9, grosses branches tortueuses \xE9tal\xE9es, couronne large et bossel\xE9e en masses de feuillage. Quatre saisons (feuilles mortes gard\xE9es l'hiver), forme diff\xE9rente pour chaque graine.",
+  tags: [
+    "ch\xEAne",
+    "arbre",
+    "feuillu",
+    "v\xE9g\xE9tation",
+    "tronc crevass\xE9",
+    "couronne large",
+    "branches tortueuses",
+    "feuillage",
+    "feuilles mortes",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "oak",
+    "tree",
+    "deciduous",
+    "vegetation",
+    "broad crown",
+    "gnarled",
+    "foliage",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "meadow", "village", "garden"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
+  footprint: { radius: 5.8, height: 9.2 },
+  animated: ["wind"],
+  params,
+  variants: variantsOf("season", params.season)
+};
+var BARK_RAMP = ["#33283a", "#544549", "#786559", "#9d8a72"];
+var BARK_INK = "#1b141c";
+var SEASONS2 = {
+  spring: { ramp: ["#265743", "#3b7c47", "#5fa14a", "#96c656", "#d4e884"], density: 0.82, leafSize: 0.92 },
+  summer: { ramp: ["#173a38", "#21533d", "#33723f", "#56953f", "#98c250"], density: 1, leafSize: 1 },
+  autumn: { ramp: ["#4a2722", "#7b3b22", "#a65a25", "#cc8834", "#ebbb5e"], density: 0.86, leafSize: 1 },
+  // Marcescence : le chêne garde des feuilles mortes, brunes et clairsemées, jusqu'au printemps.
+  winter: { ramp: ["#3b2826", "#5d3b2b", "#83573a", "#a97a4c", "#cba36c"], density: 0.55, leafSize: 0.85 }
+};
+var TAU2 = Math.PI * 2;
+var lerp = THREE4.MathUtils.lerp;
+function create(params2 = {}) {
+  const p = resolveParams(meta.params, params2);
+  const season = SEASONS2[p.season];
+  const rng = createRng(p.seed * 7919 + 23);
+  const s = p.height / 9;
+  const boleHeight = rng.range(2.3, 3.3) * s;
+  const leanAzimuth = rng.range(0, TAU2);
+  const lean = rng.range(0.1, 0.45) * s;
+  const trunkPoints = [];
+  for (let i = 0; i < 5; i++) {
+    const t = i / 4;
+    const wobble = i === 0 ? 0 : 0.14 * s;
+    trunkPoints.push(new THREE4.Vector3(
+      Math.cos(leanAzimuth) * lean * t + rng.range(-wobble, wobble),
+      (boleHeight + 0.5 * s) * t,
+      Math.sin(leanAzimuth) * lean * t + rng.range(-wobble, wobble)
+    ));
+  }
+  const baseRadius = rng.range(0.46, 0.54) * s;
+  const trunk = buildTube(
+    trunkPoints,
+    (t) => lerp(baseRadius, baseRadius * 0.78, t) + baseRadius * 0.55 * Math.exp(-t * 10),
+    { radialSegments: 8, lengthSegments: 8 }
+  );
+  const trunkCurve = trunk.userData.curve;
+  const wood = [trunk];
+  const clumps = [];
+  const minRadius = 0.04;
+  const limb = (start, azimuth, elevation, length, r0, r1, { kink = 0.22, droop = 0.15, sides = 6 } = {}) => {
+    const direction = new THREE4.Vector3(
+      Math.cos(azimuth) * Math.cos(elevation),
+      Math.sin(elevation),
+      Math.sin(azimuth) * Math.cos(elevation)
+    );
+    const side = new THREE4.Vector3(-Math.sin(azimuth), 0, Math.cos(azimuth));
+    const points = [start.clone()];
+    for (const t of [0.33, 0.66, 1]) {
+      const point = start.clone().addScaledVector(direction, length * t);
+      point.addScaledVector(side, rng.range(-kink, kink) * length * (t < 1 ? 1 : 0.5));
+      point.y += rng.range(-kink, kink) * length * 0.5 - droop * length * t * t;
+      points.push(point);
+    }
+    const tube = buildTube(points, (t) => lerp(r0, r1, Math.pow(t, 0.8)), {
+      radialSegments: sides,
+      lengthSegments: 6,
+      vOffset: rng.range(3, 30)
+    });
+    wood.push(tube);
+    return tube.userData.curve;
+  };
+  const limbCount = rng.int(3, 5);
+  const limbStart = rng.range(0, TAU2);
+  const limbs = [];
+  for (let i = 0; i < limbCount; i++) {
+    limbs.push({
+      azimuth: limbStart + i / limbCount * TAU2 + rng.range(-0.45, 0.45),
+      elevation: rng.range(0.35, 0.8),
+      length: rng.range(3, 4.2) * s,
+      from: rng.range(0.78, 1)
+    });
+  }
+  if (rng.chance(0.55)) {
+    limbs.push({ azimuth: rng.range(0, TAU2), elevation: rng.range(0.08, 0.25), length: rng.range(3.4, 4.4) * s, from: rng.range(0.5, 0.65), low: true });
+  }
+  limbs.push({ azimuth: leanAzimuth + rng.range(-1, 1), elevation: rng.range(1.15, 1.4), length: rng.range(2.8, 3.6) * s, from: 1, leader: true });
+  for (const L of limbs) {
+    const start = trunkCurve.getPoint(L.from);
+    const r0 = baseRadius * (L.leader ? 0.6 : rng.range(0.5, 0.62));
+    const curve = limb(start, L.azimuth, L.elevation, L.length, r0, r0 * 0.4, { droop: L.leader ? 0 : 0.12 });
+    const tip = curve.getPoint(1);
+    clumps.push({ center: tip.clone().add(new THREE4.Vector3(0, 0.35 * s, 0)), radius: rng.range(1.35, 1.6) * s });
+    const forks = L.leader ? 2 : rng.int(2, 3);
+    for (let j = 0; j < forks; j++) {
+      const t = lerp(0.4, 0.82, forks === 1 ? 0.5 : j / (forks - 1)) + rng.range(-0.06, 0.06);
+      const from = curve.getPoint(t);
+      const sign = j % 2 === 0 ? 1 : -1;
+      const azimuth = L.azimuth + sign * rng.range(0.55, 1.1);
+      const elevation = L.leader ? rng.range(0.5, 0.8) : rng.range(0.45, 0.95);
+      const length = L.length * rng.range(0.42, 0.58);
+      const childCurve = limb(from, azimuth, elevation, length, Math.max(minRadius, r0 * 0.45), minRadius, { sides: 5, droop: 0.05 });
+      const end = childCurve.getPoint(1);
+      clumps.push({ center: end.clone().add(new THREE4.Vector3(0, 0.3 * s, 0)), radius: rng.range(1.15, 1.4) * s });
+      if (L.low || rng.chance(0.35)) {
+        clumps.push({ center: childCurve.getPoint(0.5).add(new THREE4.Vector3(0, 0.5 * s, 0)), radius: rng.range(0.95, 1.1) * s });
+      }
+    }
+  }
+  const crownBase = trunkCurve.getPoint(1);
+  const fillStart = rng.range(0, TAU2);
+  for (let i = 0; i < 4; i++) {
+    const angle = fillStart + i * 2.39996;
+    const reach = rng.range(1, 1.8) * s;
+    clumps.push({
+      center: crownBase.clone().add(new THREE4.Vector3(Math.cos(angle) * reach, rng.range(2, 2.9) * s, Math.sin(angle) * reach)),
+      radius: rng.range(1.3, 1.55) * s
+    });
+  }
+  const sway = { amplitude: 0.06 * s, height: p.height };
+  const group = new THREE4.Group();
+  group.name = meta.name;
+  const woodMesh = new THREE4.Mesh(
+    mergeGeometries(wood),
+    createToonMaterial({
+      ramp: BARK_RAMP,
+      steps: [0.3, 0.52, 0.76],
+      ink: BARK_INK,
+      pattern: "furrow",
+      patternParams: [16, 3, 0.1, 0.2],
+      seed: p.seed % 97,
+      id: 10,
+      sway
+    })
+  );
+  woodMesh.name = "wood";
+  woodMesh.castShadow = true;
+  woodMesh.receiveShadow = true;
+  group.add(woodMesh);
+  const leaves = [];
+  if (season.density > 0) {
+    const canopyCenter = crownBase.clone().add(new THREE4.Vector3(0, 2 * s, 0));
+    const density = season.density * p.fullness;
+    const leafSize = () => rng.range(0.12, 0.19) * season.leafSize;
+    const winter = p.season === "winter";
+    for (const clump of clumps) {
+      if (winter && !rng.chance(0.4)) continue;
+      const radius = winter ? clump.radius * 0.7 : clump.radius;
+      fillClump(rng, leaves, {
+        center: clump.center,
+        radius,
+        count: Math.round(density * 64 * radius * radius),
+        canopyCenter,
+        leafSize,
+        squash: 0.78,
+        sag: 0.1,
+        canopyWeight: 0.3,
+        core: p.season !== "winter",
+        flex: [0.4, 0.8],
+        coreSize: 0.5,
+        shell: 0.55
+      });
+    }
+    if (p.season === "autumn") {
+      fallenLeaves(rng, leaves, { count: 48, minRadius: 0.6 * s, maxRadius: 4.2 * s, leafSize });
+    }
+    const leafGeometry = buildLeafGeometry(leaves);
+    leafGeometry.computeBoundingSphere();
+    leafGeometry.boundingSphere.radius += 0.6;
+    const leafMaterial = createToonMaterial({
+      ramp: season.ramp,
+      steps: [0.24, 0.44, 0.62, 0.8],
+      foliage: true,
+      id: 11,
+      sway
+    });
+    const leafMesh = new THREE4.Mesh(leafGeometry, leafMaterial);
+    leafMesh.name = "leaves";
+    leafMesh.customDepthMaterial = leafMaterial.userData.depthMaterial;
+    leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
+    group.add(leafMesh);
+  }
+  group.userData.asset = { id: meta.id, params: p, leaves: leaves.length };
+  return group;
+}
+export {
+  create,
+  disposeObject as dispose,
+  meta,
+  setWind,
+  tick
+};

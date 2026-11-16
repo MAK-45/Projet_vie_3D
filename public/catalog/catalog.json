@@ -136,7 +136,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 12252
+      "bytes": 13520
     }
   ],
   "assets": [
@@ -300,7 +300,348 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 29417
+        "standalone": 30655
+      }
+    },
+    {
+      "id": "nature/trees/oak",
+      "name": "Chêne",
+      "nameEn": "Oak tree",
+      "category": "nature",
+      "subcategory": "trees",
+      "description": "Chêne trapu au tronc sombre et crevassé, grosses branches tortueuses étalées, couronne large et bosselée en masses de feuillage. Quatre saisons (feuilles mortes gardées l'hiver), forme différente pour chaque graine.",
+      "tags": [
+        "chêne",
+        "arbre",
+        "feuillu",
+        "végétation",
+        "tronc crevassé",
+        "couronne large",
+        "branches tortueuses",
+        "feuillage",
+        "feuilles mortes",
+        "vent",
+        "saisons",
+        "extérieur",
+        "oak",
+        "tree",
+        "deciduous",
+        "vegetation",
+        "broad crown",
+        "gnarled",
+        "foliage",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "village",
+        "garden"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
+      "footprint": {
+        "radius": 5.8,
+        "height": 9.2
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : nombre et direction des grosses branches, torsions, masses de feuillage."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Couleur et densité du feuillage ; l'hiver, il garde quelques feuilles mortes."
+        },
+        "height": {
+          "type": "number",
+          "default": 9,
+          "min": 6,
+          "max": 12,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur de l'arbre ; tout l'arbre garde ses proportions."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.3,
+          "step": 0.1,
+          "label": "Densité du feuillage",
+          "description": "Quantité de feuilles (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-trees-oak",
+      "path": "src/assets/nature/trees/oak.js",
+      "module": "public/catalog/modules/nature-trees-oak.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/foliage.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4214,
+          "vertices": 9848,
+          "drawCalls": 2
+        },
+        "summer": {
+          "triangles": 4214,
+          "vertices": 9848,
+          "drawCalls": 2
+        },
+        "spring": {
+          "triangles": 3682,
+          "vertices": 8252,
+          "drawCalls": 2
+        },
+        "autumn": {
+          "triangles": 3850,
+          "vertices": 8756,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 1487,
+          "vertices": 1667,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 10842,
+        "standalone": 31552
+      }
+    },
+    {
+      "id": "nature/trees/linden",
+      "name": "Tilleul",
+      "nameEn": "Linden tree",
+      "category": "nature",
+      "subcategory": "trees",
+      "description": "Tilleul au tronc droit et gris, couronne dense et régulière en ogive ; fleurs jaune pâle en été, feuillage doré en automne, rejets au pied. Quatre saisons, forme différente pour chaque graine.",
+      "tags": [
+        "tilleul",
+        "arbre",
+        "feuillu",
+        "végétation",
+        "couronne en ogive",
+        "tronc droit",
+        "fleurs",
+        "floraison",
+        "feuillage",
+        "vent",
+        "saisons",
+        "place de village",
+        "extérieur",
+        "linden",
+        "lime tree",
+        "tree",
+        "deciduous",
+        "vegetation",
+        "dense crown",
+        "flowers",
+        "blossom",
+        "foliage",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "village",
+        "garden",
+        "meadow",
+        "forest"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
+      "footprint": {
+        "radius": 4.1,
+        "height": 10.2
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : ogive plus ou moins large, penchant de la couronne, branches, rejets au pied."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Couleur du feuillage ; fleurs jaune pâle l'été, or à l'automne, nu l'hiver."
+        },
+        "height": {
+          "type": "number",
+          "default": 10,
+          "min": 7,
+          "max": 13,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur de l'arbre ; tout l'arbre garde ses proportions."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.3,
+          "step": 0.1,
+          "label": "Densité du feuillage",
+          "description": "Quantité de feuilles (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-trees-linden",
+      "path": "src/assets/nature/trees/linden.js",
+      "module": "public/catalog/modules/nature-trees-linden.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/foliage.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4640,
+          "vertices": 11081,
+          "drawCalls": 3
+        },
+        "summer": {
+          "triangles": 4640,
+          "vertices": 11081,
+          "drawCalls": 3
+        },
+        "spring": {
+          "triangles": 3577,
+          "vertices": 7892,
+          "drawCalls": 2
+        },
+        "autumn": {
+          "triangles": 3588,
+          "vertices": 7925,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 1282,
+          "vertices": 1007,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 12531,
+        "standalone": 33065
       }
     },
     {
@@ -501,7 +842,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 32796
+        "standalone": 34034
       }
     },
     {
@@ -704,7 +1045,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 33858
+        "standalone": 35096
       }
     },
     {
@@ -838,7 +1179,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 22097
+        "standalone": 23335
       }
     },
     {
@@ -1001,7 +1342,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 22003
+        "standalone": 23241
       }
     },
     {
@@ -1158,7 +1499,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 24249
+        "standalone": 25487
       }
     },
     {
@@ -1341,7 +1682,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 25345
+        "standalone": 26583
       }
     },
     {
@@ -1540,7 +1881,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 31645
+        "standalone": 32883
       }
     },
     {
@@ -1746,7 +2087,7 @@
       },
       "bytes": {
         "source": 12522,
-        "standalone": 29923
+        "standalone": 31161
       }
     }
   ]
