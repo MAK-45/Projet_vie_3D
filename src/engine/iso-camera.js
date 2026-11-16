@@ -5,9 +5,9 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { PIXELS_PER_UNIT } from "./pixel-renderer.js";
 
-const DISTANCE = 60;
 const _right = new THREE.Vector3();
 const _up = new THREE.Vector3();
+const _delta = new THREE.Vector3();
 
 /** Élévation de la vue isométrique « vraie » : atan(1/√2) ≈ 35,26°. */
 export const ISO_ELEVATION = Math.atan(1 / Math.SQRT2);
@@ -15,9 +15,12 @@ export const ISO_ELEVATION = Math.atan(1 / Math.SQRT2);
 export class IsoCamera {
   /**
    * @param {HTMLElement} domElement élément qui reçoit les gestes (souris, doigts)
+   * @param {{distance?: number, far?: number}} [options] recul de la caméra par rapport à sa cible et portée de la
+   *   vue (mètres). Les défauts conviennent à un asset seul ; un monde les agrandit pour ne rien couper.
    */
-  constructor(domElement) {
-    this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, 160);
+  constructor(domElement, { distance = 60, far = 160 } = {}) {
+    this.distance = distance;
+    this.camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 1, far);
     this.controls = new OrbitControls(this.camera, domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.12;
@@ -61,9 +64,9 @@ export class IsoCamera {
     }
     const cosE = Math.cos(elevation);
     this.camera.position.set(
-      this.controls.target.x + Math.sin(azimuth) * cosE * DISTANCE,
-      this.controls.target.y + Math.sin(elevation) * DISTANCE,
-      this.controls.target.z + Math.cos(azimuth) * cosE * DISTANCE,
+      this.controls.target.x + Math.sin(azimuth) * cosE * this.distance,
+      this.controls.target.y + Math.sin(elevation) * this.distance,
+      this.controls.target.z + Math.cos(azimuth) * cosE * this.distance,
     );
     this.camera.lookAt(this.controls.target);
     this._hasTruePosition = false;
@@ -75,6 +78,18 @@ export class IsoCamera {
     const viewW = (this.camera.right - this.camera.left) / margin;
     const viewH = (this.camera.top - this.camera.bottom) / margin;
     return Math.min(viewW / width, viewH / height);
+  }
+
+  /**
+   * Déplace la cible, et la caméra avec elle (même angle, même zoom) : pour suivre un personnage. À appeler avant
+   * `update()`.
+   * @param {THREE.Vector3} position nouvelle cible
+   */
+  follow(position) {
+    _delta.copy(position).sub(this.controls.target);
+    this.controls.target.copy(position);
+    if (this._hasTruePosition) this._truePosition.add(_delta);
+    else this.camera.position.add(_delta);
   }
 
   /** À appeler à chaque image, avant le rendu. */

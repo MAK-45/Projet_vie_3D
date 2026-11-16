@@ -130,6 +130,7 @@ uniform float uSteps[RAMP_SIZE - 1];
 uniform vec3 uInk;
 uniform float uId;
 uniform float uCrease;
+uniform float uInked;
 uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
@@ -313,8 +314,9 @@ void main() {
   #endif
   color = mix(color, uInk, ink);
 
-  // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives (0 = fond, jamais \xE9crit ici).
-  gl_FragColor = vec4(color, 1.0 - 0.25 * uCrease);
+  // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives, 0.6 = surface sans contour
+  // (0 = fond, jamais \xE9crit ici).
+  gl_FragColor = vec4(color, uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
 `
@@ -357,6 +359,7 @@ function createToonMaterial(options) {
     leafShade = [0.12, 0.45],
     id = 1,
     crease = false,
+    outline = true,
     selfEdge = foliage ? 1.1 : 0,
     shadowLit = 0.36,
     sway = { amplitude: 0, height: 1 },
@@ -411,6 +414,7 @@ function createToonMaterial(options) {
       uInk: { value: rgb(ink) },
       uId: { value: id },
       uCrease: { value: crease ? 1 : 0 },
+      uInked: { value: outline ? 1 : 0 },
       uSelfEdge: { value: selfEdge },
       uShadowLit: { value: shadowLit },
       uPattern: { value: new THREE.Vector4(...patternParams ?? patternInfo.value) },

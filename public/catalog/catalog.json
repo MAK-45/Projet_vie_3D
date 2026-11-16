@@ -130,17 +130,17 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 9606
+      "bytes": 9722
     },
     {
       "path": "src/engine/iso-camera.js",
       "role": "Caméra isométrique orbitale alignée sur la grille de pixels.",
-      "bytes": 3995
+      "bytes": 4745
     },
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 21575
+      "bytes": 21908
     }
   ],
   "assets": [
@@ -304,7 +304,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 36925
+        "standalone": 37063
       }
     },
     {
@@ -473,7 +473,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 37822
+        "standalone": 37960
       }
     },
     {
@@ -645,7 +645,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 39335
+        "standalone": 39473
       }
     },
     {
@@ -846,7 +846,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 40304
+        "standalone": 40442
       }
     },
     {
@@ -1049,7 +1049,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 41366
+        "standalone": 41504
       }
     },
     {
@@ -1183,7 +1183,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 29605
+        "standalone": 29743
       }
     },
     {
@@ -1346,7 +1346,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 29511
+        "standalone": 29649
       }
     },
     {
@@ -1503,7 +1503,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 31757
+        "standalone": 31895
       }
     },
     {
@@ -1686,7 +1686,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 32906
+        "standalone": 33044
       }
     },
     {
@@ -1885,7 +1885,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 39206
+        "standalone": 39344
       }
     },
     {
@@ -2124,7 +2124,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 32690
+        "standalone": 32828
       }
     },
     {
@@ -2330,7 +2330,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 37485
+        "standalone": 37623
       }
     },
     {
@@ -2478,7 +2478,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 29821
+        "standalone": 29959
       }
     },
     {
@@ -2638,7 +2638,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 30831
+        "standalone": 30969
       }
     },
     {
@@ -2781,7 +2781,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 27673
+        "standalone": 27811
       }
     },
     {
@@ -2944,7 +2944,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 28551
+        "standalone": 28689
       }
     }
   ]

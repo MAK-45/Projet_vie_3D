@@ -61,6 +61,7 @@ void main() {
   float edge = 0.0;
   float crease = 0.0;
   float hasCrease = step(color.a, 0.9);
+  float inked = step(0.7, color.a); // une matière peut refuser le contour (alpha 0,6 : pollen, papillons)
   vec3 n = viewNormal(aux);
   // Voisins : droite, gauche, haut, bas. Le voisin opposé sert à reconnaître une surface plane vue en biais,
   // dont la profondeur change régulièrement d'un pixel à l'autre sans qu'il y ait de bord.
@@ -92,7 +93,7 @@ void main() {
   vec3 result = color.rgb;
   result = mix(result, min(result * uCreaseLighten, vec3(1.0)), crease * uOutline);
   vec3 outline = mix(result * uOutlineDarken, uOutlineTint, 0.3);
-  result = mix(result, outline, edge * uOutline);
+  result = mix(result, outline, edge * uOutline * inked);
   gl_FragColor = vec4(result, 1.0);
 }
 `;

@@ -147,6 +147,7 @@ uniform float uSteps[RAMP_SIZE - 1];
 uniform vec3 uInk;
 uniform float uId;
 uniform float uCrease;
+uniform float uInked;
 uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
@@ -330,8 +331,9 @@ void main() {
   #endif
   color = mix(color, uInk, ink);
 
-  // Alpha : 1 = surface, 0.75 = surface avec liseré clair sur les arêtes vives (0 = fond, jamais écrit ici).
-  gl_FragColor = vec4(color, 1.0 - 0.25 * uCrease);
+  // Alpha : 1 = surface, 0.75 = surface avec liseré clair sur les arêtes vives, 0.6 = surface sans contour
+  // (0 = fond, jamais écrit ici).
+  gl_FragColor = vec4(color, uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
 `;
@@ -376,6 +378,8 @@ function defaultSteps(count) {
  * @param {number[]} [options.leafShade] [éclat aléatoire par feuille, assombrissement du cœur]
  * @param {number} [options.id] identifiant de contour 1..255 : un contour sépare deux identifiants différents
  * @param {boolean} [options.crease] liseré clair sur les arêtes vives (meubles, murs, socles)
+ * @param {boolean} [options.outline] faux : aucun contour sombre sur cette matière (poussières, pollen, papillons :
+ *   des formes de quelques pixels que leur contour mangerait entièrement)
  * @param {number} [options.selfEdge] écart de profondeur (unités, 0..4) à partir duquel un contour est tracé
  *   entre deux parties du même objet ; 0 = seuil général. Le feuillage en a besoin pour ne pas cerner chaque feuille.
  * @param {number} [options.shadowLit] lumière maximale dans une ombre portée (0..1)
@@ -408,6 +412,7 @@ export function createToonMaterial(options) {
     leafShade = [0.12, 0.45],
     id = 1,
     crease = false,
+    outline = true,
     selfEdge = foliage ? 1.1 : 0,
     shadowLit = 0.36,
     sway = { amplitude: 0, height: 1 },
@@ -467,6 +472,7 @@ export function createToonMaterial(options) {
       uInk: { value: rgb(ink) },
       uId: { value: id },
       uCrease: { value: crease ? 1 : 0 },
+      uInked: { value: outline ? 1 : 0 },
       uSelfEdge: { value: selfEdge },
       uShadowLit: { value: shadowLit },
       uPattern: { value: new THREE.Vector4(...(patternParams ?? patternInfo.value)) },
