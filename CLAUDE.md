@@ -18,6 +18,9 @@ fichiers) en anglais.
 1. **Demande de création d'asset → skill `create-asset`.** Dès que l'utilisateur demande de créer, dessiner,
    générer, ajouter ou retoucher un asset (arbre, pierre, mur, maison, meuble, véhicule, vaisseau...), lancer ce
    skill et le suivre jusqu'au bout. Ne pas l'utiliser pour autre chose (moteur, galerie, mondes, scénario).
+   **Demande de création de monde → skill `create-world`.** Dès que l'utilisateur demande de créer, générer,
+   assembler ou retoucher un monde, une carte, une île, un biome ou un décor à explorer, lancer ce skill et le
+   suivre jusqu'au bout. Un asset qui manque au monde se crée d'abord avec `create-asset`.
 2. **Toujours** charger les skills three.js utiles avant de coder du rendu (`threejs-fundamentals`,
    `threejs-performance` en permanence ; puis `-geometry`, `-materials`, `-shaders`, `-postprocessing`,
    `-lighting`, `-asset-pipeline`, `-loaders`, `-animation`, `-textures`, `-interaction` selon la tâche).
@@ -54,7 +57,7 @@ scripts/        catalogue, page Artifact, vérification d'assets, planche de con
 public/catalog/ GÉNÉRÉ et versionné : catalog.json + un module autonome par asset, pour les agents IA
 dev/            test.html (un asset plein écran, options dans l'URL), sheet.html (planche variantes × graines)
 vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/README.md
-.claude/skills/ create-asset (maison), threejs-*, grill-me, grilling, pixelfx
+.claude/skills/ create-asset et create-world (maison), threejs-*, grill-me, grilling, pixelfx
 .claude/rules/  règles chargées selon les fichiers touchés : threejs.md, assets.md
 ```
 
@@ -79,6 +82,7 @@ vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/
 | Assets : contrat d'un module, rangement, tags, catalogue pour IA | `docs/ASSETS.md` |
 | Créer un asset pas à pas, axes de variation, recettes | `.claude/skills/create-asset/` |
 | Mondes : assembler une carte, semis, ciel, explorateur, mesures | `docs/WORLDS.md` |
+| Créer un monde pas à pas, modèles de fichiers, recettes | `.claude/skills/create-world/` |
 | Effets pixelfx portés en 3D | `docs/PIXELFX-3D.md` |
 
 ## Git

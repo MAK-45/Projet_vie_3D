@@ -8,8 +8,8 @@ description: >-
   tague, le vérifie à l'image et le publie dans la galerie « Atelier Vie 3D ». À utiliser uniquement quand
   l'utilisateur demande explicitement de créer, dessiner, générer ou ajouter un asset, ou de retoucher un asset
   existant : « génère un chêne », « dessine-moi un mur en pierre », « ajoute une lanterne », « fais un vaisseau
-  », « refais le bouleau plus touffu ». Ne pas utiliser pour le moteur de rendu, la galerie, les mondes, la
-  créature animée ou le scénario.
+  », « refais le bouleau plus touffu ». Ne pas utiliser pour le moteur de rendu, la galerie, les mondes
+  (skill create-world), la créature animée ou le scénario.
 ---
 
 # Créer un asset
