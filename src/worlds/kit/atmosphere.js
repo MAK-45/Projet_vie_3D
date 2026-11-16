@@ -143,6 +143,7 @@ export function createAtmosphere() {
       const target = TARGETS[showing];
       for (let i = 0; i < state.length; i++) state[i] += (target[i] - state[i]) * ease;
       wet += ((raining ? 1 : 0) - wet) * (instant ? 1 : 1 - Math.exp(-dt / 2.5));
+      if (!raining && wet < 0.002) wet = 0; // le fondu s'éteint pour de bon : plus une goutte par beau temps
       instant = false;
       publish();
     },

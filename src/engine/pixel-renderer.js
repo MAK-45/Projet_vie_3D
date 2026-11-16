@@ -43,12 +43,15 @@ float hash21(vec2 p) {
 }
 
 // Pluie : traits clairs d'un pixel de large qui tombent en biais, calculés à l'écran (aucune géométrie).
+// Par beau temps, rien : sans ce garde-fou, une case dont le hasard vaut exactement 0 (fréquent en précision réduite
+// sur téléphone) passait le test step(hash, 0) et laissait tomber quelques gouttes.
 float rainAt(vec2 p) {
+  if (uRain <= 0.001) return 0.0;
   float column = floor(p.x + p.y * 0.3);
   float fall = p.y + uRainTime * (150.0 + 70.0 * hash21(vec2(column, 3.0))) + hash21(vec2(column, 7.0)) * 61.0;
   float drop = floor(fall / 23.0);
   float along = fract(fall / 23.0);
-  return step(hash21(vec2(column, drop)), 0.085 * uRain) * step(along, 0.3);
+  return float(hash21(vec2(column, drop)) < 0.085 * uRain) * step(along, 0.3);
 }
 
 float bayer4(vec2 p) {
@@ -212,7 +215,7 @@ export class PixelRenderer {
     if (grade) uniforms.uGrade.value.copy(grade);
     if (saturation !== undefined) uniforms.uSaturation.value = saturation;
     if (rain !== undefined) uniforms.uRain.value = rain;
-    if (time !== undefined) uniforms.uRainTime.value = time;
+    if (time !== undefined) uniforms.uRainTime.value = time % 600; // reste petit : précision des téléphones
   }
 
   /**
