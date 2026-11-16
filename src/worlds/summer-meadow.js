@@ -25,7 +25,7 @@ import * as oak from "../assets/nature/trees/oak.js";
 import { ScatterField } from "./kit/scatter.js";
 import { createCloudSea } from "./kit/cloud-sea.js";
 import { createCloudShadows, createDaylight } from "./kit/sky.js";
-import { buildIslandBand, groundNormal } from "./kit/terrain.js";
+import { buildIslandBand, buildIslandUnderside, groundNormal } from "./kit/terrain.js";
 
 export const MEADOW_SIZES = {
   small: { label: "Petit", meters: 48 },
@@ -122,7 +122,10 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
 
   // Tranche de l'île : terre, puis roche au bas déchiqueté.
   const soilBottom = (x, z) => -1.1 - field(x, z, 9, 30) * 0.9;
-  const rockBottom = (x, z) => -4.5 - field(x, z, 6, 31) * 3.5 - field(x, z, 23, 32) * 3;
+  // Dans l'explorateur, la falaise est courte : le dessous de l'île prend le relais et s'effile vers les nuages.
+  const rockBottom = diorama
+    ? (x, z) => -4.5 - field(x, z, 6, 31) * 3.5 - field(x, z, 23, 32) * 3
+    : (x, z) => -3 - field(x, z, 6, 31) * 1.8 - field(x, z, 23, 32) * 1.5;
   const soil = new THREE.Mesh(
     buildIslandBand({ bounds, top: heightAt, bottom: soilBottom }),
     createToonMaterial({ ramp: GROUNDS.dirt.ramp, steps: [0.3, 0.5, 0.74], pattern: "speckle", patternParams: [16, 0.08, 0.2, 1], seed: 5, id: 12 }),
@@ -134,6 +137,16 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
   soil.name = "soil";
   bedrock.name = "bedrock";
   group.add(soil, bedrock);
+  // Dessous de l'île flottante : la roche s'effile en pointe loin sous le pré (explorateur seulement : la fiche
+  // garde le diorama compact).
+  const keelDepth = THREE.MathUtils.clamp(meters * 0.6, 28, 72);
+  let underside = null;
+  if (!diorama) {
+    underside = new THREE.Mesh(buildIslandUnderside({ bounds, top: rockBottom, depth: keelDepth, noise: (x, z) => field(x, z, 6, 33) }), bedrock.material);
+    underside.name = "underside";
+    underside.matrixAutoUpdate = false;
+    group.add(underside);
+  }
 
   // --- Semis ---------------------------------------------------------------------------------------------------
   const scatter = new ScatterField({ bounds, heightAt });
@@ -455,7 +468,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
   } else {
     daylight = createDaylight();
     cloudShadows = createCloudShadows(createRng(seed * 131 + 1), { bounds, count: Math.round(4 + area / 4000) });
-    cloudSea = createCloudSea({ bounds, mistLevel: RELIEF + 0.5 });
+    cloudSea = createCloudSea({ bounds, seaLevel: -keelDepth - 30, mistLevel: -keelDepth * 0.82, inset: meters * 0.5 });
     group.add(daylight.light, daylight.light.target, cloudShadows.group, cloudSea.mesh);
   }
 
@@ -548,6 +561,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
       groundMaterial?.dispose();
       disposeObject(soil);
       disposeObject(bedrock);
+      underside?.geometry.dispose(); // matériau partagé avec la roche
       group.clear();
     },
   };

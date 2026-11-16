@@ -140,7 +140,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 11955
+      "bytes": 12250
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -2994,7 +2994,7 @@
         "meadow",
         "forest"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de l'île descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
       "footprint": {
@@ -3156,7 +3156,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 182040
+        "standalone": 185013
       }
     }
   ]

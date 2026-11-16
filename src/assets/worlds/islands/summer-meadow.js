@@ -39,7 +39,7 @@ export const meta = {
     "outdoor", "procedural",
   ],
   biomes: ["meadow", "forest"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units:
     "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de " +

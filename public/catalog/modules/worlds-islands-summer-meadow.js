@@ -1,4 +1,4 @@
-// Projet Vie 3D — Prairie d'été (worlds/islands/summer-meadow), version 1
+// Projet Vie 3D — Prairie d'été (worlds/islands/summer-meadow), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 var __defProp = Object.defineProperty;
@@ -3670,7 +3670,7 @@ void main() {
 }
 `
 );
-function createCloudSea({ bounds, seaLevel = -2.4, mistLevel = 2.4, inset = 9 }) {
+function createCloudSea({ bounds, seaLevel = -60, mistLevel = -32, inset = 30 }) {
   const { minX, maxX, minZ, maxZ } = bounds;
   const centerX = (minX + maxX) / 2;
   const centerZ = (minZ + maxZ) / 2;
@@ -3688,10 +3688,10 @@ function createCloudSea({ bounds, seaLevel = -2.4, mistLevel = 2.4, inset = 9 })
   };
   quad([[centerX - reach, centerZ - reach], [centerX + reach, centerZ - reach], [centerX + reach, centerZ + reach], [centerX - reach, centerZ + reach]], [seaLevel, seaLevel, seaLevel, seaLevel], [0, 0, 0, 0]);
   const rings = [
-    { offset: -inset, density: 1e-3, y: mistLevel },
-    { offset: -1.5, density: 1.5, y: mistLevel },
-    { offset: 8, density: 1.5, y: mistLevel - 0.8 },
-    { offset: 28, density: 1e-3, y: mistLevel - 2.2 }
+    { offset: -inset, density: 1e-3, y: mistLevel + 2 },
+    { offset: -inset * 0.45, density: 1.4, y: mistLevel },
+    { offset: 4, density: 1.1, y: mistLevel - 1.5 },
+    { offset: 30, density: 1e-3, y: mistLevel - 4 }
   ];
   const ring = (offset) => [[minX - offset, minZ - offset], [maxX + offset, minZ - offset], [maxX + offset, maxZ + offset], [minX - offset, maxZ + offset]];
   for (let k = 0; k < rings.length - 1; k++) {
@@ -4057,6 +4057,70 @@ function buildIslandBand({ bounds, top, bottom, spacing = 0.5 }) {
   geometry.setIndex(index);
   return geometry;
 }
+function buildIslandUnderside({ bounds, top, depth, noise, spacing = 2, rings = 10 }) {
+  const { minX, maxX, minZ, maxZ } = bounds;
+  const cx = (minX + maxX) / 2;
+  const cz = (minZ + maxZ) / 2;
+  const half = Math.max(maxX - minX, maxZ - minZ) / 2;
+  const perimeter = [];
+  const corners = [[minX, minZ], [maxX, minZ], [maxX, maxZ], [minX, maxZ]];
+  for (let s = 0; s < 4; s++) {
+    const [ax, az] = corners[s];
+    const [bx, bz] = corners[(s + 1) % 4];
+    const n = Math.max(1, Math.round(Math.hypot(bx - ax, bz - az) / spacing));
+    for (let k = 0; k < n; k++) perimeter.push([ax + (bx - ax) * k / n, az + (bz - az) * k / n]);
+  }
+  const count = perimeter.length;
+  const grid = [];
+  for (let r = 0; r <= rings; r++) {
+    const t = r / rings;
+    const row = [];
+    for (const [px, pz] of perimeter) {
+      const angle = Math.atan2(pz - cz, px - cx);
+      if (r === 0) {
+        row.push([px, top(px, pz), pz]);
+        continue;
+      }
+      const round = Math.min(1, t * 1.6);
+      const shape = 1 - Math.pow(t, 0.95);
+      const wobble = 0.82 + 0.36 * noise(Math.cos(angle) * 40 + r * 7.1, Math.sin(angle) * 40 - r * 3.3);
+      const radius = shape * wobble;
+      const sx = cx + ((px - cx) * (1 - round) + Math.cos(angle) * half * 0.92 * round) * radius;
+      const sz = cz + ((pz - cz) * (1 - round) + Math.sin(angle) * half * 0.92 * round) * radius;
+      const lobe = 0.75 + 0.5 * noise(Math.cos(angle) * 18 + 5, Math.sin(angle) * 18 - 9);
+      const y = top(px, pz) * (1 - t) - depth * Math.pow(t, 0.9) * lobe - (noise(sx * 0.3, sz * 0.3) - 0.5) * 2.5 * (1 - t);
+      row.push([sx, y, sz]);
+    }
+    grid.push(row);
+  }
+  const positions = [];
+  const push = (v) => positions.push(v[0], v[1], v[2]);
+  for (let r = 0; r < rings; r++) {
+    for (let k = 0; k < count; k++) {
+      const a = grid[r][k];
+      const b = grid[r][(k + 1) % count];
+      const c = grid[r + 1][(k + 1) % count];
+      const d = grid[r + 1][k];
+      push(a);
+      push(b);
+      push(d);
+      push(b);
+      push(c);
+      push(d);
+    }
+  }
+  const last = grid[rings];
+  const tip = [cx, -depth * 1.08, cz];
+  for (let k = 0; k < count; k++) {
+    push(last[k]);
+    push(last[(k + 1) % count]);
+    push(tip);
+  }
+  const geometry = new THREE19.BufferGeometry();
+  geometry.setAttribute("position", new THREE19.Float32BufferAttribute(positions, 3));
+  geometry.computeVertexNormals();
+  return geometry;
+}
 
 // src/worlds/summer-meadow.js
 var MEADOW_SIZES = {
@@ -4121,7 +4185,7 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
   groundMaterial.uniforms.uPattern.value.x = GROUND_GRAIN;
   group.add(ground);
   const soilBottom = (x, z) => -1.1 - field(x, z, 9, 30) * 0.9;
-  const rockBottom = (x, z) => -4.5 - field(x, z, 6, 31) * 3.5 - field(x, z, 23, 32) * 3;
+  const rockBottom = diorama ? (x, z) => -4.5 - field(x, z, 6, 31) * 3.5 - field(x, z, 23, 32) * 3 : (x, z) => -3 - field(x, z, 6, 31) * 1.8 - field(x, z, 23, 32) * 1.5;
   const soil = new THREE20.Mesh(
     buildIslandBand({ bounds, top: heightAt, bottom: soilBottom }),
     createToonMaterial({ ramp: GROUNDS.dirt.ramp, steps: [0.3, 0.5, 0.74], pattern: "speckle", patternParams: [16, 0.08, 0.2, 1], seed: 5, id: 12 })
@@ -4133,6 +4197,14 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
   soil.name = "soil";
   bedrock.name = "bedrock";
   group.add(soil, bedrock);
+  const keelDepth = THREE20.MathUtils.clamp(meters * 0.6, 28, 72);
+  let underside = null;
+  if (!diorama) {
+    underside = new THREE20.Mesh(buildIslandUnderside({ bounds, top: rockBottom, depth: keelDepth, noise: (x, z) => field(x, z, 6, 33) }), bedrock.material);
+    underside.name = "underside";
+    underside.matrixAutoUpdate = false;
+    group.add(underside);
+  }
   const scatter = new ScatterField({ bounds, heightAt });
   const addGroundCover = (prototype, { outlined = [], ...options } = {}) => {
     prototype.traverse((child) => {
@@ -4411,7 +4483,7 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
   } else {
     daylight = createDaylight();
     cloudShadows = createCloudShadows(createRng(seed * 131 + 1), { bounds, count: Math.round(4 + area / 4e3) });
-    cloudSea = createCloudSea({ bounds, mistLevel: RELIEF + 0.5 });
+    cloudSea = createCloudSea({ bounds, seaLevel: -keelDepth - 30, mistLevel: -keelDepth * 0.82, inset: meters * 0.5 });
     group.add(daylight.light, daylight.light.target, cloudShadows.group, cloudSea.mesh);
   }
   const spawn = new THREE20.Vector3(center.x, 0, center.z);
@@ -4495,6 +4567,7 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
       groundMaterial?.dispose();
       disposeObject(soil);
       disposeObject(bedrock);
+      underside?.geometry.dispose();
       group.clear();
     }
   };
@@ -4545,7 +4618,7 @@ var meta13 = {
     "procedural"
   ],
   biomes: ["meadow", "forest"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au centre de l'\xEEle (taille \xAB petit \xBB), au niveau le plus bas du pr\xE9. La tranche de l'\xEEle descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
   footprint: { radius: 35, height: 15 },

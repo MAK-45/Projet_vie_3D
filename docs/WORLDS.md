@@ -60,8 +60,12 @@ troncs ; les taupinières vont par colonies en plein pré.
 - **`sky.js`** : `createDaylight` (astre fixe dans le monde, déplaçable avec `setSun` ; carte d'ombre qui suit la
   vue par pas d'un texel), `createCloudShadows` (des nuages de la bibliothèque dessinés seulement dans la carte
   d'ombre : on voit leur ombre glisser sur le pré, jamais le nuage).
-- **`cloud-sea.js`** : la mer de nuages sous l'île et la brume tramée qui noie ses bords. Un maillage, un draw
-  call, pas de transparence.
+- **`cloud-sea.js`** : la mer de nuages loin sous l'île et la brume tramée accrochée autour de sa pointe de roche.
+  Un maillage, un draw call, pas de transparence.
+- **`terrain.js`** : la tranche de l'île (`buildIslandBand`) et, dans l'explorateur, son dessous
+  (`buildIslandUnderside`) : la roche s'effile en pointe déchiquetée à 0,6 × la taille de l'île sous le pré
+  (28 à 72 m), la brume l'enveloppe aux quatre cinquièmes, la mer est 30 m plus bas. Le bord du pré reste net :
+  on voit qu'on est sur une île qui flotte, pas au ras des nuages. 1 draw call, environ 4 000 triangles.
 - **`atmosphere.js`** : moment (jour, crépuscule, nuit, cycle) et météo (beau, pluie, variable). Ne dessine rien :
   tient à jour la position de l'astre, la teinte de l'image, les couleurs du ciel et des nuages, la pluie, le
   vent, toujours en fondu.

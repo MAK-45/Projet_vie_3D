@@ -99,6 +99,9 @@ Deux défauts signalés par l'utilisateur, et leur cause :
   dans la carte d'ombre (`createCloudShadows`).
 - L'heure et la météo ne touchent pas aux rampes des assets : `PixelRenderer.setMood` teinte toute l'image dans
   la passe finale. Les matières sans contour y échappent : une luciole reste vive la nuit.
+- Pluie par beau temps sur téléphone : le test de goutte `step(hasard, 0,085 × pluie)` passait quand le hasard
+  valait exactement 0, fréquent en précision réduite. Garde-fou dans le shader, fondu de la pluie coupé net
+  sous 0,002, temps de la pluie gardé petit (modulo 600 s).
 - La nuit sous la pluie devenait illisible : la pluie assombrit moins quand il fait déjà nuit.
 - Sous la pluie, l'astre monte presque à la verticale : les ombres se ramassent sous les objets, on ne voit plus
   d'ombres nettes par temps couvert.
@@ -107,13 +110,17 @@ Deux défauts signalés par l'utilisateur, et leur cause :
 
 ## 8. Bords du monde
 
-- Une île dans une mer de nuages : un plan sous le sol, en bancs modelés par la pente d'un bruit du côté de
-  l'astre, qui se fond dans le ciel au loin ; et une brume en cadre au-dessus du pré, dense au bord pour cacher
-  l'arête du terrain, trouée par une trame de points vers l'intérieur (pas de transparence : la passe de
-  contours ne la supporte pas).
+- Une île qui flotte : la mer de nuages loin dessous (30 m sous la pointe), en bancs modelés par la pente d'un
+  bruit du côté de l'astre, qui se fond dans le ciel au loin. Le premier jet mettait la mer juste sous le sol et
+  une brume au ras du pré qui noyait le bord : l'utilisateur voulait au contraire **voir le bord de l'île et la
+  roche plonger**, avec les nuages tout en bas. D'où une falaise courte, puis un dessous qui s'effile en pointe
+  (anneaux du carré vers un cercle, lobes tirés d'un bruit, faces à plat) et la brume autour de la pointe.
+- En vue orthographique, la profondeur ne se lit que par ce qui la montre : la roche visible entre le pré et les
+  nuages. Une pointe trop étroite laisse un surplomb plat ; une pointe trop large fait « posée sur les nuages ».
+- La brume reste trouée par une trame de points (pas de transparence : la passe de contours ne la supporte pas).
 - Les cadres de brume doivent être raccordés sommet à sommet : une marche entre deux cadres laisse voir un
   trait de mer.
-- La balade automatique reste à 9 m du bord, hors de la brume.
+- La balade automatique reste à 9 m du bord.
 
 ## 9. Caméra et explorateur
 

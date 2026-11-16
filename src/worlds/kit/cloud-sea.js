@@ -1,7 +1,7 @@
 // Mer de nuages : l'île flotte dans le ciel. Deux nappes, un seul matériau :
-// - la mer, un grand plan sous le niveau du sol, en bancs de nuages modelés par la lumière, qui dérivent au vent ;
-// - la brume, un cadre posé juste au-dessus du pré tout autour de l'île, dense au bord et trouée vers
-//   l'intérieur : on entre dans le nuage en approchant du bord, et la tranche de l'île disparaît dedans.
+// - la mer, un grand plan loin sous l'île, en bancs de nuages modelés par la lumière, qui dérivent au vent ;
+// - la brume, un cadre de nuages accroché sous l'île, autour de sa pointe de roche, dense contre elle et trouée vers
+//   le large : la base de l'île se perd dans les nuages, bien au-dessous du pré, dont on voit le bord net.
 //
 // Pas de transparence (la passe de contours ne la supporte pas) : la brume est trouée par une trame de points,
 // ce qui reste dans le ton du pixel art. Matière sans contour, qui porte sa couleur finale : c'est l'ambiance
@@ -88,11 +88,11 @@ void main() {
 /**
  * @param {object} options
  * @param {{minX: number, maxX: number, minZ: number, maxZ: number}} options.bounds emprise de l'île
- * @param {number} [options.seaLevel] hauteur de la mer de nuages (m, sous le sol)
- * @param {number} [options.mistLevel] hauteur de la brume (m, juste au-dessus des bosses du pré)
- * @param {number} [options.inset] largeur de la bande de brume qui mord sur l'île (m)
+ * @param {number} [options.seaLevel] hauteur de la mer de nuages (m, loin sous l'île)
+ * @param {number} [options.mistLevel] hauteur de la brume (m, sous l'île, autour de sa pointe)
+ * @param {number} [options.inset] jusqu'où la brume s'avance sous l'île depuis son bord (m)
  */
-export function createCloudSea({ bounds, seaLevel = -2.4, mistLevel = 2.4, inset = 9 }) {
+export function createCloudSea({ bounds, seaLevel = -60, mistLevel = -32, inset = 30 }) {
   const { minX, maxX, minZ, maxZ } = bounds;
   const centerX = (minX + maxX) / 2;
   const centerZ = (minZ + maxZ) / 2;
@@ -112,13 +112,13 @@ export function createCloudSea({ bounds, seaLevel = -2.4, mistLevel = 2.4, inset
   // Mer : un grand carré.
   quad([[centerX - reach, centerZ - reach], [centerX + reach, centerZ - reach], [centerX + reach, centerZ + reach], [centerX - reach, centerZ + reach]], [seaLevel, seaLevel, seaLevel, seaLevel], [0, 0, 0, 0]);
 
-  // Brume : trois cadres emboîtés et raccordés, de l'intérieur de l'île (rien) au bord (assez dense pour cacher
-  // l'arête du terrain) puis au large (rien), où elle retombe vers la mer.
+  // Brume : trois cadres emboîtés et raccordés, de sous l'île (rien) à la pointe de roche (dense, pour l'envelopper)
+  // puis au large (rien), où elle retombe vers la mer.
   const rings = [
-    { offset: -inset, density: 0.001, y: mistLevel },
-    { offset: -1.5, density: 1.5, y: mistLevel },
-    { offset: 8, density: 1.5, y: mistLevel - 0.8 },
-    { offset: 28, density: 0.001, y: mistLevel - 2.2 },
+    { offset: -inset, density: 0.001, y: mistLevel + 2 },
+    { offset: -inset * 0.45, density: 1.4, y: mistLevel },
+    { offset: 4, density: 1.1, y: mistLevel - 1.5 },
+    { offset: 30, density: 0.001, y: mistLevel - 4 },
   ];
   const ring = (offset) => [[minX - offset, minZ - offset], [maxX + offset, minZ - offset], [maxX + offset, maxZ + offset], [minX - offset, maxZ + offset]];
   for (let k = 0; k < rings.length - 1; k++) {
