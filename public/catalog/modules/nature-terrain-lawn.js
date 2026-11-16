@@ -135,6 +135,7 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
+uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
@@ -272,6 +273,10 @@ void main() {
     lit = mix(min(lit, uShadowLit), lit, shadow);
   #endif
 
+  // Liser\xE9 lumineux : la frange de la silhouette (normale presque perpendiculaire \xE0 la vue) gagne un ou deux crans,
+  // m\xEAme \xE0 l'ombre. Mati\xE8res qui brillent par elles-m\xEAmes ou translucides (glace, gel\xE9e, esprits de lumi\xE8re).
+  lit += uRim.x * step(1.0 - uRim.y, 1.0 - N.z) * step(0.0001, uRim.y);
+
   vec3 color = uRamp[0];
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
     if (lit > uSteps[i]) color = uRamp[i + 1];
@@ -366,6 +371,7 @@ function createToonMaterial(options) {
     side = foliage ? THREE.DoubleSide : THREE.FrontSide,
     unlit = false,
     twinkle = 0,
+    rim = [0, 0],
     ground
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
@@ -419,6 +425,7 @@ function createToonMaterial(options) {
       uShadowLit: { value: shadowLit },
       uPattern: { value: new THREE.Vector4(...patternParams ?? patternInfo.value) },
       uSeed: { value: seed },
+      uRim: { value: new THREE.Vector2(...rim) },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       ...groundUniforms
     },

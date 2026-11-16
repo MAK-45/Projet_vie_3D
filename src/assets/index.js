@@ -18,12 +18,13 @@ import * as sun from "./nature/sky/sun.js";
 import * as moon from "./nature/sky/moon.js";
 import * as cloud from "./nature/sky/cloud.js";
 import * as star from "./nature/sky/star.js";
+import * as couveuseBlob from "./creatures/spirits/couveuse-blob.js";
 import * as summerMeadow from "./worlds/islands/summer-meadow.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, summerMeadow];
+export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, summerMeadow];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */
 export function getAsset(id) {

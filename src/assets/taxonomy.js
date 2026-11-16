@@ -56,6 +56,7 @@ export const taxonomy = {
     subcategories: {
       humanoid: { label: "Humanoïde", description: "Le personnage principal et ses variantes." },
       critters: { label: "Animaux", description: "Oiseaux, insectes, petits animaux." },
+      spirits: { label: "Esprits", description: "Créatures de lumière et de magie : blobs, feux follets, esprits." },
     },
   },
 };

@@ -119,6 +119,10 @@
         "critters": {
           "label": "Animaux",
           "description": "Oiseaux, insectes, petits animaux."
+        },
+        "spirits": {
+          "label": "Esprits",
+          "description": "Créatures de lumière et de magie : blobs, feux follets, esprits."
         }
       }
     }
@@ -150,7 +154,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 21908
+      "bytes": 22642
     }
   ],
   "assets": [
@@ -314,7 +318,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 37063
+        "standalone": 37584
       }
     },
     {
@@ -483,7 +487,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 37960
+        "standalone": 38481
       }
     },
     {
@@ -655,7 +659,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 39473
+        "standalone": 39994
       }
     },
     {
@@ -856,7 +860,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 40442
+        "standalone": 40963
       }
     },
     {
@@ -1059,7 +1063,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 41504
+        "standalone": 42025
       }
     },
     {
@@ -1193,7 +1197,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 29743
+        "standalone": 30264
       }
     },
     {
@@ -1356,7 +1360,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 29649
+        "standalone": 30170
       }
     },
     {
@@ -1513,7 +1517,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 31895
+        "standalone": 32416
       }
     },
     {
@@ -1696,7 +1700,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 33044
+        "standalone": 33565
       }
     },
     {
@@ -1895,7 +1899,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 39344
+        "standalone": 39865
       }
     },
     {
@@ -2134,7 +2138,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 32828
+        "standalone": 33349
       }
     },
     {
@@ -2340,7 +2344,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 37623
+        "standalone": 38144
       }
     },
     {
@@ -2488,7 +2492,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 29959
+        "standalone": 30480
       }
     },
     {
@@ -2648,7 +2652,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 30969
+        "standalone": 31490
       }
     },
     {
@@ -2791,7 +2795,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 27811
+        "standalone": 28332
       }
     },
     {
@@ -2954,7 +2958,465 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 28689
+        "standalone": 29210
+      }
+    },
+    {
+      "id": "creatures/spirits/couveuse-blob",
+      "name": "Couveuse (blob)",
+      "nameEn": "Couveuse blob",
+      "category": "creatures",
+      "subcategory": "spirits",
+      "description": "La Couveuse à sa naissance : un blob de lumière de glace qui flotte, ondule, respire, s'étire et s'écrase, cligne des yeux et regarde autour, entouré d'étincelles, de gouttes et de poussières de lumière. Neuf palettes ; la graine change ses vagues, sa dérive et son regard ; ondulation et yeux se règlent.",
+      "tags": [
+        "couveuse",
+        "blob",
+        "esprit",
+        "créature",
+        "lumière",
+        "glace",
+        "gelée",
+        "yeux",
+        "clignement",
+        "flottant",
+        "magie",
+        "étincelles",
+        "animé",
+        "extérieur",
+        "intérieur",
+        "spirit",
+        "creature",
+        "light",
+        "ice",
+        "jelly",
+        "eyes",
+        "blinking",
+        "floating",
+        "magic",
+        "sparks",
+        "animated",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village",
+        "snow",
+        "swamp",
+        "mountain",
+        "cave",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol sous le blob, qui regarde vers +Z (environ 1,6 m de haut, étincelles comprises)",
+      "footprint": {
+        "radius": 1.2,
+        "height": 1.6
+      },
+      "animated": [
+        "idle"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les vagues du corps et leur rythme, sa dérive, quand il cligne des yeux, où il regarde, ses gouttes et ses poussières."
+        },
+        "palette": {
+          "type": "enum",
+          "default": "ice",
+          "values": [
+            "ice",
+            "arcane",
+            "ember",
+            "sap",
+            "dawn",
+            "neon",
+            "abyss",
+            "lagoon",
+            "blood"
+          ],
+          "labels": {
+            "ice": "Glace",
+            "arcane": "Arcane",
+            "ember": "Braise",
+            "sap": "Sève",
+            "dawn": "Aurore",
+            "neon": "Néon",
+            "abyss": "Abysse",
+            "lagoon": "Lagon",
+            "blood": "Sang"
+          },
+          "label": "Couleurs",
+          "description": "Les palettes du blob : Glace (sa couleur de naissance), Arcane, Braise, Sève, Aurore, Néon, Abysse, Lagon, Sang."
+        },
+        "size": {
+          "type": "number",
+          "default": 0.9,
+          "min": 0.4,
+          "max": 1.4,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Taille",
+          "description": "Hauteur du corps (son diamètre au repos)."
+        },
+        "altitude": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.6,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Vol",
+          "description": "Hauteur du centre du corps au-dessus du sol."
+        },
+        "wobble": {
+          "type": "number",
+          "default": 0.3,
+          "min": 0,
+          "max": 0.8,
+          "step": 0.02,
+          "label": "Ondulation",
+          "description": "Amplitude des vagues qui déforment le corps."
+        },
+        "detail": {
+          "type": "number",
+          "default": 0.85,
+          "min": 0.3,
+          "max": 2.5,
+          "step": 0.05,
+          "label": "Finesse des vagues",
+          "description": "Peu de grands lobes (bas) ou beaucoup de petites vagues (haut)."
+        },
+        "chaos": {
+          "type": "number",
+          "default": 0.7,
+          "min": 0,
+          "max": 2,
+          "step": 0.05,
+          "label": "Instabilité",
+          "description": "Combien la forme change au fil de la boucle : 0, elle ondule à peine."
+        },
+        "drip": {
+          "type": "number",
+          "default": 0.18,
+          "min": 0,
+          "max": 0.6,
+          "step": 0.02,
+          "label": "Goutte",
+          "description": "Dessous plus lourd, en goutte qui flotte."
+        },
+        "width": {
+          "type": "number",
+          "default": 1,
+          "min": 0.7,
+          "max": 1.4,
+          "step": 0.02,
+          "label": "Largeur",
+          "description": "Corps plus étroit (bas) ou plus large (haut)."
+        },
+        "stretch": {
+          "type": "number",
+          "default": 0.6,
+          "min": 0,
+          "max": 1.5,
+          "step": 0.05,
+          "label": "Étirement",
+          "description": "S'étire en montant, s'écrase en haut et en bas de sa course."
+        },
+        "hover": {
+          "type": "number",
+          "default": 0.11,
+          "min": 0,
+          "max": 0.3,
+          "step": 0.01,
+          "unit": "m",
+          "label": "Flottement",
+          "description": "Amplitude de la montée et descente."
+        },
+        "wander": {
+          "type": "number",
+          "default": 0.1,
+          "min": 0,
+          "max": 0.3,
+          "step": 0.01,
+          "unit": "m",
+          "label": "Dérive",
+          "description": "Il erre un peu autour de sa place."
+        },
+        "currents": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.05,
+          "label": "Courants",
+          "description": "Courants de lumière qui passent dans le corps."
+        },
+        "eyes": {
+          "type": "int",
+          "default": 2,
+          "min": 0,
+          "max": 3,
+          "label": "Yeux",
+          "description": "Nombre d'yeux : 0 à 3."
+        },
+        "eyeShape": {
+          "type": "enum",
+          "default": "round",
+          "values": [
+            "round",
+            "almond",
+            "happy"
+          ],
+          "labels": {
+            "round": "Ronds",
+            "almond": "En amande",
+            "happy": "Heureux"
+          },
+          "label": "Forme des yeux",
+          "description": "Ronds, en amande, ou plissés de bonheur (arcs)."
+        },
+        "eyeStyle": {
+          "type": "enum",
+          "default": "dark",
+          "values": [
+            "dark",
+            "bright",
+            "pupil"
+          ],
+          "labels": {
+            "dark": "Sombres",
+            "bright": "Lumineux",
+            "pupil": "À pupille"
+          },
+          "label": "Style des yeux",
+          "description": "Sombres avec un reflet, lumineux (blancs cernés) ou blancs à pupille qui regarde."
+        },
+        "eyeSize": {
+          "type": "number",
+          "default": 0.23,
+          "min": 0.08,
+          "max": 0.4,
+          "step": 0.01,
+          "label": "Taille des yeux",
+          "description": "Rayon d'un œil, en part du rayon du corps."
+        },
+        "eyeSpacing": {
+          "type": "number",
+          "default": 0.52,
+          "min": 0.15,
+          "max": 0.8,
+          "step": 0.01,
+          "label": "Écart des yeux",
+          "description": "Écart entre les yeux, en part du rayon."
+        },
+        "eyeHeight": {
+          "type": "number",
+          "default": 0.22,
+          "min": -0.2,
+          "max": 0.55,
+          "step": 0.01,
+          "label": "Hauteur des yeux",
+          "description": "Hauteur des yeux sur le visage, en part du rayon."
+        },
+        "eyeTall": {
+          "type": "number",
+          "default": 1.35,
+          "min": 0.6,
+          "max": 2,
+          "step": 0.05,
+          "label": "Yeux étirés",
+          "description": "Hauteur des yeux en amande par rapport à leur largeur."
+        },
+        "blinks": {
+          "type": "int",
+          "default": 2,
+          "min": 0,
+          "max": 6,
+          "label": "Clignements",
+          "description": "Clignements par boucle de 4 s (parfois doublés)."
+        },
+        "look": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.05,
+          "label": "Regard",
+          "description": "Combien il regarde autour de lui."
+        },
+        "sparks": {
+          "type": "int",
+          "default": 3,
+          "min": 0,
+          "max": 8,
+          "label": "Étincelles",
+          "description": "Étincelles qui tournent autour de lui."
+        },
+        "drips": {
+          "type": "int",
+          "default": 6,
+          "min": 0,
+          "max": 12,
+          "label": "Gouttes",
+          "description": "Gouttes de lumière qui tombent de son dessous."
+        },
+        "turn": {
+          "type": "number",
+          "default": 45,
+          "min": -180,
+          "max": 180,
+          "step": 5,
+          "unit": "°",
+          "label": "Orientation",
+          "description": "Tourne le blob sur lui-même : 0, il regarde vers +Z ; 45, vers la caméra de l'Atelier."
+        },
+        "motes": {
+          "type": "int",
+          "default": 18,
+          "min": 0,
+          "max": 30,
+          "label": "Poussières",
+          "description": "Poussières de lumière qui montent autour de lui."
+        }
+      },
+      "variants": [
+        {
+          "id": "ice",
+          "name": "Glace",
+          "params": {
+            "palette": "ice"
+          }
+        },
+        {
+          "id": "arcane",
+          "name": "Arcane",
+          "params": {
+            "palette": "arcane"
+          }
+        },
+        {
+          "id": "ember",
+          "name": "Braise",
+          "params": {
+            "palette": "ember"
+          }
+        },
+        {
+          "id": "sap",
+          "name": "Sève",
+          "params": {
+            "palette": "sap"
+          }
+        },
+        {
+          "id": "dawn",
+          "name": "Aurore",
+          "params": {
+            "palette": "dawn"
+          }
+        },
+        {
+          "id": "neon",
+          "name": "Néon",
+          "params": {
+            "palette": "neon"
+          }
+        },
+        {
+          "id": "abyss",
+          "name": "Abysse",
+          "params": {
+            "palette": "abyss"
+          }
+        },
+        {
+          "id": "lagoon",
+          "name": "Lagon",
+          "params": {
+            "palette": "lagoon"
+          }
+        },
+        {
+          "id": "blood",
+          "name": "Sang",
+          "params": {
+            "palette": "blood"
+          }
+        }
+      ],
+      "slug": "creatures-spirits-couveuse-blob",
+      "path": "src/assets/creatures/spirits/couveuse-blob.js",
+      "module": "public/catalog/modules/creatures-spirits-couveuse-blob.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "ice": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "arcane": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "ember": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "sap": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "dawn": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "neon": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "abyss": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "lagoon": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        },
+        "blood": {
+          "triangles": 1358,
+          "vertices": 835,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 30287,
+        "standalone": 52853
       }
     },
     {
@@ -3156,7 +3618,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 185013
+        "standalone": 185534
       }
     }
   ]

@@ -152,6 +152,7 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
+uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
@@ -289,6 +290,10 @@ void main() {
     lit = mix(min(lit, uShadowLit), lit, shadow);
   #endif
 
+  // Liseré lumineux : la frange de la silhouette (normale presque perpendiculaire à la vue) gagne un ou deux crans,
+  // même à l'ombre. Matières qui brillent par elles-mêmes ou translucides (glace, gelée, esprits de lumière).
+  lit += uRim.x * step(1.0 - uRim.y, 1.0 - N.z) * step(0.0001, uRim.y);
+
   vec3 color = uRamp[0];
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
     if (lit > uSteps[i]) color = uRamp[i + 1];
@@ -389,6 +394,8 @@ function defaultSteps(count) {
  *   Avec `foliage` et `leafShade: [0, 1]`, l'occlusion de chaque forme choisit directement sa couleur dans la rampe.
  * @param {number} [options.twinkle] avec `unlit` + `foliage` : amplitude de la pulsation des formes, pondérée par
  *   le `flex` de chaque sommet (le vent n'agit pas sur un astre)
+ * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
+ *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
  * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
  *   `aGround`, voir `buildTerrainChunk`) : jusqu'à 3 couches de taches posées dans l'ordre sur la rampe de base.
  * @param {Array<{ramp: string[], scale: number, threshold: number, seed?: number, drift?: number}>} [options.ground.layers]
@@ -419,6 +426,7 @@ export function createToonMaterial(options) {
     side = foliage ? THREE.DoubleSide : THREE.FrontSide,
     unlit = false,
     twinkle = 0,
+    rim = [0, 0],
     ground,
   } = options;
 
@@ -477,6 +485,7 @@ export function createToonMaterial(options) {
       uShadowLit: { value: shadowLit },
       uPattern: { value: new THREE.Vector4(...(patternParams ?? patternInfo.value)) },
       uSeed: { value: seed },
+      uRim: { value: new THREE.Vector2(...rim) },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       ...groundUniforms,
     },

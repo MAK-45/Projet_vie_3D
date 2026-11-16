@@ -14,6 +14,7 @@ c'est ce fichier qui fait progresser les assets suivants.
 5 bis. Herbes, pelouses, fleurs (éprouvé)
 6. Roches (éprouvé sur le rocher posé et la roche enterrée) ; pistes : bâti, véhicules
 6 bis. Ciel : soleil, lune, étoiles, nuages (éprouvé)
+6 ter. Créatures animées (éprouvé sur le blob Couveuse)
 7. Étendre le kit ou le matériau
 8. Poids
 
@@ -222,6 +223,32 @@ c'est ce fichier qui fait progresser les assets suivants.
   pour que l'ombre propre reste blanche-bleutée. Il projette son ombre : c'est ce qui l'ancre dans un monde.
 - **Échelle** : taille de présentation (soleil 3 m, lune 2,4 m, nuage 5 m, étoile 1,4 m), origine au sol et objet
   flottant 0,7 à 1,2 m au-dessus, pour que le socle de la galerie ne le touche pas. Un monde agrandit et éloigne.
+
+## 6 ter. Créatures animées (éprouvé sur `creatures/spirits/couveuse-blob`)
+
+- **Porter un sprite 2D** : reprendre ses réglages et ses fonctions (forme, pose, clignements) en remplaçant le
+  bruit 2D lu sur un cercle de temps par `createNoise3` lu sur la direction (x, y, z) + un décalage qui tourne
+  sur un cercle : la boucle ne saute pas. Les tailles en pixels du sprite se convertissent en **part du rayon réel**
+  (le blob 2D avait un rayon moyen de 0,81 × son réglage `size` : yeux 0,23, écart 0,52, hauteur 0,22).
+- **Animation par objet sans boucle de jeu** : surcharger `group.updateMatrixWorld` (appelé par le moteur avant
+  la carte d'ombres et le rendu), ne recalculer que si `sharedUniforms.uTime` a changé, et lire la caméra dans
+  `onBeforeRender` pour l'image suivante. Le module garde le contrat (`tick` du moteur suffit).
+- **Corps mou** : `SphereGeometry` soudée par `mergeVertices` (sans uv ni normales, sinon couture au méridien),
+  sommets recalculés à chaque cran puis `computeVertexNormals` ; ~1 200 triangles. Des « courants » de lumière :
+  perturber les normales par un bruit qui tourne (± 0,16 de lumière).
+- **Matière qui brille** : `outline: false` + `rim: [0.3, 0.5]` (nouvelle option du matériau : liseré clair sur
+  la silhouette, côté ombre compris) remplace le contour sombre ; seuils hauts `[0.2, 0.45, 0.75, 0.96, 1.1]` pour
+  que le corps reste dans les tons moyens et que le blanc soit réservé au bord éclairé et au reflet. Avec des
+  seuils bas, tout le dessus devient blanc et le reflet disparaît.
+- **Yeux et reflet** : formes face caméra `unlit` (ton choisi par occlusion), posées sur la surface (rayon
+  + 1 à 2 cm, sinon enterrées). Raccourcies vues de côté (× facing), cachées sous facing 0,3 : plus tôt, elles
+  débordent de la silhouette. Clignement : écraser `aCorner.y`, jamais sous une demi-hauteur de 3,5 cm.
+- **Particules** (étincelles, gouttes, poussières) : losanges face caméra sans contour dans un 3e matériau ; une
+  particule morte a ses coins à 0. Paramètres de chaque particule tirés une fois à la création.
+- **Orientation** : la créature regarde vers +Z ; réglage `turn` à 45° par défaut pour faire face à la caméra de
+  l'Atelier.
+- Les halos et la flaque de lumière au sol du sprite 2D (lumière additive) ne sont pas dans l'asset : ce sera un
+  effet à part.
 
 ## 7. Étendre le kit ou le matériau
 
