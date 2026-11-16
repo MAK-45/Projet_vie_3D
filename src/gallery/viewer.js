@@ -4,10 +4,13 @@
 import * as THREE from "three";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
-import { createToonMaterial, disposeObject, setWind, tick } from "../engine/toon-material.js";
+import { createToonMaterial, disposeObject, setDarkness, setWind, tick } from "../engine/toon-material.js";
 
 const SUN_ELEVATION = THREE.MathUtils.degToRad(52);
 const SUN_AZIMUTH_OFFSET = THREE.MathUtils.degToRad(-62); // le soleil vient de la gauche de l'écran
+// Option « Nuit » : tout est assombri et bleui, sauf ce qui brille (matières sans contour, lumières de halo).
+const DAY = { grade: new THREE.Vector3(1, 1, 1), saturation: 1, sky: ["#cfe6ea", "#8db6d8"] };
+const NIGHT = { grade: new THREE.Vector3(0.3, 0.36, 0.64), saturation: 0.75, sky: ["#1b2340", "#080b18"] };
 
 export class Viewer {
   /**
@@ -32,6 +35,7 @@ export class Viewer {
       wind: true,
       ground: true,
       autoRotate: false,
+      night: false,
       pixelSize: 0, // 0 = automatique
     };
 
@@ -113,6 +117,7 @@ export class Viewer {
       this.resetView();
     }
     if (name === "wind") setWind(value ? 1 : 0);
+    if (name === "night") this._applyNight();
     if (name === "autoRotate") this.iso.controls.autoRotate = value;
     if (notify) this.onOptionChange?.(name, value);
   }
@@ -220,6 +225,13 @@ export class Viewer {
     this.canvas.remove();
   }
 
+  _applyNight() {
+    const look = this.options.night ? NIGHT : DAY;
+    this.pixel.setMood({ grade: look.grade, saturation: look.saturation });
+    this.pixel.setBackground(...look.sky);
+    setDarkness(this.options.night ? 1 : 0);
+  }
+
   _updateLoop() {
     this.pixel.renderer.setAnimationLoop(this._running && this._visible ? this._frame : null);
   }
@@ -246,6 +258,8 @@ export class Viewer {
       .add(this.sun.target.position);
 
     this.pixel.outline = this.options.outline;
+    // L'obscurité est partagée par toutes les visionneuses de la page : chacune remet la sienne avant de rendre.
+    setDarkness(this.options.night ? 1 : 0);
     this.pixel.render(this.scene, this.iso.camera);
 
     const scale = this._artPixel ?? 0;

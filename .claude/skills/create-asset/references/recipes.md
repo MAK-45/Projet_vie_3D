@@ -247,8 +247,15 @@ c'est ce fichier qui fait progresser les assets suivants.
   particule morte a ses coins à 0. Paramètres de chaque particule tirés une fois à la création.
 - **Orientation** : la créature regarde vers +Z ; réglage `turn` à 45° par défaut pour faire face à la caméra de
   l'Atelier.
-- Les halos et la flaque de lumière au sol du sprite 2D (lumière additive) ne sont pas dans l'asset : ce sera un
-  effet à part.
+- **Faire de la lumière dans le noir** : `createGlowLight()` du moteur (4 places partagées) ; l'asset la place à
+  chaque `updateMatrixWorld` (`light.set(position, couleur, portée, éclat)`) et la rend au `dispose` de son
+  matériau (`material.addEventListener("dispose", ...)`). Couleur = ton dominant du corps (C[5] de la palette).
+  Les matières de la source elle-même prennent `glow: false`. Elle ne compte qu'à proportion de `setDarkness`
+  (explorateur : heure du monde ; galerie : option « Nuit »). Réglage éprouvé : décroissance linéaire, portée 3 m,
+  éclat 1,4 → cœur vif ≈ 0,6 m sous la source, anneau moyen ≈ 1,6 m, frange tramée ≈ 2,4 m. Avec une décroissance
+  en puissance 1,4, pas de cœur ; en 0,6, tout le socle au même palier.
+- Piège : `new THREE.Vector4()` vaut (0, 0, 0, 1) ; une place libre doit valoir 0 partout, sinon elle compte comme
+  une lumière noire d'1 m à l'origine (le cœur de la flaque devenait terne).
 
 ## 7. Étendre le kit ou le matériau
 

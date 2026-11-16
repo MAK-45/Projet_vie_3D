@@ -24,7 +24,7 @@
       for (const name of Object.keys(module.meta.params)) if (query.has(name)) params[name] = query.get(name);
 
       const viewer = new Viewer(document.getElementById("viewer"));
-      for (const name of ["pixelArt", "outline", "wireframe", "ground", "wind"]) {
+      for (const name of ["pixelArt", "outline", "wireframe", "ground", "wind", "night"]) {
         if (query.has(name)) viewer.setOption(name, query.get(name) === "1");
       }
       if (query.has("px")) viewer.setOption("pixelSize", Number(query.get("px")));

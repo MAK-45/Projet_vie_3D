@@ -11,7 +11,7 @@
 
 import * as THREE from "three";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
-import { createToonMaterial, sharedUniforms } from "../../../engine/toon-material.js";
+import { createGlowLight, createToonMaterial, rgb, sharedUniforms } from "../../../engine/toon-material.js";
 import { buildFanGeometry, buildSpriteGeometry, ellipseOutline, mergeGeometries, starOutline } from "../../kit/geometry.js";
 import { resolveParams } from "../../kit/params.js";
 import { createNoise3, createRng } from "../../kit/rng.js";
@@ -57,6 +57,8 @@ const params = {
   stretch: numberParam("Étirement", 0.6, 0, 1.5, "S'étire en montant, s'écrase en haut et en bas de sa course.", { step: 0.05 }),
   hover: numberParam("Flottement", 0.11, 0, 0.3, "Amplitude de la montée et descente.", { step: 0.01, unit: "m" }),
   wander: numberParam("Dérive", 0.1, 0, 0.3, "Il erre un peu autour de sa place.", { step: 0.01, unit: "m" }),
+  glow: numberParam("Lumière", 3, 0, 6, "Portée de la lumière qu'il répand dans le noir, dans la couleur de son corps (0 : aucune).", { step: 0.25, unit: "m" }),
+  glowStrength: numberParam("Éclat", 1.4, 0.3, 2.5, "Force de cette lumière : plus haut, le cercle le plus clair s'élargit.", { step: 0.05 }),
   currents: numberParam("Courants", 1, 0, 2, "Courants de lumière qui passent dans le corps.", { step: 0.05 }),
   eyes: { type: "int", default: 2, min: 0, max: 3, label: "Yeux", description: "Nombre d'yeux : 0 à 3." },
   eyeShape: choiceParam("Forme des yeux", { round: "Ronds", almond: "En amande", happy: "Heureux" }, "Ronds, en amande, ou plissés de bonheur (arcs)."),
@@ -90,11 +92,11 @@ export const meta = {
     "procedural",
   ],
   biomes: ["forest", "meadow", "garden", "village", "snow", "swamp", "mountain", "cave", "interior"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol sous le blob, qui regarde vers +Z (environ 1,6 m de haut, étincelles comprises)",
   footprint: { radius: 1.2, height: 1.6 },
-  animated: ["idle"],
+  animated: ["idle", "glow"],
   params,
   variants: variantsOf("palette", params.palette),
 };
@@ -200,6 +202,7 @@ export function create(given = {}) {
       rim: [0.3, 0.5], // le bord de la silhouette brille, même côté ombre
       outline: false, // pas de contour sombre : la lumière fait le bord, comme dans l'original
       shadowLit: 0.55, // il brille : son ombre propre reste claire
+      glow: false, // c'est lui qui éclaire
       id: 40,
     }),
   );
@@ -292,6 +295,7 @@ export function create(given = {}) {
         unlit: true,
         leafShade: [0, 1],
         outline: false,
+        glow: false,
         id: 41,
       }),
     );
@@ -357,6 +361,7 @@ export function create(given = {}) {
         unlit: true,
         leafShade: [0, 1],
         outline: false,
+        glow: false,
         id: 42,
       }),
     );
@@ -546,6 +551,13 @@ export function create(given = {}) {
     }
   }
 
+  // Sa lumière : une lumière de halo du moteur, au centre du corps, de la couleur dominante de son corps. Rendue au
+  // moteur quand le blob est libéré (`dispose`).
+  const light = p.glow > 0 ? createGlowLight() : null;
+  const lightColor = rgb(C[5]);
+  const lightPosition = new THREE.Vector3();
+  if (light) body.material.addEventListener("dispose", () => light.release());
+
   // Le moteur appelle updateMatrixWorld avant chaque rendu (et avant la carte d'ombres) : on anime là.
   const baseUpdate = group.updateMatrixWorld.bind(group);
   group.updateMatrixWorld = (force) => {
@@ -556,6 +568,7 @@ export function create(given = {}) {
       update(t);
     }
     baseUpdate(force);
+    if (light) light.set(pivot.getWorldPosition(lightPosition), lightColor, p.glow, p.glowStrength);
   };
   update(0);
   lastTime = 0;

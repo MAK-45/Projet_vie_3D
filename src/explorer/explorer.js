@@ -5,7 +5,7 @@
 import * as THREE from "three";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
-import { setWind, tick } from "../engine/toon-material.js";
+import { setDarkness, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
 import { createSummerMeadow, MEADOW_SIZES } from "../worlds/summer-meadow.js";
@@ -515,6 +515,7 @@ export class Explorer {
     pixel.setMood({ grade: mood.grade, saturation: mood.saturation, rain: mood.rain, time: elapsed });
     pixel.setBackground(mood.skyBottom, mood.skyTop);
     setWind(mood.wind);
+    setDarkness(mood.night);
     world.setMood(mood);
     this.life.setMood(mood.night, mood.rain);
 

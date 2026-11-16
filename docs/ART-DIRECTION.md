@@ -34,6 +34,7 @@ nettes, éléments animés (vent, eau, lumières). On garde ce rendu même quand
 | Rendu basse résolution, contours, fond tramé | `src/engine/pixel-renderer.js` |
 | Caméra orthographique orbitale, alignement sur la grille de pixels | `src/engine/iso-camera.js` |
 | Ombrage par rampe de couleurs, ombres nettes, vent, motifs (écorce, grain) | `src/engine/toon-material.js` |
+| Lumières de halo (créature qui brille, lanterne) : le décor proche prend leur couleur dans le noir, en 3 paliers tramés qui échappent à la teinte de nuit | `src/engine/toon-material.js` (`createGlowLight`, `setDarkness`), `src/engine/pixel-renderer.js` |
 | Scène de présentation (soleil, socle), exemple complet d'utilisation | `src/gallery/viewer.js` |
 
 Repères chiffrés : 16 pixels d'art par mètre au zoom 1 ; rampes de 4 ou 5 couleurs avec glissement de teinte

@@ -21,7 +21,48 @@ export const sharedUniforms = {
   uTime: { value: 0 },
   uWindDir: { value: new THREE.Vector2(0.92, 0.38) },
   uWindStrength: { value: 1 },
+  // Lumières de halo (créatures qui brillent, lanternes...) : xyz position dans le monde, w portée (m) ; couleur
+  // rgb + force. Elles ne comptent que dans le noir (`uDarkness`).
+  uGlowLights: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) }, // w = 0 : place libre
+  uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uDarkness: { value: 0 },
 };
+
+/**
+ * Obscurité ambiante, 0 en plein jour, 1 en pleine nuit : les lumières de halo n'éclairent qu'à proportion.
+ * À régler par la scène (explorateur : heure du monde ; galerie : option « Nuit »).
+ */
+export function setDarkness(value) {
+  sharedUniforms.uDarkness.value = THREE.MathUtils.clamp(value, 0, 1);
+}
+
+const glowSlots = [false, false, false, false];
+
+/**
+ * Réserve une des 4 lumières de halo partagées : une source qui éclaire le décor autour d'elle, dans sa couleur, en
+ * paliers nets, et qui échappe à la teinte de nuit (un îlot de lumière dans le noir). Sans place libre, la poignée
+ * rendue ne fait rien.
+ * @returns {{set: (position: THREE.Vector3, color: THREE.Vector3, radius: number, strength?: number) => void,
+ *   release: () => void}}
+ */
+export function createGlowLight() {
+  const slot = glowSlots.indexOf(false);
+  if (slot < 0) return { set() {}, release() {} };
+  glowSlots[slot] = true;
+  const light = sharedUniforms.uGlowLights.value[slot];
+  const color = sharedUniforms.uGlowColors.value[slot];
+  return {
+    set(position, rgbColor, radius, strength = 1) {
+      light.set(position.x, position.y, position.z, radius);
+      color.set(rgbColor.x, rgbColor.y, rgbColor.z, strength);
+    },
+    release() {
+      light.set(0, 0, 0, 0);
+      color.set(0, 0, 0, 0);
+      glowSlots[slot] = false;
+    },
+  };
+}
 
 /**
  * Avance le temps des animations de décor (vent). À appeler une fois par image.
@@ -72,6 +113,7 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
+varying vec3 vWorldPos;
 
 void main() {
   #ifdef PATTERN_GROUND
@@ -107,6 +149,8 @@ void main() {
     transformed.xz += uWindDir * (wave * 0.05 + flutter * 0.03) * bendLeaf;
     transformed.y += flutter * 0.025 * bendLeaf;
   #endif
+
+  vWorldPos = (toWorld * vec4(transformed, 1.0)).xyz;
 
   #include <project_vertex>
 
@@ -152,6 +196,11 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
+uniform vec4 uGlowLights[4];
+uniform vec4 uGlowColors[4];
+uniform float uDarkness;
+uniform float uGlowReceive;
+varying vec3 vWorldPos;
 uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -336,9 +385,42 @@ void main() {
   #endif
   color = mix(color, uInk, ink);
 
+  // Lumières de halo : dans le noir, le décor proche prend la couleur de la source, en trois paliers nets à
+  // frontière tramée. Le palier est écrit dans l'alpha : la passe finale ne l'assombrit pas de la teinte de nuit.
+  float glowLevel = 0.0;
+  if (uGlowReceive > 0.5 && uDarkness > 0.001) {
+    vec3 glowTint = vec3(0.0);
+    float glowSum = 0.0;
+    for (int i = 0; i < 4; i++) {
+      vec4 source = uGlowLights[i];
+      vec4 tint = uGlowColors[i];
+      if (source.w <= 0.0 || tint.w <= 0.0) continue;
+      vec3 toLight = source.xyz - vWorldPos;
+      float d = length(toLight) / source.w;
+      if (d >= 1.0) continue;
+      vec3 Lv = normalize((viewMatrix * vec4(toLight, 0.0)).xyz);
+      float k = (1.0 - d) * (0.4 + 0.6 * max(dot(N, Lv), 0.0)) * tint.w;
+      glowTint += tint.rgb * k;
+      glowSum += k;
+    }
+    // Trame de Bayer 4×4 : 4 × B2(p mod 2) + B2(p / 2), avec B2(x, y) = (2x + 3y) mod 4.
+    vec2 bp = mod(floor(gl_FragCoord.xy), 4.0);
+    vec2 lo = mod(bp, 2.0), hi = floor(bp / 2.0);
+    float bayer = (4.0 * mod(lo.x * 2.0 + lo.y * 3.0, 4.0) + mod(hi.x * 2.0 + hi.y * 3.0, 4.0) + 0.5) / 16.0;
+    glowLevel = clamp(floor(glowSum * uDarkness * 3.0 + 0.45 + (bayer - 0.5) * 0.2), 0.0, 3.0);
+    if (glowLevel > 0.0) {
+      // La surface prend la teinte de la lumière et ne garde que sa clarté (et un soupçon de sa couleur).
+      vec3 L = glowTint / max(glowSum, 1e-4);
+      // Clarté plancher : la source éclaire aussi ce que le soleil laisse dans l'ombre (sous elle-même).
+      float luma = max(dot(color, vec3(0.3, 0.55, 0.15)), 0.32 + 0.06 * glowLevel);
+      vec3 lit = min(L * (0.35 + 0.95 * luma) + color * 0.1 + L * 0.1 * glowLevel, vec3(1.0));
+      color = mix(color, lit, 0.4 + 0.2 * glowLevel);
+    }
+  }
+
   // Alpha : 1 = surface, 0.75 = surface avec liseré clair sur les arêtes vives, 0.6 = surface sans contour
-  // (0 = fond, jamais écrit ici).
-  gl_FragColor = vec4(color, uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6);
+  // (0 = fond, jamais écrit ici) ; moins 0,02 par palier de lumière de halo (0 à 3).
+  gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
 `;
@@ -396,6 +478,7 @@ function defaultSteps(count) {
  *   le `flex` de chaque sommet (le vent n'agit pas sur un astre)
  * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
  *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
+ * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
  * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
  *   `aGround`, voir `buildTerrainChunk`) : jusqu'à 3 couches de taches posées dans l'ordre sur la rampe de base.
  * @param {Array<{ramp: string[], scale: number, threshold: number, seed?: number, drift?: number}>} [options.ground.layers]
@@ -427,6 +510,7 @@ export function createToonMaterial(options) {
     unlit = false,
     twinkle = 0,
     rim = [0, 0],
+    glow = true,
     ground,
   } = options;
 
@@ -486,6 +570,7 @@ export function createToonMaterial(options) {
       uPattern: { value: new THREE.Vector4(...(patternParams ?? patternInfo.value)) },
       uSeed: { value: seed },
       uRim: { value: new THREE.Vector2(...rim) },
+      uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       ...groundUniforms,
     },

@@ -84,7 +84,10 @@ void main() {
   float edge = 0.0;
   float crease = 0.0;
   float hasCrease = step(color.a, 0.9);
-  float inked = step(0.7, color.a); // une matière peut refuser le contour (alpha 0,6 : pollen, papillons)
+  float inked = step(0.66, color.a); // une matière peut refuser le contour (alpha 0,6 : pollen, papillons)
+  // Palier de lumière de halo (0 à 3), retiré de l'alpha par 0,02 : 1 (contour), 0,75 (liseré), 0,6 (sans contour).
+  float alphaBase = color.a > 0.9 ? 1.0 : (color.a > 0.66 ? 0.75 : 0.6);
+  float glow = clamp(floor((alphaBase - color.a) / 0.02 + 0.5), 0.0, 3.0) / 3.0;
   vec3 n = viewNormal(aux);
   // Voisins : droite, gauche, haut, bas. Le voisin opposé sert à reconnaître une surface plane vue en biais,
   // dont la profondeur change régulièrement d'un pixel à l'autre sans qu'il y ait de bord.
@@ -120,7 +123,8 @@ void main() {
   // Heure et météo : tout le décor est teinté d'un coup. Les matières sans contour (lucioles, mer de nuages)
   // portent déjà leur couleur finale et y échappent : une luciole reste vive en pleine nuit.
   vec3 graded = mix(vec3(dot(result, vec3(0.3, 0.55, 0.15))), result, uSaturation) * uGrade;
-  result = mix(result, graded, inked);
+  // Ce qu'éclaire une lumière de halo garde sa couleur dans le noir, à proportion de son palier.
+  result = mix(result, graded, inked * (1.0 - glow));
   result = mix(result, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy));
   gl_FragColor = vec4(result, 1.0);
 }

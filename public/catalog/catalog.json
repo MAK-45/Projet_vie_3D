@@ -144,7 +144,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 12250
+      "bytes": 12642
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -154,7 +154,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 22642
+      "bytes": 26664
     }
   ],
   "assets": [
@@ -318,7 +318,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 37584
+        "standalone": 40149
       }
     },
     {
@@ -487,7 +487,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 38481
+        "standalone": 41046
       }
     },
     {
@@ -659,7 +659,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 39994
+        "standalone": 42559
       }
     },
     {
@@ -860,7 +860,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 40963
+        "standalone": 43528
       }
     },
     {
@@ -1063,7 +1063,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 42025
+        "standalone": 44590
       }
     },
     {
@@ -1197,7 +1197,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 30264
+        "standalone": 32829
       }
     },
     {
@@ -1360,7 +1360,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 30170
+        "standalone": 32735
       }
     },
     {
@@ -1517,7 +1517,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 32416
+        "standalone": 34981
       }
     },
     {
@@ -1700,7 +1700,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 33565
+        "standalone": 36130
       }
     },
     {
@@ -1899,7 +1899,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 39865
+        "standalone": 42430
       }
     },
     {
@@ -2138,7 +2138,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 33349
+        "standalone": 35914
       }
     },
     {
@@ -2344,7 +2344,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 38144
+        "standalone": 40709
       }
     },
     {
@@ -2492,7 +2492,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 30480
+        "standalone": 33045
       }
     },
     {
@@ -2652,7 +2652,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 31490
+        "standalone": 34055
       }
     },
     {
@@ -2795,7 +2795,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 28332
+        "standalone": 30897
       }
     },
     {
@@ -2958,7 +2958,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 29210
+        "standalone": 31775
       }
     },
     {
@@ -3008,7 +3008,7 @@
         "cave",
         "interior"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; l'origine est au sol sous le blob, qui regarde vers +Z (environ 1,6 m de haut, étincelles comprises)",
       "footprint": {
@@ -3016,7 +3016,8 @@
         "height": 1.6
       },
       "animated": [
-        "idle"
+        "idle",
+        "glow"
       ],
       "params": {
         "seed": {
@@ -3148,6 +3149,25 @@
           "unit": "m",
           "label": "Dérive",
           "description": "Il erre un peu autour de sa place."
+        },
+        "glow": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "max": 6,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Lumière",
+          "description": "Portée de la lumière qu'il répand dans le noir, dans la couleur de son corps (0 : aucune)."
+        },
+        "glowStrength": {
+          "type": "number",
+          "default": 1.4,
+          "min": 0.3,
+          "max": 2.5,
+          "step": 0.05,
+          "label": "Éclat",
+          "description": "Force de cette lumière : plus haut, le cercle le plus clair s'élargit."
         },
         "currents": {
           "type": "number",
@@ -3415,8 +3435,8 @@
         }
       },
       "bytes": {
-        "source": 30287,
-        "standalone": 52853
+        "source": 31200,
+        "standalone": 56781
       }
     },
     {
@@ -3618,7 +3638,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 185534
+        "standalone": 188099
       }
     }
   ]

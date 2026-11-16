@@ -372,6 +372,7 @@ function renderShapesPanel(entry) {
     ["wireframe", "Fil de fer"],
     ["wind", "Vent"],
     ["ground", "Socle"],
+    ["night", "Nuit"],
   ].map(([name, label]) => h("button", { class: "chip", type: "button", id: `toggle-${name}`, "aria-pressed": "false", onclick: () => toggleOption(name) }, label));
 
   const pixelSize = h(
