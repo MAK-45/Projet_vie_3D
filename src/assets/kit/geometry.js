@@ -259,6 +259,8 @@ export function buildBladeGeometry(blades, { segments = 2 } = {}) {
  *   - occlusion : 1 = pleine lumière (défaut), 0 = sombre
  *   - lift : avancée vers la caméra (mètres), quel que soit l'angle de vue. Un cœur de fleur posé au même point que
  *     sa corolle passe devant elle avec 2 à 3 cm, sans traverser les fleurs voisines (pas de `polygonOffset`).
+ *   - offset : décalage [x, y] de la forme dans le plan de l'écran (mètres, appliqué après la rotation) ; pour poser
+ *     des formes à côté l'une de l'autre autour d'un même point (reflet sur un disque, cratère sur la lune).
  */
 export function buildFanGeometry(fans) {
   const positions = [];
@@ -272,13 +274,14 @@ export function buildFanGeometry(fans) {
     const [sx, sy] = fan.stretch ?? [1, 1];
     const occlusion = fan.occlusion ?? 1;
     const lift = fan.lift ?? 0;
+    const [ox, oy] = fan.offset ?? [0, 0];
     const first = positions.length / 3;
     const vertex = (x, y) => {
       positions.push(fan.position.x, fan.position.y, fan.position.z);
       normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
       const cx = x * sx * fan.size;
       const cy = y * sy * fan.size;
-      corners.push(cx * cos - cy * sin, cx * sin + cy * cos, lift);
+      corners.push(cx * cos - cy * sin + ox, cx * sin + cy * cos + oy, lift);
       data.push(fan.phase, occlusion, fan.variation, fan.flex);
     };
     vertex(0, 0);
@@ -300,6 +303,53 @@ export function starOutline(points, inner = 1) {
     const angle = (i / steps) * Math.PI * 2 + Math.PI / 2;
     const r = inner === 1 || i % 2 === 0 ? 1 : inner;
     outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+  }
+  return outline;
+}
+
+/**
+ * Formes libres face caméra pour le matériau toon `foliage` : comme `buildFanGeometry`, mais chaque forme donne ses
+ * sommets et ses triangles, pour des contours qu'un éventail ne sait pas remplir (croissant de lune, rayon de soleil,
+ * bande). Indexée, mêmes attributs que `buildFanGeometry`.
+ *
+ * @param {Array<{
+ *   position: THREE.Vector3, points: number[][], triangles: number[], size?: number, rotation?: number,
+ *   normal?: THREE.Vector3, phase?: number, variation?: number, flex?: number, occlusion?: number, lift?: number
+ * }>} sprites
+ *   - points : sommets [[x, y], ...] dans le plan de l'écran, pour une taille de 1 ; triangles : indices dans `points`
+ *   - occlusion, lift, flex : comme `buildFanGeometry` (avec un matériau `unlit`, `flex` pondère la pulsation)
+ */
+export function buildSpriteGeometry(sprites) {
+  const positions = [];
+  const normals = [];
+  const corners = [];
+  const data = [];
+  const index = [];
+  for (const sprite of sprites) {
+    const size = sprite.size ?? 1;
+    const cos = Math.cos(sprite.rotation ?? 0) * size;
+    const sin = Math.sin(sprite.rotation ?? 0) * size;
+    const normal = sprite.normal ?? SPRITE_NORMAL;
+    const first = positions.length / 3;
+    for (const [x, y] of sprite.points) {
+      positions.push(sprite.position.x, sprite.position.y, sprite.position.z);
+      normals.push(normal.x, normal.y, normal.z);
+      corners.push(x * cos - y * sin, x * sin + y * cos, sprite.lift ?? 0);
+      data.push(sprite.phase ?? 0, sprite.occlusion ?? 1, sprite.variation ?? 0.5, sprite.flex ?? 0);
+    }
+    for (const i of sprite.triangles) index.push(first + i);
+  }
+  return foliageGeometry(positions, normals, corners, data, index);
+}
+
+const SPRITE_NORMAL = new THREE.Vector3(0, 1, 0);
+
+/** Contour d'ellipse (polygone régulier étiré) pour `buildFanGeometry` : `sides` sommets, rayons `rx` et `ry`. */
+export function ellipseOutline(sides, rx = 1, ry = rx) {
+  const outline = [];
+  for (let i = 0; i < sides; i++) {
+    const angle = (i / sides) * Math.PI * 2;
+    outline.push([Math.cos(angle) * rx, Math.sin(angle) * ry]);
   }
   return outline;
 }

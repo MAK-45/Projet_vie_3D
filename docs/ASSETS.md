@@ -114,6 +114,7 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 | Végétation, terrain | `season` : spring, summer, autumn, winter ; fleurs : `species` (daisy, poppy, cornflower, buttercup, lavender) |
 | Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate ; `cover` : bare, moss, snow |
 | Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch |
+| Ciel | soleil `time`, lune `phase`, nuage `kind`, étoile `shape` + `tint` |
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
 
 Les rampes de couleurs des matières communes sont dans `src/assets/kit/palettes.js`. Le détail par famille est

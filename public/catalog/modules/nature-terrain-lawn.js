@@ -32,6 +32,7 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
+uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
@@ -68,7 +69,9 @@ void main() {
   float h = clamp(transformed.y / max(uSway.y, 0.001), 0.0, 1.2);
   transformed.xz += uWindDir * ((0.3 + 0.7 * gust) * uSway.x * uWindStrength * h * h);
 
-  #ifdef FOLIAGE
+  #if defined(FOLIAGE) && defined(UNLIT)
+    vLeaf = aLeaf.xyz;
+  #elif defined(FOLIAGE)
     vLeaf = aLeaf.xyz;
     // Fr\xE9missement propre \xE0 chaque feuille, port\xE9 par une vague qui traverse le feuillage.
     float wave = sin(uTime * 2.4 - dot(transformed.xz + origin.xz, uWindDir) * 1.6 + aLeaf.x * 2.0);
@@ -81,7 +84,12 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
+    float cornerScale = length(toWorld[0].xyz);
+    #ifdef UNLIT
+      // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'\xE9toile).
+      cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
+    #endif
+    mvPosition.xyz += aCorner * cornerScale;
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
@@ -156,7 +164,11 @@ void main() {
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
   #endif
 
-  float lit = dot(N, L) * 0.5 + 0.5;
+  #ifdef UNLIT
+    float lit = 1.0; // lumineux par lui-m\xEAme : la couleur ne d\xE9pend que de la g\xE9om\xE9trie (occlusion des formes)
+  #else
+    float lit = dot(N, L) * 0.5 + 0.5;
+  #endif
   float ink = 0.0;
 
   #ifdef FOLIAGE
@@ -193,8 +205,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
-  float shadow = getShadowMask();
-  lit = mix(min(lit, uShadowLit), lit, shadow);
+  #ifndef UNLIT
+    float shadow = getShadowMask();
+    lit = mix(min(lit, uShadowLit), lit, shadow);
+  #endif
 
   vec3 color = uRamp[0];
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
@@ -243,7 +257,9 @@ function createToonMaterial(options) {
     selfEdge = foliage ? 1.1 : 0,
     shadowLit = 0.36,
     sway = { amplitude: 0, height: 1 },
-    side = foliage ? THREE.DoubleSide : THREE.FrontSide
+    side = foliage ? THREE.DoubleSide : THREE.FrontSide,
+    unlit = false,
+    twinkle = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -251,7 +267,9 @@ function createToonMaterial(options) {
   const defines = { RAMP_SIZE: ramp.length };
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
+  if (unlit) defines.UNLIT = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
+  const twinkleUniform = { value: twinkle };
   const material = new THREE.ShaderMaterial({
     name: foliage ? "ToonFoliage" : "Toon",
     defines,
@@ -261,6 +279,7 @@ function createToonMaterial(options) {
       ...THREE.UniformsUtils.clone(THREE.UniformsLib.lights),
       ...sharedUniforms,
       uSway: swayUniform,
+      uTwinkle: twinkleUniform,
       uRamp: { value: ramp.map(rgb) },
       uSteps: { value: steps.slice() },
       uInk: { value: rgb(ink) },
@@ -276,11 +295,13 @@ function createToonMaterial(options) {
     fragmentShader: FRAGMENT
   });
   if (foliage) {
+    const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
+    if (unlit) depthDefines.UNLIT = "";
     material.userData.depthMaterial = new THREE.ShaderMaterial({
       name: "ToonFoliageDepth",
-      defines: { FOLIAGE: "", DEPTH_ONLY: "" },
+      defines: depthDefines,
       side: THREE.DoubleSide,
-      uniforms: { ...sharedUniforms, uSway: swayUniform },
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform },
       vertexShader: VERTEX,
       fragmentShader: DEPTH_FRAGMENT
     });
@@ -353,13 +374,14 @@ function buildFanGeometry(fans) {
     const [sx, sy] = fan.stretch ?? [1, 1];
     const occlusion = fan.occlusion ?? 1;
     const lift = fan.lift ?? 0;
+    const [ox, oy] = fan.offset ?? [0, 0];
     const first = positions.length / 3;
     const vertex = (x, y) => {
       positions.push(fan.position.x, fan.position.y, fan.position.z);
       normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
       const cx = x * sx * fan.size;
       const cy = y * sy * fan.size;
-      corners.push(cx * cos - cy * sin, cx * sin + cy * cos, lift);
+      corners.push(cx * cos - cy * sin + ox, cx * sin + cy * cos + oy, lift);
       data.push(fan.phase, occlusion, fan.variation, fan.flex);
     };
     vertex(0, 0);
@@ -379,6 +401,7 @@ function starOutline(points, inner = 1) {
   }
   return outline;
 }
+var SPRITE_NORMAL = new THREE2.Vector3(0, 1, 0);
 function foliageGeometry(positions, normals, corners, data, index) {
   const geometry = new THREE2.BufferGeometry();
   geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
@@ -696,7 +719,7 @@ var meta = {
   version: 1,
   added: "2026-11-16",
   units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la plaque",
-  footprint: { radius: 1.05, height: 0.42 },
+  footprint: { radius: 1.05, height: 0.48 },
   animated: ["wind"],
   params,
   variants: variantsOf("season", params.season)

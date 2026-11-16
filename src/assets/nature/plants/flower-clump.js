@@ -43,7 +43,7 @@ export const meta = {
   version: 2,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au cœur du massif",
-  footprint: { radius: 0.7, height: 0.6 },
+  footprint: { radius: 0.7, height: 0.68 },
   animated: ["wind"],
   params,
   variants: variantsOf("species", params.species),
