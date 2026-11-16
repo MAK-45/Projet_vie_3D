@@ -1,4 +1,4 @@
-// Projet Vie 3D — Roche enterrée (nature/rocks/buried-rock), version 1
+// Projet Vie 3D — Roche enterrée (nature/rocks/buried-rock), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -374,44 +374,6 @@ function buildRock(rng, { detail = 1, lumps = 5, lumpSize = 0.2, cuts = 6, cutDe
   geometry.setIndex(sequentialIndex(positions.length / 3));
   return geometry;
 }
-function splitFacesByNormal(geometry, test) {
-  const source = geometry.index ? geometry.toNonIndexed() : geometry;
-  if (!source.attributes.normal) source.computeVertexNormals();
-  const names = Object.keys(source.attributes);
-  const count = source.attributes.position.count;
-  const kept = [];
-  const others = [];
-  const normal = new THREE2.Vector3();
-  const center = new THREE2.Vector3();
-  const a = new THREE2.Vector3();
-  const b = new THREE2.Vector3();
-  const c = new THREE2.Vector3();
-  const position = source.attributes.position;
-  for (let face = 0; face < count; face += 3) {
-    a.fromBufferAttribute(position, face);
-    b.fromBufferAttribute(position, face + 1);
-    c.fromBufferAttribute(position, face + 2);
-    center.copy(a).add(b).add(c).divideScalar(3);
-    normal.subVectors(c, b).cross(a.clone().sub(b)).normalize();
-    (test(normal, center) ? kept : others).push(face);
-  }
-  const build = (faces) => {
-    const result2 = new THREE2.BufferGeometry();
-    for (const name of names) {
-      const attribute = source.attributes[name];
-      const size = attribute.itemSize;
-      const array = new Float32Array(faces.length * 3 * size);
-      faces.forEach((face, n) => array.set(attribute.array.subarray(face * size, (face + 3) * size), n * 3 * size));
-      result2.setAttribute(name, new THREE2.BufferAttribute(array, size));
-    }
-    result2.setIndex(sequentialIndex(faces.length * 3));
-    return result2;
-  };
-  const result = [build(kept), build(others)];
-  if (source !== geometry) source.dispose();
-  geometry.dispose();
-  return result;
-}
 function sequentialIndex(count) {
   const index = count > 65535 ? new Uint32Array(count) : new Uint16Array(count);
   for (let i = 0; i < count; i++) index[i] = i;
@@ -422,6 +384,121 @@ function randomDirection(rng) {
   const angle = rng.range(0, Math.PI * 2);
   const ring = Math.sqrt(1 - y * y);
   return new THREE2.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
+}
+function buildMound(rng, { radius = [1, 1], height = 0.2, lobes = 0.2, power = 0.8, relief, rings = 5, sectors = 18, flat = false, offset = [0, 0, 0], rotation = 0 } = {}) {
+  const harmonics = [2, 3, 5].map((k) => ({ k, phase: rng.range(0, Math.PI * 2), amount: rng.range(0.4, 1) / k }));
+  const edge = (theta) => 1 + lobes * harmonics.reduce((sum, h) => sum + h.amount * Math.sin(h.k * theta + h.phase), 0);
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const positions = [];
+  const place = (x, y, z) => positions.push(x * cos - z * sin + offset[0], y + offset[1], x * sin + z * cos + offset[2]);
+  const center = height + (relief ? relief(0, 0) : 0);
+  place(0, center, 0);
+  for (let ring = 1; ring <= rings; ring++) {
+    const rho = ring / rings;
+    for (let s = 0; s < sectors; s++) {
+      const theta = s / sectors * Math.PI * 2;
+      const e = edge(theta) * rho;
+      const x = Math.cos(theta) * radius[0] * e;
+      const z = Math.sin(theta) * radius[1] * e;
+      const falloff = Math.pow(Math.max(0, 1 - rho * rho), power);
+      const y = ring === rings ? -0.02 : height * falloff + (relief ? relief(x, z) * falloff : 0);
+      place(x, y, z);
+    }
+  }
+  const index = [];
+  for (let s = 0; s < sectors; s++) index.push(0, 1 + (s + 1) % sectors, 1 + s);
+  for (let ring = 1; ring < rings; ring++) {
+    const a = 1 + (ring - 1) * sectors;
+    const b = 1 + ring * sectors;
+    for (let s = 0; s < sectors; s++) {
+      const s1 = (s + 1) % sectors;
+      index.push(a + s, a + s1, b + s, a + s1, b + s1, b + s);
+    }
+  }
+  let geometry = new THREE2.BufferGeometry();
+  geometry.setAttribute("position", new THREE2.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(index);
+  if (flat) {
+    const loose = geometry.toNonIndexed();
+    geometry.dispose();
+    geometry = loose;
+    geometry.computeVertexNormals();
+    geometry.setIndex(sequentialIndex(geometry.attributes.position.count));
+  } else {
+    geometry.computeVertexNormals();
+  }
+  return geometry;
+}
+function buildDrape(geometry, coverage, { subdivisions = 3, lift = () => 0.015 } = {}) {
+  const source = geometry.index ? geometry.toNonIndexed() : geometry.clone();
+  const position = source.attributes.position;
+  const count = position.count;
+  const key = (i) => `${position.getX(i).toFixed(4)},${position.getY(i).toFixed(4)},${position.getZ(i).toFixed(4)}`;
+  const sums = /* @__PURE__ */ new Map();
+  const a = new THREE2.Vector3(), b = new THREE2.Vector3(), c = new THREE2.Vector3(), n = new THREE2.Vector3();
+  for (let i = 0; i < count; i += 3) {
+    a.fromBufferAttribute(position, i);
+    b.fromBufferAttribute(position, i + 1);
+    c.fromBufferAttribute(position, i + 2);
+    n.subVectors(c, b).cross(a.clone().sub(b));
+    for (let k = 0; k < 3; k++) {
+      const id = key(i + k);
+      const sum = sums.get(id) ?? sums.set(id, new THREE2.Vector3()).get(id);
+      sum.add(n);
+    }
+  }
+  for (const sum of sums.values()) sum.normalize();
+  const out = [];
+  const corners = [new THREE2.Vector3(), new THREE2.Vector3(), new THREE2.Vector3()];
+  const normals = [new THREE2.Vector3(), new THREE2.Vector3(), new THREE2.Vector3()];
+  const sample = (bary) => {
+    const p = new THREE2.Vector3().addScaledVector(corners[0], bary[0]).addScaledVector(corners[1], bary[1]).addScaledVector(corners[2], bary[2]);
+    const sn = new THREE2.Vector3().addScaledVector(normals[0], bary[0]).addScaledVector(normals[1], bary[1]).addScaledVector(normals[2], bary[2]).normalize();
+    return { p, n: sn, w: coverage(p, sn) };
+  };
+  const emit = (v) => {
+    const h = lift(Math.max(0, v.w), v.p);
+    out.push(v.p.x + v.n.x * h, v.p.y + v.n.y * h, v.p.z + v.n.z * h);
+  };
+  const cut = (u, v) => {
+    const t = u.w / (u.w - v.w);
+    return { p: u.p.clone().lerp(v.p, t), n: u.n.clone().lerp(v.n, t).normalize(), w: 0 };
+  };
+  const clip = (tri) => {
+    const inside = tri.map((v) => v.w >= 0);
+    const k = inside.filter(Boolean).length;
+    if (k === 0) return;
+    if (k === 3) return tri.forEach(emit);
+    const lone = k === 1 ? inside.indexOf(true) : inside.indexOf(false);
+    const [v0, v1, v2] = [tri[lone], tri[(lone + 1) % 3], tri[(lone + 2) % 3]];
+    const c1 = cut(v0, v1);
+    const c2 = cut(v0, v2);
+    if (k === 1) [v0, c1, c2].forEach(emit);
+    else [c1, v1, v2, c1, v2, c2].forEach(emit);
+  };
+  const m = subdivisions;
+  for (let i = 0; i < count; i += 3) {
+    for (let k = 0; k < 3; k++) {
+      corners[k].fromBufferAttribute(position, i + k);
+      normals[k].copy(sums.get(key(i + k)));
+    }
+    const grid = (r, s) => sample([1 - (r + s) / m, r / m, s / m]);
+    const cache = /* @__PURE__ */ new Map();
+    const at = (r, s) => cache.get(r * 64 + s) ?? cache.set(r * 64 + s, grid(r, s)).get(r * 64 + s);
+    for (let r = 0; r < m; r++) {
+      for (let s = 0; s < m - r; s++) {
+        clip([at(r, s), at(r + 1, s), at(r, s + 1)]);
+        if (s < m - r - 1) clip([at(r + 1, s), at(r + 1, s + 1), at(r, s + 1)]);
+      }
+    }
+  }
+  source.dispose();
+  const result = new THREE2.BufferGeometry();
+  result.setAttribute("position", new THREE2.Float32BufferAttribute(out, 3));
+  result.computeVertexNormals();
+  result.setIndex(sequentialIndex(out.length / 3));
+  return result;
 }
 
 // src/assets/kit/palettes.js
@@ -439,6 +516,119 @@ var COVERS = {
 var GROUNDS = {
   dirt: { label: "Terre", ramp: ["#3e2a2c", "#5d3f33", "#7f5a3f", "#a07a52"], ink: "#24181b" }
 };
+var SNOWS = {
+  fresh: { label: "Fra\xEEche", ramp: COVERS.snow.ramp, ink: COVERS.snow.ink },
+  old: { label: "Tass\xE9e", ramp: ["#6b7390", "#959db4", "#bfc4d0", "#dddcd4"], ink: "#454b63" }
+};
+var MOSSES = {
+  spring: { label: "Printemps", ramp: ["#285640", "#3f7d40", "#69a645", "#a6cf60"], ink: "#16302a" },
+  summer: { label: "\xC9t\xE9", ramp: COVERS.moss.ramp, ink: COVERS.moss.ink },
+  autumn: { label: "Automne", ramp: ["#45452c", "#68652f", "#93863a", "#bfa854"], ink: "#29281b" },
+  winter: { label: "Hiver", ramp: ["#2a3c43", "#3f574f", "#5d775b", "#8ba283"], ink: "#18242a" }
+};
+GROUNDS.clay = { label: "Argile", ramp: ["#4a2724", "#7a3e2c", "#a65b39", "#c98552"], ink: "#2a1517" };
+GROUNDS.mud = { label: "Boue", ramp: ["#2a2026", "#3e2f2f", "#574236", "#735a44"], ink: "#18121a" };
+
+// src/assets/kit/ground-cover.js
+function snowMound(rng, noise, { radius, height, offset = [0, 0, 0], rotation = 0, drifts = 0 }) {
+  const relief = (x, z) => (noise(x * 1.8 + offset[0], 0.5, z * 1.8 + offset[2]) - 0.5) * height * 1.1;
+  const parts = [
+    buildMound(rng, { radius, height, lobes: 0.4, power: 0.9, relief, rings: 7, sectors: 22, offset, rotation })
+  ];
+  for (let i = 0; i < drifts; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = rng.range(0.45, 0.75);
+    const k = rng.range(0.4, 0.6);
+    parts.push(
+      buildMound(rng, {
+        radius: [radius[0] * k, radius[1] * k],
+        height: height * rng.range(0.7, 1.2),
+        lobes: 0.3,
+        power: 0.9,
+        rings: 4,
+        sectors: 14,
+        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
+        rotation: rng.range(0, Math.PI * 2)
+      })
+    );
+  }
+  return parts.length === 1 ? parts[0] : mergeGeometries(parts);
+}
+function mossMound(rng, noise, { radius, height = 0.05, cushions = 6, offset = [0, 0, 0], rotation = 0 }) {
+  const relief = (x, z) => (noise(x * 4 + offset[0], 2.5, z * 4 + offset[2]) - 0.5) * 0.05;
+  const parts = [buildMound(rng, { radius, height, lobes: 0.4, power: 0.4, relief, rings: 4, sectors: 20, offset, rotation })];
+  const size = Math.min(radius[0], radius[1]);
+  for (let i = 0; i < cushions; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = Math.sqrt(rng.next()) * 0.62;
+    const r = size * rng.range(0.18, 0.34);
+    parts.push(
+      buildMound(rng, {
+        radius: [r, r * rng.range(0.75, 1)],
+        height: height + r * rng.range(0.7, 1),
+        lobes: 0.2,
+        power: 0.45,
+        rings: 3,
+        sectors: 10,
+        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
+        rotation: rng.range(0, Math.PI * 2)
+      })
+    );
+  }
+  return mergeGeometries(parts);
+}
+function dirtMound(rng, noise, { radius, height, clods = 6, offset = [0, 0, 0], rotation = 0 }) {
+  const relief = (x, z) => (noise(x * 2.4 + offset[0], 4.5, z * 2.4 + offset[2]) - 0.5) * height * 0.9;
+  const parts = [buildMound(rng, { radius, height, lobes: 0.3, power: 0.9, relief, rings: 5, sectors: 16, flat: true, offset, rotation })];
+  for (let i = 0; i < clods; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = rng.range(0.55, 1.08);
+    const r = Math.max(0.08, Math.min(radius[0], radius[1]) * rng.range(0.1, 0.2));
+    const x = offset[0] + Math.cos(angle) * radius[0] * reach;
+    const z = offset[2] + Math.sin(angle) * radius[1] * reach;
+    const rest = height * Math.max(0, 1 - reach * reach) * 0.8;
+    parts.push(
+      buildRock(rng, {
+        detail: 0,
+        lumps: 2,
+        lumpSize: 0.2,
+        cuts: 2,
+        cutDepth: [0.7, 0.9],
+        scale: [r, r * rng.range(0.55, 0.8), r * rng.range(0.8, 1.1)],
+        rotation: [rng.range(-0.4, 0.4), rng.range(0, Math.PI * 2), rng.range(-0.4, 0.4)],
+        offset: [x, offset[1] + rest + r * 0.3, z],
+        floorY: offset[1] - 0.02
+      })
+    );
+  }
+  return mergeGeometries(parts);
+}
+function snowCap(geometry, noise, { amount = 0, thickness = 0.08, minY = -Infinity } = {}) {
+  return buildDrape(
+    geometry,
+    (p, n) => p.y < minY ? -1 : (n.y - 0.5 + amount * 0.35) * 2.4 + (noise(p.x * 2.2, p.y * 2.2, p.z * 2.2) - 0.5) * 1.1,
+    { subdivisions: 3, lift: (w) => 0.014 + Math.min(1, w * 1.5) * thickness }
+  );
+}
+function mossCap(geometry, noise, { amount = 0, minY = -Infinity } = {}) {
+  return buildDrape(
+    geometry,
+    (p, n) => p.y < minY ? -1 : (n.y - 0.55 + amount * 0.4) * 1.4 + (noise(p.x * 2.6 + 9, p.y * 2.6, p.z * 2.6) - 0.5) * 2.4,
+    { subdivisions: 3, lift: (w, p) => 0.012 + Math.min(1, w * 3) * 0.035 * noise(p.x * 8, p.y * 8 + 3, p.z * 8) }
+  );
+}
+function coverMaterial(kind, variant, { seed = 0, id = 11 } = {}) {
+  if (kind === "snow") {
+    const snow = SNOWS[variant ?? "fresh"];
+    return createToonMaterial({ ramp: snow.ramp, ink: snow.ink, steps: [0.42, 0.62, 0.8], pattern: "speckle", patternParams: [16, 0.03, 0.15, 0.3], seed, id });
+  }
+  if (kind === "moss") {
+    const moss = MOSSES[variant ?? "summer"];
+    return createToonMaterial({ ramp: moss.ramp, ink: moss.ink, steps: [0.36, 0.58, 0.8], pattern: "speckle", patternParams: [16, 0.1, 0.2, 1], seed, id });
+  }
+  const ground = GROUNDS[variant ?? "dirt"];
+  return createToonMaterial({ ramp: ground.ramp, ink: ground.ink, steps: [0.32, 0.55, 0.76], pattern: "speckle", patternParams: [16, 0.07, 0.2, 1], seed, id });
+}
 
 // src/assets/kit/params.js
 function resolveParams(schema, given = {}) {
@@ -484,6 +674,27 @@ function createRng(seed) {
     pick: (items) => items[Math.floor(next() * items.length)]
   };
 }
+function createNoise3(seed) {
+  const salt = Math.imul(Math.floor(seed) + 1, 668265261);
+  const hash = (x, y, z) => {
+    let h = Math.imul(x, 2376512323) ^ Math.imul(y, 3625334849) ^ Math.imul(z, 3407524639) ^ salt | 0;
+    h = Math.imul(h ^ h >>> 15, 739982445);
+    h = Math.imul(h ^ h >>> 12, 695872825);
+    return ((h ^ h >>> 15) >>> 0) / 4294967296;
+  };
+  const fade = (t) => t * t * (3 - 2 * t);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  return (x, y, z) => {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const u = fade(x - xi), v = fade(y - yi), w = fade(z - zi);
+    const corner = (dx, dy, dz) => hash(xi + dx, yi + dy, zi + dz);
+    return lerp(
+      lerp(lerp(corner(0, 0, 0), corner(1, 0, 0), u), lerp(corner(0, 1, 0), corner(1, 1, 0), u), v),
+      lerp(lerp(corner(0, 0, 1), corner(1, 0, 1), u), lerp(corner(0, 1, 1), corner(1, 1, 1), u), v),
+      w
+    );
+  };
+}
 
 // src/assets/kit/variation.js
 function seedParam(description) {
@@ -516,7 +727,7 @@ function pick(table, only) {
 var params = {
   seed: seedParam("Change la silhouette : dalle plate ou bosse, inclinaison, part qui d\xE9passe, talus de terre."),
   stone: stoneParam("Type de pierre : couleurs et grain."),
-  cover: coverParam("Mousse ou neige sur les faces tourn\xE9es vers le ciel."),
+  cover: coverParam("Mousse ou neige drap\xE9es sur le dessus de la roche et sur le talus."),
   size: numberParam("Largeur", 1.6, 0.5, 3.5, "Largeur de la partie visible ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
   emergence: numberParam("Affleurement", 0.5, 0.2, 0.8, "Part de la roche qui sort du sol (0,2 = \xE0 peine visible).")
 };
@@ -554,10 +765,10 @@ var meta = {
     "procedural"
   ],
   biomes: ["forest", "meadow", "mountain", "desert", "snow", "garden", "village", "swamp", "cave"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la roche",
-  footprint: { radius: 1.2, height: 0.7 },
+  footprint: { radius: 1.7, height: 0.8 },
   animated: [],
   params,
   variants: variantsOf("stone", params.stone)
@@ -589,71 +800,68 @@ function create(given = {}) {
   const box = rock.boundingBox;
   const spanX = Math.max(-box.min.x, box.max.x);
   const spanZ = Math.max(-box.min.z, box.max.z);
-  const dirt = [];
-  const mounds = shape.int(1, 2);
-  for (let i = 0; i < mounds; i++) {
-    const k = i === 0 ? 1.12 : shape.range(0.6, 0.8);
-    const angle = shape.range(0, Math.PI * 2);
-    const shift = i === 0 ? 0 : shape.range(0.3, 0.6);
-    dirt.push(
-      buildRock(shape, {
-        detail: 2,
-        lumps: 9,
-        lumpSize: 0.3,
-        cuts: 2,
-        cutDepth: [0.85, 0.95],
-        scale: [spanX * k + 0.1, Math.min(0.16, 0.1 * p.size) + 0.04, spanZ * k + 0.1],
-        rotation: [0, 0, 0],
-        offset: [Math.cos(angle) * spanX * shift, -0.04, Math.sin(angle) * spanZ * shift],
-        floorY: FLOOR
-      })
-    );
-  }
+  const noise = createNoise3(p.seed + 101);
+  const talus = dirtMound(shape, noise, {
+    radius: [spanX * 1.15 + 0.12, spanZ * 1.15 + 0.12],
+    height: Math.min(0.16, 0.08 * p.size) + 0.04,
+    clods: shape.int(3, 6)
+  });
   const group = new THREE3.Group();
   group.name = meta.name;
-  let stoneGeometry = rock;
   if (p.cover !== "bare") {
-    const threshold = p.cover === "snow" ? 0.7 : 0.8;
-    const salt = detail.range(0, 100);
-    const [covered, rest] = splitFacesByNormal(
-      rock,
-      (normal, center) => normal.y + 0.4 * (patch(center, salt) - 0.5) > threshold && center.y > 0.06
-    );
-    stoneGeometry = rest;
-    const cover = COVERS[p.cover];
-    const coverMesh = new THREE3.Mesh(
-      covered,
-      createToonMaterial({ ramp: cover.ramp, ink: cover.ink, pattern: "speckle", seed: detail.int(0, 96), id: 11 })
-    );
+    const cover = createRng(p.seed * 31337 + 5);
+    const layers = [];
+    if (p.cover === "snow") {
+      layers.push(snowCap(rock, noise, { amount: -0.2, thickness: 0.06, minY: 0.08 }));
+      layers.push(
+        snowMound(cover, noise, {
+          radius: [spanX * 1.3 + 0.15, spanZ * 1.3 + 0.15],
+          height: 0.08,
+          rotation: cover.range(0, Math.PI * 2),
+          drifts: cover.int(0, 2)
+        })
+      );
+    } else {
+      layers.push(mossCap(rock, noise, { amount: 0, minY: 0.04 }));
+      const patches = cover.int(1, 2);
+      for (let i = 0; i < patches; i++) {
+        const angle = cover.range(0, Math.PI * 2);
+        const r = spanX * cover.range(0.35, 0.55);
+        layers.push(
+          mossMound(cover, noise, {
+            radius: [r, r * cover.range(0.6, 0.9)],
+            height: 0.06,
+            cushions: cover.int(2, 4),
+            offset: [Math.cos(angle) * spanX * 1, 0.04, Math.sin(angle) * spanZ * 1],
+            rotation: cover.range(0, Math.PI * 2)
+          })
+        );
+      }
+    }
+    const coverMesh = new THREE3.Mesh(mergeGeometries(layers), coverMaterial(p.cover, void 0, { seed: detail.int(0, 96), id: 11 }));
     coverMesh.name = p.cover;
     coverMesh.castShadow = true;
     coverMesh.receiveShadow = true;
     group.add(coverMesh);
   }
   const stoneMesh = new THREE3.Mesh(
-    stoneGeometry,
+    rock,
     createToonMaterial({ ramp: stone.ramp, ink: stone.ink, steps: [0.36, 0.58, 0.8], crease: true, pattern: "speckle", patternParams: [16, 0.05, 0.2, 1], seed: detail.int(0, 96), id: 10 })
   );
   stoneMesh.name = "stone";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
-  if (dirt.length) {
-    const ground = p.cover === "snow" ? COVERS.snow : GROUNDS.dirt;
-    const dirtMesh = new THREE3.Mesh(
-      mergeGeometries(dirt),
-      createToonMaterial({ ramp: ground.ramp, ink: ground.ink, pattern: "speckle", seed: detail.int(0, 96), id: 12 })
-    );
+  if (p.cover !== "snow") {
+    const dirtMesh = new THREE3.Mesh(talus, coverMaterial("dirt", "dirt", { seed: detail.int(0, 96), id: 12 }));
     dirtMesh.name = "dirt";
     dirtMesh.receiveShadow = true;
     group.add(dirtMesh);
+  } else {
+    talus.dispose();
   }
   group.userData.asset = { id: meta.id, params: p };
   return group;
-}
-function patch(center, salt) {
-  const v = Math.sin(center.x * 12.9898 + center.y * 78.233 + center.z * 37.719 + salt) * 43758.5453;
-  return v - Math.floor(v);
 }
 export {
   create,

@@ -30,3 +30,20 @@ export const COVERS = {
 export const GROUNDS = {
   dirt: { label: "Terre", ramp: ["#3e2a2c", "#5d3f33", "#7f5a3f", "#a07a52"], ink: "#24181b" },
 };
+
+/** Neige au sol : fraîche (poudreuse, bleutée à l'ombre) ou tassée (grisée, ternie). */
+export const SNOWS = {
+  fresh: { label: "Fraîche", ramp: COVERS.snow.ramp, ink: COVERS.snow.ink },
+  old: { label: "Tassée", ramp: ["#6b7390", "#959db4", "#bfc4d0", "#dddcd4"], ink: "#454b63" },
+};
+
+/** Mousse selon la saison (l'été est la mousse de référence, celle de COVERS). */
+export const MOSSES = {
+  spring: { label: "Printemps", ramp: ["#285640", "#3f7d40", "#69a645", "#a6cf60"], ink: "#16302a" },
+  summer: { label: "Été", ramp: COVERS.moss.ramp, ink: COVERS.moss.ink },
+  autumn: { label: "Automne", ramp: ["#45452c", "#68652f", "#93863a", "#bfa854"], ink: "#29281b" },
+  winter: { label: "Hiver", ramp: ["#2a3c43", "#3f574f", "#5d775b", "#8ba283"], ink: "#18242a" },
+};
+
+GROUNDS.clay = { label: "Argile", ramp: ["#4a2724", "#7a3e2c", "#a65b39", "#c98552"], ink: "#2a1517" };
+GROUNDS.mud = { label: "Boue", ramp: ["#2a2026", "#3e2f2f", "#574236", "#735a44"], ink: "#18121a" };

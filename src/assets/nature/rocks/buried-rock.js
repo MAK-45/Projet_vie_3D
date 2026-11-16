@@ -1,12 +1,14 @@
 // Roche enterrée : une dalle de pierre à facettes qui affleure, inclinée, à moitié prise dans le sol, au milieu
-// d'un talus de terre remuée ; mousse ou neige possibles sur le dessus. Entièrement procédural, 2 ou 3 draw calls, environ 440 triangles.
+// d'un talus de terre remuée. Mousse ou neige drapées sur le dessus. Talus, mousse et neige sortent des mêmes
+// générateurs que les assets « Terre remuée », « Tapis de mousse » et « Plaque de neige » (kit/ground-cover.js). Entièrement procédural, 2 ou 3 draw calls.
 
 import * as THREE from "three";
 import { createToonMaterial } from "../../../engine/toon-material.js";
-import { buildRock, mergeGeometries, splitFacesByNormal } from "../../kit/geometry.js";
-import { COVERS, GROUNDS, STONES } from "../../kit/palettes.js";
+import { buildRock, mergeGeometries } from "../../kit/geometry.js";
+import { coverMaterial, dirtMound, mossCap, mossMound, snowCap, snowMound } from "../../kit/ground-cover.js";
+import { STONES } from "../../kit/palettes.js";
 import { resolveParams } from "../../kit/params.js";
-import { createRng } from "../../kit/rng.js";
+import { createNoise3, createRng } from "../../kit/rng.js";
 import { coverParam, numberParam, seedParam, stoneParam, variantsOf } from "../../kit/variation.js";
 
 export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-material.js";
@@ -14,7 +16,7 @@ export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-ma
 const params = {
   seed: seedParam("Change la silhouette : dalle plate ou bosse, inclinaison, part qui dépasse, talus de terre."),
   stone: stoneParam("Type de pierre : couleurs et grain."),
-  cover: coverParam("Mousse ou neige sur les faces tournées vers le ciel."),
+  cover: coverParam("Mousse ou neige drapées sur le dessus de la roche et sur le talus."),
   size: numberParam("Largeur", 1.6, 0.5, 3.5, "Largeur de la partie visible ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
   emergence: numberParam("Affleurement", 0.5, 0.2, 0.8, "Part de la roche qui sort du sol (0,2 = à peine visible)."),
 };
@@ -34,10 +36,10 @@ export const meta = {
     "outdoor", "procedural",
   ],
   biomes: ["forest", "meadow", "mountain", "desert", "snow", "garden", "village", "swamp", "cave"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au centre de la roche",
-  footprint: { radius: 1.2, height: 0.7 },
+  footprint: { radius: 1.7, height: 0.8 },
   animated: [],
   params,
   variants: variantsOf("stone", params.stone),
@@ -75,49 +77,53 @@ export function create(given = {}) {
     floorY: FLOOR,
   });
 
-  // Talus de terre remuée : une ou deux bosses basses et larges, d'où la roche sort.
+  // Talus de terre remuée (même générateur que l'asset « Terre remuée »), d'où la roche sort.
   rock.computeBoundingBox();
   const box = rock.boundingBox;
   const spanX = Math.max(-box.min.x, box.max.x);
   const spanZ = Math.max(-box.min.z, box.max.z);
-  const dirt = [];
-  const mounds = shape.int(1, 2);
-  for (let i = 0; i < mounds; i++) {
-    const k = i === 0 ? 1.12 : shape.range(0.6, 0.8);
-    const angle = shape.range(0, Math.PI * 2);
-    const shift = i === 0 ? 0 : shape.range(0.3, 0.6);
-    dirt.push(
-      buildRock(shape, {
-        detail: 2,
-        lumps: 9,
-        lumpSize: 0.3,
-        cuts: 2,
-        cutDepth: [0.85, 0.95],
-        scale: [spanX * k + 0.1, Math.min(0.16, 0.1 * p.size) + 0.04, spanZ * k + 0.1],
-        rotation: [0, 0, 0],
-        offset: [Math.cos(angle) * spanX * shift, -0.04, Math.sin(angle) * spanZ * shift],
-        floorY: FLOOR,
-      }),
-    );
-  }
+  const noise = createNoise3(p.seed + 101);
+  const talus = dirtMound(shape, noise, {
+    radius: [spanX * 1.15 + 0.12, spanZ * 1.15 + 0.12],
+    height: Math.min(0.16, 0.08 * p.size) + 0.04,
+    clods: shape.int(3, 6),
+  });
 
   const group = new THREE.Group();
   group.name = meta.name;
 
-  let stoneGeometry = rock;
+  // Couverture : drapée sur la roche ; la neige recouvre aussi le talus, la mousse le gagne par plaques.
   if (p.cover !== "bare") {
-    const threshold = p.cover === "snow" ? 0.7 : 0.8;
-    const salt = detail.range(0, 100);
-    const [covered, rest] = splitFacesByNormal(
-      rock,
-      (normal, center) => normal.y + 0.4 * (patch(center, salt) - 0.5) > threshold && center.y > 0.06,
-    );
-    stoneGeometry = rest;
-    const cover = COVERS[p.cover];
-    const coverMesh = new THREE.Mesh(
-      covered,
-      createToonMaterial({ ramp: cover.ramp, ink: cover.ink, pattern: "speckle", seed: detail.int(0, 96), id: 11 }),
-    );
+    const cover = createRng(p.seed * 31337 + 5);
+    const layers = [];
+    if (p.cover === "snow") {
+      layers.push(snowCap(rock, noise, { amount: -0.2, thickness: 0.06, minY: 0.08 }));
+      layers.push(
+        snowMound(cover, noise, {
+          radius: [spanX * 1.3 + 0.15, spanZ * 1.3 + 0.15],
+          height: 0.08,
+          rotation: cover.range(0, Math.PI * 2),
+          drifts: cover.int(0, 2),
+        }),
+      );
+    } else {
+      layers.push(mossCap(rock, noise, { amount: 0, minY: 0.04 }));
+      const patches = cover.int(1, 2);
+      for (let i = 0; i < patches; i++) {
+        const angle = cover.range(0, Math.PI * 2);
+        const r = spanX * cover.range(0.35, 0.55);
+        layers.push(
+          mossMound(cover, noise, {
+            radius: [r, r * cover.range(0.6, 0.9)],
+            height: 0.06,
+            cushions: cover.int(2, 4),
+            offset: [Math.cos(angle) * spanX * 1.0, 0.04, Math.sin(angle) * spanZ * 1.0],
+            rotation: cover.range(0, Math.PI * 2),
+          }),
+        );
+      }
+    }
+    const coverMesh = new THREE.Mesh(mergeGeometries(layers), coverMaterial(p.cover, undefined, { seed: detail.int(0, 96), id: 11 }));
     coverMesh.name = p.cover;
     coverMesh.castShadow = true;
     coverMesh.receiveShadow = true;
@@ -125,7 +131,7 @@ export function create(given = {}) {
   }
 
   const stoneMesh = new THREE.Mesh(
-    stoneGeometry,
+    rock,
     createToonMaterial({ ramp: stone.ramp, ink: stone.ink, steps: [0.36, 0.58, 0.8], crease: true, pattern: "speckle", patternParams: [16, 0.05, 0.2, 1], seed: detail.int(0, 96), id: 10 }),
   );
   stoneMesh.name = "stone";
@@ -133,23 +139,16 @@ export function create(given = {}) {
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
 
-  if (dirt.length) {
-    const ground = p.cover === "snow" ? COVERS.snow : GROUNDS.dirt;
-    const dirtMesh = new THREE.Mesh(
-      mergeGeometries(dirt),
-      createToonMaterial({ ramp: ground.ramp, ink: ground.ink, pattern: "speckle", seed: detail.int(0, 96), id: 12 }),
-    );
+  if (p.cover !== "snow") {
+    const dirtMesh = new THREE.Mesh(talus, coverMaterial("dirt", "dirt", { seed: detail.int(0, 96), id: 12 }));
     dirtMesh.name = "dirt";
     dirtMesh.receiveShadow = true;
     group.add(dirtMesh);
+  } else {
+    talus.dispose();
   }
 
   group.userData.asset = { id: meta.id, params: p };
   return group;
 }
 
-/** Bruit déterministe par face (0..1) : rend la mousse et la neige irrégulières. */
-function patch(center, salt) {
-  const v = Math.sin(center.x * 12.9898 + center.y * 78.233 + center.z * 37.719 + salt) * 43758.5453;
-  return v - Math.floor(v);
-}

@@ -98,9 +98,27 @@ c'est ce fichier qui fait progresser les assets suivants.
 - **Enterré** : décaler le bloc vers le bas (`offset` y) avec `floorY` juste sous le sol, l'incliner fortement,
   et l'entourer d'un **talus de terre continu** (un `buildRock` très aplati, détail 2, bords bosselés). Des
   mottes séparées tout autour ressemblent à des pattes ; un disque régulier à une flaque.
-- Mousse, neige : `splitFacesByNormal` envoie les faces tournées vers le ciel dans un 2e maillage (rampe
-  `COVERS` de `palettes.js`, `id` distinct). Seuil sur `normal.y` + bruit par face, et seulement au-dessus
-  d'une hauteur : sinon tout le dessus est couvert et ça fait un chapeau. Neige aussi sur le talus de terre.
+- Mousse, neige : **ne pas** découper par faces (`splitFacesByNormal`) : les plaques suivent les facettes et
+  font des triangles. Utiliser `snowCap` / `mossCap` de `kit/ground-cover.js` (outil `buildDrape`) : les faces
+  sont subdivisées (3 × 3) puis découpées le long d'un champ continu (normale **lissée** + bruit 3D
+  `createNoise3`), et la couche est décollée le long des normales lissées (pas de fissure aux arêtes).
+  Mousse : le bruit doit dominer (`(n.y − 0,55) × 1,4 + bruit × 2,4`), sinon tout le dessus est vert. Neige :
+  l'orientation domine, épaisseur croissante vers le cœur des plaques. `minY` empêche la couche de descendre
+  au pied.
+- Ajouter au sol, avec le même matériau, une plaque de neige ou des tapis de mousse autour du pied : l'objet
+  s'ancre dans son décor sans draw call de plus.
+
+**Neige, mousse, terre au sol** (`nature/terrain/snow-patch`, `moss-patch`, `dirt-mound`) :
+
+- Un seul générateur par matière dans `kit/ground-cover.js` (`snowMound`, `mossMound`, `dirtMound`,
+  `coverMaterial`), partagé par les assets de sol et par tout asset qui en porte : même forme, mêmes couleurs.
+- Outil `buildMound` : disque polaire au contour lobé (3 harmoniques), bord juste sous le sol.
+- Neige : normales lissées, profil `power` 0,9 et relief par bruit (× 1,1 de la hauteur) avec 1 à 3 congères
+  accolées ; trop plate, elle n'est qu'un aplat blanc. Seuils `[0.42, 0.62, 0.8]` pour que les ombres bleues
+  apparaissent sur une forme presque horizontale.
+- Mousse : nappe très mince + coussinets bombés (rayon 18 à 34 % du tapis, hauteur 0,7 à 1 × leur rayon) ; plus
+  petits, ils disparaissent en vue iso.
+- Terre : facettes franches (`flat: true`) et mottes (`buildRock` détail 0, rayon ≥ 0,08 m).
 
 **Pistes (pas encore essayées)** — à confirmer à l'écran :
 - **Bâti et mobilier** : assembler des blocs (boîtes) aux arêtes vives, `crease: true`. Les fenêtres, portes et

@@ -1,4 +1,5 @@
 // Outils de géométrie partagés par les assets : tubes effilés (troncs, branches), feuilles, rochers à facettes,
+// buttes au sol (neige, mousse, terre), couches drapées sur une surface,
 // découpe par orientation des faces, fusion.
 
 import * as THREE from "three";
@@ -309,4 +310,165 @@ function randomDirection(rng) {
   const angle = rng.range(0, Math.PI * 2);
   const ring = Math.sqrt(1 - y * y);
   return new THREE.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
+}
+
+/**
+ * Butte posée au sol (plaque de neige, tapis de mousse, terre remuée) : disque polaire au contour lobé, dont la
+ * hauteur décroît du centre vers le bord ; le bord est juste sous le sol, pour s'y fondre.
+ * Attributs : position, normal ; indexée.
+ *
+ * @param {{range: (min: number, max: number) => number}} rng générateur (kit/rng.js)
+ * @param {object} [options]
+ * @param {number[]} [options.radius] rayons [x, z] en mètres
+ * @param {number} [options.height] hauteur au centre
+ * @param {number} [options.lobes] irrégularité du contour (0 = ellipse)
+ * @param {number} [options.power] forme du profil : < 1 bombé et plat au sommet, > 1 pointu
+ * @param {(x: number, z: number) => number} [options.relief] bosses ajoutées à la hauteur (en mètres), nulles au bord
+ * @param {number} [options.rings] anneaux
+ * @param {number} [options.sectors] secteurs
+ * @param {boolean} [options.flat] facettes franches (terre) au lieu de normales lissées (neige)
+ * @param {number[]} [options.offset] position [x, y, z] du centre
+ * @param {number} [options.rotation] rotation autour de y
+ */
+export function buildMound(
+  rng,
+  { radius = [1, 1], height = 0.2, lobes = 0.2, power = 0.8, relief, rings = 5, sectors = 18, flat = false, offset = [0, 0, 0], rotation = 0 } = {},
+) {
+  const harmonics = [2, 3, 5].map((k) => ({ k, phase: rng.range(0, Math.PI * 2), amount: rng.range(0.4, 1) / k }));
+  const edge = (theta) => 1 + lobes * harmonics.reduce((sum, h) => sum + h.amount * Math.sin(h.k * theta + h.phase), 0);
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  const positions = [];
+  const place = (x, y, z) => positions.push(x * cos - z * sin + offset[0], y + offset[1], x * sin + z * cos + offset[2]);
+
+  const center = height + (relief ? relief(0, 0) : 0);
+  place(0, center, 0);
+  for (let ring = 1; ring <= rings; ring++) {
+    const rho = ring / rings;
+    for (let s = 0; s < sectors; s++) {
+      const theta = (s / sectors) * Math.PI * 2;
+      const e = edge(theta) * rho;
+      const x = Math.cos(theta) * radius[0] * e;
+      const z = Math.sin(theta) * radius[1] * e;
+      const falloff = Math.pow(Math.max(0, 1 - rho * rho), power);
+      const y = ring === rings ? -0.02 : height * falloff + (relief ? relief(x, z) * falloff : 0);
+      place(x, y, z);
+    }
+  }
+  const index = [];
+  for (let s = 0; s < sectors; s++) index.push(0, 1 + ((s + 1) % sectors), 1 + s);
+  for (let ring = 1; ring < rings; ring++) {
+    const a = 1 + (ring - 1) * sectors;
+    const b = 1 + ring * sectors;
+    for (let s = 0; s < sectors; s++) {
+      const s1 = (s + 1) % sectors;
+      index.push(a + s, a + s1, b + s, a + s1, b + s1, b + s);
+    }
+  }
+  let geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(index);
+  if (flat) {
+    const loose = geometry.toNonIndexed();
+    geometry.dispose();
+    geometry = loose;
+    geometry.computeVertexNormals();
+    geometry.setIndex(sequentialIndex(geometry.attributes.position.count));
+  } else {
+    geometry.computeVertexNormals();
+  }
+  return geometry;
+}
+
+/**
+ * Couche drapée sur une surface (neige ou mousse sur un rocher) : les faces sont subdivisées puis découpées le
+ * long de la ligne où `coverage` s'annule, ce qui donne un contour organique qui traverse les facettes au lieu de
+ * les suivre. La couche est décollée de la surface selon `lift`, le long des normales lissées (pas de fissure aux
+ * arêtes). Attributs : position, normal (facettes) ; indexée. La géométrie d'entrée n'est pas modifiée.
+ *
+ * @param {THREE.BufferGeometry} geometry surface support (position ; indexée ou non)
+ * @param {(position: THREE.Vector3, normal: THREE.Vector3) => number} coverage > 0 là où la couche se pose ;
+ *   `normal` est la normale lissée (continue d'une facette à l'autre)
+ * @param {object} [options]
+ * @param {number} [options.subdivisions] découpe de chaque face en n² triangles avant le contour
+ * @param {(coverage: number, position: THREE.Vector3) => number} [options.lift] épaisseur au point (mètres)
+ */
+export function buildDrape(geometry, coverage, { subdivisions = 3, lift = () => 0.015 } = {}) {
+  const source = geometry.index ? geometry.toNonIndexed() : geometry.clone();
+  const position = source.attributes.position;
+  const count = position.count;
+
+  // Normales lissées : moyenne des normales des faces qui partagent un sommet.
+  const key = (i) => `${position.getX(i).toFixed(4)},${position.getY(i).toFixed(4)},${position.getZ(i).toFixed(4)}`;
+  const sums = new Map();
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), c = new THREE.Vector3(), n = new THREE.Vector3();
+  for (let i = 0; i < count; i += 3) {
+    a.fromBufferAttribute(position, i);
+    b.fromBufferAttribute(position, i + 1);
+    c.fromBufferAttribute(position, i + 2);
+    n.subVectors(c, b).cross(a.clone().sub(b)); // longueur = 2 × aire : pondère par l'aire
+    for (let k = 0; k < 3; k++) {
+      const id = key(i + k);
+      const sum = sums.get(id) ?? sums.set(id, new THREE.Vector3()).get(id);
+      sum.add(n);
+    }
+  }
+  for (const sum of sums.values()) sum.normalize();
+
+  const out = [];
+  const corners = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const normals = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()];
+  const sample = (bary) => {
+    const p = new THREE.Vector3()
+      .addScaledVector(corners[0], bary[0]).addScaledVector(corners[1], bary[1]).addScaledVector(corners[2], bary[2]);
+    const sn = new THREE.Vector3()
+      .addScaledVector(normals[0], bary[0]).addScaledVector(normals[1], bary[1]).addScaledVector(normals[2], bary[2])
+      .normalize();
+    return { p, n: sn, w: coverage(p, sn) };
+  };
+  const emit = (v) => {
+    const h = lift(Math.max(0, v.w), v.p);
+    out.push(v.p.x + v.n.x * h, v.p.y + v.n.y * h, v.p.z + v.n.z * h);
+  };
+  const cut = (u, v) => {
+    const t = u.w / (u.w - v.w);
+    return { p: u.p.clone().lerp(v.p, t), n: u.n.clone().lerp(v.n, t).normalize(), w: 0 };
+  };
+  const clip = (tri) => {
+    const inside = tri.map((v) => v.w >= 0);
+    const k = inside.filter(Boolean).length;
+    if (k === 0) return;
+    if (k === 3) return tri.forEach(emit);
+    // Ramener au cas où le sommet isolé est en tête, en gardant le sens des faces.
+    const lone = k === 1 ? inside.indexOf(true) : inside.indexOf(false);
+    const [v0, v1, v2] = [tri[lone], tri[(lone + 1) % 3], tri[(lone + 2) % 3]];
+    const c1 = cut(v0, v1);
+    const c2 = cut(v0, v2);
+    if (k === 1) [v0, c1, c2].forEach(emit);
+    else [c1, v1, v2, c1, v2, c2].forEach(emit);
+  };
+
+  const m = subdivisions;
+  for (let i = 0; i < count; i += 3) {
+    for (let k = 0; k < 3; k++) {
+      corners[k].fromBufferAttribute(position, i + k);
+      normals[k].copy(sums.get(key(i + k)));
+    }
+    const grid = (r, s) => sample([1 - (r + s) / m, r / m, s / m]);
+    const cache = new Map();
+    const at = (r, s) => cache.get(r * 64 + s) ?? cache.set(r * 64 + s, grid(r, s)).get(r * 64 + s);
+    for (let r = 0; r < m; r++) {
+      for (let s = 0; s < m - r; s++) {
+        clip([at(r, s), at(r + 1, s), at(r, s + 1)]);
+        if (s < m - r - 1) clip([at(r + 1, s), at(r + 1, s + 1), at(r, s + 1)]);
+      }
+    }
+  }
+  source.dispose();
+
+  const result = new THREE.BufferGeometry();
+  result.setAttribute("position", new THREE.Float32BufferAttribute(out, 3));
+  result.computeVertexNormals();
+  result.setIndex(sequentialIndex(out.length / 3));
+  return result;
 }

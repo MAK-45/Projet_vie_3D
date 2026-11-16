@@ -300,7 +300,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 28211
+        "standalone": 29363
       }
     },
     {
@@ -345,12 +345,12 @@
         "village",
         "swamp"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; l'origine est au sol, au centre du rocher",
       "footprint": {
-        "radius": 1.4,
-        "height": 1.1
+        "radius": 1.9,
+        "height": 1.2
       },
       "animated": [],
       "params": {
@@ -396,7 +396,7 @@
             "snow": "Neige"
           },
           "label": "Couverture",
-          "description": "Mousse ou neige sur les faces tournées vers le ciel."
+          "description": "Mousse ou neige drapées sur le dessus du rocher, et posées au sol autour."
         },
         "size": {
           "type": "number",
@@ -462,6 +462,7 @@
         "src/engine/toon-material.js",
         "src/assets/kit/geometry.js",
         "src/assets/kit/palettes.js",
+        "src/assets/kit/ground-cover.js",
         "src/assets/kit/params.js",
         "src/assets/kit/rng.js",
         "src/assets/kit/variation.js"
@@ -499,8 +500,8 @@
         }
       },
       "bytes": {
-        "source": 5770,
-        "standalone": 23309
+        "source": 6422,
+        "standalone": 32742
       }
     },
     {
@@ -547,12 +548,12 @@
         "swamp",
         "cave"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la roche",
       "footprint": {
-        "radius": 1.2,
-        "height": 0.7
+        "radius": 1.7,
+        "height": 0.8
       },
       "animated": [],
       "params": {
@@ -598,7 +599,7 @@
             "snow": "Neige"
           },
           "label": "Couverture",
-          "description": "Mousse ou neige sur les faces tournées vers le ciel."
+          "description": "Mousse ou neige drapées sur le dessus de la roche et sur le talus."
         },
         "size": {
           "type": "number",
@@ -664,6 +665,309 @@
         "src/engine/toon-material.js",
         "src/assets/kit/geometry.js",
         "src/assets/kit/palettes.js",
+        "src/assets/kit/ground-cover.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "granite": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "sandstone": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "limestone": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "basalt": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "slate": {
+          "triangles": 344,
+          "vertices": 1032,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 6390,
+        "standalone": 33804
+      }
+    },
+    {
+      "id": "nature/terrain/snow-patch",
+      "name": "Plaque de neige",
+      "nameEn": "Snow patch",
+      "category": "nature",
+      "subcategory": "terrain",
+      "description": "Plaque de neige posée au sol, bombée au contour irrégulier, avec parfois des congères accolées. Neige fraîche ou tassée ; la graine change la forme, la largeur et l'épaisseur se règlent.",
+      "tags": [
+        "neige",
+        "plaque de neige",
+        "congère",
+        "sol",
+        "terrain",
+        "hiver",
+        "blanc",
+        "extérieur",
+        "snow",
+        "snow patch",
+        "snowdrift",
+        "ground",
+        "winter",
+        "white",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "snow",
+        "mountain",
+        "forest",
+        "meadow",
+        "village"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la plaque",
+      "footprint": {
+        "radius": 0.9,
+        "height": 0.4
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le contour, l'allongement et les congères accolées."
+        },
+        "snow": {
+          "type": "enum",
+          "default": "fresh",
+          "values": [
+            "fresh",
+            "old"
+          ],
+          "labels": {
+            "fresh": "Fraîche",
+            "old": "Tassée"
+          },
+          "label": "Neige",
+          "description": "Fraîche (blanche, ombres bleues) ou tassée (grisée, plus plate)."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.8,
+          "min": 0.5,
+          "max": 4,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur de la plaque."
+        },
+        "depth": {
+          "type": "number",
+          "default": 0.3,
+          "min": 0.05,
+          "max": 0.6,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Épaisseur",
+          "description": "Épaisseur au centre."
+        }
+      },
+      "variants": [
+        {
+          "id": "fresh",
+          "name": "Fraîche",
+          "params": {
+            "snow": "fresh"
+          }
+        },
+        {
+          "id": "old",
+          "name": "Tassée",
+          "params": {
+            "snow": "old"
+          }
+        }
+      ],
+      "slug": "nature-terrain-snow-patch",
+      "path": "src/assets/nature/terrain/snow-patch.js",
+      "module": "public/catalog/modules/nature-terrain-snow-patch.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/ground-cover.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 580,
+          "vertices": 326,
+          "drawCalls": 1
+        },
+        "fresh": {
+          "triangles": 580,
+          "vertices": 326,
+          "drawCalls": 1
+        },
+        "old": {
+          "triangles": 580,
+          "vertices": 326,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 3031,
+        "standalone": 22043
+      }
+    },
+    {
+      "id": "nature/terrain/moss-patch",
+      "name": "Tapis de mousse",
+      "nameEn": "Moss patch",
+      "category": "nature",
+      "subcategory": "terrain",
+      "description": "Tapis de mousse posé au sol, au contour découpé, semé de coussinets ronds. Quatre saisons ; la graine change le contour et les coussinets.",
+      "tags": [
+        "mousse",
+        "tapis de mousse",
+        "coussinet",
+        "sol",
+        "terrain",
+        "végétation",
+        "sous-bois",
+        "saisons",
+        "extérieur",
+        "moss",
+        "moss patch",
+        "cushion",
+        "ground",
+        "vegetation",
+        "undergrowth",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "swamp",
+        "garden",
+        "cave",
+        "meadow"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre du tapis",
+      "footprint": {
+        "radius": 0.6,
+        "height": 0.2
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le contour du tapis, le nombre et la place des coussinets."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Vert tendre au printemps, olive et ocre en automne, terne en hiver."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.2,
+          "min": 0.3,
+          "max": 3,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur du tapis."
+        },
+        "cushions": {
+          "type": "number",
+          "default": 6,
+          "min": 0,
+          "max": 14,
+          "step": 1,
+          "label": "Coussinets",
+          "description": "Nombre de coussinets bombés."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-terrain-moss-patch",
+      "path": "src/assets/nature/terrain/moss-patch.js",
+      "module": "public/catalog/modules/nature-terrain-moss-patch.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/ground-cover.js",
         "src/assets/kit/params.js",
         "src/assets/kit/rng.js",
         "src/assets/kit/variation.js"
@@ -671,38 +975,190 @@
       "stats": {
         "default": {
           "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
+          "vertices": 267,
+          "drawCalls": 1
         },
-        "granite": {
+        "summer": {
           "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
+          "vertices": 267,
+          "drawCalls": 1
         },
-        "sandstone": {
+        "spring": {
           "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
+          "vertices": 267,
+          "drawCalls": 1
         },
-        "limestone": {
+        "autumn": {
           "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
+          "vertices": 267,
+          "drawCalls": 1
         },
-        "basalt": {
+        "winter": {
           "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
-        },
-        "slate": {
-          "triangles": 440,
-          "vertices": 1320,
-          "drawCalls": 2
+          "vertices": 267,
+          "drawCalls": 1
         }
       },
       "bytes": {
-        "source": 6161,
-        "standalone": 23863
+        "source": 2834,
+        "standalone": 21949
+      }
+    },
+    {
+      "id": "nature/terrain/dirt-mound",
+      "name": "Terre remuée",
+      "nameEn": "Dirt mound",
+      "category": "nature",
+      "subcategory": "terrain",
+      "description": "Butte de terre fraîchement remuée, bosselée, entourée de mottes. Terre, argile ou boue ; la graine change la forme et les mottes.",
+      "tags": [
+        "terre",
+        "terre remuée",
+        "butte",
+        "motte",
+        "tas",
+        "argile",
+        "boue",
+        "sol",
+        "terrain",
+        "chantier",
+        "jardin",
+        "extérieur",
+        "dirt",
+        "dirt mound",
+        "mound",
+        "clod",
+        "pile",
+        "clay",
+        "mud",
+        "soil",
+        "ground",
+        "digging",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "garden",
+        "village",
+        "forest",
+        "meadow",
+        "swamp",
+        "desert"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la butte",
+      "footprint": {
+        "radius": 0.7,
+        "height": 0.35
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le contour, les bosses et la place des mottes."
+        },
+        "soil": {
+          "type": "enum",
+          "default": "dirt",
+          "values": [
+            "dirt",
+            "clay",
+            "mud"
+          ],
+          "labels": {
+            "dirt": "Terre",
+            "clay": "Argile",
+            "mud": "Boue"
+          },
+          "label": "Sol",
+          "description": "Terre brune, argile rouge ou boue sombre."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.4,
+          "min": 0.4,
+          "max": 3,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur de la butte."
+        },
+        "height": {
+          "type": "number",
+          "default": 0.3,
+          "min": 0.05,
+          "max": 0.6,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur au centre."
+        }
+      },
+      "variants": [
+        {
+          "id": "dirt",
+          "name": "Terre",
+          "params": {
+            "soil": "dirt"
+          }
+        },
+        {
+          "id": "clay",
+          "name": "Argile",
+          "params": {
+            "soil": "clay"
+          }
+        },
+        {
+          "id": "mud",
+          "name": "Boue",
+          "params": {
+            "soil": "mud"
+          }
+        }
+      ],
+      "slug": "nature-terrain-dirt-mound",
+      "path": "src/assets/nature/terrain/dirt-mound.js",
+      "module": "public/catalog/modules/nature-terrain-dirt-mound.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/ground-cover.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 304,
+          "vertices": 912,
+          "drawCalls": 1
+        },
+        "dirt": {
+          "triangles": 304,
+          "vertices": 912,
+          "drawCalls": 1
+        },
+        "clay": {
+          "triangles": 304,
+          "vertices": 912,
+          "drawCalls": 1
+        },
+        "mud": {
+          "triangles": 304,
+          "vertices": 912,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 2920,
+        "standalone": 24195
       }
     }
   ]

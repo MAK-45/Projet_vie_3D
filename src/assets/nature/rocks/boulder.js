@@ -1,12 +1,14 @@
 // Rocher posé : un bloc de pierre à facettes franches, assis sur le sol, avec parfois quelques cailloux à son
-// pied ; mousse ou neige possibles sur le dessus. Entièrement procédural, 1 ou 2 draw calls, environ 140 triangles.
+// pied. Mousse ou neige drapées sur le dessus et posées au sol autour, avec les mêmes générateurs que les assets
+// « Tapis de mousse » et « Plaque de neige » (kit/ground-cover.js). Entièrement procédural, 1 ou 2 draw calls.
 
 import * as THREE from "three";
 import { createToonMaterial } from "../../../engine/toon-material.js";
-import { buildRock, mergeGeometries, splitFacesByNormal } from "../../kit/geometry.js";
-import { COVERS, STONES } from "../../kit/palettes.js";
+import { buildRock, mergeGeometries } from "../../kit/geometry.js";
+import { coverMaterial, mossCap, mossMound, snowCap, snowMound } from "../../kit/ground-cover.js";
+import { STONES } from "../../kit/palettes.js";
 import { resolveParams } from "../../kit/params.js";
-import { createRng } from "../../kit/rng.js";
+import { createNoise3, createRng } from "../../kit/rng.js";
 import { coverParam, numberParam, seedParam, stoneParam, variantsOf } from "../../kit/variation.js";
 
 export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-material.js";
@@ -14,7 +16,7 @@ export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-ma
 const params = {
   seed: seedParam("Change la silhouette : rond, haut ou trapu, facettes, inclinaison, cailloux au pied."),
   stone: stoneParam("Type de pierre : couleurs et grain."),
-  cover: coverParam("Mousse ou neige sur les faces tournées vers le ciel."),
+  cover: coverParam("Mousse ou neige drapées sur le dessus du rocher, et posées au sol autour."),
   size: numberParam("Hauteur", 1.1, 0.4, 2.5, "Hauteur du rocher ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
   roughness: numberParam("Taille de la pierre", 1, 0, 1.5, "0 = galet arrondi, 1,5 = bloc très taillé."),
 };
@@ -33,10 +35,10 @@ export const meta = {
     "boulder", "rock", "stone", "pebble", "mineral", "faceted", "moss", "snow", "outdoor", "procedural",
   ],
   biomes: ["forest", "meadow", "mountain", "desert", "snow", "beach", "cave", "garden", "village", "swamp"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au centre du rocher",
-  footprint: { radius: 1.4, height: 1.1 },
+  footprint: { radius: 1.9, height: 1.2 },
   animated: [],
   params,
   variants: variantsOf("stone", params.stone),
@@ -97,32 +99,50 @@ export function create(given = {}) {
 
   const group = new THREE.Group();
   group.name = meta.name;
-  addStoneAndCover(group, mergeGeometries(parts), stone, p.cover, detail, h);
-  group.userData.asset = { id: meta.id, params: p };
-  return group;
-}
+  const rock = mergeGeometries(parts);
 
-/** Pierre + couverture (mousse, neige) sur les faces tournées vers le ciel. */
-function addStoneAndCover(group, geometry, stone, cover, detail, height) {
-  let stoneGeometry = geometry;
-  if (cover !== "bare") {
-    const threshold = cover === "snow" ? 0.62 : 0.72;
-    const salt = detail.range(0, 100);
-    const [covered, rest] = splitFacesByNormal(geometry, (normal, center) =>
-      normal.y + 0.35 * (patch(center, salt) - 0.5) > threshold && center.y > height * 0.3,
-    );
-    stoneGeometry = rest;
-    const coverMesh = new THREE.Mesh(
-      covered,
-      createToonMaterial({ ramp: COVERS[cover].ramp, ink: COVERS[cover].ink, pattern: "speckle", seed: detail.int(0, 96), id: 11 }),
-    );
-    coverMesh.name = cover;
+  // Couverture : drapée sur la pierre, plus des plaques au sol autour du pied.
+  if (p.cover !== "bare") {
+    const cover = createRng(p.seed * 31337 + 5);
+    const noise = createNoise3(p.seed + 101);
+    const layers = [];
+    if (p.cover === "snow") {
+      layers.push(snowCap(rock, noise, { amount: -0.15, thickness: 0.07 * Math.min(1.5, h), minY: h * 0.15 }));
+      layers.push(
+        snowMound(cover, noise, {
+          radius: [width * 1.5, depth * 1.5],
+          height: 0.1 * Math.min(1.5, h),
+          rotation: cover.range(0, Math.PI * 2),
+          drifts: cover.int(1, 2),
+        }),
+      );
+    } else {
+      layers.push(mossCap(rock, noise, { amount: 0, minY: h * 0.12 }));
+      const patches = cover.int(0, 2);
+      for (let i = 0; i < patches; i++) {
+        const angle = cover.range(0, Math.PI * 2);
+        const r = width * cover.range(0.35, 0.6);
+        const reach = width * cover.range(0.7, 1.0);
+        layers.push(
+          mossMound(cover, noise, {
+            radius: [r, r * cover.range(0.6, 0.9)],
+            height: 0.035,
+            cushions: cover.int(2, 4),
+            offset: [Math.cos(angle) * reach, 0, Math.sin(angle) * reach * (depth / width)],
+            rotation: cover.range(0, Math.PI * 2),
+          }),
+        );
+      }
+    }
+    const coverMesh = new THREE.Mesh(mergeGeometries(layers), coverMaterial(p.cover, undefined, { seed: detail.int(0, 96), id: 11 }));
+    coverMesh.name = p.cover;
     coverMesh.castShadow = true;
     coverMesh.receiveShadow = true;
     group.add(coverMesh);
   }
+
   const stoneMesh = new THREE.Mesh(
-    stoneGeometry,
+    rock,
     createToonMaterial({
       ramp: stone.ramp,
       ink: stone.ink,
@@ -138,10 +158,6 @@ function addStoneAndCover(group, geometry, stone, cover, detail, height) {
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
-}
-
-/** Bruit déterministe par face (0..1) : rend la mousse et la neige irrégulières. */
-function patch(center, salt) {
-  const v = Math.sin(center.x * 12.9898 + center.y * 78.233 + center.z * 37.719 + salt) * 43758.5453;
-  return v - Math.floor(v);
+  group.userData.asset = { id: meta.id, params: p };
+  return group;
 }

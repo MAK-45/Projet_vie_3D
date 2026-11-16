@@ -10,8 +10,9 @@ de modèle, tout est construit par du code à partir d'une graine. Tous les asse
 src/assets/
   index.js            registre : la liste de tous les assets + findAssets()
   taxonomy.js         catégories et sous-catégories autorisées, biomes
-  kit/                outils partagés : rng (graine), geometry (tubes, feuilles, fusion), params,
-                      variation (axes partagés : graine, saison, pierre, bois), palettes (matières)
+  kit/                outils partagés : rng (graine, bruit 3D), geometry (tubes, feuilles, rochers, buttes,
+                      drapés, fusion), params, variation (axes partagés : graine, saison, pierre, bois,
+                      couverture), palettes (matières), ground-cover (neige, mousse, terre au sol ou drapées)
   <catégorie>/<sous-catégorie>/<nom>.js     un fichier par asset
 src/engine/           toon-material (matériau à palette), pixel-renderer (basse réso + contours), iso-camera
 src/gallery/          la galerie web (visionneuse, catalogue, fiche, code)
@@ -111,7 +112,7 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 | Famille | Axes |
 |---|---|
 | Végétation, terrain | `season` : spring, summer, autumn, winter |
-| Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate |
+| Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate ; `cover` : bare, moss, snow |
 | Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch |
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
 

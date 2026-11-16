@@ -3,12 +3,15 @@
 
 import * as boulder from "./nature/rocks/boulder.js";
 import * as buriedRock from "./nature/rocks/buried-rock.js";
+import * as dirtMound from "./nature/terrain/dirt-mound.js";
+import * as mossPatch from "./nature/terrain/moss-patch.js";
+import * as snowPatch from "./nature/terrain/snow-patch.js";
 import * as birch from "./nature/trees/birch.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, boulder, buriedRock];
+export const assets = [birch, boulder, buriedRock, snowPatch, mossPatch, dirtMound];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */
 export function getAsset(id) {

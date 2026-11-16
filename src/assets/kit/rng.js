@@ -25,3 +25,30 @@ export function createRng(seed) {
     pick: (items) => items[Math.floor(next() * items.length)],
   };
 }
+
+/**
+ * Bruit de valeur 3D lisse et déterministe (0..1), pour des taches organiques (mousse, neige, terre).
+ * @param {number} seed entier
+ * @returns {(x: number, y: number, z: number) => number}
+ */
+export function createNoise3(seed) {
+  const salt = Math.imul(Math.floor(seed) + 1, 0x27d4eb2d);
+  const hash = (x, y, z) => {
+    let h = (Math.imul(x, 0x8da6b343) ^ Math.imul(y, 0xd8163841) ^ Math.imul(z, 0xcb1ab31f) ^ salt) | 0;
+    h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d);
+    h = Math.imul(h ^ (h >>> 12), 0x297a2d39);
+    return ((h ^ (h >>> 15)) >>> 0) / 4294967296;
+  };
+  const fade = (t) => t * t * (3 - 2 * t);
+  const lerp = (a, b, t) => a + (b - a) * t;
+  return (x, y, z) => {
+    const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+    const u = fade(x - xi), v = fade(y - yi), w = fade(z - zi);
+    const corner = (dx, dy, dz) => hash(xi + dx, yi + dy, zi + dz);
+    return lerp(
+      lerp(lerp(corner(0, 0, 0), corner(1, 0, 0), u), lerp(corner(0, 1, 0), corner(1, 1, 0), u), v),
+      lerp(lerp(corner(0, 0, 1), corner(1, 0, 1), u), lerp(corner(0, 1, 1), corner(1, 1, 1), u), v),
+      w,
+    );
+  };
+}

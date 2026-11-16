@@ -50,7 +50,9 @@ propose pas.
 ## Matières partagées
 
 `src/assets/kit/palettes.js` contient les rampes de couleurs des pierres (`STONES`), des bois (`WOODS`), des
-couvertures mousse et neige (`COVERS`, axe `cover` via `coverParam`) et des sols (`GROUNDS`).
+couvertures mousse et neige (`COVERS`, axe `cover` via `coverParam`), des neiges (`SNOWS` : fraîche, tassée),
+des mousses par saison (`MOSSES`) et des sols (`GROUNDS` : terre, argile, boue). Les formes de neige, mousse
+et terre, au sol ou drapées sur un objet, sont dans `src/assets/kit/ground-cover.js`.
 `stoneParam(description, { only: ["granite", "slate"] })` limite le choix aux matières plausibles pour l'asset.
 
 - Une matière absente (brique, tuile, chaume, métal, tissu, peinture) : l'ajouter à `palettes.js` sous un nouveau
