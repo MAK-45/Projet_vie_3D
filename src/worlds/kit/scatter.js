@@ -5,9 +5,8 @@
 //   modèle, donc autant de draw calls que le modèle seul, quel que soit le nombre de copies.
 // - Le monde est découpé en cases. À chaque image, on cherche les cases que la caméra voit ; quand cette liste
 //   change, on recopie dans chaque couche les matrices des seules cases visibles. Rien n'est recalculé entre-temps.
-// - Un plafond de triangles éclaircit les couches « fines » (herbe, fleurs) quand la vue couvre beaucoup de
-//   terrain : on ne dessine que les premières copies de chaque case, rangées dans un ordre mélangé, donc
-//   réparties partout.
+// - Les couches « fines » (herbe, fleurs) s'éclaircissent quand la vue couvre beaucoup de terrain : on ne dessine
+//   que les premières copies de chaque case, rangées dans un ordre mélangé, donc réparties partout.
 
 import * as THREE from "three";
 import { disposeObject } from "../../engine/toon-material.js";
@@ -30,9 +29,9 @@ export class ScatterField {
     bounds,
     heightAt = () => 0,
     classes = {
-      fine: { cellSize: 4, height: 1.5, margin: 0.9 },
-      low: { cellSize: 6, height: 3, margin: 2.5 },
-      tall: { cellSize: 3, height: 15, margin: 6.5 }, // à peu près un arbre par case : tri arbre par arbre
+      fine: { cellSize: 4, height: 1.6, margin: 1.6 },
+      low: { cellSize: 6, height: 3, margin: 3.5 }, // marge : un rocher hors champ projette encore son ombre
+      tall: { cellSize: 3, height: 15, margin: 8.5 }, // un arbre par case environ ; marge = couronne + ombre portée
     },
   }) {
     this.bounds = bounds;
@@ -42,7 +41,7 @@ export class ScatterField {
     this.classes = {};
     /** Part des copies fines dessinées (1 = toutes). */
     this.fraction = 1;
-    this._budget = -1;
+    this._first = true;
 
     for (const [name, { cellSize, height, margin }] of Object.entries(classes)) {
       const cols = Math.max(1, Math.ceil((bounds.maxX - bounds.minX) / cellSize));
@@ -171,19 +170,22 @@ export class ScatterField {
 
   /**
    * À appeler à chaque image avant le rendu : met à jour les copies dessinées si la vue a changé.
+   *
+   * `fraction` ne doit dépendre que du cadrage (zoom, inclinaison), jamais de ce qui se trouve dans la vue :
+   * tant que le promeneur marche sans toucher à la caméra, les mêmes copies restent dessinées et rien ne
+   * clignote ; elles n'entrent et ne sortent que par les bords de l'image.
+   *
    * @param {THREE.Camera} camera caméra de la vue (matrices à jour)
-   * @param {object} [limits]
-   * @param {number} [limits.budget] triangles que le semis peut coûter par image, ombres comprises
-   * @param {number} [limits.shadowCost] coût d'un triangle qui projette une ombre (2 si la carte d'ombre est
-   *   refaite à chaque image, 1,5 une image sur deux)
-   * @param {number} [limits.minThin] triangles laissés aux couches fines même quand les arbres prennent tout
+   * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
    * @returns {boolean} vrai si les copies ont été recopiées
    */
-  update(camera, { budget = Infinity, shadowCost = 2, minThin = 30000 } = {}) {
+  update(camera, fraction = 1) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
-    let changed = budget !== this._budget;
-    this._budget = budget;
+    const step = Math.round(THREE.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
+    let changed = step !== this.fraction || this._first;
+    this._first = false;
+    this.fraction = step;
 
     for (const cls of Object.values(this.classes)) {
       let length = 0;
@@ -200,23 +202,19 @@ export class ScatterField {
         changed = true;
       }
     }
-    if (!changed) return false;
+    if (changed) this._refill(step);
+    return changed;
+  }
 
-    // Ce que coûtent les couches pleines (arbres, rochers) fixe ce qu'il reste aux couches fines ; on en dessine
-    // la part qui tient dans ce reste, par crans de 5 %, jamais moins de 20 %.
-    let wanted = 0;
-    let fixed = 0;
-    for (const layer of this.layers) {
-      const cls = this.classes[layer.reach];
-      let floats = 0;
-      for (let i = 0; i < cls.length; i++) floats += layer.cells[cls.visible[i]]?.length ?? 0;
-      if (layer.thin) wanted += (floats / 16) * layer.triangles;
-      else fixed += (floats / 16) * layer.triangles * (layer.castsShadow ? shadowCost : 1);
+  /** Dessine toutes les copies, sans tri : pour un monde montré d'un bloc (vignette, fiche d'asset). */
+  showAll() {
+    for (const cls of Object.values(this.classes)) {
+      cls.length = cls.active.length;
+      cls.visible.set(cls.active);
+      cls.previousLength = -1;
     }
-    const thinBudget = Math.max(minThin, budget - fixed);
-    this.fraction = wanted > thinBudget ? Math.max(0.2, Math.floor((thinBudget / wanted) * 20) / 20) : 1;
-    this._refill(this.fraction);
-    return true;
+    this.fraction = 1;
+    this._refill(1);
   }
 
   /** Copies et triangles dessinés à cet instant (hors passe d'ombre). */

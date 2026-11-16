@@ -7,8 +7,11 @@ import { buildSpriteGeometry } from "../assets/kit/geometry.js";
 import { createRng } from "../assets/kit/rng.js";
 import { createToonMaterial, sharedUniforms } from "../engine/toon-material.js";
 
-// Rampe lue directement par l'« occlusion » de chaque forme : bleu, orangé, jaune, blanc (papillons), crème (graines).
-const COLORS = ["#4a78e0", "#f08a2c", "#f7d63c", "#fffdf4", "#fff7cf"];
+// Rampe lue directement par l'« occlusion » de chaque forme : bleu, orangé, jaune, blanc (papillons), crème
+// (graines), vert-jaune (lucioles).
+const COLORS = ["#4a78e0", "#f08a2c", "#f7d63c", "#fffdf4", "#fff7cf", "#d9ff5e"];
+const SEED_SHADE = 0.75;
+const FIREFLY_SHADE = 0.95;
 const WINGS = { points: [[0, 0], [-1, 0.8], [-0.85, -0.5], [1, 0.8], [0.85, -0.5]], triangles: [0, 1, 2, 0, 4, 3] };
 const SPECK = { points: [[-1, -1], [1, -1], [1, 1], [-1, 1]], triangles: [0, 1, 2, 0, 2, 3] };
 const TAU = Math.PI * 2;
@@ -22,12 +25,12 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
   const sprites = [];
   const flyers = [];
   for (let i = 0; i < butterflies; i++) {
-    sprites.push({ position: origin, ...WINGS, size: rng.range(0.11, 0.15), occlusion: 0.1 + 0.2 * rng.int(0, 3), phase: rng.next() });
+    sprites.push({ position: origin, ...WINGS, size: rng.range(0.11, 0.15), occlusion: 0.08 + 0.17 * rng.int(0, 3), phase: rng.next() });
     flyers.push({ x: 0, y: 0, z: 0, targetX: 0, targetZ: 0, rest: 0, phase: rng.range(0, TAU), speed: rng.range(0.9, 1.6), lift: rng.range(0.5, 1.3) });
   }
   const drifters = [];
   for (let i = 0; i < motes; i++) {
-    sprites.push({ position: origin, ...SPECK, size: 0.034, occlusion: 0.9, phase: rng.next(), flex: 1 });
+    sprites.push({ position: origin, ...SPECK, size: 0.034, occlusion: SEED_SHADE, phase: rng.next(), flex: 1 });
     drifters.push({ x: rng.range(-1, 1), z: rng.range(-1, 1), height: rng.range(0.3, 3.2), phase: rng.range(0, TAU), speed: rng.range(0.5, 1.1) });
   }
   const geometry = buildSpriteGeometry(sprites);
@@ -39,7 +42,8 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
   const WING_VERTICES = WINGS.points.length;
   const SPECK_VERTICES = SPECK.points.length;
 
-  const material = createToonMaterial({ ramp: COLORS, steps: [0.2, 0.4, 0.6, 0.8], foliage: true, unlit: true, leafShade: [0, 1], id: 41, outline: false });
+  const shades = geometry.attributes.aLeaf;
+  const material = createToonMaterial({ ramp: COLORS, steps: [0.17, 0.33, 0.5, 0.67, 0.83], foliage: true, unlit: true, leafShade: [0, 1], twinkle: 0.45, id: 41, outline: false });
   const mesh = new THREE.Mesh(geometry, material);
   mesh.name = "ambient life";
   mesh.frustumCulled = false; // les positions changent à chaque image
@@ -49,6 +53,10 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
 
   let world = null;
   let radius = 14;
+  let night = 0;
+  let rain = 0;
+  let fireflies = false;
+  const HIDDEN = -500; // sous la mer de nuages : une forme rangée là ne se voit pas
   const retarget = (flyer, reach) => {
     const angle = rng.range(0, TAU);
     const distance = rng.range(1, reach);
@@ -65,6 +73,21 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
 
   return {
     group,
+    /**
+     * Heure et météo : les papillons se cachent la nuit et sous la pluie ; la nuit, les graines deviennent des
+     * lucioles qui clignotent.
+     * @param {number} nextNight 0 (jour) à 1 (nuit)
+     * @param {number} nextRain 0 (beau) à 1 (pluie)
+     */
+    setMood(nextNight, nextRain) {
+      night = nextNight;
+      rain = nextRain;
+      const wanted = night > 0.55;
+      if (wanted === fireflies) return;
+      fireflies = wanted;
+      for (let vertex = butterflies * WING_VERTICES; vertex < shades.count; vertex++) shades.setY(vertex, wanted ? FIREFLY_SHADE : SEED_SHADE);
+      shades.needsUpdate = true;
+    },
     /** Repart d'un monde neuf : tout le monde autour du promeneur. */
     reset(nextWorld, center) {
       world = nextWorld;
@@ -108,8 +131,9 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
         flyer.y += (world.heightAt(flyer.x, flyer.z) + hover - flyer.y) * Math.min(1, dt * 4);
         // Battement : ailes ouvertes ou refermées, à la cadence du décor.
         const closed = Math.floor(beat * (flyer.rest > 0 ? 2.5 : 12) + flyer.phase) % 2 === 1;
+        const asleep = night > 0.45 || rain > 0.35;
         for (let k = 0; k < WING_VERTICES; k++, vertex++) {
-          positions.setXYZ(vertex, flyer.x, flyer.y, flyer.z);
+          positions.setXYZ(vertex, flyer.x, asleep ? HIDDEN : flyer.y, flyer.z);
           corners.setX(vertex, restCorners[vertex * 3] * (closed ? 0.3 : 1));
         }
       }
@@ -124,7 +148,9 @@ export function createAmbientLife({ butterflies = 12, motes = 40 } = {}) {
         if (drifter.z > 1) drifter.z -= 2;
         const x = center.x + drifter.x * radius + Math.sin(time * 0.7 + drifter.phase) * 0.4;
         const z = center.z + drifter.z * radius + Math.cos(time * 0.6 + drifter.phase) * 0.4;
-        const y = world.heightAt(x, z) + drifter.height + Math.sin(time * 0.9 + drifter.phase * 2) * 0.25;
+        // Sous la pluie, plus rien ne vole ; une luciole s'éteint une partie du temps et vole plus bas.
+        const dark = rain > 0.5 || (fireflies && Math.sin(time * 1.3 + drifter.phase * 5) < -0.2);
+        const y = dark ? HIDDEN : world.heightAt(x, z) + drifter.height * (fireflies ? 0.55 : 1) + Math.sin(time * 0.9 + drifter.phase * 2) * 0.25;
         for (let k = 0; k < SPECK_VERTICES; k++, vertex++) positions.setXYZ(vertex, x, y, z);
       }
       positions.needsUpdate = true;

@@ -1,20 +1,15 @@
-// Prairie d'été : une île de plaine vallonnée, des bosquets, des rochers, un ciel de beau temps. Entièrement
-// procédurale à partir d'une graine, en trois tailles, et en trois habillages pour comparer :
+// Prairie d'été : une île de plaine vallonnée qui flotte dans une mer de nuages. Des bosquets, des rochers, un pré
+// d'herbes et de fleurs, des ombres de nuages qui passent. Entièrement procédurale à partir d'une graine, en trois
+// tailles, et assemblée à partir des assets de la bibliothèque : le sol de prairie (herbe grasse, herbe sèche,
+// terre et fleurs peintes dans le sol) donne la couleur et couvre tout ; par-dessus, pelouses, touffes, hautes
+// herbes, massifs de fleurs, mousse et taupinières donnent le volume et bougent au vent.
 //
-// - `ready`  : le sol de prairie de la bibliothèque (herbe grasse, herbe sèche, terre et fleurs peintes dans le
-//              sol) + arbres, rochers, ciel. Aucune herbe ni fleur en volume.
-// - `assets` : un sol uni vert + tous les assets : pelouses, touffes d'herbe, hautes herbes, massifs de fleurs,
-//              mousse, taupinières, en plus des arbres, des rochers et du ciel.
-// - `mixed`  : le sol de prairie ET la végétation en volume.
-//
-// Les trois habillages d'une même graine partagent le relief, les arbres, les rochers et les nuages : seule la
-// façon de couvrir le sol change. 1 unité = 1 mètre partout ; rien n'est remis à l'échelle hors des plages prévues
-// par chaque asset (un massif de fleurs arrive au genou, un chêne fait 9 à 13 m).
+// 1 unité = 1 mètre partout ; rien n'est remis à l'échelle hors des plages prévues par chaque asset (un massif de
+// fleurs arrive au genou, un chêne fait 9 à 13 m).
 
 import * as THREE from "three";
 import { createToonMaterial, disposeObject } from "../engine/toon-material.js";
-import { buildTerrainChunk } from "../assets/kit/geometry.js";
-import { GROUNDS, MEADOW_GROUNDS, STONES } from "../assets/kit/palettes.js";
+import { GROUNDS, STONES } from "../assets/kit/palettes.js";
 import { createNoise3, createRng } from "../assets/kit/rng.js";
 import * as flowerClump from "../assets/nature/plants/flower-clump.js";
 import * as grassTuft from "../assets/nature/plants/grass-tuft.js";
@@ -28,7 +23,8 @@ import * as birch from "../assets/nature/trees/birch.js";
 import * as linden from "../assets/nature/trees/linden.js";
 import * as oak from "../assets/nature/trees/oak.js";
 import { ScatterField } from "./kit/scatter.js";
-import { createClouds, createDaylight, createSunDisc } from "./kit/sky.js";
+import { createCloudSea } from "./kit/cloud-sea.js";
+import { createCloudShadows, createDaylight } from "./kit/sky.js";
 import { buildIslandBand, groundNormal } from "./kit/terrain.js";
 
 export const MEADOW_SIZES = {
@@ -37,25 +33,17 @@ export const MEADOW_SIZES = {
   large: { label: "Grand", meters: 144 },
 };
 
-export const MEADOW_VARIANTS = {
-  ready: { label: "A · Sol prêt", ground: "meadow", detail: false, note: "Sol de prairie de la bibliothèque, arbres, rochers, ciel." },
-  assets: { label: "B · Tout en assets", ground: "plain", detail: true, note: "Sol vert uni, et toute la végétation posée en volume." },
-  mixed: { label: "A + B", ground: "meadow", detail: true, note: "Sol de prairie et végétation en volume par-dessus." },
-};
-
 const TILE = 16; // côté d'un morceau de sol (m)
-const RELIEF = 1.8; // hauteur des ondulations (m)
 const SEASON = "summer";
 const GROUND_ID = 11; // identifiant de contour du sol (celui de l'asset « Sol de prairie »)
 /**
- * Triangles que le semis peut coûter par image, ombres comprises (le sol en prend une vingtaine de milliers de
- * plus). Les arbres et les rochers passent d'abord ; herbes et fleurs s'éclaircissent pour tenir dans ce qu'il
- * reste, sans descendre sous FINE_TRIANGLE_FLOOR : dans un bosquet, l'herbe est plus rare qu'en plein pré.
+ * Grain du sol peint, en cases par mètre. L'asset en met 16 (un pixel d'art au zoom 1) ; en vue inclinée une case
+ * fait alors moins d'un pixel de haut, et les points colorés (fleurs, grain) s'allument et s'éteignent dès que
+ * la caméra tourne. À 10, chaque case couvre toujours plus d'un pixel.
  */
-const SCATTER_TRIANGLE_BUDGET = 170000;
-const FINE_TRIANGLE_FLOOR = 60000;
-/** La carte d'ombre est refaite une image sur deux : un triangle qui projette une ombre coûte 1,5 fois. */
-const SHADOW_COST = 1.5;
+const GROUND_GRAIN = 10;
+/** Surface de pré vue (m²) jusqu'à laquelle toutes les herbes et fleurs sont dessinées ; au-delà, elles s'éclaircissent. */
+const FULL_DETAIL_AREA = 380;
 
 const TAU = Math.PI * 2;
 const UP = new THREE.Vector3(0, 1, 0);
@@ -69,12 +57,21 @@ const _matrix = new THREE.Matrix4();
 
 /**
  * Crée une prairie d'été.
- * @param {{seed?: number, size?: "small"|"medium"|"large", variant?: "ready"|"assets"|"mixed"}} [options]
+ * @param {object} [options]
+ * @param {number} [options.seed] 0 à 9999 : relief, bosquets, affleurements, nappes de fleurs
+ * @param {"small"|"medium"|"large"} [options.size] 48, 96 ou 144 m de côté
+ * @param {number} [options.relief] hauteur des ondulations (m), 0,6 à 3
+ * @param {number} [options.trees] abondance des arbres, 0 (aucun) à 2 (boisé) ; 1 = prairie à bosquets
+ * @param {number} [options.rocks] abondance des rochers, 0 à 2
+ * @param {number} [options.grass] abondance des herbes et des pelouses, 0 à 2
+ * @param {number} [options.flowers] abondance des fleurs, 0 à 2
+ * @param {boolean} [options.diorama] vrai : l'île seule, toutes ses copies dessinées, sans lumière, ni ombres de
+ *   nuages, ni mer de nuages (fiche et vignette de l'asset) ; `update` devient inutile
  */
-export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready" } = {}) {
+export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1, diorama = false } = {}) {
+  const RELIEF = THREE.MathUtils.clamp(relief, 0.2, 3);
   seed = THREE.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
   const meters = (MEADOW_SIZES[size] ?? MEADOW_SIZES.medium).meters;
-  const look = MEADOW_VARIANTS[variant] ?? MEADOW_VARIANTS.ready;
   const tiles = meters / TILE;
   const firstTile = -Math.floor(tiles / 2);
   // Les morceaux de sol sont centrés sur les multiples de TILE (convention de l'asset « Sol de prairie »).
@@ -101,26 +98,15 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
     for (let i = 0; i < tiles; i++) {
       const tileX = firstTile + i;
       const tileZ = firstTile + j;
-      let mesh;
-      if (look.ground === "meadow") {
-        // L'asset tel quel, un morceau par case ; sa tranche est remplacée par celle de l'île.
-        const tile = meadowGround.create({ seed, season: SEASON, finish: "pixel", tileX, tileZ, size: TILE, relief: RELIEF, dryness: 0.25 });
-        mesh = tile.getObjectByName("ground");
-        disposeObject(tile.getObjectByName("skirt"));
-        if (groundMaterial) {
-          mesh.material.dispose();
-          mesh.material = groundMaterial;
-        } else {
-          groundMaterial = mesh.material;
-        }
+      // L'asset tel quel, un morceau par case ; sa tranche est remplacée par celle de l'île.
+      const tile = meadowGround.create({ seed, season: SEASON, finish: "pixel", tileX, tileZ, size: TILE, relief: RELIEF, dryness: 0.25 });
+      const mesh = tile.getObjectByName("ground");
+      disposeObject(tile.getObjectByName("skirt"));
+      if (groundMaterial) {
+        mesh.material.dispose();
+        mesh.material = groundMaterial;
       } else {
-        // Sol uni : même relief, même vert de base, aucun motif.
-        const { top, skirt } = buildTerrainChunk({ size: TILE, spacing: 0.5, origin: [tileX * TILE, tileZ * TILE], height: heightAt });
-        skirt.dispose();
-        groundMaterial ??= createToonMaterial({ ramp: MEADOW_GROUNDS[SEASON].grass, steps: [0.62, 0.8, 0.935], id: GROUND_ID, shadowLit: 0.7 });
-        mesh = new THREE.Mesh(top, groundMaterial);
-        mesh.name = "ground";
-        mesh.receiveShadow = true;
+        groundMaterial = mesh.material;
       }
       mesh.position.set(tileX * TILE, 0, tileZ * TILE);
       mesh.matrixAutoUpdate = false;
@@ -131,6 +117,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
   // Vu presque à l'horizontale, chaque bosse du pré cache un peu de sol derrière elle, et la passe de contours y
   // traçait un trait sombre en travers de l'herbe : le sol ne se cerne lui-même que sur un vrai décroché (4 m).
   groundMaterial.uniforms.uSelfEdge.value = 4;
+  groundMaterial.uniforms.uPattern.value.x = GROUND_GRAIN;
   group.add(ground);
 
   // Tranche de l'île : terre, puis roche au bas déchiqueté.
@@ -202,8 +189,9 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
       const yaw = rng.range(0, TAU);
       if (!inside(x, z, 3.5)) continue;
       // Bosquets : les arbres se serrent là où le champ est haut, et laissent de grandes clairières ailleurs.
-      const grove = smoothstep(fbm(x, z, 44, 1), 0.5, 0.68);
-      if (roll > 0.015 + grove * 0.55) continue;
+      // Plus d'arbres : des bosquets plus étendus, pas seulement plus serrés.
+      const grove = smoothstep(fbm(x, z, 44, 1) + (treeAmount - 1) * 0.12, 0.5, 0.68);
+      if (roll > (0.015 + grove * 0.55) * treeAmount) continue;
       const essence = field(x, z, 75, 2);
       const name = grove > 0.2
         ? (essence < 0.4 ? "birch" : essence < 0.68 ? "oak" : "linden")
@@ -248,7 +236,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
       rocks.push({ x, z, radius: model.size * scale * 0.6 });
     }
   };
-  const outcrops = Math.max(2, Math.round(area / 1200));
+  const outcrops = rockAmount > 0 ? Math.max(1, Math.round((area / 1200) * rockAmount)) : 0;
   for (let n = 0; n < outcrops; n++) {
     // Les affleurements percent sur les hauteurs : on garde le plus haut de trois tirages.
     let site = null;
@@ -266,7 +254,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
       addRock(site.x + Math.cos(angle) * distance, site.z + Math.sin(angle) * distance, false);
     }
   }
-  const loners = Math.round(area / 650);
+  const loners = Math.round((area / 650) * rockAmount);
   for (let n = 0; n < loners; n++) {
     addRock(rng.range(bounds.minX + 3, bounds.maxX - 3), rng.range(bounds.minZ + 3, bounds.maxZ - 3), false);
   }
@@ -277,7 +265,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
   counts.flowers = 0;
   counts.lawns = 0;
   counts.patches = 0;
-  if (look.detail) {
+  {
     const detail = createRng(seed * 7477 + 29);
     // Recherche rapide des arbres et rochers voisins.
     const BUCKET = 8;
@@ -324,7 +312,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
         const yaw = detail.range(0, TAU);
         const scale = detail.range(0.85, 1.15);
         if (!inside(x, z, 1.8) || onRock(x, z, 0.8) || openness(x, z) < 0.3) continue;
-        if (roll > smoothstep(moisture(x, z), 0.42, 0.66) * 0.45) continue;
+        if (roll > smoothstep(moisture(x, z), 0.42, 0.66) * 0.45 * grass) continue;
         place(lawns[Math.floor(model * lawns.length)], x, z, { yaw, scale, tilt: true });
         counts.lawns += 1;
       }
@@ -354,7 +342,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
         const vigor = fbm(x, z, 11, 3) * 0.7 + field(x, z, 48, 4) * 0.3;
         let chance = 0.22 + smoothstep(vigor, 0.36, 0.62);
         if (open < 1) chance *= 0.5; // à l'ombre des couronnes, l'herbe est plus rare et plus rase
-        if (roll > chance) continue;
+        if (roll > chance * grass) continue;
         const tallZone = fbm(x, z, 27, 5);
         if (open >= 1.1 && tallRoll < smoothstep(tallZone, 0.56, 0.7) * 0.75) {
           place(tallTufts[Math.floor(model * tallTufts.length)], x, z, { yaw, scale });
@@ -378,6 +366,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
       kind.layer = addGroundCover(flowerClump.create({ seed: kind.slot, species: name, season: SEASON, count: kind.count }), { outlined: ["petals", "hearts"] });
     }
     const FLOWER_CELL = 1.3;
+    const flowerSpread = (flowerAmount - 1) * 0.05; // plus de fleurs : des nappes plus larges, pas seulement plus serrées
     const flowerCells = Math.ceil(meters / FLOWER_CELL);
     for (let j = 0; j < flowerCells; j++) {
       for (let i = 0; i < flowerCells; i++) {
@@ -394,18 +383,18 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
         let best = null;
         let bestValue = 0;
         for (const kind of Object.values(flowers)) {
-          const value = fbm(x, z, kind.wavelength, kind.slot) + kind.bias(wet) - kind.threshold;
+          const value = fbm(x, z, kind.wavelength, kind.slot) + kind.bias(wet) - kind.threshold + flowerSpread;
           if (value > bestValue) {
             best = kind;
             bestValue = value;
           }
         }
-        if (best && roll < 0.15 + smoothstep(bestValue, 0, 0.1) * 0.5) {
+        if (best && roll < (0.15 + smoothstep(bestValue, 0, 0.1) * 0.5) * Math.min(1.6, flowerAmount)) {
           place(best.layer, x, z, { yaw, scale });
           counts.flowers += 1;
-        } else if (stray < 0.01) {
+        } else if (stray < 0.01 * flowerAmount) {
           // Quelques fleurs égarées hors des nappes.
-          place(stray < 0.006 ? flowers.daisy.layer : flowers.buttercup.layer, x, z, { yaw, scale: scale * 0.9 });
+          place(stray < 0.006 * flowerAmount ? flowers.daisy.layer : flowers.buttercup.layer, x, z, { yaw, scale: scale * 0.9 });
           counts.flowers += 1;
         }
       }
@@ -457,12 +446,18 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
   scatter.build(createRng(seed * 31 + 7));
   group.add(scatter.group);
 
-  // --- Ciel ----------------------------------------------------------------------------------------------------
-  const daylight = createDaylight();
-  const sunDisc = createSunDisc(daylight, { seed: seed % 50 });
-  const clouds = createClouds(createRng(seed * 131 + 1), { bounds, drifting: Math.round(4 + area / 4000), horizon: 7 });
-  group.add(daylight.light, daylight.light.target, sunDisc.group, clouds.group);
-  counts.clouds = clouds.group.children.length;
+  // --- Ciel : lumière, ombres de nuages, mer de nuages autour de l'île ------------------------------------------
+  let daylight = null;
+  let cloudShadows = null;
+  let cloudSea = null;
+  if (diorama) {
+    scatter.showAll();
+  } else {
+    daylight = createDaylight();
+    cloudShadows = createCloudShadows(createRng(seed * 131 + 1), { bounds, count: Math.round(4 + area / 4000) });
+    cloudSea = createCloudSea({ bounds, mistLevel: RELIEF + 0.5 });
+    group.add(daylight.light, daylight.light.target, cloudShadows.group, cloudSea.mesh);
+  }
 
   // --- Point de départ : près du centre, à l'écart des troncs et des rochers --------------------------------------
   const spawn = new THREE.Vector3(center.x, 0, center.z);
@@ -484,13 +479,11 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
     group,
     seed,
     size,
-    variant,
     meters,
     bounds,
     center,
     spawn,
     counts,
-    daylight,
     heightAt,
 
     /**
@@ -514,21 +507,31 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
     },
 
     /**
+     * Applique l'ambiance du moment (kit/atmosphere.js) : position de l'astre, teintes de la mer de nuages.
+     * @param {object} mood `values` d'une ambiance
+     */
+    setMood(mood) {
+      if (!daylight) return;
+      daylight.setSun(mood.sunAzimuth, mood.sunElevation);
+      cloudSea.setLook(mood.sea, mood.skyBottom, daylight.direction);
+    },
+
+    /**
      * À appeler à chaque image, caméra à jour, avant le rendu.
      * @param {object} frame
      * @param {THREE.OrthographicCamera} frame.camera
-     * @param {number} frame.cameraAzimuth azimut de la caméra (rad)
      * @param {THREE.Vector3} frame.target point regardé (le personnage)
      * @param {number} frame.dt secondes depuis l'image précédente
+     * @param {number} frame.viewArea surface de sol que couvre la vue (m²) : ne dépend que du zoom et de
+     *   l'inclinaison, donc la densité d'herbe ne bouge pas pendant qu'on marche
      * @param {number} frame.viewRadius demi-diagonale de la zone de sol vue (m)
      * @param {boolean} frame.shadows vrai les images où la carte d'ombre est refaite : la lumière ne suit la
      *   vue que ces images-là, sinon les ombres glisseraient sur le sol
      */
-    update({ camera, cameraAzimuth, target, dt, viewRadius, shadows }) {
-      scatter.update(camera, { budget: SCATTER_TRIANGLE_BUDGET, shadowCost: SHADOW_COST, minThin: FINE_TRIANGLE_FLOOR });
-      clouds.update(dt);
-      sunDisc.update(camera, cameraAzimuth);
-      if (shadows) daylight.update(target, viewRadius + 10);
+    update({ camera, target, dt, viewArea, viewRadius, shadows }) {
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea);
+      cloudShadows.update(dt);
+      if (shadows) daylight.update(target, viewRadius + 14);
     },
 
     /** Ce qui est dessiné à cet instant par le semis, et la part de végétation fine affichée. */
@@ -538,9 +541,9 @@ export function createSummerMeadow({ seed = 1, size = "medium", variant = "ready
 
     dispose() {
       scatter.dispose();
-      clouds.dispose();
-      sunDisc.dispose();
-      daylight.dispose();
+      cloudShadows?.dispose();
+      cloudSea?.dispose();
+      daylight?.dispose();
       for (const mesh of ground.children) mesh.geometry.dispose();
       groundMaterial?.dispose();
       disposeObject(soil);

@@ -30,7 +30,26 @@ uniform float uCreaseLighten;
 uniform vec3 uBgTop;
 uniform vec3 uBgBottom;
 uniform vec2 uResolution;
+uniform vec3 uGrade;       // teinte de l'heure : chaque couleur est multipliée (1,1,1 = plein jour)
+uniform float uSaturation; // 1 = couleurs franches, 0 = gris (temps couvert)
+uniform float uRain;       // 0..1 : densité des traits de pluie
+uniform float uRainTime;
 varying vec2 vUv;
+
+float hash21(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+// Pluie : traits clairs d'un pixel de large qui tombent en biais, calculés à l'écran (aucune géométrie).
+float rainAt(vec2 p) {
+  float column = floor(p.x + p.y * 0.3);
+  float fall = p.y + uRainTime * (150.0 + 70.0 * hash21(vec2(column, 3.0))) + hash21(vec2(column, 7.0)) * 61.0;
+  float drop = floor(fall / 23.0);
+  float along = fract(fall / 23.0);
+  return step(hash21(vec2(column, drop)), 0.085 * uRain) * step(along, 0.3);
+}
 
 float bayer4(vec2 p) {
   ivec2 i = ivec2(mod(p, 4.0));
@@ -54,7 +73,8 @@ void main() {
     float steps = 5.0;
     float t = vUv.y * steps;
     float band = floor(t) + step(bayer4(gl_FragCoord.xy), fract(t));
-    gl_FragColor = vec4(mix(uBgBottom, uBgTop, clamp(band / steps, 0.0, 1.0)), 1.0);
+    vec3 sky = mix(uBgBottom, uBgTop, clamp(band / steps, 0.0, 1.0));
+    gl_FragColor = vec4(mix(sky, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy)), 1.0);
     return;
   }
 
@@ -94,6 +114,11 @@ void main() {
   result = mix(result, min(result * uCreaseLighten, vec3(1.0)), crease * uOutline);
   vec3 outline = mix(result * uOutlineDarken, uOutlineTint, 0.3);
   result = mix(result, outline, edge * uOutline * inked);
+  // Heure et météo : tout le décor est teinté d'un coup. Les matières sans contour (lucioles, mer de nuages)
+  // portent déjà leur couleur finale et y échappent : une luciole reste vive en pleine nuit.
+  vec3 graded = mix(vec3(dot(result, vec3(0.3, 0.55, 0.15))), result, uSaturation) * uGrade;
+  result = mix(result, graded, inked);
+  result = mix(result, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy));
   gl_FragColor = vec4(result, 1.0);
 }
 `;
@@ -152,6 +177,10 @@ export class PixelRenderer {
         uCreaseLighten: { value: 1.18 },
         uBgTop: { value: rgb("#8fb7d9") },
         uBgBottom: { value: rgb("#cfe3ea") },
+        uGrade: { value: new THREE.Vector3(1, 1, 1) },
+        uSaturation: { value: 1 },
+        uRain: { value: 0 },
+        uRainTime: { value: 0 },
       },
       vertexShader: COMPOSITE_VERTEX,
       fragmentShader: COMPOSITE_FRAGMENT,
@@ -169,8 +198,21 @@ export class PixelRenderer {
 
   /** Couleurs du fond (dégradé bas → haut). */
   setBackground(bottom, top = bottom) {
-    this.compositeMaterial.uniforms.uBgBottom.value.copy(rgb(bottom));
-    this.compositeMaterial.uniforms.uBgTop.value.copy(rgb(top));
+    this.compositeMaterial.uniforms.uBgBottom.value.copy(bottom.isVector3 ? bottom : rgb(bottom));
+    this.compositeMaterial.uniforms.uBgTop.value.copy(top.isVector3 ? top : rgb(top));
+  }
+
+  /**
+   * Ambiance de l'image entière : teinte de l'heure, saturation, pluie. Sans appel, plein jour par beau temps.
+   * @param {{grade?: {x: number, y: number, z: number}, saturation?: number, rain?: number, time?: number}} mood
+   *   grade : multiplicateur par canal ; rain : 0..1 ; time : secondes (fait tomber la pluie)
+   */
+  setMood({ grade, saturation, rain, time }) {
+    const uniforms = this.compositeMaterial.uniforms;
+    if (grade) uniforms.uGrade.value.copy(grade);
+    if (saturation !== undefined) uniforms.uSaturation.value = saturation;
+    if (rain !== undefined) uniforms.uRain.value = rain;
+    if (time !== undefined) uniforms.uRainTime.value = time;
   }
 
   /**
