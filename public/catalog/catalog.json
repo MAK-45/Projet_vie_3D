@@ -98,6 +98,16 @@
         }
       }
     },
+    "worlds": {
+      "label": "Mondes",
+      "description": "Cartes entières assemblées à partir des autres assets, à configurer puis à visiter.",
+      "subcategories": {
+        "islands": {
+          "label": "Îles",
+          "description": "Mondes bornés qui flottent dans une mer de nuages."
+        }
+      }
+    },
     "creatures": {
       "label": "Créatures",
       "description": "La créature humanoïde et les animaux d'ambiance.",
@@ -130,7 +140,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 9722
+      "bytes": 11955
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -2945,6 +2955,208 @@
       "bytes": {
         "source": 6720,
         "standalone": 28689
+      }
+    },
+    {
+      "id": "worlds/islands/summer-meadow",
+      "name": "Prairie d'été",
+      "nameEn": "Summer meadow",
+      "category": "worlds",
+      "subcategory": "islands",
+      "description": "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène.",
+      "tags": [
+        "monde",
+        "carte",
+        "île",
+        "prairie",
+        "plaine",
+        "été",
+        "pré",
+        "bosquets",
+        "mer de nuages",
+        "assemblage",
+        "à explorer",
+        "extérieur",
+        "world",
+        "map",
+        "island",
+        "meadow",
+        "plain",
+        "summer",
+        "groves",
+        "sea of clouds",
+        "composition",
+        "explorable",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "meadow",
+        "forest"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de l'île descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
+      "footprint": {
+        "radius": 35,
+        "height": 15
+      },
+      "animated": [
+        "wind"
+      ],
+      "pedestal": false,
+      "composite": true,
+      "experience": "explorer",
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Graine du monde : relief, place des bosquets et des clairières, affleurements de rochers, nappes de fleurs."
+        },
+        "size": {
+          "type": "enum",
+          "default": "small",
+          "values": [
+            "small",
+            "medium",
+            "large"
+          ],
+          "labels": {
+            "small": "Petit",
+            "medium": "Moyen",
+            "large": "Grand"
+          },
+          "label": "Taille",
+          "description": "Côté de l'île : petit 48 m, moyen 96 m, grand 144 m."
+        },
+        "relief": {
+          "type": "number",
+          "default": 1.8,
+          "min": 0.6,
+          "max": 3,
+          "step": 0.2,
+          "unit": "m",
+          "label": "Relief",
+          "description": "Hauteur des ondulations du pré."
+        },
+        "trees": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.25,
+          "label": "Arbres",
+          "description": "Abondance des arbres : 0 = pré nu, 1 = prairie à bosquets, 2 = bois clair."
+        },
+        "rocks": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.25,
+          "label": "Rochers",
+          "description": "Abondance des affleurements et des roches isolées."
+        },
+        "grass": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.25,
+          "label": "Herbe",
+          "description": "Abondance des touffes, des hautes herbes et des pelouses."
+        },
+        "flowers": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.25,
+          "label": "Fleurs",
+          "description": "Abondance et étendue des nappes de fleurs."
+        }
+      },
+      "variants": [
+        {
+          "id": "small",
+          "name": "Petit — 48 m",
+          "params": {
+            "size": "small"
+          }
+        },
+        {
+          "id": "medium",
+          "name": "Moyen — 96 m",
+          "params": {
+            "size": "medium"
+          }
+        },
+        {
+          "id": "large",
+          "name": "Grand — 144 m",
+          "params": {
+            "size": "large"
+          }
+        }
+      ],
+      "slug": "worlds-islands-summer-meadow",
+      "path": "src/assets/worlds/islands/summer-meadow.js",
+      "module": "public/catalog/modules/worlds-islands-summer-meadow.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/variation.js",
+        "src/assets/nature/plants/flower-clump.js",
+        "src/assets/nature/plants/grass-tuft.js",
+        "src/assets/kit/ground-cover.js",
+        "src/assets/nature/rocks/boulder.js",
+        "src/assets/nature/rocks/buried-rock.js",
+        "src/assets/nature/terrain/dirt-mound.js",
+        "src/assets/nature/terrain/lawn.js",
+        "src/assets/nature/terrain/meadow-ground.js",
+        "src/assets/nature/terrain/moss-patch.js",
+        "src/assets/nature/trees/birch.js",
+        "src/assets/kit/foliage.js",
+        "src/assets/nature/trees/linden.js",
+        "src/assets/nature/trees/oak.js",
+        "src/worlds/kit/scatter.js",
+        "src/worlds/kit/cloud-sea.js",
+        "src/assets/nature/sky/cloud.js",
+        "src/worlds/kit/sky.js",
+        "src/worlds/kit/terrain.js",
+        "src/worlds/summer-meadow.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 43397,
+          "vertices": 63402,
+          "drawCalls": 53
+        },
+        "small": {
+          "triangles": 43397,
+          "vertices": 63402,
+          "drawCalls": 53
+        },
+        "medium": {
+          "triangles": 111067,
+          "vertices": 119866,
+          "drawCalls": 87
+        },
+        "large": {
+          "triangles": 204763,
+          "vertices": 170407,
+          "drawCalls": 132
+        }
+      },
+      "bytes": {
+        "source": 4077,
+        "standalone": 182040
       }
     }
   ]

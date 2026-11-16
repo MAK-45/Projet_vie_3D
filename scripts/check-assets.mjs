@@ -157,12 +157,15 @@ function checkAsset(module) {
     if (!material.startsWith("ShaderMaterial:Toon")) error(`matériau interdit : ${material} — utiliser createToonMaterial`);
   }
 
-  // --- Budget et emprise
+  // --- Budget et emprise. Un asset composé d'autres assets (`meta.composite` : un monde) n'a pas le budget d'un
+  // objet : son poids se mesure à l'écran, dans l'explorateur (docs/WORLDS.md).
   const triangles = Math.max(...shapes.map((shape) => shape.triangles));
   const drawCalls = Math.max(...shapes.map((shape) => shape.drawCalls));
-  if (triangles > BUDGET.triangles * 2) error(`${triangles} triangles : plus du double du budget (${BUDGET.triangles})`);
-  else if (triangles > BUDGET.triangles) warn(`${triangles} triangles : au-dessus du budget (${BUDGET.triangles})`);
-  if (drawCalls > BUDGET.drawCalls) warn(`${drawCalls} draw calls : viser ${BUDGET.drawCalls} au plus (fusionner par matériau)`);
+  if (!meta.composite) {
+    if (triangles > BUDGET.triangles * 2) error(`${triangles} triangles : plus du double du budget (${BUDGET.triangles})`);
+    else if (triangles > BUDGET.triangles) warn(`${triangles} triangles : au-dessus du budget (${BUDGET.triangles})`);
+    if (drawCalls > BUDGET.drawCalls) warn(`${drawCalls} draw calls : viser ${BUDGET.drawCalls} au plus (fusionner par matériau)`);
+  }
 
   const radius = Math.max(...shapes.map((shape) => shape.radius));
   const top = Math.max(...shapes.map((shape) => shape.top));
@@ -172,7 +175,7 @@ function checkAsset(module) {
   if (top > meta.footprint.height * 1.08) warn(`emprise : l'asset monte à ${round(top)} m, footprint.height = ${meta.footprint.height}`);
   if (radius < meta.footprint.radius * 0.6) warn(`emprise trop large : rayon réel ${round(radius)} m pour footprint.radius = ${meta.footprint.radius}`);
   if (top < meta.footprint.height * 0.6) warn(`emprise trop haute : hauteur réelle ${round(top)} m pour footprint.height = ${meta.footprint.height}`);
-  if (bottom < -0.3) warn(`l'asset descend à ${round(bottom)} m sous le sol : l'origine doit être au niveau du sol`);
+  if (bottom < -0.3 && !meta.composite) warn(`l'asset descend à ${round(bottom)} m sous le sol : l'origine doit être au niveau du sol`);
 
   // --- Catalogue publié
   const entry = published.find((candidate) => candidate.id === meta.id);
@@ -180,7 +183,7 @@ function checkAsset(module) {
   else if (entry.version !== meta.version) warn("public/catalog/ n'est pas à jour : lancer `npm run artifact`");
 
   const worst = Math.max(triangles, ...extremes.map((shape) => shape.triangles));
-  if (worst > BUDGET.triangles * 2) warn(`réglages au maximum : ${worst} triangles — resserrer les bornes des paramètres`);
+  if (worst > BUDGET.triangles * 2 && !meta.composite) warn(`réglages au maximum : ${worst} triangles — resserrer les bornes des paramètres`);
 
   const summary =
     `${triangles} triangles (${worst} réglages au maximum), ${drawCalls} draw calls, ` +

@@ -337,6 +337,15 @@ select {
   background: var(--surface-2);
   box-shadow: 4px 4px 0 var(--line);
 }
+/* Fiche d'un monde : l'explorateur prend la place de la visionneuse, en plus grand. */
+.stage.world {
+  position: relative;
+  top: auto;
+}
+.world-stage {
+  position: relative;
+  height: clamp(460px, 74vh, 820px);
+}
 .viewer {
   position: relative;
   overflow: hidden;

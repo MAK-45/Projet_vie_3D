@@ -33,7 +33,8 @@ const index = await readFile(path.join(ROOT, "index.html"), "utf8");
 const title = index.match(/<title>(.*?)<\/title>/)[1];
 const fonts = index.match(/<link\s+rel="stylesheet"\s+href="(https:\/\/fonts\.googleapis\.com[^"]+)"/s)[1];
 const markup = index.slice(index.indexOf("<!--app:start-->") + "<!--app:start-->".length, index.indexOf("<!--app:end-->")).trim();
-const style = await readFile(path.join(ROOT, "src/gallery/style.css"), "utf8");
+const style =
+  (await readFile(path.join(ROOT, "src/gallery/style.css"), "utf8")) + "\n" + (await readFile(path.join(ROOT, "src/explorer/style.css"), "utf8"));
 const catalog = await buildCatalog({ withSources: true });
 
 const html = `<title>${title}</title>

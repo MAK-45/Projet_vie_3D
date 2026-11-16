@@ -16,6 +16,7 @@ export class WalkInput {
     this.onAction = null;
 
     this._keys = new Set();
+    this._turnPulse = 0;
     this._stick = { x: 0, y: 0, pointer: null };
     this._joystick = joystick;
     this._knob = joystick.firstElementChild;
@@ -25,6 +26,8 @@ export class WalkInput {
       if (!(event.code in KEYS)) return;
       event.preventDefault();
       this._keys.add(event.code);
+      // Un appui bref peut commencer et finir entre deux images : la rotation est retenue jusqu'à la suivante.
+      if (KEYS[event.code].turn && !event.repeat) this._turnPulse = KEYS[event.code].turn;
       this.onAction?.();
     };
     this._onKeyUp = (event) => this._keys.delete(event.code);
@@ -76,7 +79,8 @@ export class WalkInput {
     }
     this.x = x;
     this.y = y;
-    this.turn = Math.sign(turn);
+    this.turn = Math.sign(turn) || this._turnPulse;
+    this._turnPulse = 0;
     // À la manette, la course vient en poussant le bouton à fond.
     this.run = this._keys.has("ShiftLeft") || this._keys.has("ShiftRight") || Math.hypot(this._stick.x, this._stick.y) > 0.92;
   }

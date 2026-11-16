@@ -3,6 +3,7 @@
 // page : c'est aussi là que les agents IA le trouvent.
 
 import { assets, getAsset, taxonomy } from "../assets/index.js";
+import { Explorer } from "../explorer/explorer.js";
 import { highlight } from "./highlight.js";
 import { Viewer } from "./viewer.js";
 
@@ -25,6 +26,7 @@ const state = {
 };
 
 let viewer = null;
+let explorer = null;
 const thumbnails = new Map();
 
 // ---------- petits outils ----------
@@ -185,6 +187,12 @@ function renderThumbnails() {
 function renderSheet() {
   const entry = entries.get(state.assetId);
   const [category, subcategory] = categoryLabel(entry);
+  explorer?.dispose();
+  explorer = null;
+  if (entry.experience === "explorer") {
+    renderWorldSheet(entry, category, subcategory);
+    return;
+  }
 
   const viewerBox = h("div", { class: "viewer", id: "viewer" });
   const stats = h("span", { class: "stats", id: "stats" }, "…");
@@ -239,6 +247,33 @@ function renderSheet() {
   viewer.setAsset(getAsset(entry.id), state.params);
   viewer.start();
   syncToggles();
+  renderTabs();
+}
+
+/**
+ * Fiche d'un monde : à la place de la visionneuse, l'explorateur. On y règle le monde (graine, taille, abondance
+ * de chaque élément, heure, météo) et on s'y promène, dans la fiche ou en plein écran.
+ */
+function renderWorldSheet(entry, category, subcategory) {
+  viewer?.dispose();
+  viewer = null;
+  const box = h("div", { class: "world-stage" });
+  sheetPane.replaceChildren(
+    h("nav", { class: "crumbs", "aria-label": "Fil d'Ariane" }, h("a", { class: "back", href: "#catalogue" }, "‹ Catalogue"), h("span", {}, `${category} › ${subcategory}`)),
+    h("header", { class: "sheet-head" }, h("h1", {}, entry.name), h("p", { class: "lede" }, entry.description)),
+    h(
+      "div",
+      { class: "stage world" },
+      box,
+      h(
+        "div",
+        { class: "stage-foot" },
+        h("span", {}, "Réglez le monde dans le panneau, puis « Plein écran » pour vous y promener ; « Masquer l'interface » pour ne garder que le paysage."),
+      ),
+    ),
+    h("section", { class: "tabs", id: "tabs" }),
+  );
+  explorer = new Explorer(box);
   renderTabs();
 }
 

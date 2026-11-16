@@ -43,6 +43,13 @@ export const taxonomy = {
       decor: { label: "Décoration", description: "Vases, tapis, cadres, pots." },
     },
   },
+  worlds: {
+    label: "Mondes",
+    description: "Cartes entières assemblées à partir des autres assets, à configurer puis à visiter.",
+    subcategories: {
+      islands: { label: "Îles", description: "Mondes bornés qui flottent dans une mer de nuages." },
+    },
+  },
   creatures: {
     label: "Créatures",
     description: "La créature humanoïde et les animaux d'ambiance.",

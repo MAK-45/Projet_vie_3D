@@ -153,7 +153,9 @@ export class Viewer {
     }
     target.addScaledVector(right, (minX + maxX) / 2).addScaledVector(up, (minY + maxY) / 2);
     const zoom = this.iso.fitZoom(maxX - minX, maxY - minY, 1.06);
-    this.iso.setView({ ...views[preset], target, zoom: Math.max(0.4, Math.floor(zoom * 8) / 8) });
+    // Par crans d'un huitième pour un objet ; un monde entier (une île de 48 m) se cadre au plus juste.
+    this.iso.controls.minZoom = Math.min(0.4, zoom);
+    this.iso.setView({ ...views[preset], target, zoom: zoom >= 0.4 ? Math.floor(zoom * 8) / 8 : zoom });
   }
 
   /** Adapte le rendu à la taille du conteneur (ou à une taille donnée, pour les vignettes). */
