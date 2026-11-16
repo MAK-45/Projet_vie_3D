@@ -47,7 +47,7 @@ export const meta = {
   version: 1,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au centre de la plaque",
-  footprint: { radius: 1.05, height: 0.42 },
+  footprint: { radius: 1.05, height: 0.48 },
   animated: ["wind"],
   params,
   variants: variantsOf("season", params.season),

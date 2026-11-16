@@ -35,6 +35,7 @@ effet visible sur lui : 1 à 3 axes à choix suffisent, au-delà la galerie devi
 | Objets | `material` propre à l'objet (iron, brass, clay, glass...) ; `state` (lit / unlit, open / closed, full / empty) | `size` |
 | Véhicules (voitures, chariots, bateaux) | `model` (carrosserie) ; `paint` (couleur) ; `wear` (new, used, wreck) | `length` |
 | Vaisseaux | `model` ; `paint` ; `state` (landed, flying : train sorti, réacteurs allumés) | `size` |
+| Ciel (astres, nuages) | `time` (dawn, noon, dusk) pour le soleil ; `phase` (full, gibbous, quarter, crescent) pour la lune ; `kind` (cumulus, stratus, storm) pour les nuages ; `shape` et `tint` pour les étoiles | `size` |
 | Créatures d'ambiance | `species` ou `coat` (pelage, plumage) ; `pose` (idle, sitting, flying) | `size` |
 
 Règles pour les saisons, communes à tout le vivant :

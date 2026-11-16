@@ -13,6 +13,7 @@ c'est ce fichier qui fait progresser les assets suivants.
 5. Vent (éprouvé)
 5 bis. Herbes, pelouses, fleurs (éprouvé)
 6. Roches (éprouvé sur le rocher posé et la roche enterrée) ; pistes : bâti, véhicules
+6 bis. Ciel : soleil, lune, étoiles, nuages (éprouvé)
 7. Étendre le kit ou le matériau
 8. Poids
 
@@ -178,6 +179,31 @@ c'est ce fichier qui fait progresser les assets suivants.
   les accessoires, `model` sur la forme générale.
 - **Lumières** (lanterne, fenêtre éclairée) : une couleur unie très claire dans une rampe à 2 couleurs
   identiques ne réagit pas à l'ombre ; le halo viendra d'un effet à part, pas de l'asset.
+
+## 6 bis. Ciel (éprouvé sur `sun`, `moon`, `star`, `cloud` de `nature/sky/`)
+
+- **Astres lumineux** (soleil, lune, étoiles) : matériau `foliage: true, unlit: true, leafShade: [0, 1]`. Avec
+  `unlit`, la lumière ne compte plus : l'**occlusion** de chaque forme choisit directement sa couleur dans la rampe
+  (seuils `[0.2, 0.4, 0.6, 0.8]`, occlusion 0,1 / 0,3 / 0,5 / 0,7 / 0,9 pour les cinq tons). Pas d'ombre portée ni
+  reçue, pas de vent.
+- **Couches face caméra** empilées avec `lift` (1 cm d'écart) et le **même `id`** : halo → disque → cœur → reflet
+  pour le soleil ; bord → corps → cœur pour une étoile. `selfEdge` du feuillage (1,1) évite de cerner chaque couche.
+- Une forme qui n'est pas convexe autour de son centre (croissant de lune, rayon carré) ne passe pas en éventail :
+  `buildSpriteGeometry` (points + triangles libres). Le croissant est une bande ligne par ligne entre la limite
+  jour/nuit `x = k·√(1−y²)` et le bord. Un détail posé à côté du centre (reflet, cratère) : éventail avec `offset`,
+  jamais un contour décalé (le centre de l'éventail sort de la forme et on obtient une goutte).
+- **Lune** : ne pas dessiner la face cachée. Un disque bleu nuit écrase le croissant sur un ciel de jour. Une bande
+  de pénombre grise le long de la limite jour/nuit suffit à donner le volume.
+- **Pulsation** : `twinkle` sur le matériau, pondéré par le `flex` de chaque sommet (rayons du soleil 0,06,
+  étoiles 0,1 à 0,35). Un astre ne bouge pas au vent.
+- **Étoile à 4 branches** : creux ≥ 0,27 et étirement horizontal 0,7 à 0,95 ; plus fine, chaque branche fait un
+  pixel et l'étoile disparaît. Petites étoiles : losange d'au moins 0,09 m de rayon.
+- **Nuage** : volume éclairé normal (pas `unlit`), boules `SphereGeometry(12, 8)` lisses au dessous écrasé sur un
+  plan (normales vers le bas), rangée principale en cloche + seconde rangée décalée en profondeur + « tours ».
+  `selfEdge: 0.35` : sans lui, chaque boule est cernée et l'orage se couvre de traits noirs. `shadowLit: 0.5`
+  pour que l'ombre propre reste blanche-bleutée. Il projette son ombre : c'est ce qui l'ancre dans un monde.
+- **Échelle** : taille de présentation (soleil 3 m, lune 2,4 m, nuage 5 m, étoile 1,4 m), origine au sol et objet
+  flottant 0,7 à 1,2 m au-dessus, pour que le socle de la galerie ne le touche pas. Un monde agrandit et éloigne.
 
 ## 7. Étendre le kit ou le matériau
 

@@ -41,7 +41,7 @@ export const meta = {
   version: 1,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au cœur de la touffe",
-  footprint: { radius: 0.75, height: 1.25 },
+  footprint: { radius: 0.85, height: 1.35 },
   animated: ["wind"],
   params,
   variants: variantsOf("season", params.season),

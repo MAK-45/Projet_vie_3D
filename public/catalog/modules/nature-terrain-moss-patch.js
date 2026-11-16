@@ -32,6 +32,7 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
+uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
@@ -68,7 +69,9 @@ void main() {
   float h = clamp(transformed.y / max(uSway.y, 0.001), 0.0, 1.2);
   transformed.xz += uWindDir * ((0.3 + 0.7 * gust) * uSway.x * uWindStrength * h * h);
 
-  #ifdef FOLIAGE
+  #if defined(FOLIAGE) && defined(UNLIT)
+    vLeaf = aLeaf.xyz;
+  #elif defined(FOLIAGE)
     vLeaf = aLeaf.xyz;
     // Fr\xE9missement propre \xE0 chaque feuille, port\xE9 par une vague qui traverse le feuillage.
     float wave = sin(uTime * 2.4 - dot(transformed.xz + origin.xz, uWindDir) * 1.6 + aLeaf.x * 2.0);
@@ -81,7 +84,12 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
+    float cornerScale = length(toWorld[0].xyz);
+    #ifdef UNLIT
+      // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'\xE9toile).
+      cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
+    #endif
+    mvPosition.xyz += aCorner * cornerScale;
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
@@ -156,7 +164,11 @@ void main() {
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
   #endif
 
-  float lit = dot(N, L) * 0.5 + 0.5;
+  #ifdef UNLIT
+    float lit = 1.0; // lumineux par lui-m\xEAme : la couleur ne d\xE9pend que de la g\xE9om\xE9trie (occlusion des formes)
+  #else
+    float lit = dot(N, L) * 0.5 + 0.5;
+  #endif
   float ink = 0.0;
 
   #ifdef FOLIAGE
@@ -209,8 +221,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
-  float shadow = getShadowMask();
-  lit = mix(min(lit, uShadowLit), lit, shadow);
+  #ifndef UNLIT
+    float shadow = getShadowMask();
+    lit = mix(min(lit, uShadowLit), lit, shadow);
+  #endif
 
   vec3 color = uRamp[0];
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
@@ -262,7 +276,9 @@ function createToonMaterial(options) {
     selfEdge = foliage ? 1.1 : 0,
     shadowLit = 0.36,
     sway = { amplitude: 0, height: 1 },
-    side = foliage ? THREE.DoubleSide : THREE.FrontSide
+    side = foliage ? THREE.DoubleSide : THREE.FrontSide,
+    unlit = false,
+    twinkle = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -270,7 +286,9 @@ function createToonMaterial(options) {
   const defines = { RAMP_SIZE: ramp.length };
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
+  if (unlit) defines.UNLIT = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
+  const twinkleUniform = { value: twinkle };
   const material = new THREE.ShaderMaterial({
     name: foliage ? "ToonFoliage" : "Toon",
     defines,
@@ -280,6 +298,7 @@ function createToonMaterial(options) {
       ...THREE.UniformsUtils.clone(THREE.UniformsLib.lights),
       ...sharedUniforms,
       uSway: swayUniform,
+      uTwinkle: twinkleUniform,
       uRamp: { value: ramp.map(rgb) },
       uSteps: { value: steps.slice() },
       uInk: { value: rgb(ink) },
@@ -295,11 +314,13 @@ function createToonMaterial(options) {
     fragmentShader: FRAGMENT
   });
   if (foliage) {
+    const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
+    if (unlit) depthDefines.UNLIT = "";
     material.userData.depthMaterial = new THREE.ShaderMaterial({
       name: "ToonFoliageDepth",
-      defines: { FOLIAGE: "", DEPTH_ONLY: "" },
+      defines: depthDefines,
       side: THREE.DoubleSide,
-      uniforms: { ...sharedUniforms, uSway: swayUniform },
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform },
       vertexShader: VERTEX,
       fragmentShader: DEPTH_FRAGMENT
     });
@@ -357,6 +378,7 @@ function mergeGeometries(geometries) {
   merged.setIndex(new THREE2.BufferAttribute(index, 1));
   return merged;
 }
+var SPRITE_NORMAL = new THREE2.Vector3(0, 1, 0);
 var _rockPoint = new THREE2.Vector3();
 var _rockEuler = new THREE2.Euler();
 function sequentialIndex(count) {

@@ -25,17 +25,24 @@ function measure(object) {
     result.triangles += (geometry.index ? geometry.index.count : position.count) / 3;
     for (const material of [child.material].flat()) result.materials.add(`${material.type}:${material.name}`);
     const e = child.matrixWorld.elements;
+    // Formes face caméra : le sommet est au centre, l'étendue réelle est dans `aCorner` (plan de l'écran).
+    const corner = geometry.attributes.aCorner;
+    const scale = Math.hypot(e[0], e[1], e[2]);
     for (let i = 0; i < position.count; i++) {
       const x0 = position.getX(i), y0 = position.getY(i), z0 = position.getZ(i);
       const x = e[0] * x0 + e[4] * y0 + e[8] * z0 + e[12];
       const y = e[1] * x0 + e[5] * y0 + e[9] * z0 + e[13];
       const z = e[2] * x0 + e[6] * y0 + e[10] * z0 + e[14];
-      if (!Number.isFinite(x + y + z)) result.nan = true;
-      result.radius = Math.max(result.radius, Math.hypot(x, z));
-      result.top = Math.max(result.top, y);
-      result.bottom = Math.min(result.bottom, y);
+      const cx = corner ? corner.getX(i) * scale : 0;
+      const cy = corner ? corner.getY(i) * scale : 0;
+      const reach = Math.hypot(cx, cy);
+      if (!Number.isFinite(x + y + z + reach)) result.nan = true;
+      result.radius = Math.max(result.radius, Math.hypot(x, z) + reach);
+      result.top = Math.max(result.top, y + reach);
+      result.bottom = Math.min(result.bottom, y - reach);
       // empreinte de la forme : change dès qu'un sommet bouge
-      result.hash = (Math.imul(result.hash, 31) + Math.round(x * 1000) * 7 + Math.round(y * 1000) * 13 + Math.round(z * 1000) * 17) | 0;
+      result.hash = (Math.imul(result.hash, 31) + Math.round(x * 1000) * 7 + Math.round(y * 1000) * 13 + Math.round(z * 1000) * 17 +
+        Math.round(cx * 1000) * 19 + Math.round(cy * 1000) * 23) | 0;
     }
   });
   return result;

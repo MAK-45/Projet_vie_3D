@@ -8,6 +8,8 @@
 // - Sortie 0 : couleur. Sortie 1 : normale + identifiant de contour, lus par la passe de contours
 //   (src/engine/pixel-renderer.js).
 // - Variante `foliage` : chaque feuille est un petit triangle toujours face à la caméra, animé par le vent.
+// - Variante `unlit` : lumineux par lui-même (astres), ni soleil ni ombre ; avec `foliage`, formes face caméra qui
+//   peuvent pulser (`twinkle`).
 // - Motifs procéduraux (`pattern`) : `bark` (tirets d'écorce), `furrow` (écorce crevassée) et `speckle` (grain de pixels), sans texture.
 
 import * as THREE from "three";
@@ -47,6 +49,7 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
+uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (× souplesse de chaque sommet)
 
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'écran ; z : avancée vers la caméra (unités monde, 0 si absent)
@@ -83,7 +86,9 @@ void main() {
   float h = clamp(transformed.y / max(uSway.y, 0.001), 0.0, 1.2);
   transformed.xz += uWindDir * ((0.3 + 0.7 * gust) * uSway.x * uWindStrength * h * h);
 
-  #ifdef FOLIAGE
+  #if defined(FOLIAGE) && defined(UNLIT)
+    vLeaf = aLeaf.xyz;
+  #elif defined(FOLIAGE)
     vLeaf = aLeaf.xyz;
     // Frémissement propre à chaque feuille, porté par une vague qui traverse le feuillage.
     float wave = sin(uTime * 2.4 - dot(transformed.xz + origin.xz, uWindDir) * 1.6 + aLeaf.x * 2.0);
@@ -96,7 +101,12 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
+    float cornerScale = length(toWorld[0].xyz);
+    #ifdef UNLIT
+      // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'étoile).
+      cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
+    #endif
+    mvPosition.xyz += aCorner * cornerScale;
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
@@ -169,7 +179,11 @@ void main() {
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
   #endif
 
-  float lit = dot(N, L) * 0.5 + 0.5;
+  #ifdef UNLIT
+    float lit = 1.0; // lumineux par lui-même : la couleur ne dépend que de la géométrie (occlusion des formes)
+  #else
+    float lit = dot(N, L) * 0.5 + 0.5;
+  #endif
   float ink = 0.0;
 
   #ifdef FOLIAGE
@@ -222,8 +236,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
-  float shadow = getShadowMask();
-  lit = mix(min(lit, uShadowLit), lit, shadow);
+  #ifndef UNLIT
+    float shadow = getShadowMask();
+    lit = mix(min(lit, uShadowLit), lit, shadow);
+  #endif
 
   vec3 color = uRamp[0];
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
@@ -279,6 +295,10 @@ function defaultSteps(count) {
  * @param {number} [options.shadowLit] lumière maximale dans une ombre portée (0..1)
  * @param {{amplitude:number,height:number}} [options.sway] balancement au vent
  * @param {number} [options.side] THREE.FrontSide par défaut (DoubleSide pour le feuillage)
+ * @param {boolean} [options.unlit] lumineux par lui-même (soleil, lune, étoiles) : ni soleil ni ombre portée.
+ *   Avec `foliage` et `leafShade: [0, 1]`, l'occlusion de chaque forme choisit directement sa couleur dans la rampe.
+ * @param {number} [options.twinkle] avec `unlit` + `foliage` : amplitude de la pulsation des formes, pondérée par
+ *   le `flex` de chaque sommet (le vent n'agit pas sur un astre)
  */
 export function createToonMaterial(options) {
   const {
@@ -296,6 +316,8 @@ export function createToonMaterial(options) {
     shadowLit = 0.36,
     sway = { amplitude: 0, height: 1 },
     side = foliage ? THREE.DoubleSide : THREE.FrontSide,
+    unlit = false,
+    twinkle = 0,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -305,8 +327,10 @@ export function createToonMaterial(options) {
   const defines = { RAMP_SIZE: ramp.length };
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
+  if (unlit) defines.UNLIT = "";
 
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
+  const twinkleUniform = { value: twinkle };
 
   const material = new THREE.ShaderMaterial({
     name: foliage ? "ToonFoliage" : "Toon",
@@ -317,6 +341,7 @@ export function createToonMaterial(options) {
       ...THREE.UniformsUtils.clone(THREE.UniformsLib.lights),
       ...sharedUniforms,
       uSway: swayUniform,
+      uTwinkle: twinkleUniform,
       uRamp: { value: ramp.map(rgb) },
       uSteps: { value: steps.slice() },
       uInk: { value: rgb(ink) },
@@ -334,11 +359,13 @@ export function createToonMaterial(options) {
 
   if (foliage) {
     // Les feuilles sont déplacées dans le vertex shader : la passe d'ombre a besoin du même déplacement.
+    const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
+    if (unlit) depthDefines.UNLIT = "";
     material.userData.depthMaterial = new THREE.ShaderMaterial({
       name: "ToonFoliageDepth",
-      defines: { FOLIAGE: "", DEPTH_ONLY: "" },
+      defines: depthDefines,
       side: THREE.DoubleSide,
-      uniforms: { ...sharedUniforms, uSway: swayUniform },
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform },
       vertexShader: VERTEX,
       fragmentShader: DEPTH_FRAGMENT,
     });

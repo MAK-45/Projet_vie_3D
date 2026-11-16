@@ -29,6 +29,10 @@
         "terrain": {
           "label": "Terrain",
           "description": "Sols, îlots, chemins, eau."
+        },
+        "sky": {
+          "label": "Ciel",
+          "description": "Soleil, lune, nuages, étoiles : ce qui flotte au-dessus des mondes."
         }
       }
     },
@@ -136,7 +140,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 13520
+      "bytes": 14957
     }
   ],
   "assets": [
@@ -300,7 +304,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 30655
+        "standalone": 31587
       }
     },
     {
@@ -469,7 +473,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 31552
+        "standalone": 32484
       }
     },
     {
@@ -641,7 +645,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 33065
+        "standalone": 33997
       }
     },
     {
@@ -842,7 +846,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 34034
+        "standalone": 34966
       }
     },
     {
@@ -1045,7 +1049,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 35096
+        "standalone": 36028
       }
     },
     {
@@ -1179,7 +1183,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 23335
+        "standalone": 24267
       }
     },
     {
@@ -1342,7 +1346,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 23241
+        "standalone": 24173
       }
     },
     {
@@ -1499,7 +1503,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 25487
+        "standalone": 26419
       }
     },
     {
@@ -1545,8 +1549,8 @@
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; l'origine est au sol, au cœur de la touffe",
       "footprint": {
-        "radius": 0.75,
-        "height": 1.25
+        "radius": 0.85,
+        "height": 1.35
       },
       "animated": [
         "wind"
@@ -1682,7 +1686,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 26583
+        "standalone": 27568
       }
     },
     {
@@ -1729,7 +1733,7 @@
       "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la plaque",
       "footprint": {
         "radius": 1.05,
-        "height": 0.42
+        "height": 0.48
       },
       "animated": [
         "wind"
@@ -1881,7 +1885,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 32883
+        "standalone": 33868
       }
     },
     {
@@ -1934,7 +1938,7 @@
       "units": "1 unité = 1 mètre ; l'origine est au sol, au cœur du massif",
       "footprint": {
         "radius": 0.7,
-        "height": 0.6
+        "height": 0.68
       },
       "animated": [
         "wind"
@@ -2086,8 +2090,622 @@
         }
       },
       "bytes": {
-        "source": 12522,
-        "standalone": 31161
+        "source": 12523,
+        "standalone": 32147
+      }
+    },
+    {
+      "id": "nature/sky/sun",
+      "name": "Soleil",
+      "nameEn": "Sun",
+      "category": "nature",
+      "subcategory": "sky",
+      "description": "Soleil en pixel art : disque en anneaux concentriques du halo au reflet, couronne de rayons qui pulsent. Toujours face à la caméra et lumineux par lui-même ; midi, aube ou couchant ; la graine change la couronne.",
+      "tags": [
+        "soleil",
+        "astre",
+        "ciel",
+        "lumière",
+        "jour",
+        "rayons",
+        "lumineux",
+        "couchant",
+        "aube",
+        "extérieur",
+        "sun",
+        "celestial",
+        "sky",
+        "light",
+        "day",
+        "rays",
+        "glowing",
+        "sunset",
+        "dawn",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village",
+        "desert",
+        "snow",
+        "swamp",
+        "beach",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre (taille de présentation : un monde l'agrandit et le place loin) ; l'origine est au sol, le disque flotte juste au-dessus",
+      "footprint": {
+        "radius": 2.5,
+        "height": 5.4
+      },
+      "animated": [
+        "pulse"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la couronne : nombre de rayons, alternance longs et courts, rayons pointus ou carrés, inclinaison."
+        },
+        "time": {
+          "type": "enum",
+          "default": "noon",
+          "values": [
+            "noon",
+            "dawn",
+            "dusk"
+          ],
+          "labels": {
+            "noon": "Midi",
+            "dawn": "Aube",
+            "dusk": "Couchant"
+          },
+          "label": "Moment",
+          "description": "Couleur du soleil : blanc-jaune à midi, rose doré à l'aube, rouge orangé et rayons courts au couchant."
+        },
+        "size": {
+          "type": "number",
+          "default": 3,
+          "min": 1.5,
+          "max": 5,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Diamètre",
+          "description": "Diamètre du disque (sans les rayons)."
+        }
+      },
+      "variants": [
+        {
+          "id": "noon",
+          "name": "Midi",
+          "params": {
+            "time": "noon"
+          }
+        },
+        {
+          "id": "dawn",
+          "name": "Aube",
+          "params": {
+            "time": "dawn"
+          }
+        },
+        {
+          "id": "dusk",
+          "name": "Couchant",
+          "params": {
+            "time": "dusk"
+          }
+        }
+      ],
+      "slug": "nature-sky-sun",
+      "path": "src/assets/nature/sky/sun.js",
+      "module": "public/catalog/modules/nature-sky-sun.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 112,
+          "vertices": 144,
+          "drawCalls": 1
+        },
+        "noon": {
+          "triangles": 112,
+          "vertices": 144,
+          "drawCalls": 1
+        },
+        "dawn": {
+          "triangles": 112,
+          "vertices": 144,
+          "drawCalls": 1
+        },
+        "dusk": {
+          "triangles": 112,
+          "vertices": 144,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 5804,
+        "standalone": 24483
+      }
+    },
+    {
+      "id": "nature/sky/moon",
+      "name": "Lune",
+      "nameEn": "Moon",
+      "category": "nature",
+      "subcategory": "sky",
+      "description": "Lune en pixel art, toujours face à la caméra : partie éclairée selon la phase (pleine, gibbeuse, quartier, croissant), pénombre, mers et cratères. La graine change les mers, l'inclinaison et le sens.",
+      "tags": [
+        "lune",
+        "astre",
+        "ciel",
+        "nuit",
+        "croissant",
+        "pleine lune",
+        "cratères",
+        "lumineux",
+        "phases lunaires",
+        "extérieur",
+        "moon",
+        "celestial",
+        "sky",
+        "night",
+        "crescent",
+        "full moon",
+        "craters",
+        "glowing",
+        "phases",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village",
+        "desert",
+        "snow",
+        "swamp",
+        "beach",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre (taille de présentation : un monde l'agrandit et le place loin) ; l'origine est au sol, le disque flotte juste au-dessus",
+      "footprint": {
+        "radius": 1.2,
+        "height": 3.5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le visage : place et taille des mers et des cratères, inclinaison, lune croissante ou décroissante."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "full",
+          "values": [
+            "full",
+            "gibbous",
+            "quarter",
+            "crescent"
+          ],
+          "labels": {
+            "full": "Pleine lune",
+            "gibbous": "Gibbeuse",
+            "quarter": "Quartier",
+            "crescent": "Croissant"
+          },
+          "label": "Phase",
+          "description": "Partie éclairée : pleine lune, gibbeuse, quartier ou fin croissant."
+        },
+        "size": {
+          "type": "number",
+          "default": 2.4,
+          "min": 1.2,
+          "max": 4,
+          "step": 0.2,
+          "unit": "m",
+          "label": "Diamètre",
+          "description": "Diamètre du disque."
+        }
+      },
+      "variants": [
+        {
+          "id": "full",
+          "name": "Pleine lune",
+          "params": {
+            "phase": "full"
+          }
+        },
+        {
+          "id": "gibbous",
+          "name": "Gibbeuse",
+          "params": {
+            "phase": "gibbous"
+          }
+        },
+        {
+          "id": "quarter",
+          "name": "Quartier",
+          "params": {
+            "phase": "quarter"
+          }
+        },
+        {
+          "id": "crescent",
+          "name": "Croissant",
+          "params": {
+            "phase": "crescent"
+          }
+        }
+      ],
+      "slug": "nature-sky-moon",
+      "path": "src/assets/nature/sky/moon.js",
+      "module": "public/catalog/modules/nature-sky-moon.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 200,
+          "vertices": 217,
+          "drawCalls": 1
+        },
+        "full": {
+          "triangles": 200,
+          "vertices": 217,
+          "drawCalls": 1
+        },
+        "gibbous": {
+          "triangles": 132,
+          "vertices": 140,
+          "drawCalls": 1
+        },
+        "quarter": {
+          "triangles": 108,
+          "vertices": 114,
+          "drawCalls": 1
+        },
+        "crescent": {
+          "triangles": 108,
+          "vertices": 114,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 7599,
+        "standalone": 25493
+      }
+    },
+    {
+      "id": "nature/sky/cloud",
+      "name": "Nuage",
+      "nameEn": "Cloud",
+      "category": "nature",
+      "subcategory": "sky",
+      "description": "Nuage en boules lisses au dessous plat, éclairé par le soleil et qui projette son ombre. Cumulus, stratus ou nuage d'orage ; la graine change le nombre et la place des boules et des tours.",
+      "tags": [
+        "nuage",
+        "ciel",
+        "météo",
+        "cumulus",
+        "stratus",
+        "orage",
+        "blanc",
+        "ombre portée",
+        "extérieur",
+        "cloud",
+        "sky",
+        "weather",
+        "storm",
+        "white",
+        "puffy",
+        "cast shadow",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village",
+        "desert",
+        "snow",
+        "swamp",
+        "beach",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre (taille de présentation : un monde l'agrandit et le place haut) ; l'origine est au sol, le dessous du nuage flotte à 1,2 m",
+      "footprint": {
+        "radius": 3,
+        "height": 4
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : nombre, taille et place des boules, tours qui montent, longueur du nuage."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "cumulus",
+          "values": [
+            "cumulus",
+            "stratus",
+            "storm"
+          ],
+          "labels": {
+            "cumulus": "Cumulus",
+            "stratus": "Stratus",
+            "storm": "Orage"
+          },
+          "label": "Type",
+          "description": "Cumulus blanc et bombé, stratus en long banc plat, ou nuage d'orage sombre et haut."
+        },
+        "size": {
+          "type": "number",
+          "default": 5,
+          "min": 2.5,
+          "max": 9,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Longueur",
+          "description": "Longueur du nuage ; toute la forme garde ses proportions."
+        }
+      },
+      "variants": [
+        {
+          "id": "cumulus",
+          "name": "Cumulus",
+          "params": {
+            "kind": "cumulus"
+          }
+        },
+        {
+          "id": "stratus",
+          "name": "Stratus",
+          "params": {
+            "kind": "stratus"
+          }
+        },
+        {
+          "id": "storm",
+          "name": "Orage",
+          "params": {
+            "kind": "storm"
+          }
+        }
+      ],
+      "slug": "nature-sky-cloud",
+      "path": "src/assets/nature/sky/cloud.js",
+      "module": "public/catalog/modules/nature-sky-cloud.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2184,
+          "vertices": 1521,
+          "drawCalls": 1
+        },
+        "cumulus": {
+          "triangles": 2184,
+          "vertices": 1521,
+          "drawCalls": 1
+        },
+        "stratus": {
+          "triangles": 2184,
+          "vertices": 1521,
+          "drawCalls": 1
+        },
+        "storm": {
+          "triangles": 2184,
+          "vertices": 1521,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 6556,
+        "standalone": 22335
+      }
+    },
+    {
+      "id": "nature/sky/star",
+      "name": "Étoile",
+      "nameEn": "Star",
+      "category": "nature",
+      "subcategory": "sky",
+      "description": "Étoile en pixel art qui scintille : quatre branches, cinq branches ou petit amas, blanche, dorée ou bleue. Toujours face à la caméra ; la graine change les branches et les petites étoiles autour.",
+      "tags": [
+        "étoile",
+        "astre",
+        "ciel",
+        "nuit",
+        "scintillement",
+        "amas",
+        "lumineux",
+        "magie",
+        "extérieur",
+        "star",
+        "celestial",
+        "sky",
+        "night",
+        "sparkle",
+        "twinkle",
+        "cluster",
+        "glowing",
+        "magic",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "garden",
+        "village",
+        "desert",
+        "snow",
+        "swamp",
+        "beach",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre (taille de présentation : un monde l'agrandit et le place loin) ; l'origine est au sol, l'étoile flotte juste au-dessus",
+      "footprint": {
+        "radius": 1.2,
+        "height": 2.5
+      },
+      "animated": [
+        "twinkle"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la forme : longueur et finesse des branches, inclinaison, petites étoiles autour, disposition de l'amas."
+        },
+        "shape": {
+          "type": "enum",
+          "default": "sparkle",
+          "values": [
+            "sparkle",
+            "star",
+            "cluster"
+          ],
+          "labels": {
+            "sparkle": "Scintillement",
+            "star": "Étoile à cinq branches",
+            "cluster": "Amas"
+          },
+          "label": "Forme",
+          "description": "Scintillement à quatre branches, étoile à cinq branches, ou amas de petites étoiles."
+        },
+        "tint": {
+          "type": "enum",
+          "default": "white",
+          "values": [
+            "white",
+            "gold",
+            "blue"
+          ],
+          "labels": {
+            "white": "Blanche",
+            "gold": "Dorée",
+            "blue": "Bleue"
+          },
+          "label": "Couleur",
+          "description": "Blanche, dorée ou bleue."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.4,
+          "min": 0.6,
+          "max": 2.4,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Taille",
+          "description": "Hauteur de l'étoile principale, d'une pointe à l'autre."
+        }
+      },
+      "variants": [
+        {
+          "id": "sparkle",
+          "name": "Scintillement",
+          "params": {
+            "shape": "sparkle"
+          }
+        },
+        {
+          "id": "star",
+          "name": "Étoile à cinq branches",
+          "params": {
+            "shape": "star"
+          }
+        },
+        {
+          "id": "cluster",
+          "name": "Amas",
+          "params": {
+            "shape": "cluster"
+          }
+        }
+      ],
+      "slug": "nature-sky-star",
+      "path": "src/assets/nature/sky/star.js",
+      "module": "public/catalog/modules/nature-sky-star.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 28,
+          "vertices": 33,
+          "drawCalls": 1
+        },
+        "sparkle": {
+          "triangles": 28,
+          "vertices": 33,
+          "drawCalls": 1
+        },
+        "star": {
+          "triangles": 37,
+          "vertices": 43,
+          "drawCalls": 1
+        },
+        "cluster": {
+          "triangles": 84,
+          "vertices": 99,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 6720,
+        "standalone": 23213
       }
     }
   ]

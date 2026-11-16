@@ -11,6 +11,7 @@ export const taxonomy = {
       plants: { label: "Plantes", description: "Buissons, fleurs, herbes, champignons, plantes en pot." },
       rocks: { label: "Roches", description: "Rochers, pierres, falaises." },
       terrain: { label: "Terrain", description: "Sols, îlots, chemins, eau." },
+      sky: { label: "Ciel", description: "Soleil, lune, nuages, étoiles : ce qui flotte au-dessus des mondes." },
     },
   },
   buildings: {
