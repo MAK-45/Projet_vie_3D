@@ -30,6 +30,8 @@ fichiers) en anglais.
 7. **Fin de tâche avec rendu graphique → publier un Artifact** et donner le lien. Pour les assets, c'est toujours
    le même, « Atelier Vie 3D » : https://claude.ai/artifact/C8NQjFucdBRX4bo9eT4Jim — `npm run artifact`, puis
    publier `dist-artifact/atelier-vie-3d.html` en passant ce lien comme `url` (sinon un nouvel Artifact est créé).
+   Pour la prairie à explorer, « Prairie d'été » : https://claude.ai/artifact/HcgvMr9SU1NK2Bk7Rf5BDc —
+   `npm run artifact:prairie`, puis publier `dist-artifact/prairie-ete.html` avec ce lien comme `url`.
 
 ## Organisation
 
@@ -38,10 +40,13 @@ src/
   engine/     toon-material (matériau à palette + vent), pixel-renderer (basse réso + contours), iso-camera
   assets/     les dessins 3D en JS : index (registre), taxonomy (catégories), kit/ (outils), un fichier par asset
   gallery/    « Atelier Vie 3D » : galerie web des assets (visionneuse, catalogue par catégorie, code, fiche)
-  worlds/     (à venir) un fichier par monde/biome : génération procédurale + données
+  worlds/     un fichier par monde/biome : génération procédurale + données (summer-meadow : la prairie d'été) ;
+              kit/ : semis instancié trié par cases (scatter), ciel (lumière, soleil, nuages), tranche d'île
+  explorer/   page d'exploration d'un monde : promeneur de 1,80 m, commandes clavier et tactiles, réglages
   creature/   (à venir) modèle, squelette/animations, actions (marcher, dormir, lancer un sort...)
   script/     (à venir) moteur de scénario : timeline d'actions décidées à l'avance
-  fx/         (à venir) effets (dont conversions pixelfx en 3D, voir docs/PIXELFX-3D.md)
+  fx/         effets : ambient-life (papillons, graines au vent) ; à venir, conversions pixelfx en 3D
+              (docs/PIXELFX-3D.md)
 scripts/        catalogue, page Artifact, vérification d'assets, planche de contrôle, capture
 public/catalog/ GÉNÉRÉ et versionné : catalog.json + un module autonome par asset, pour les agents IA
 dev/            test.html (un asset plein écran, options dans l'URL), sheet.html (planche variantes × graines)
@@ -52,11 +57,13 @@ vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/
 
 ## Commandes
 
-- `npm run dev` : galerie en local (http://127.0.0.1:5173) ; pages de capture sous `/dev/`.
+- `npm run dev` : galerie en local (http://127.0.0.1:5173) ; pages de capture sous `/dev/` ; la prairie à
+  explorer sous `/explorer.html` (options dans l'URL, voir `docs/WORLDS.md`).
 - `npm run check [-- <id>]` : vérifie le contrat des assets (fiche, graine, variantes, matériaux, budget, emprise).
 - `npm run sheet -- <id> [sortie.png]` : planche de contrôle d'un asset (variantes × graines, face, dessus).
 - `npm run catalog` : régénère `public/catalog/` (après tout changement d'asset, du kit ou du moteur).
 - `npm run artifact` : catalogue + page autonome `dist-artifact/atelier-vie-3d.html` (three.js depuis jsDelivr).
+- `npm run artifact:prairie` : page autonome de la prairie à explorer, `dist-artifact/prairie-ete.html`.
 - `npm run build` / `npm run preview` : build Vite classique de la galerie dans `dist/`.
 - `node scripts/capture.cjs <url> <sortie.png> [largeur] [hauteur] [dpr]` : capture Playwright d'une page.
 
@@ -69,6 +76,7 @@ vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/
 | Budgets de poids et de perf | `docs/PERFORMANCE.md` |
 | Assets : contrat d'un module, rangement, tags, catalogue pour IA | `docs/ASSETS.md` |
 | Créer un asset pas à pas, axes de variation, recettes | `.claude/skills/create-asset/` |
+| Mondes : assembler une carte, semis, ciel, explorateur, mesures | `docs/WORLDS.md` |
 | Effets pixelfx portés en 3D | `docs/PIXELFX-3D.md` |
 
 ## Git

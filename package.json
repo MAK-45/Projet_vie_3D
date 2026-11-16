@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "catalog": "node scripts/build-catalog.mjs",
     "artifact": "npm run catalog && node scripts/build-artifact.mjs",
+    "artifact:prairie": "node scripts/build-explorer-artifact.mjs",
     "check": "node scripts/check-assets.mjs",
     "sheet": "node scripts/asset-sheet.mjs"
   },

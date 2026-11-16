@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- Explorateur de monde : la prairie d'été, à parcourir avec un promeneur de 1,80 m. En développement, l'URL
+     accepte ?variant=ready|assets|mixed&seed=1&size=small|medium|large&az=45&el=30&zoom=1&x=0&z=0&stroll=1 -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Prairie d'été</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&family=Pixelify+Sans:wght@500;700&display=swap"
+    />
+    <link rel="stylesheet" href="/src/explorer/style.css" />
+  </head>
+  <body>
+    <!--app:start-->
+    <div class="explorer" id="explorer">
+      <div class="stage" id="stage" aria-label="Vue de la prairie"></div>
+
+      <header class="panel controls">
+        <h1 class="brand">Prairie d'été</h1>
+        <div class="choice" id="variant" role="radiogroup" aria-label="Habillage de la carte">
+          <button type="button" role="radio" data-value="ready">A · Sol prêt</button>
+          <button type="button" role="radio" data-value="assets">B · Tout en assets</button>
+          <button type="button" role="radio" data-value="mixed">A + B</button>
+        </div>
+        <details class="terrain" id="terrain">
+          <summary><span>Terrain</span> <span class="terrain-summary" id="terrain-summary"></span></summary>
+          <div class="fields">
+            <label class="field" for="seed">
+              <span>Graine</span>
+              <input id="seed" type="number" min="0" max="9999" step="1" inputmode="numeric" />
+            </label>
+            <button type="button" class="button" id="reroll">Au hasard</button>
+            <div class="choice" id="size" role="radiogroup" aria-label="Taille de la carte">
+              <button type="button" role="radio" data-value="small">Petit</button>
+              <button type="button" role="radio" data-value="medium">Moyen</button>
+              <button type="button" role="radio" data-value="large">Grand</button>
+            </div>
+          </div>
+          <p class="note" id="world-note"></p>
+        </details>
+      </header>
+
+      <div class="joystick" id="joystick" aria-hidden="true"><span class="knob"></span></div>
+
+      <footer class="panel actions">
+        <button type="button" class="button" id="stroll" aria-pressed="false">Balade auto</button>
+        <button type="button" class="button" id="recenter">Vue de départ</button>
+        <p class="stats" id="stats"></p>
+      </footer>
+
+      <p class="hint">
+        <span class="hint-keys">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner · souris : tourner, incliner · molette : zoom</span>
+        <span class="hint-touch">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</span>
+        <span>La barre rouge mesure 1,80 m. Inclinez la vue vers l'horizon pour voir le ciel.</span>
+      </p>
+
+      <div class="loading" id="loading">Génération de la prairie…</div>
+    </div>
+    <!--app:end-->
+    <script type="module" src="/src/explorer/main.js"></script>
+  </body>
+</html>
