@@ -47,3 +47,67 @@ export const MOSSES = {
 
 GROUNDS.clay = { label: "Argile", ramp: ["#4a2724", "#7a3e2c", "#a65b39", "#c98552"], ink: "#2a1517" };
 GROUNDS.mud = { label: "Boue", ramp: ["#2a2026", "#3e2f2f", "#574236", "#735a44"], ink: "#18121a" };
+
+/**
+ * Herbe selon la saison (brins, tiges, gazon) : 5 couleurs, du pied à l'ombre jusqu'à la pointe au soleil.
+ * `sod` : la motte sous les brins d'une pelouse, plus sombre.
+ */
+export const GRASSES = {
+  spring: {
+    label: "Printemps",
+    ramp: ["#22504a", "#327a4c", "#55a24c", "#8fca56", "#d3ec86"],
+    sod: ["#1e4140", "#2b5d45", "#3f7c47", "#5d9b4b"],
+  },
+  summer: {
+    label: "Été",
+    ramp: ["#1b3f40", "#285f43", "#3f8442", "#73ab45", "#bfd862"],
+    sod: ["#18363a", "#22503f", "#356c40", "#518a43"],
+  },
+  autumn: {
+    label: "Automne",
+    ramp: ["#3c3a2e", "#5e5a32", "#8a7f38", "#b9a34a", "#e3cf82"],
+    sod: ["#33322b", "#4a4a30", "#646235", "#827d3e"],
+  },
+  winter: {
+    label: "Hiver",
+    ramp: ["#3e4352", "#5d6159", "#857f68", "#ada185", "#dad3b8"],
+    sod: ["#363b48", "#4a5050", "#625f56", "#7d7664"],
+  },
+};
+
+/**
+ * Fleurs : rampe des pétales (ombre → lumière) et rampe du cœur. Clés du paramètre `species` des fleurs.
+ * `dry` : couleur des têtes fanées (automne, hiver).
+ */
+export const FLOWERS = {
+  daisy: {
+    label: "Marguerite",
+    petals: ["#9b9cbd", "#d4d6e6", "#f4f3ee", "#fffdf4"],
+    heart: ["#c27a1c", "#e6a823", "#f6cf3c", "#ffe676"],
+    dry: ["#4f3a2c", "#6e5134", "#8d6b3f", "#ad8a52"],
+  },
+  poppy: {
+    label: "Coquelicot",
+    petals: ["#7a1f2e", "#b8282c", "#e2412f", "#ff7b52"],
+    heart: ["#16121e", "#231b2b", "#33283a", "#4a3c4a"],
+    dry: ["#3f4a3c", "#5a6a4c", "#7b8a5e", "#a1ab7c"],
+  },
+  cornflower: {
+    label: "Bleuet",
+    petals: ["#283a8a", "#3557c2", "#4e82e6", "#8ab8ff"],
+    heart: ["#2a1f5a", "#3d2a78", "#553a94", "#7454ad"],
+    dry: ["#4a4038", "#665746", "#857257", "#a48f6e"],
+  },
+  buttercup: {
+    label: "Bouton d'or",
+    petals: ["#b07214", "#e0a41a", "#f8d331", "#fff38a"],
+    heart: ["#7d6a1e", "#a08a22", "#c4ac2e", "#e3cc4a"],
+    dry: ["#4b4230", "#6a5c3a", "#8a7846", "#a99656"],
+  },
+  lavender: {
+    label: "Lavande",
+    petals: ["#3c2f6e", "#5a46a0", "#8068c8", "#b49ae8"],
+    heart: ["#3c2f6e", "#5a46a0", "#8068c8", "#b49ae8"],
+    dry: ["#4a4252", "#655c68", "#857a80", "#a59a9a"],
+  },
+};

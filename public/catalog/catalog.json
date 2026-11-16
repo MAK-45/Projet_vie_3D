@@ -1160,6 +1160,594 @@
         "source": 2920,
         "standalone": 24195
       }
+    },
+    {
+      "id": "nature/plants/grass-tuft",
+      "name": "Touffe d'herbe",
+      "nameEn": "Grass tuft",
+      "category": "nature",
+      "subcategory": "plants",
+      "description": "Touffe d'herbe en éventail : brins effilés sombres au pied et clairs à la pointe, qui ploient au vent. Herbe des prés ou hautes herbes à épis, quatre saisons ; la graine change le port de la touffe.",
+      "tags": [
+        "herbe",
+        "touffe d'herbe",
+        "brins",
+        "hautes herbes",
+        "épis",
+        "plante",
+        "végétation",
+        "vent",
+        "saisons",
+        "extérieur",
+        "grass",
+        "grass tuft",
+        "blades",
+        "tall grass",
+        "seed heads",
+        "plant",
+        "vegetation",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "garden",
+        "village",
+        "swamp",
+        "mountain",
+        "beach"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au cœur de la touffe",
+      "footprint": {
+        "radius": 0.75,
+        "height": 1.25
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le port de la touffe : penchée ou dressée, ouverte ou serrée, brins plus longs d'un côté."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Vert tendre au printemps, blond en automne, paille grise et couchée en hiver."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "meadow",
+          "values": [
+            "meadow",
+            "tall"
+          ],
+          "labels": {
+            "meadow": "Herbe des prés",
+            "tall": "Hautes herbes à épis"
+          },
+          "label": "Herbe",
+          "description": "Herbe des prés : touffe basse et fournie. Hautes herbes : tiges deux fois plus hautes, avec des épis."
+        },
+        "height": {
+          "type": "number",
+          "default": 0.5,
+          "min": 0.2,
+          "max": 1,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur des plus longs brins (doublée pour les hautes herbes)."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.6,
+          "step": 0.1,
+          "label": "Densité",
+          "description": "Nombre de brins (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-plants-grass-tuft",
+      "path": "src/assets/nature/plants/grass-tuft.js",
+      "module": "public/catalog/modules/nature-plants-grass-tuft.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 69,
+          "vertices": 115,
+          "drawCalls": 1
+        },
+        "summer": {
+          "triangles": 69,
+          "vertices": 115,
+          "drawCalls": 1
+        },
+        "spring": {
+          "triangles": 69,
+          "vertices": 115,
+          "drawCalls": 1
+        },
+        "autumn": {
+          "triangles": 69,
+          "vertices": 115,
+          "drawCalls": 1
+        },
+        "winter": {
+          "triangles": 69,
+          "vertices": 115,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 7116,
+        "standalone": 25250
+      }
+    },
+    {
+      "id": "nature/terrain/lawn",
+      "name": "Pelouse",
+      "nameEn": "Lawn",
+      "category": "nature",
+      "subcategory": "terrain",
+      "description": "Pelouse : motte de gazon couverte de brins qui ondulent au vent. Tondue, haute ou folle avec des pâquerettes ; en plaque au bord irrégulier ou en dalle carrée raccordable. Quatre saisons.",
+      "tags": [
+        "pelouse",
+        "gazon",
+        "herbe",
+        "prairie",
+        "pâquerettes",
+        "dalle",
+        "sol",
+        "terrain",
+        "végétation",
+        "vent",
+        "saisons",
+        "extérieur",
+        "lawn",
+        "turf",
+        "grass",
+        "meadow",
+        "daisies",
+        "tile",
+        "ground",
+        "vegetation",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "meadow",
+        "garden",
+        "village",
+        "forest"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la plaque",
+      "footprint": {
+        "radius": 1.05,
+        "height": 0.42
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le contour de la plaque, les zones plus drues ou plus rases, la place des fleurs."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Vert vif au printemps, blondi en automne, ras et jauni en hiver."
+        },
+        "cut": {
+          "type": "enum",
+          "default": "mown",
+          "values": [
+            "mown",
+            "long",
+            "wild"
+          ],
+          "labels": {
+            "mown": "Tondue",
+            "long": "Haute",
+            "wild": "Folle"
+          },
+          "label": "Coupe",
+          "description": "Tondue : gazon ras et régulier. Haute : brins longs qui ploient. Folle : hauteurs mêlées, touffes et pâquerettes."
+        },
+        "shape": {
+          "type": "enum",
+          "default": "patch",
+          "values": [
+            "patch",
+            "tile"
+          ],
+          "labels": {
+            "patch": "Plaque",
+            "tile": "Dalle carrée"
+          },
+          "label": "Forme",
+          "description": "Plaque au bord irrégulier, à poser seule ; ou dalle carrée dont les bords se raccordent à la dalle voisine."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.6,
+          "min": 0.5,
+          "max": 3,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur de la plaque ou côté de la dalle."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.5,
+          "step": 0.1,
+          "label": "Densité",
+          "description": "Nombre de brins (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-terrain-lawn",
+      "path": "src/assets/nature/terrain/lawn.js",
+      "module": "public/catalog/modules/nature-terrain-lawn.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 383,
+          "vertices": 776,
+          "drawCalls": 2
+        },
+        "summer": {
+          "triangles": 383,
+          "vertices": 776,
+          "drawCalls": 2
+        },
+        "spring": {
+          "triangles": 383,
+          "vertices": 776,
+          "drawCalls": 2
+        },
+        "autumn": {
+          "triangles": 383,
+          "vertices": 776,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 383,
+          "vertices": 776,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 9275,
+        "standalone": 31550
+      }
+    },
+    {
+      "id": "nature/plants/flower-clump",
+      "name": "Massif de fleurs",
+      "nameEn": "Flower clump",
+      "category": "nature",
+      "subcategory": "plants",
+      "description": "Petit massif de fleurs des champs : tiges fines au-dessus d'une rosette de feuilles, corolles et cœurs qui ondulent au vent. Cinq fleurs (marguerite, coquelicot, bleuet, bouton d'or, lavande) et quatre saisons.",
+      "tags": [
+        "fleurs",
+        "massif de fleurs",
+        "marguerite",
+        "coquelicot",
+        "bleuet",
+        "bouton d'or",
+        "lavande",
+        "fleur des champs",
+        "plante",
+        "végétation",
+        "jardin",
+        "vent",
+        "saisons",
+        "extérieur",
+        "flowers",
+        "flower clump",
+        "daisy",
+        "poppy",
+        "cornflower",
+        "buttercup",
+        "lavender",
+        "wildflower",
+        "plant",
+        "vegetation",
+        "garden",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "meadow",
+        "garden",
+        "village",
+        "forest",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au cœur du massif",
+      "footprint": {
+        "radius": 0.6,
+        "height": 0.6
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le bouquet : nombre et hauteur des tiges, inclinaison, place des fleurs et des feuilles."
+        },
+        "species": {
+          "type": "enum",
+          "default": "daisy",
+          "values": [
+            "daisy",
+            "poppy",
+            "cornflower",
+            "buttercup",
+            "lavender"
+          ],
+          "labels": {
+            "daisy": "Marguerite",
+            "poppy": "Coquelicot",
+            "cornflower": "Bleuet",
+            "buttercup": "Bouton d'or",
+            "lavender": "Lavande"
+          },
+          "label": "Fleur",
+          "description": "Marguerite blanche à cœur jaune, coquelicot rouge à cœur noir, bleuet bleu, bouton d'or, ou épis de lavande."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Printemps : boutons et fleurs mêlés. Été : pleine floraison. Automne : têtes fanées. Hiver : tiges sèches."
+        },
+        "count": {
+          "type": "number",
+          "default": 7,
+          "min": 3,
+          "max": 15,
+          "step": 1,
+          "label": "Tiges",
+          "description": "Nombre de tiges fleuries (triplé pour la lavande)."
+        },
+        "height": {
+          "type": "number",
+          "default": 1,
+          "min": 0.6,
+          "max": 1.5,
+          "step": 0.1,
+          "label": "Hauteur",
+          "description": "Hauteur relative à la taille naturelle de la fleur (35 à 55 cm)."
+        }
+      },
+      "variants": [
+        {
+          "id": "daisy",
+          "name": "Marguerite",
+          "params": {
+            "species": "daisy"
+          }
+        },
+        {
+          "id": "poppy",
+          "name": "Coquelicot",
+          "params": {
+            "species": "poppy"
+          }
+        },
+        {
+          "id": "cornflower",
+          "name": "Bleuet",
+          "params": {
+            "species": "cornflower"
+          }
+        },
+        {
+          "id": "buttercup",
+          "name": "Bouton d'or",
+          "params": {
+            "species": "buttercup"
+          }
+        },
+        {
+          "id": "lavender",
+          "name": "Lavande",
+          "params": {
+            "species": "lavender"
+          }
+        }
+      ],
+      "slug": "nature-plants-flower-clump",
+      "path": "src/assets/nature/plants/flower-clump.js",
+      "module": "public/catalog/modules/nature-plants-flower-clump.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 318,
+          "vertices": 377,
+          "drawCalls": 3
+        },
+        "daisy": {
+          "triangles": 318,
+          "vertices": 377,
+          "drawCalls": 3
+        },
+        "poppy": {
+          "triangles": 159,
+          "vertices": 201,
+          "drawCalls": 3
+        },
+        "cornflower": {
+          "triangles": 204,
+          "vertices": 244,
+          "drawCalls": 3
+        },
+        "buttercup": {
+          "triangles": 255,
+          "vertices": 316,
+          "drawCalls": 3
+        },
+        "lavender": {
+          "triangles": 732,
+          "vertices": 924,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 12288,
+        "standalone": 29760
+      }
     }
   ]
 }

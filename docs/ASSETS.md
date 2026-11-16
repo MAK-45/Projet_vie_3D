@@ -111,7 +111,7 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 
 | Famille | Axes |
 |---|---|
-| Végétation, terrain | `season` : spring, summer, autumn, winter |
+| Végétation, terrain | `season` : spring, summer, autumn, winter ; fleurs : `species` (daisy, poppy, cornflower, buttercup, lavender) |
 | Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate ; `cover` : bare, moss, snow |
 | Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch |
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |

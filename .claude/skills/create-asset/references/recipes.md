@@ -11,6 +11,7 @@ c'est ce fichier qui fait progresser les assets suivants.
 3. Contours
 4. Végétal : tronc, branches, feuillage (éprouvé sur le bouleau)
 5. Vent (éprouvé)
+5 bis. Herbes, pelouses, fleurs (éprouvé)
 6. Roches (éprouvé sur le rocher posé et la roche enterrée) ; pistes : bâti, véhicules
 7. Étendre le kit ou le matériau
 8. Poids
@@ -80,6 +81,30 @@ c'est ce fichier qui fait progresser les assets suivants.
   branches et feuilles bougent ensemble. Bouleau : amplitude `0.09 × échelle`. À 0,17 l'arbre tanguait.
 - Le temps avance par crans de 1/12 s : mouvement saccadé façon sprite. `animated: ["wind"]` dans la fiche.
 - Ce qui est rigide (pierre, mur, véhicule à l'arrêt) n'a pas de `sway`.
+
+## 5 bis. Herbes, pelouses, fleurs (éprouvé sur `grass-tuft`, `lawn`, `flower-clump`)
+
+- **Brins face caméra** : `buildBladeGeometry` (kit) pose un ruban le long d'une courbe base → coude → pointe,
+  avec la largeur portée dans le plan de l'écran (matériau `foliage: true`). Un brin modélisé « à plat » disparaît
+  de profil ; celui-ci garde ses pixels sous tous les angles. Le pied est sombre (occlusion 0), la pointe claire
+  (occlusion 1) : ce dégradé suffit à faire lire une touffe de 8 pixels de haut.
+- **Largeur** : 0,085 à 0,12 m pour une touffe isolée. À 0,07 m et 26 brins serrés, la touffe n'est qu'une
+  bouillie verte ; moins de brins (≈ 20), plus larges et plus ouverts (`spread` 0,5 à 1) se lisent mieux.
+- **Hautes herbes** : feuilles longues et arquées (60 % retombent) + quelques tiges droites à épi (`buildFanGeometry`
+  étiré [0,45 ; 1]). Des feuilles courtes et raides font un bouquet de baguettes.
+- **Pelouse** : brins semés sur une grille jitterée (écart 0,085 m tondue, 0,11 m haute), même `id` de contour que
+  la motte, sinon chaque brin est cerné et tout devient sombre. Un bruit lent (« vigueur ») fait les zones drues,
+  rases et les trouées. Dalle carrée : `buildGroundTile` (bords pile sur ±size/2, jupe sous le sol) et pointes des
+  brins bornées au carré, pour raccorder deux dalles. ~1 triangle par brin tondu, 3 par brin haut.
+- **Fleurs** : corolle = `buildFanGeometry` avec `starOutline(pointes, creux)` (marguerite 8/0,6, bleuet 7/0,45,
+  coquelicot 4/0,8) ; le cœur est un second éventail au même point, dans un 3e matériau avec `polygonOffset`
+  (facteur −2, unités −8) pour passer devant, et le **même `id`** que les pétales (sinon le contour le mange).
+- Écarter les têtes : `spread` 0,3 à 0,55 × hauteur. Têtes serrées = une seule tache rouge. Corolle 0,07 à 0,1 m
+  de rayon (3 à 4 pixels au zoom 1). Les tiges ne vont pas jusqu'au jaune de la rampe d'herbe (seuils
+  `[0.3, 0.5, 0.7, 0.9]`), sinon elles font une colonne pâle.
+- Saisons : boutons (petits éventails sombres, occlusion 0,35) au printemps, têtes fanées (cœurs seuls, rampe `dry`)
+  en automne, tiges sèches en hiver. Rampes partagées : `GRASSES` et `FLOWERS` dans `palettes.js`.
+- Poids : un massif de fleurs 160 à 320 triangles, la lavande ~730 (épis à 5 grains pentagonaux).
 
 ## 6. Roches (éprouvé) et pistes
 

@@ -1,5 +1,5 @@
-// Outils de géométrie partagés par les assets : tubes effilés (troncs, branches), feuilles, rochers à facettes,
-// buttes au sol (neige, mousse, terre), couches drapées sur une surface,
+// Outils de géométrie partagés par les assets : tubes effilés (troncs, branches), feuilles, brins et corolles face
+// caméra (herbes, fleurs), rochers à facettes, buttes au sol (neige, mousse, terre), couches drapées sur une surface,
 // découpe par orientation des faces, fusion.
 
 import * as THREE from "three";
@@ -190,6 +190,127 @@ export function buildLeafGeometry(leaves) {
   return geometry;
 }
 
+/**
+ * Brins face à la caméra (herbe, tige, feuille longue) pour le matériau toon `foliage` : un ruban le long d'une
+ * courbe (base → coude → pointe), dont la largeur est portée dans le plan de l'écran. Un brin ne disparaît donc
+ * jamais de profil et garde sa largeur en pixels quel que soit l'angle de vue. Indexée (compatible avec
+ * `mergeGeometries` et avec `buildFanGeometry`).
+ *
+ * L'ombrage va du pied (sombre, `occlusion` 0) à la pointe (claire, occlusion 1) : c'est le dégradé qui fait lire
+ * une touffe à quelques pixels de haut.
+ *
+ * @param {Array<{
+ *   base: THREE.Vector3, bend: THREE.Vector3, tip: THREE.Vector3, width: number, tipWidth?: number,
+ *   normal: THREE.Vector3, phase: number, variation: number, flex: number, baseOcclusion?: number
+ * }>} blades
+ *   - bend : point de contrôle de la courbe (courbe de Bézier quadratique) ; width : largeur au pied (mètres)
+ *   - tipWidth : largeur à la pointe (0 = pointue) ; flex : souplesse au vent de la pointe (le pied est fixe)
+ * @param {{segments?: number}} [options] tronçons le long du brin (1 = un triangle)
+ */
+export function buildBladeGeometry(blades, { segments = 2 } = {}) {
+  const positions = [];
+  const normals = [];
+  const corners = [];
+  const data = [];
+  const index = [];
+  const point = new THREE.Vector3();
+  const push = (blade, t, cornerX) => {
+    const u = 1 - t;
+    point.set(0, 0, 0)
+      .addScaledVector(blade.base, u * u)
+      .addScaledVector(blade.bend, 2 * u * t)
+      .addScaledVector(blade.tip, t * t);
+    positions.push(point.x, point.y, point.z);
+    normals.push(blade.normal.x, blade.normal.y, blade.normal.z);
+    corners.push(cornerX, 0);
+    const base = blade.baseOcclusion ?? 0;
+    data.push(blade.phase, base + (1 - base) * t, blade.variation, blade.flex * t * t);
+    return positions.length / 3 - 1;
+  };
+
+  for (const blade of blades) {
+    const tipWidth = blade.tipWidth ?? 0;
+    let previous = null;
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const half = (blade.width + (tipWidth - blade.width) * t) / 2;
+      if (i === segments && tipWidth <= 0) {
+        const tip = push(blade, t, 0);
+        index.push(previous[0], previous[1], tip);
+        break;
+      }
+      const level = [push(blade, t, -half), push(blade, t, half)];
+      if (previous) index.push(previous[0], previous[1], level[1], previous[0], level[1], level[0]);
+      previous = level;
+    }
+  }
+  return foliageGeometry(positions, normals, corners, data, index);
+}
+
+/**
+ * Formes face caméra (corolle de fleur, cœur, épi, bourgeon) pour le matériau toon `foliage` : un polygone en
+ * éventail autour d'un point, toujours tourné vers la caméra. Indexée, mêmes attributs que `buildBladeGeometry`.
+ *
+ * @param {Array<{
+ *   position: THREE.Vector3, outline: number[][], size: number, rotation?: number, stretch?: number[],
+ *   normal: THREE.Vector3, phase: number, variation: number, flex: number, occlusion?: number
+ * }>} fans
+ *   - outline : contour [[x, y], ...] pour une taille de 1 (voir `starOutline`) ; stretch : étirement [x, y]
+ *   - occlusion : 1 = pleine lumière (défaut), 0 = sombre
+ */
+export function buildFanGeometry(fans) {
+  const positions = [];
+  const normals = [];
+  const corners = [];
+  const data = [];
+  const index = [];
+  for (const fan of fans) {
+    const cos = Math.cos(fan.rotation ?? 0);
+    const sin = Math.sin(fan.rotation ?? 0);
+    const [sx, sy] = fan.stretch ?? [1, 1];
+    const occlusion = fan.occlusion ?? 1;
+    const first = positions.length / 3;
+    const vertex = (x, y) => {
+      positions.push(fan.position.x, fan.position.y, fan.position.z);
+      normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
+      const cx = x * sx * fan.size;
+      const cy = y * sy * fan.size;
+      corners.push(cx * cos - cy * sin, cx * sin + cy * cos);
+      data.push(fan.phase, occlusion, fan.variation, fan.flex);
+    };
+    vertex(0, 0);
+    for (const [x, y] of fan.outline) vertex(x, y);
+    const n = fan.outline.length;
+    for (let i = 0; i < n; i++) index.push(first, first + 1 + i, first + 1 + ((i + 1) % n));
+  }
+  return foliageGeometry(positions, normals, corners, data, index);
+}
+
+/**
+ * Contour en étoile ou en fleur pour `buildFanGeometry` : `points` pointes de rayon 1 séparées par des creux de
+ * rayon `inner` (1 = polygone régulier).
+ */
+export function starOutline(points, inner = 1) {
+  const outline = [];
+  const steps = inner === 1 ? points : points * 2;
+  for (let i = 0; i < steps; i++) {
+    const angle = (i / steps) * Math.PI * 2 + Math.PI / 2;
+    const r = inner === 1 || i % 2 === 0 ? 1 : inner;
+    outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+  }
+  return outline;
+}
+
+function foliageGeometry(positions, normals, corners, data, index) {
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setAttribute("aCorner", new THREE.BufferAttribute(new Float32Array(corners), 2));
+  geometry.setAttribute("aLeaf", new THREE.BufferAttribute(new Float32Array(data), 4));
+  geometry.setIndex(index);
+  return geometry;
+}
+
 const _rockPoint = new THREE.Vector3();
 const _rockEuler = new THREE.Euler();
 
@@ -377,6 +498,57 @@ export function buildMound(
   } else {
     geometry.computeVertexNormals();
   }
+  return geometry;
+}
+
+/**
+ * Dalle de sol carrée (pelouse, dallage, parterre) : un dessus quadrillé à hauteur `height`, bosselé par `relief`,
+ * bordé d'une jupe verticale qui descend juste sous le sol. Les bords tombent pile sur ±size/2 : deux dalles
+ * posées côte à côte se raccordent sans trou. Attributs : position, normal ; indexée.
+ *
+ * @param {object} [options]
+ * @param {number} [options.size] côté en mètres
+ * @param {number} [options.height] hauteur du dessus
+ * @param {number} [options.divisions] carreaux par côté
+ * @param {(x: number, z: number) => number} [options.relief] bosses ajoutées au dessus (mètres)
+ */
+export function buildGroundTile({ size = 1, height = 0.03, divisions = 6, relief } = {}) {
+  const half = size / 2;
+  const n = divisions;
+  const positions = [];
+  const index = [];
+  const top = (i, j) => i * (n + 1) + j;
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      const x = -half + (size * j) / n;
+      const z = -half + (size * i) / n;
+      positions.push(x, height + (relief ? relief(x, z) : 0), z);
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) index.push(top(i, j), top(i + 1, j), top(i, j + 1), top(i, j + 1), top(i + 1, j), top(i + 1, j + 1));
+  }
+  // Jupe : le tour du dessus, dupliqué juste sous le sol (sommets à part, pour des normales horizontales nettes).
+  const ring = [];
+  for (let j = 0; j < n; j++) ring.push(top(0, j));
+  for (let i = 0; i < n; i++) ring.push(top(i, n));
+  for (let j = n; j > 0; j--) ring.push(top(n, j));
+  for (let i = n; i > 0; i--) ring.push(top(i, 0));
+  const skirtStart = positions.length / 3;
+  for (const v of ring) {
+    positions.push(positions[v * 3], positions[v * 3 + 1], positions[v * 3 + 2]);
+    positions.push(positions[v * 3], -0.02, positions[v * 3 + 2]);
+  }
+  const m = ring.length;
+  for (let k = 0; k < m; k++) {
+    const a = skirtStart + k * 2;
+    const b = skirtStart + ((k + 1) % m) * 2;
+    index.push(a, b, a + 1, b, b + 1, a + 1);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(index);
+  geometry.computeVertexNormals();
   return geometry;
 }
 
