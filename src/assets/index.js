@@ -1,12 +1,14 @@
 // Registre des assets : la liste de tout ce qui est dessiné. Ajouter ici chaque nouvel asset.
 // Chaque module exporte `meta` (fiche : id, catégorie, tags, paramètres...) et `create(params)`.
 
+import * as boulder from "./nature/rocks/boulder.js";
+import * as buriedRock from "./nature/rocks/buried-rock.js";
 import * as birch from "./nature/trees/birch.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch];
+export const assets = [birch, boulder, buriedRock];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */
 export function getAsset(id) {

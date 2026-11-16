@@ -11,7 +11,7 @@ c'est ce fichier qui fait progresser les assets suivants.
 3. Contours
 4. Végétal : tronc, branches, feuillage (éprouvé sur le bouleau)
 5. Vent (éprouvé)
-6. Pistes : roches, bâti, véhicules
+6. Roches (éprouvé sur le rocher posé et la roche enterrée) ; pistes : bâti, véhicules
 7. Étendre le kit ou le matériau
 8. Poids
 
@@ -81,13 +81,28 @@ c'est ce fichier qui fait progresser les assets suivants.
 - Le temps avance par crans de 1/12 s : mouvement saccadé façon sprite. `animated: ["wind"]` dans la fiche.
 - Ce qui est rigide (pierre, mur, véhicule à l'arrêt) n'a pas de `sway`.
 
-## 6. Pistes (pas encore essayées)
+## 6. Roches (éprouvé) et pistes
 
-À confirmer à l'écran ; corriger cette section après le premier asset de chaque famille.
+**Roches** (`nature/rocks/boulder`, `nature/rocks/buried-rock`) :
 
-- **Roches** : partir d'un `IcosahedronGeometry` de détail 1 ou 2, déplacer les sommets avec un bruit tiré de la
-  graine, aplatir le dessous, puis rendre la géométrie non indexée et recalculer les normales pour obtenir des
-  facettes franches. `crease: true`, `pattern: "speckle"`. Plusieurs blocs fusionnés pour un amas.
+- Outil `buildRock(rng, options)` de `kit/geometry.js` : icosaèdre bosselé (bosses gaussiennes sur la sphère)
+  puis **taillé par des plans** tirés de la graine, étiré, tourné, posé, `floorY` pour aplatir le dessous.
+  Les plans de taille font tout : sans eux, on obtient des œufs.
+- **Détail 1** (80 faces) pour un rocher : au détail 2, les facettes deviennent trop petites et le rocher paraît
+  lisse et rond. Détail 0 pour un caillou.
+- Taille : `cutDepth` autour de [0,6 ; 0,9] et 4 à 9 plans. Varier fortement les proportions par graine
+  (largeur 0,95 à 1,9 × la demi-hauteur) sinon toutes les graines se ressemblent.
+- Matériau : `crease: true`, `steps: [0.36, 0.58, 0.8]` (avec les seuils par défaut, la face éclairée prend
+  presque tout), `speckle` discret `[16, 0.05, 0.2, 1]` : à 0,08 c'est des confettis.
+- Cailloux au pied : rayon ≥ 0,12 m, sinon le contour les mange et ils paraissent noirs.
+- **Enterré** : décaler le bloc vers le bas (`offset` y) avec `floorY` juste sous le sol, l'incliner fortement,
+  et l'entourer d'un **talus de terre continu** (un `buildRock` très aplati, détail 2, bords bosselés). Des
+  mottes séparées tout autour ressemblent à des pattes ; un disque régulier à une flaque.
+- Mousse, neige : `splitFacesByNormal` envoie les faces tournées vers le ciel dans un 2e maillage (rampe
+  `COVERS` de `palettes.js`, `id` distinct). Seuil sur `normal.y` + bruit par face, et seulement au-dessus
+  d'une hauteur : sinon tout le dessus est couvert et ça fait un chapeau. Neige aussi sur le talus de terre.
+
+**Pistes (pas encore essayées)** — à confirmer à l'écran :
 - **Bâti et mobilier** : assembler des blocs (boîtes) aux arêtes vives, `crease: true`. Les fenêtres, portes et
   poutres sont des volumes à part avec leur propre `id` de contour, pas des textures. Tailles en multiples de
   1/16 m pour tomber sur la grille de pixels. L'appareil de pierre ou les planches demandent un motif de

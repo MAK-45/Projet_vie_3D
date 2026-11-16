@@ -300,7 +300,409 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 28135
+        "standalone": 28211
+      }
+    },
+    {
+      "id": "nature/rocks/boulder",
+      "name": "Rocher posé",
+      "nameEn": "Boulder",
+      "category": "nature",
+      "subcategory": "rocks",
+      "description": "Rocher à facettes posé sur le sol, parfois accompagné de cailloux. Cinq pierres (granit, grès, calcaire, basalte, ardoise), nu, moussu ou enneigé ; chaque graine donne une autre silhouette.",
+      "tags": [
+        "rocher",
+        "roche",
+        "pierre",
+        "bloc",
+        "caillou",
+        "minéral",
+        "facettes",
+        "posé",
+        "mousse",
+        "neige",
+        "extérieur",
+        "boulder",
+        "rock",
+        "stone",
+        "pebble",
+        "mineral",
+        "faceted",
+        "moss",
+        "snow",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "mountain",
+        "desert",
+        "snow",
+        "beach",
+        "cave",
+        "garden",
+        "village",
+        "swamp"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre du rocher",
+      "footprint": {
+        "radius": 1.4,
+        "height": 1.1
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : rond, haut ou trapu, facettes, inclinaison, cailloux au pied."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "granite",
+          "values": [
+            "granite",
+            "sandstone",
+            "limestone",
+            "basalt",
+            "slate"
+          ],
+          "labels": {
+            "granite": "Granit",
+            "sandstone": "Grès",
+            "limestone": "Calcaire",
+            "basalt": "Basalte",
+            "slate": "Ardoise"
+          },
+          "label": "Pierre",
+          "description": "Type de pierre : couleurs et grain."
+        },
+        "cover": {
+          "type": "enum",
+          "default": "bare",
+          "values": [
+            "bare",
+            "moss",
+            "snow"
+          ],
+          "labels": {
+            "bare": "Nue",
+            "moss": "Mousse",
+            "snow": "Neige"
+          },
+          "label": "Couverture",
+          "description": "Mousse ou neige sur les faces tournées vers le ciel."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.1,
+          "min": 0.4,
+          "max": 2.5,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du rocher ; tout garde ses proportions."
+        },
+        "roughness": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 1.5,
+          "step": 0.1,
+          "label": "Taille de la pierre",
+          "description": "0 = galet arrondi, 1,5 = bloc très taillé."
+        }
+      },
+      "variants": [
+        {
+          "id": "granite",
+          "name": "Granit",
+          "params": {
+            "stone": "granite"
+          }
+        },
+        {
+          "id": "sandstone",
+          "name": "Grès",
+          "params": {
+            "stone": "sandstone"
+          }
+        },
+        {
+          "id": "limestone",
+          "name": "Calcaire",
+          "params": {
+            "stone": "limestone"
+          }
+        },
+        {
+          "id": "basalt",
+          "name": "Basalte",
+          "params": {
+            "stone": "basalt"
+          }
+        },
+        {
+          "id": "slate",
+          "name": "Ardoise",
+          "params": {
+            "stone": "slate"
+          }
+        }
+      ],
+      "slug": "nature-rocks-boulder",
+      "path": "src/assets/nature/rocks/boulder.js",
+      "module": "public/catalog/modules/nature-rocks-boulder.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        },
+        "granite": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        },
+        "sandstone": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        },
+        "limestone": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        },
+        "basalt": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        },
+        "slate": {
+          "triangles": 120,
+          "vertices": 360,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 5770,
+        "standalone": 23309
+      }
+    },
+    {
+      "id": "nature/rocks/buried-rock",
+      "name": "Roche enterrée",
+      "nameEn": "Buried rock",
+      "category": "nature",
+      "subcategory": "rocks",
+      "description": "Roche à facettes à moitié enterrée, qui affleure en dalle inclinée au milieu d'un talus de terre. Cinq pierres, nue, moussue ou enneigée ; la graine change l'inclinaison et la forme, l'affleurement se règle.",
+      "tags": [
+        "roche",
+        "rocher",
+        "pierre",
+        "dalle",
+        "affleurement",
+        "enterré",
+        "minéral",
+        "terre",
+        "facettes",
+        "mousse",
+        "neige",
+        "extérieur",
+        "buried rock",
+        "rock",
+        "stone",
+        "outcrop",
+        "slab",
+        "embedded",
+        "mineral",
+        "dirt",
+        "moss",
+        "snow",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "forest",
+        "meadow",
+        "mountain",
+        "desert",
+        "snow",
+        "garden",
+        "village",
+        "swamp",
+        "cave"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; l'origine est au sol, au centre de la roche",
+      "footprint": {
+        "radius": 1.2,
+        "height": 0.7
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : dalle plate ou bosse, inclinaison, part qui dépasse, talus de terre."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "granite",
+          "values": [
+            "granite",
+            "sandstone",
+            "limestone",
+            "basalt",
+            "slate"
+          ],
+          "labels": {
+            "granite": "Granit",
+            "sandstone": "Grès",
+            "limestone": "Calcaire",
+            "basalt": "Basalte",
+            "slate": "Ardoise"
+          },
+          "label": "Pierre",
+          "description": "Type de pierre : couleurs et grain."
+        },
+        "cover": {
+          "type": "enum",
+          "default": "bare",
+          "values": [
+            "bare",
+            "moss",
+            "snow"
+          ],
+          "labels": {
+            "bare": "Nue",
+            "moss": "Mousse",
+            "snow": "Neige"
+          },
+          "label": "Couverture",
+          "description": "Mousse ou neige sur les faces tournées vers le ciel."
+        },
+        "size": {
+          "type": "number",
+          "default": 1.6,
+          "min": 0.5,
+          "max": 3.5,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur de la partie visible ; tout garde ses proportions."
+        },
+        "emergence": {
+          "type": "number",
+          "default": 0.5,
+          "min": 0.2,
+          "max": 0.8,
+          "step": 0.1,
+          "label": "Affleurement",
+          "description": "Part de la roche qui sort du sol (0,2 = à peine visible)."
+        }
+      },
+      "variants": [
+        {
+          "id": "granite",
+          "name": "Granit",
+          "params": {
+            "stone": "granite"
+          }
+        },
+        {
+          "id": "sandstone",
+          "name": "Grès",
+          "params": {
+            "stone": "sandstone"
+          }
+        },
+        {
+          "id": "limestone",
+          "name": "Calcaire",
+          "params": {
+            "stone": "limestone"
+          }
+        },
+        {
+          "id": "basalt",
+          "name": "Basalte",
+          "params": {
+            "stone": "basalt"
+          }
+        },
+        {
+          "id": "slate",
+          "name": "Ardoise",
+          "params": {
+            "stone": "slate"
+          }
+        }
+      ],
+      "slug": "nature-rocks-buried-rock",
+      "path": "src/assets/nature/rocks/buried-rock.js",
+      "module": "public/catalog/modules/nature-rocks-buried-rock.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        },
+        "granite": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        },
+        "sandstone": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        },
+        "limestone": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        },
+        "basalt": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        },
+        "slate": {
+          "triangles": 440,
+          "vertices": 1320,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 6161,
+        "standalone": 23863
       }
     }
   ]

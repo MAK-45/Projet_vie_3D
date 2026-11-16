@@ -443,6 +443,8 @@ function buildLeafGeometry(leaves) {
   geometry.setAttribute("aLeaf", new THREE2.BufferAttribute(data, 4));
   return geometry;
 }
+var _rockPoint = new THREE2.Vector3();
+var _rockEuler = new THREE2.Euler();
 
 // src/assets/kit/params.js
 function resolveParams(schema, given = {}) {

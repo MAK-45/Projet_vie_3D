@@ -2,7 +2,7 @@
 // monde puisse demander « tout en automne » ou « tout en granit » sans connaître chaque asset.
 // Les rampes de couleurs des matières communes sont dans palettes.js.
 
-import { STONES, WOODS } from "./palettes.js";
+import { COVERS, STONES, WOODS } from "./palettes.js";
 
 /** Les quatre saisons, dans l'ordre. Valeurs du paramètre `season`. */
 export const SEASONS = ["spring", "summer", "autumn", "winter"];
@@ -39,6 +39,14 @@ export function stoneParam(description, { only, defaultValue } = {}) {
 /** Paramètre `wood` : essence de bois (palettes.js). */
 export function woodParam(description, { only, defaultValue } = {}) {
   return choiceParam("Bois", pick(WOODS, only), description, defaultValue);
+}
+
+/** Valeurs du paramètre `cover` : ce qui recouvre le dessus d'une roche ou d'un bâti. */
+export const COVERS_LIST = ["bare", "moss", "snow"];
+
+/** Paramètre `cover` : nu, mousse ou neige sur les faces tournées vers le ciel (palettes.js, COVERS). */
+export function coverParam(description, defaultValue = "bare") {
+  return choiceParam("Couverture", { bare: "Nue", moss: COVERS.moss, snow: COVERS.snow }, description, defaultValue);
 }
 
 /** Nombre réglable (hauteur, largeur, densité...). */
