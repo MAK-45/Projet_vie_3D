@@ -13,6 +13,7 @@ import * as linden from "./nature/trees/linden.js";
 import * as flowerClump from "./nature/plants/flower-clump.js";
 import * as grassTuft from "./nature/plants/grass-tuft.js";
 import * as lawn from "./nature/terrain/lawn.js";
+import * as meadowGround from "./nature/terrain/meadow-ground.js";
 import * as sun from "./nature/sky/sun.js";
 import * as moon from "./nature/sky/moon.js";
 import * as cloud from "./nature/sky/cloud.js";
@@ -21,7 +22,7 @@ import * as star from "./nature/sky/star.js";
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, flowerClump, sun, moon, cloud, star];
+export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */
 export function getAsset(id) {

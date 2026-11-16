@@ -140,7 +140,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 14957
+      "bytes": 21575
     }
   ],
   "assets": [
@@ -304,7 +304,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 31587
+        "standalone": 36925
       }
     },
     {
@@ -473,7 +473,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 32484
+        "standalone": 37822
       }
     },
     {
@@ -645,7 +645,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 33997
+        "standalone": 39335
       }
     },
     {
@@ -846,7 +846,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 34966
+        "standalone": 40304
       }
     },
     {
@@ -1049,7 +1049,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 36028
+        "standalone": 41366
       }
     },
     {
@@ -1183,7 +1183,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 24267
+        "standalone": 29605
       }
     },
     {
@@ -1346,7 +1346,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 24173
+        "standalone": 29511
       }
     },
     {
@@ -1503,7 +1503,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 26419
+        "standalone": 31757
       }
     },
     {
@@ -1686,7 +1686,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 27568
+        "standalone": 32906
       }
     },
     {
@@ -1885,7 +1885,246 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 33868
+        "standalone": 39206
+      }
+    },
+    {
+      "id": "nature/terrain/meadow-ground",
+      "name": "Sol de prairie",
+      "nameEn": "Meadow ground",
+      "category": "nature",
+      "subcategory": "terrain",
+      "description": "Grand morceau de sol de prairie qui se raccorde sans couture à ses voisins pour couvrir une carte : relief doux, herbe grasse, herbe sèche, terre nue et fleurs semées, en aplats pixel art ou en dégradés lisses. Quatre saisons.",
+      "tags": [
+        "sol",
+        "terrain",
+        "prairie",
+        "plaine",
+        "herbe",
+        "pré",
+        "tuile",
+        "raccordable",
+        "sans couture",
+        "carte",
+        "relief",
+        "saisons",
+        "extérieur",
+        "ground",
+        "land",
+        "meadow",
+        "plain",
+        "grass",
+        "field",
+        "tile",
+        "tileable",
+        "seamless",
+        "map",
+        "heightmap",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "meadow",
+        "garden",
+        "village",
+        "forest"
+      ],
+      "version": 1,
+      "added": "2026-11-16",
+      "units": "1 unité = 1 mètre ; origine au centre du morceau, au niveau le plus bas du relief. Poser le morceau (tileX, tileZ) à (tileX × size, 0, tileZ × size).",
+      "footprint": {
+        "radius": 8.5,
+        "height": 1.4
+      },
+      "animated": [],
+      "pedestal": false,
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Graine du monde : relief et place des taches. Tous les morceaux d'une même carte prennent la même graine."
+        },
+        "season": {
+          "type": "enum",
+          "default": "summer",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Vert franc en été, tendre et fleuri au printemps, blondi en automne, gris et enneigé l'hiver."
+        },
+        "finish": {
+          "type": "enum",
+          "default": "pixel",
+          "values": [
+            "pixel",
+            "smooth"
+          ],
+          "labels": {
+            "pixel": "Pixel art (aplats)",
+            "smooth": "Lisse (dégradés)"
+          },
+          "label": "Rendu",
+          "description": "Aplats nets avec un grain de pixels et des bords de taches tramés, ou couleurs fondues en dégradés doux."
+        },
+        "tileX": {
+          "type": "int",
+          "default": 0,
+          "min": -500,
+          "max": 500,
+          "label": "Case X",
+          "description": "Colonne du morceau sur la carte : le morceau X + 1 se pose à X + Largeur mètres."
+        },
+        "tileZ": {
+          "type": "int",
+          "default": 0,
+          "min": -500,
+          "max": 500,
+          "label": "Case Z",
+          "description": "Rangée du morceau sur la carte."
+        },
+        "size": {
+          "type": "number",
+          "default": 12,
+          "min": 4,
+          "max": 24,
+          "step": 1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Côté du morceau carré. Tous les morceaux d'une carte ont la même largeur."
+        },
+        "relief": {
+          "type": "number",
+          "default": 1.4,
+          "min": 0,
+          "max": 3,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Relief",
+          "description": "Hauteur des ondulations du terrain."
+        },
+        "dryness": {
+          "type": "number",
+          "default": 0.2,
+          "min": 0,
+          "max": 1,
+          "step": 0.1,
+          "label": "Sécheresse",
+          "description": "Part d'herbe sèche et de terre nue."
+        },
+        "preview": {
+          "type": "enum",
+          "default": "single",
+          "values": [
+            "single",
+            "grid"
+          ],
+          "labels": {
+            "single": "Un morceau",
+            "grid": "4 morceaux raccordés"
+          },
+          "label": "Aperçu",
+          "description": "Un morceau seul, ou les 4 morceaux (X, Z) à (X + 1, Z + 1) posés côte à côte, pour voir le raccord."
+        }
+      },
+      "variants": [
+        {
+          "id": "summer",
+          "name": "Été — pixel art",
+          "params": {
+            "season": "summer",
+            "finish": "pixel"
+          }
+        },
+        {
+          "id": "summer-smooth",
+          "name": "Été — lisse",
+          "params": {
+            "season": "summer",
+            "finish": "smooth"
+          }
+        },
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-terrain-meadow-ground",
+      "path": "src/assets/nature/terrain/meadow-ground.js",
+      "module": "public/catalog/modules/nature-terrain-meadow-ground.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        },
+        "summer": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        },
+        "summer-smooth": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        },
+        "spring": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        },
+        "autumn": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 1344,
+          "vertices": 825,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 7608,
+        "standalone": 32690
       }
     },
     {
@@ -2091,7 +2330,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 32147
+        "standalone": 37485
       }
     },
     {
@@ -2239,7 +2478,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 24483
+        "standalone": 29821
       }
     },
     {
@@ -2399,7 +2638,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 25493
+        "standalone": 30831
       }
     },
     {
@@ -2542,7 +2781,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 22335
+        "standalone": 27673
       }
     },
     {
@@ -2705,7 +2944,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 23213
+        "standalone": 28551
       }
     }
   ]

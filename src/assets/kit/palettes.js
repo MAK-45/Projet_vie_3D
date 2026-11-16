@@ -111,3 +111,49 @@ export const FLOWERS = {
     dry: ["#4a4252", "#655c68", "#857a80", "#a59a9a"],
   },
 };
+
+/**
+ * Sols de prairie (grands morceaux de terrain), par saison : 4 couleurs par rampe, ombre → lumière.
+ * `grass` : l'herbe de fond ; `lush` : herbe grasse, plus sombre et bleutée (creux humides) ; `dry` : herbe
+ * sèche, paille ; `bare` : sol nu (terre en été, neige en hiver) ; `skirt` : la tranche du morceau posé seul ;
+ * `flowers` : deux couleurs semées en pixels.
+ */
+export const MEADOW_GROUNDS = {
+  spring: {
+    label: "Printemps",
+    grass: ["#2a5b43", "#3d7f46", "#5ea44b", "#8dc65a"],
+    lush: ["#1f4a40", "#2c6644", "#438746", "#68a94c"],
+    dry: ["#4f6a3c", "#6f8a42", "#94ab52", "#bdcb6e"],
+    bare: ["#4a3330", "#6a4a39", "#8a6646", "#a98459"],
+    flowers: ["#fffbe8", "#f6d43a"],
+    flowerDensity: 0.1,
+  },
+  summer: {
+    label: "Été",
+    grass: ["#2a5440", "#3b7343", "#559446", "#80b450"],
+    lush: ["#1d4540", "#285d42", "#3a7a43", "#5a9a47"],
+    dry: ["#59603a", "#7f8040", "#a8a050", "#cdc06c"],
+    bare: ["#4a3230", "#6b4a3a", "#8d6847", "#ad895c"],
+    flowers: ["#fdf8ea", "#f2c935"],
+    flowerDensity: 0.055,
+  },
+  autumn: {
+    label: "Automne",
+    grass: ["#3f4a34", "#5c6738", "#7f853f", "#a6a24e"],
+    lush: ["#2f4136", "#435a3a", "#5d743d", "#7d9145"],
+    dry: ["#5e4a34", "#85683c", "#ad8a48", "#d0ae62"],
+    bare: ["#433031", "#62453a", "#835f45", "#a27c57"],
+    flowers: ["#d9733a", "#e8b04a"],
+    flowerDensity: 0.03,
+  },
+  winter: {
+    label: "Hiver",
+    grass: ["#3d4552", "#58605d", "#7b7c6c", "#9e9884"],
+    lush: ["#334050", "#4a585c", "#666f68", "#888c7c"],
+    dry: ["#4e4a4c", "#6e6557", "#928466", "#b4a57e"],
+    bare: ["#8a97b8", "#b9c3dc", "#e2e8f2", "#fbfbf6"],
+    flowers: null,
+    flowerDensity: 0,
+  },
+  skirt: ["#3e2a2c", "#5d3f33", "#7f5a3f", "#a07a52"],
+};

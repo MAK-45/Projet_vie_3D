@@ -169,6 +169,24 @@ c'est ce fichier qui fait progresser les assets suivants.
   petits, ils disparaissent en vue iso.
 - Terre : facettes franches (`flat: true`) et mottes (`buildRock` détail 0, rayon ≥ 0,08 m).
 
+**Grands sols raccordables** (`nature/terrain/meadow-ground`, éprouvé) :
+
+- **Tout en coordonnées du monde** : la hauteur est une fonction `height(X, Z)` du monde (pas du morceau), les
+  normales viennent de sa pente (différences centrées), pas de `computeVertexNormals` : deux morceaux voisins
+  ont alors les mêmes sommets et les mêmes normales sur leur bord, la passe de contours ne voit aucune couture.
+  Outil : `buildTerrainChunk` (kit), paramètres `tileX`, `tileZ`, morceau posé à `(tileX × size, 0, tileZ × size)`.
+- **Les taches dans le shader** (motif `ground` du matériau, attribut `aGround` = X, Z du monde) : bords nets au
+  pixel près quelle que soit la grille (sommets tous les 0,5 m), et rien à raccorder. Couches dans l'ordre :
+  herbe grasse, fleurs, herbe sèche, terre (neige l'hiver). Une modulation lente (≈ 33 m) fait des régions plus
+  sèches ou plus grasses : c'est elle qui donne la variété d'un morceau à l'autre.
+- La **graine doit entrer dans le bruit de chaque couche** : sans elle, toutes les graines avaient les mêmes taches.
+- **Frange tramée** au bord des taches : 0,05. À 0,14 les bords deviennent de la poussière de pixels.
+- Lumière : sol plat ≈ 0,89 avec le soleil de la visionneuse ; seuils `[0.62, 0.8, 0.935]`. Plus bas, chaque
+  sommet de colline fait un ovale clair. `shadowLit: 0.7` : l'ombre d'un arbre reste verte.
+- Rendu **lisse** : mêmes taches en `smoothstep` + marbrure douce de la lumière ; sans marbrure, un aplat mort.
+- Poids : ~1 350 triangles pour 12 m (grille 0,5 m + jupe), 2 draw calls ; un monde de 6 × 6 morceaux = 72 m de
+  côté pour ~50 k triangles. `meta.pedestal: false` : la visionneuse ne pose pas de socle sous un sol.
+
 **Pistes (pas encore essayées)** — à confirmer à l'écran :
 - **Bâti et mobilier** : assembler des blocs (boîtes) aux arêtes vives, `crease: true`. Les fenêtres, portes et
   poutres sont des volumes à part avec leur propre `id` de contour, pas des textures. Tailles en multiples de

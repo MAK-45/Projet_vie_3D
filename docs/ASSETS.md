@@ -91,6 +91,8 @@ Règles :
   données dont la passe de contours a besoin.
 - **Budget** : viser < 5 000 triangles et ≤ 3 draw calls par asset (fusionner avec `mergeGeometries`) ; aucune
   texture si un motif procédural suffit (`pattern: "bark" | "furrow" | "speckle"`).
+- **Sols** : `meta.pedestal: false` retire le socle de la visionneuse ; un grand sol raccordable prend `tileX`,
+  `tileZ` et calcule tout en coordonnées du monde (voir `nature/terrain/meadow-ground` et `buildTerrainChunk`).
 - **Ombres** : `castShadow` / `receiveShadow` sur les maillages ; le feuillage a besoin de
   `mesh.customDepthMaterial = material.userData.depthMaterial`.
 

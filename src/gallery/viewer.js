@@ -109,7 +109,7 @@ export class Viewer {
     if (name === "pixelArt" || name === "pixelSize") this.resize();
     if (name === "wireframe") this._applyWireframe();
     if (name === "ground") {
-      this.ground.visible = value;
+      this.ground.visible = this._showPedestal();
       this.resetView();
     }
     if (name === "wind") setWind(value ? 1 : 0);
@@ -120,8 +120,9 @@ export class Viewer {
   /** Recadre : "iso" (défaut), "front", "side", "top". */
   resetView(preset = "iso") {
     const { radius, height } = this.footprint;
-    const half = this.options.ground ? Math.max(radius, this._groundSize() / 2) : radius;
-    const bottom = this.options.ground ? -0.9 : 0;
+    const pedestal = this._showPedestal();
+    const half = pedestal ? Math.max(radius, this._groundSize() / 2) : radius;
+    const bottom = pedestal ? -0.9 : -0.25;
     const views = {
       iso: { azimuth: Math.PI / 4, elevation: ISO_ELEVATION },
       front: { azimuth: 0, elevation: THREE.MathUtils.degToRad(12) },
@@ -249,6 +250,11 @@ export class Viewer {
     this.canvas.style.transform = `translate(${this.iso.subPixel.x * scale}px, ${-this.iso.subPixel.y * scale}px)`;
   }
 
+  /** Socle affiché : option « sol » active, sauf pour un asset qui est lui-même un sol (`meta.pedestal: false`). */
+  _showPedestal() {
+    return this.options.ground && this.assetModule?.meta.pedestal !== false;
+  }
+
   _groundSize() {
     // Un peu plus étroit que l'asset : une couronne d'arbre déborde du socle.
     return Math.round((this.footprint.radius * 1.6 + 0.6) * 2) / 2;
@@ -289,7 +295,7 @@ export class Viewer {
     earth.receiveShadow = true;
 
     this.ground.add(grass, earth);
-    this.ground.visible = this.options.ground;
+    this.ground.visible = this._showPedestal();
 
     const reach = size * 0.75 + this.footprint.height * 0.6;
     const camera = this.sun.shadow.camera;

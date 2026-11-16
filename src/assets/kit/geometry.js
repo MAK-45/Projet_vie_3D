@@ -697,3 +697,92 @@ export function buildDrape(geometry, coverage, { subdivisions = 3, lift = () => 
   result.setIndex(sequentialIndex(out.length / 3));
   return result;
 }
+
+/**
+ * Morceau de terrain raccordable : une grille posée sur une hauteur `height(X, Z)` exprimée en coordonnées du
+ * MONDE. Deux morceaux voisins (même taille, même fonction de hauteur, `origin` décalée d'une taille) ont
+ * exactement les mêmes sommets, les mêmes normales et les mêmes coordonnées de motif sur leur bord commun :
+ * aucune couture. Les normales viennent de la pente de la fonction (différences centrées), pas des triangles,
+ * pour être identiques des deux côtés du bord.
+ *
+ * Le dessus porte l'attribut `aGround` (X, Z du monde) lu par le motif `ground` du matériau toon. Une jupe
+ * (bords verticaux jusqu'à `skirtBottom`) ferme le morceau quand il est posé seul ; entre deux morceaux, elle
+ * est cachée sous le sol.
+ *
+ * @param {object} options
+ * @param {number} options.size côté en mètres
+ * @param {number} [options.spacing] écart visé entre deux sommets (m) ; ajusté pour tomber juste sur `size`
+ * @param {[number, number]} [options.origin] position du centre du morceau dans le monde [X, Z]
+ * @param {(X: number, Z: number) => number} options.height hauteur du sol au point du monde (m)
+ * @param {number} [options.skirtBottom] bas de la jupe (m, repère local)
+ * @returns {{top: THREE.BufferGeometry, skirt: THREE.BufferGeometry}}
+ */
+export function buildTerrainChunk({ size, spacing = 0.5, origin = [0, 0], height, skirtBottom = -0.25 }) {
+  const n = Math.max(1, Math.round(size / spacing));
+  const half = size / 2;
+  const step = size / n;
+  const [ox, oz] = origin;
+  const e = step * 0.5;
+  const positions = [];
+  const normals = [];
+  const ground = [];
+  const index = [];
+  const at = (i, j) => i * (n + 1) + j;
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      // Coordonnées monde calculées depuis des entiers : deux morceaux voisins tombent sur les mêmes valeurs.
+      const x = -half + j * step;
+      const z = -half + i * step;
+      const X = ox + x;
+      const Z = oz + z;
+      positions.push(x, height(X, Z), z);
+      const dx = (height(X + e, Z) - height(X - e, Z)) / (2 * e);
+      const dz = (height(X, Z + e) - height(X, Z - e)) / (2 * e);
+      const len = Math.hypot(dx, 1, dz);
+      normals.push(-dx / len, 1 / len, -dz / len);
+      ground.push(X, Z);
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      // Diagonale alternée : pas de « peigne » visible dans le relief.
+      if ((i + j) % 2 === 0) index.push(at(i, j), at(i + 1, j), at(i, j + 1), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1));
+      else index.push(at(i, j), at(i + 1, j + 1), at(i, j + 1), at(i, j), at(i + 1, j), at(i + 1, j + 1));
+    }
+  }
+  const top = new THREE.BufferGeometry();
+  top.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  top.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  top.setAttribute("aGround", new THREE.Float32BufferAttribute(ground, 2));
+  top.setIndex(index);
+
+  // Jupe : quatre bandes verticales, normales vers l'extérieur.
+  const sp = [];
+  const sn = [];
+  const si = [];
+  const sides = [
+    { from: (k) => at(0, k), normal: [0, 0, -1] },
+    { from: (k) => at(k, n), normal: [1, 0, 0] },
+    { from: (k) => at(n, n - k), normal: [0, 0, 1] },
+    { from: (k) => at(n - k, 0), normal: [-1, 0, 0] },
+  ];
+  for (const side of sides) {
+    const start = sp.length / 3;
+    for (let k = 0; k <= n; k++) {
+      const v = side.from(k);
+      sp.push(positions[v * 3], positions[v * 3 + 1], positions[v * 3 + 2]);
+      sp.push(positions[v * 3], skirtBottom, positions[v * 3 + 2]);
+      sn.push(...side.normal, ...side.normal);
+    }
+    for (let k = 0; k < n; k++) {
+      const a = start + k * 2;
+      const b = a + 2;
+      si.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+  }
+  const skirt = new THREE.BufferGeometry();
+  skirt.setAttribute("position", new THREE.Float32BufferAttribute(sp, 3));
+  skirt.setAttribute("normal", new THREE.Float32BufferAttribute(sn, 3));
+  skirt.setIndex(si);
+  return { top, skirt };
+}

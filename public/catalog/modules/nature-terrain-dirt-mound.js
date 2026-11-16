@@ -46,10 +46,18 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vUv;
 #endif
 
+#ifdef PATTERN_GROUND
+  attribute vec2 aGround; // coordonn\xE9es du point dans le monde (m\xE8tres), communes \xE0 tous les morceaux de terrain
+  varying vec2 vGround;
+#endif
+
 varying vec3 vNormal;
 varying vec3 vObjPos;
 
 void main() {
+  #ifdef PATTERN_GROUND
+    vGround = aGround;
+  #endif
   #include <beginnormal_vertex>
   #include <defaultnormal_vertex>
   vNormal = transformedNormal;
@@ -140,6 +148,14 @@ varying vec3 vObjPos;
   varying vec2 vUv;
 #endif
 
+#ifdef PATTERN_GROUND
+  varying vec2 vGround;
+  uniform vec3 uLayerRamp[12]; // 3 couches \xD7 4 couleurs (ombre \u2192 lumi\xE8re)
+  uniform vec4 uLayers[3];     // x : \xE9chelle des taches (1/m), y : seuil (0..1), z : graine, w : poids de la modulation lente (\xB1)
+  uniform vec3 uFlowers[2];    // deux couleurs de fleurs sem\xE9es en pixels
+  uniform vec4 uGround;        // x : lisse (0/1), y : densit\xE9 des fleurs, z : \xE9chelle de la modulation lente (1/m), w : frange tram\xE9e
+#endif
+
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
@@ -151,6 +167,35 @@ float hash13(vec3 p3) {
   p3 += dot(p3, p3.zyx + 31.32);
   return fract((p3.x + p3.y) * p3.z);
 }
+
+#ifdef PATTERN_GROUND
+float valueNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash12(i), b = hash12(i + vec2(1.0, 0.0)), c = hash12(i + vec2(0.0, 1.0)), d = hash12(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+float patchNoise(vec2 p) {
+  return valueNoise(p) * 0.62 + valueNoise(p * 2.63 + 17.3) * 0.28 + valueNoise(p * 6.1 - 5.1) * 0.1;
+}
+
+// Couleur dans une rampe de 4 : par paliers nets (soft = 0) ou en d\xE9grad\xE9 (soft > 0, demi-largeur de la transition).
+vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
+  vec3 color = c0;
+  if (soft > 0.0) {
+    color = mix(color, c1, smoothstep(uSteps[0] - soft, uSteps[0] + soft, lit));
+    color = mix(color, c2, smoothstep(uSteps[1] - soft, uSteps[1] + soft, lit));
+    color = mix(color, c3, smoothstep(uSteps[2] - soft, uSteps[2] + soft, lit));
+  } else {
+    if (lit > uSteps[0]) color = c1;
+    if (lit > uSteps[1]) color = c2;
+    if (lit > uSteps[2]) color = c3;
+  }
+  return color;
+}
+#endif
 
 void main() {
   vec3 N = normalize(vNormal);
@@ -230,6 +275,42 @@ void main() {
   for (int i = 0; i < RAMP_SIZE - 1; i++) {
     if (lit > uSteps[i]) color = uRamp[i + 1];
   }
+  #ifdef PATTERN_GROUND
+    // Sol : rampe de base puis couches de taches, toutes calcul\xE9es sur la position dans le monde. En mode net,
+    // chaque cellule d'un pixel prend une seule couleur et la fronti\xE8re des taches est tram\xE9e ; en mode lisse,
+    // les couleurs se fondent.
+    float smoothMode = uGround.x;
+    vec2 cell = floor(vGround * uPattern.x);
+    vec2 q = mix((cell + 0.5) / uPattern.x, vGround, smoothMode);
+    float cellRand = hash12(cell + uSeed * 7.31);
+    float soft = smoothMode * 0.035;
+    float grain = (1.0 - smoothMode) * uPattern.z * (step(1.0 - uPattern.y, cellRand) - step(cellRand, uPattern.y * uPattern.w));
+    // Lisse : marbrure douce de la lumi\xE8re, pour que l'herbe ne soit pas un aplat uni de pr\xE8s.
+    float mottle = smoothMode * (patchNoise(q * 0.9 + uSeed * 0.71) - 0.5) * 0.09;
+    float gl = lit + grain + mottle;
+    color = shade4(uRamp[0], uRamp[1], uRamp[2], uRamp[3], gl, soft);
+    float slow = valueNoise(q * uGround.z + uSeed * vec2(3.7, 1.3));
+    for (int k = 0; k < 3; k++) {
+      vec4 layer = uLayers[k];
+      if (k == 1 && uGround.y > 0.0) {
+        // Fleurs sem\xE9es en pixels dans les zones fleuries, avant l'herbe s\xE8che et la terre.
+        float zone = smoothstep(0.5, 0.78, patchNoise(q * 0.22 + uSeed * 1.9 + 41.0));
+        float pick = hash12(cell * 1.37 + uSeed + 3.3);
+        float flower = step(pick, uGround.y * zone) * (1.0 - smoothMode);
+        vec3 petal = pick < uGround.y * zone * 0.55 ? uFlowers[0] : uFlowers[1];
+        color = mix(color, mix(petal, color, 0.45 * step(lit, uSteps[1])), flower);
+      }
+      if (layer.x <= 0.0) continue;
+      float m = patchNoise(q * layer.x + layer.z * 13.7 + uSeed * vec2(5.31, 2.87));
+      float threshold = layer.y - (slow - 0.5) * layer.w;
+      float jitter = (hash12(cell * 0.73 + layer.z * 5.1) - 0.5) * uGround.w;
+      float weight = smoothMode > 0.5
+        ? smoothstep(threshold - 0.045, threshold + 0.045, m)
+        : step(threshold, m + jitter);
+      vec3 layerColor = shade4(uLayerRamp[k * 4], uLayerRamp[k * 4 + 1], uLayerRamp[k * 4 + 2], uLayerRamp[k * 4 + 3], gl, soft);
+      color = mix(color, layerColor, weight);
+    }
+  #endif
   color = mix(color, uInk, ink);
 
   // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives (0 = fond, jamais \xE9crit ici).
@@ -254,7 +335,10 @@ var PATTERNS = {
   // part de fissures interrompues (0..1)
   furrow: { define: "PATTERN_FURROW", value: [16, 3, 0.1, 0.25] },
   // density (cellules par unité), probabilité (0..1), amplitude (en lumière), part de grains sombres (0..1)
-  speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] }
+  speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] },
+  // sols (options.ground) : density (pixels par unité), probabilité du grain (0..1), amplitude du grain (en
+  // lumière), part de grains sombres (0..1)
+  ground: { define: "PATTERN_GROUND", value: [16, 0.06, 0.06, 1] }
 };
 function defaultSteps(count) {
   const steps = [];
@@ -278,7 +362,8 @@ function createToonMaterial(options) {
     sway = { amplitude: 0, height: 1 },
     side = foliage ? THREE.DoubleSide : THREE.FrontSide,
     unlit = false,
-    twinkle = 0
+    twinkle = 0,
+    ground
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -289,8 +374,30 @@ function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
+  const groundUniforms = {};
+  if (pattern === "ground") {
+    if (ramp.length !== 4) throw new Error("pattern ground : rampe de 4 couleurs");
+    const g = ground ?? {};
+    const layers = (g.layers ?? []).slice(0, 3);
+    const layerRamps = [];
+    const layerInfo = [];
+    for (let k = 0; k < 3; k++) {
+      const layer = layers[k];
+      const colors = layer?.ramp ?? ramp;
+      if (colors.length !== 4) throw new Error("pattern ground : chaque couche a une rampe de 4 couleurs");
+      layerRamps.push(...colors.map(rgb));
+      layerInfo.push(new THREE.Vector4(layer?.scale ?? 0, layer?.threshold ?? 1, layer?.seed ?? k + 1, layer?.drift ?? 0));
+    }
+    const flowers = g.flowers ?? ["#ffffff", "#ffffff"];
+    groundUniforms.uLayerRamp = { value: layerRamps };
+    groundUniforms.uLayers = { value: layerInfo };
+    groundUniforms.uFlowers = { value: flowers.map(rgb) };
+    groundUniforms.uGround = {
+      value: new THREE.Vector4(g.smooth ? 1 : 0, g.flowers ? g.flowerDensity ?? 0.06 : 0, g.driftScale ?? 0.025, g.fringe ?? 0.12)
+    };
+  }
   const material = new THREE.ShaderMaterial({
-    name: foliage ? "ToonFoliage" : "Toon",
+    name: foliage ? "ToonFoliage" : pattern === "ground" ? "ToonGround" : "Toon",
     defines,
     lights: true,
     side,
@@ -308,7 +415,8 @@ function createToonMaterial(options) {
       uShadowLit: { value: shadowLit },
       uPattern: { value: new THREE.Vector4(...patternParams ?? patternInfo.value) },
       uSeed: { value: seed },
-      uLeafShade: { value: new THREE.Vector2(...leafShade) }
+      uLeafShade: { value: new THREE.Vector2(...leafShade) },
+      ...groundUniforms
     },
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT
