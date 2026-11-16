@@ -96,12 +96,17 @@ c'est ce fichier qui fait progresser les assets suivants.
   la motte, sinon chaque brin est cerné et tout devient sombre. Un bruit lent (« vigueur ») fait les zones drues,
   rases et les trouées. Dalle carrée : `buildGroundTile` (bords pile sur ±size/2, jupe sous le sol) et pointes des
   brins bornées au carré, pour raccorder deux dalles. ~1 triangle par brin tondu, 3 par brin haut.
-- **Fleurs** : corolle = `buildFanGeometry` avec `starOutline(pointes, creux)` (marguerite 8/0,6, bleuet 7/0,45,
-  coquelicot 4/0,8) ; le cœur est un second éventail au même point, dans un 3e matériau avec `polygonOffset`
-  (facteur −2, unités −8) pour passer devant, et le **même `id`** que les pétales (sinon le contour le mange).
-- Écarter les têtes : `spread` 0,3 à 0,55 × hauteur. Têtes serrées = une seule tache rouge. Corolle 0,07 à 0,1 m
-  de rayon (3 à 4 pixels au zoom 1). Les tiges ne vont pas jusqu'au jaune de la rampe d'herbe (seuils
-  `[0.3, 0.5, 0.7, 0.9]`), sinon elles font une colonne pâle.
+- **Fleurs** : corolle = `buildFanGeometry` avec des contours **ronds ou peu découpés** (marguerite
+  `starOutline(12, 0.8)`, coquelicot et bouton d'or `(5, 0.86)`, bleuet `(8, 0.62)`), rayon 0,085 à 0,12 m. Une
+  étoile très découpée (8 pointes, creux 0,6) sur 3 à 4 pixels de rayon donne un bord en dents de scie : en pixel
+  art, plus de triangles ne rend pas plus net, des formes simples et un peu plus grosses, si.
+- **Cœur** : second éventail au même point, dans un 3e matériau, avec `lift: 0.03` (avancée vers la caméra, 3e
+  composante de `aCorner`) et le **même `id`** que les pétales. Ne pas utiliser `polygonOffset` : le décalage de
+  profondeur fait passer les cœurs à travers les fleurs voisines et ils clignotent quand le vent les croise.
+- **Tête accrochée à sa tige** : même `phase` et même `flex` pour la tige et sa tête (0,3), sinon chaque tête
+  frémit à côté de sa tige et le massif « grésille » au vent.
+- Écarter les têtes : `spread` 0,35 à 0,6 × hauteur. Têtes serrées = une seule tache rouge. Les tiges ne vont pas
+  jusqu'au jaune de la rampe d'herbe (seuils `[0.3, 0.5, 0.7, 0.9]`), sinon elles font une colonne pâle.
 - Saisons : boutons (petits éventails sombres, occlusion 0,35) au printemps, têtes fanées (cœurs seuls, rampe `dry`)
   en automne, tiges sèches en hiver. Rampes partagées : `GRASSES` et `FLOWERS` dans `palettes.js`.
 - Poids : un massif de fleurs 160 à 320 triangles, la lavande ~730 (épis à 5 grains pentagonaux).

@@ -34,7 +34,7 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 
 #ifdef FOLIAGE
-  attribute vec2 aCorner; // coin de la feuille dans le plan de l'\xE9cran (unit\xE9s monde)
+  attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
   varying vec3 vLeaf;
 #endif
@@ -81,7 +81,7 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xy += aCorner * length(toWorld[0].xyz);
+    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
@@ -318,7 +318,7 @@ function buildBladeGeometry(blades, { segments = 2 } = {}) {
     point.set(0, 0, 0).addScaledVector(blade.base, u * u).addScaledVector(blade.bend, 2 * u * t).addScaledVector(blade.tip, t * t);
     positions.push(point.x, point.y, point.z);
     normals.push(blade.normal.x, blade.normal.y, blade.normal.z);
-    corners.push(cornerX, 0);
+    corners.push(cornerX, 0, 0);
     const base = blade.baseOcclusion ?? 0;
     data.push(blade.phase, base + (1 - base) * t, blade.variation, blade.flex * t * t);
     return positions.length / 3 - 1;
@@ -352,13 +352,14 @@ function buildFanGeometry(fans) {
     const sin = Math.sin(fan.rotation ?? 0);
     const [sx, sy] = fan.stretch ?? [1, 1];
     const occlusion = fan.occlusion ?? 1;
+    const lift = fan.lift ?? 0;
     const first = positions.length / 3;
     const vertex = (x, y) => {
       positions.push(fan.position.x, fan.position.y, fan.position.z);
       normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
       const cx = x * sx * fan.size;
       const cy = y * sy * fan.size;
-      corners.push(cx * cos - cy * sin, cx * sin + cy * cos);
+      corners.push(cx * cos - cy * sin, cx * sin + cy * cos, lift);
       data.push(fan.phase, occlusion, fan.variation, fan.flex);
     };
     vertex(0, 0);
@@ -382,7 +383,7 @@ function foliageGeometry(positions, normals, corners, data, index) {
   const geometry = new THREE2.BufferGeometry();
   geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
   geometry.setAttribute("normal", new THREE2.BufferAttribute(new Float32Array(normals), 3));
-  geometry.setAttribute("aCorner", new THREE2.BufferAttribute(new Float32Array(corners), 2));
+  geometry.setAttribute("aCorner", new THREE2.BufferAttribute(new Float32Array(corners), 3));
   geometry.setAttribute("aLeaf", new THREE2.BufferAttribute(new Float32Array(data), 4));
   geometry.setIndex(index);
   return geometry;

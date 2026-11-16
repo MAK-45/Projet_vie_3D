@@ -40,25 +40,31 @@ export const meta = {
     "vegetation", "garden", "wind", "seasons", "outdoor", "procedural",
   ],
   biomes: ["meadow", "garden", "village", "forest", "mountain"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unité = 1 mètre ; l'origine est au sol, au cœur du massif",
-  footprint: { radius: 0.6, height: 0.6 },
+  footprint: { radius: 0.7, height: 0.6 },
   animated: ["wind"],
   params,
   variants: variantsOf("species", params.species),
 };
 
 const TAU = Math.PI * 2;
+// Souplesse au vent du haut des tiges ; la tête reprend la même souplesse et la même phase que sa tige, pour rester
+// accrochée au bout au lieu de trembler à côté.
+const FLEX = 0.3;
+// Avancée du cœur vers la caméra : il passe devant sa corolle (au même point) sans traverser les fleurs voisines.
+const HEART_LIFT = 0.03;
+const HEART = starOutline(8);
 const UP = new THREE.Vector3(0, 1, 0);
 
 // Port de chaque fleur : hauteur (m), taille de la corolle et du cœur (rayon, m), contour, feuilles de la rosette,
 // courbure des tiges, ramification.
 const SPECIES = {
-  daisy: { height: 0.45, head: 0.1, heart: 0.04, outline: starOutline(8, 0.6), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
-  poppy: { height: 0.55, head: 0.1, heart: 0.04, outline: starOutline(4, 0.8), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
-  cornflower: { height: 0.5, head: 0.085, heart: 0.032, outline: starOutline(7, 0.45), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
-  buttercup: { height: 0.35, head: 0.07, heart: 0.026, outline: starOutline(5, 0.75), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
+  daisy: { height: 0.45, head: 0.12, heart: 0.05, outline: starOutline(12, 0.8), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
+  poppy: { height: 0.55, head: 0.12, heart: 0.045, outline: starOutline(5, 0.86), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
+  cornflower: { height: 0.5, head: 0.1, heart: 0.04, outline: starOutline(8, 0.62), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
+  buttercup: { height: 0.35, head: 0.085, heart: 0.032, outline: starOutline(5, 0.86), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
   lavender: { height: 0.5, head: 0.042, heart: 0, outline: starOutline(5), leaves: 12, curve: 0.05, stretch: [1, 1.3], spike: 5 },
 };
 
@@ -81,7 +87,7 @@ export function create(given = {}) {
   const season = p.season;
 
   // Bouquet (graine) : plus ou moins ouvert, penché d'un côté, tiges de hauteurs inégales.
-  const spread = shape.range(0.3, 0.55) * (lavender ? 1.2 : 1);
+  const spread = shape.range(0.35, 0.6) * (lavender ? 1.2 : 1);
   const leanAngle = shape.range(0, TAU);
   const lean = new THREE.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.18) * H);
   const unevenness = shape.range(0.15, 0.4);
@@ -91,8 +97,8 @@ export function create(given = {}) {
   const petals = [];
   const hearts = [];
   const stemCount = Math.round(p.count * (lavender ? 3 : 1) * shape.range(0.85, 1.15));
-  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0) => {
-    blades.push({ base, bend, tip, width, tipWidth, normal, phase: detail.next(), variation: detail.next(), flex, baseOcclusion });
+  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0, phase = detail.next()) => {
+    blades.push({ base, bend, tip, width, tipWidth, normal, phase, variation: detail.next(), flex, baseOcclusion });
   };
 
   for (let i = 0; i < stemCount; i++) {
@@ -108,7 +114,8 @@ export function create(given = {}) {
       .addScaledVector(lean, h / H);
     const bend = base.clone().addScaledVector(UP, h * 0.6).add(side).addScaledVector(lean, 0.3 * (h / H));
     const normal = out.clone().addScaledVector(UP, 1.2).normalize();
-    blade(base, bend, tip, 0.05, 0.035, normal, 0.6, 0.1);
+    const stemPhase = detail.next();
+    blade(base, bend, tip, 0.05, 0.035, normal, FLEX, 0.1, stemPhase);
 
     const headNormal = out.clone().multiplyScalar(0.4).addScaledVector(UP, 1).normalize();
     const direction = tip.clone().sub(bend).normalize();
@@ -127,7 +134,7 @@ export function create(given = {}) {
           normal: headNormal,
           phase: detail.next(),
           variation: detail.next(),
-          flex: 0.6,
+          flex: FLEX,
           occlusion: 0.75 + 0.25 * t,
         });
       }
@@ -146,21 +153,21 @@ export function create(given = {}) {
     if (state === "open") {
       petals.push({
         position: head, outline: kind.outline, size, stretch: kind.stretch, rotation: detail.range(0, TAU),
-        normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6,
+        normal: headNormal, phase: stemPhase, variation: detail.next(), flex: FLEX,
       });
       hearts.push({
-        position: head.clone(), outline: starOutline(6), size: kind.heart, stretch: [1, 0.85], rotation: 0,
-        normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6,
+        position: head.clone(), outline: HEART, lift: HEART_LIFT, size: kind.heart, stretch: [1, 0.85], rotation: 0,
+        normal: headNormal, phase: stemPhase, variation: detail.next(), flex: FLEX,
       });
     } else if (state === "bud") {
       petals.push({
         position: head, outline: starOutline(5, 0.8), size: size * 0.45, stretch: [0.8, 1.1], rotation: 0,
-        normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6, occlusion: 0.35,
+        normal: headNormal, phase: stemPhase, variation: detail.next(), flex: FLEX, occlusion: 0.35,
       });
     } else if (state === "seed") {
       hearts.push({
         position: head, outline: starOutline(6, 0.8), size: Math.max(0.04, kind.heart * 1.3), stretch: [1, 1], rotation: 0,
-        normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6,
+        normal: headNormal, phase: stemPhase, variation: detail.next(), flex: FLEX,
       });
     }
 
@@ -168,14 +175,15 @@ export function create(given = {}) {
     if ((p.species === "buttercup" || p.species === "daisy") && state === "open" && detail.chance(0.4)) {
       const from = base.clone().lerp(tip, 0.55);
       const twigTip = from.clone().addScaledVector(out, 0.1 * H).addScaledVector(UP, 0.3 * h);
-      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, 0.6, 0.6);
+      const twigPhase = detail.next();
+      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, FLEX, 0.6, twigPhase);
       petals.push({
         position: twigTip.clone().addScaledVector(UP, 0.015), outline: kind.outline, size: size * 0.8, stretch: kind.stretch,
-        rotation: detail.range(0, TAU), normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6,
+        rotation: detail.range(0, TAU), normal: headNormal, phase: twigPhase, variation: detail.next(), flex: FLEX,
       });
       hearts.push({
-        position: twigTip.clone().addScaledVector(UP, 0.015), outline: starOutline(6), size: kind.heart * 0.85, stretch: [1, 0.85],
-        rotation: 0, normal: headNormal, phase: detail.next(), variation: detail.next(), flex: 0.6,
+        position: twigTip.clone().addScaledVector(UP, 0.015), outline: HEART, lift: HEART_LIFT, size: kind.heart * 0.85, stretch: [1, 0.85],
+        rotation: 0, normal: headNormal, phase: twigPhase, variation: detail.next(), flex: FLEX,
       });
     }
   }
@@ -240,10 +248,6 @@ export function create(given = {}) {
       id: 13, // même identifiant que les pétales : pas de contour entre le cœur et sa corolle
       sway,
     });
-    // Le cœur est au même endroit que la corolle : on le rapproche un peu de la caméra pour qu'il passe devant.
-    heartMaterial.polygonOffset = true;
-    heartMaterial.polygonOffsetFactor = -2;
-    heartMaterial.polygonOffsetUnits = -8;
     addMesh("hearts", buildFanGeometry(hearts), heartMaterial);
   }
 

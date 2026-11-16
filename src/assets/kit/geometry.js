@@ -222,7 +222,7 @@ export function buildBladeGeometry(blades, { segments = 2 } = {}) {
       .addScaledVector(blade.tip, t * t);
     positions.push(point.x, point.y, point.z);
     normals.push(blade.normal.x, blade.normal.y, blade.normal.z);
-    corners.push(cornerX, 0);
+    corners.push(cornerX, 0, 0);
     const base = blade.baseOcclusion ?? 0;
     data.push(blade.phase, base + (1 - base) * t, blade.variation, blade.flex * t * t);
     return positions.length / 3 - 1;
@@ -257,6 +257,8 @@ export function buildBladeGeometry(blades, { segments = 2 } = {}) {
  * }>} fans
  *   - outline : contour [[x, y], ...] pour une taille de 1 (voir `starOutline`) ; stretch : étirement [x, y]
  *   - occlusion : 1 = pleine lumière (défaut), 0 = sombre
+ *   - lift : avancée vers la caméra (mètres), quel que soit l'angle de vue. Un cœur de fleur posé au même point que
+ *     sa corolle passe devant elle avec 2 à 3 cm, sans traverser les fleurs voisines (pas de `polygonOffset`).
  */
 export function buildFanGeometry(fans) {
   const positions = [];
@@ -269,13 +271,14 @@ export function buildFanGeometry(fans) {
     const sin = Math.sin(fan.rotation ?? 0);
     const [sx, sy] = fan.stretch ?? [1, 1];
     const occlusion = fan.occlusion ?? 1;
+    const lift = fan.lift ?? 0;
     const first = positions.length / 3;
     const vertex = (x, y) => {
       positions.push(fan.position.x, fan.position.y, fan.position.z);
       normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
       const cx = x * sx * fan.size;
       const cy = y * sy * fan.size;
-      corners.push(cx * cos - cy * sin, cx * sin + cy * cos);
+      corners.push(cx * cos - cy * sin, cx * sin + cy * cos, lift);
       data.push(fan.phase, occlusion, fan.variation, fan.flex);
     };
     vertex(0, 0);
@@ -305,7 +308,7 @@ function foliageGeometry(positions, normals, corners, data, index) {
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
   geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
-  geometry.setAttribute("aCorner", new THREE.BufferAttribute(new Float32Array(corners), 2));
+  geometry.setAttribute("aCorner", new THREE.BufferAttribute(new Float32Array(corners), 3));
   geometry.setAttribute("aLeaf", new THREE.BufferAttribute(new Float32Array(data), 4));
   geometry.setIndex(index);
   return geometry;

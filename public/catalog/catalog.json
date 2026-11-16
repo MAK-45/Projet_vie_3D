@@ -136,7 +136,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 12202
+      "bytes": 12252
     }
   ],
   "assets": [
@@ -300,7 +300,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 29363
+        "standalone": 29417
       }
     },
     {
@@ -501,7 +501,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 32742
+        "standalone": 32796
       }
     },
     {
@@ -704,7 +704,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 33804
+        "standalone": 33858
       }
     },
     {
@@ -838,7 +838,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 22043
+        "standalone": 22097
       }
     },
     {
@@ -1001,7 +1001,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 21949
+        "standalone": 22003
       }
     },
     {
@@ -1158,7 +1158,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 24195
+        "standalone": 24249
       }
     },
     {
@@ -1341,7 +1341,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 25250
+        "standalone": 25345
       }
     },
     {
@@ -1540,7 +1540,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 31550
+        "standalone": 31645
       }
     },
     {
@@ -1588,11 +1588,11 @@
         "forest",
         "mountain"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; l'origine est au sol, au cœur du massif",
       "footprint": {
-        "radius": 0.6,
+        "radius": 0.7,
         "height": 0.6
       },
       "animated": [
@@ -1714,28 +1714,28 @@
       ],
       "stats": {
         "default": {
-          "triangles": 318,
-          "vertices": 377,
+          "triangles": 320,
+          "vertices": 367,
           "drawCalls": 3
         },
         "daisy": {
-          "triangles": 318,
-          "vertices": 377,
+          "triangles": 320,
+          "vertices": 367,
           "drawCalls": 3
         },
         "poppy": {
-          "triangles": 159,
-          "vertices": 201,
+          "triangles": 183,
+          "vertices": 224,
           "drawCalls": 3
         },
         "cornflower": {
-          "triangles": 204,
-          "vertices": 244,
+          "triangles": 222,
+          "vertices": 261,
           "drawCalls": 3
         },
         "buttercup": {
-          "triangles": 255,
-          "vertices": 316,
+          "triangles": 211,
+          "vertices": 260,
           "drawCalls": 3
         },
         "lavender": {
@@ -1745,8 +1745,8 @@
         }
       },
       "bytes": {
-        "source": 12288,
-        "standalone": 29760
+        "source": 12522,
+        "standalone": 29923
       }
     }
   ]

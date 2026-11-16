@@ -49,7 +49,7 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
 
 #ifdef FOLIAGE
-  attribute vec2 aCorner; // coin de la feuille dans le plan de l'écran (unités monde)
+  attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'écran ; z : avancée vers la caméra (unités monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 cœur, 1 extérieur), z : variation, w : souplesse au vent
   varying vec3 vLeaf;
 #endif
@@ -96,7 +96,7 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xy += aCorner * length(toWorld[0].xyz);
+    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
     gl_Position = projectionMatrix * mvPosition;
   #endif
 

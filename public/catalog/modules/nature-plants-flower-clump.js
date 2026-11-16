@@ -1,4 +1,4 @@
-// Projet Vie 3D — Massif de fleurs (nature/plants/flower-clump), version 1
+// Projet Vie 3D — Massif de fleurs (nature/plants/flower-clump), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -34,7 +34,7 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 
 #ifdef FOLIAGE
-  attribute vec2 aCorner; // coin de la feuille dans le plan de l'\xE9cran (unit\xE9s monde)
+  attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
   varying vec3 vLeaf;
 #endif
@@ -81,7 +81,7 @@ void main() {
   #include <project_vertex>
 
   #ifdef FOLIAGE
-    mvPosition.xy += aCorner * length(toWorld[0].xyz);
+    mvPosition.xyz += aCorner * length(toWorld[0].xyz);
     gl_Position = projectionMatrix * mvPosition;
   #endif
 
@@ -318,7 +318,7 @@ function buildBladeGeometry(blades, { segments = 2 } = {}) {
     point.set(0, 0, 0).addScaledVector(blade.base, u * u).addScaledVector(blade.bend, 2 * u * t).addScaledVector(blade.tip, t * t);
     positions.push(point.x, point.y, point.z);
     normals.push(blade.normal.x, blade.normal.y, blade.normal.z);
-    corners.push(cornerX, 0);
+    corners.push(cornerX, 0, 0);
     const base = blade.baseOcclusion ?? 0;
     data.push(blade.phase, base + (1 - base) * t, blade.variation, blade.flex * t * t);
     return positions.length / 3 - 1;
@@ -352,13 +352,14 @@ function buildFanGeometry(fans) {
     const sin = Math.sin(fan.rotation ?? 0);
     const [sx, sy] = fan.stretch ?? [1, 1];
     const occlusion = fan.occlusion ?? 1;
+    const lift = fan.lift ?? 0;
     const first = positions.length / 3;
     const vertex = (x, y) => {
       positions.push(fan.position.x, fan.position.y, fan.position.z);
       normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
       const cx = x * sx * fan.size;
       const cy = y * sy * fan.size;
-      corners.push(cx * cos - cy * sin, cx * sin + cy * cos);
+      corners.push(cx * cos - cy * sin, cx * sin + cy * cos, lift);
       data.push(fan.phase, occlusion, fan.variation, fan.flex);
     };
     vertex(0, 0);
@@ -382,7 +383,7 @@ function foliageGeometry(positions, normals, corners, data, index) {
   const geometry = new THREE2.BufferGeometry();
   geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
   geometry.setAttribute("normal", new THREE2.BufferAttribute(new Float32Array(normals), 3));
-  geometry.setAttribute("aCorner", new THREE2.BufferAttribute(new Float32Array(corners), 2));
+  geometry.setAttribute("aCorner", new THREE2.BufferAttribute(new Float32Array(corners), 3));
   geometry.setAttribute("aLeaf", new THREE2.BufferAttribute(new Float32Array(data), 4));
   geometry.setIndex(index);
   return geometry;
@@ -583,21 +584,24 @@ var meta = {
     "procedural"
   ],
   biomes: ["meadow", "garden", "village", "forest", "mountain"],
-  version: 1,
+  version: 2,
   added: "2026-11-16",
   units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au c\u0153ur du massif",
-  footprint: { radius: 0.6, height: 0.6 },
+  footprint: { radius: 0.7, height: 0.6 },
   animated: ["wind"],
   params,
   variants: variantsOf("species", params.species)
 };
 var TAU = Math.PI * 2;
+var FLEX = 0.3;
+var HEART_LIFT = 0.03;
+var HEART = starOutline(8);
 var UP = new THREE3.Vector3(0, 1, 0);
 var SPECIES = {
-  daisy: { height: 0.45, head: 0.1, heart: 0.04, outline: starOutline(8, 0.6), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
-  poppy: { height: 0.55, head: 0.1, heart: 0.04, outline: starOutline(4, 0.8), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
-  cornflower: { height: 0.5, head: 0.085, heart: 0.032, outline: starOutline(7, 0.45), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
-  buttercup: { height: 0.35, head: 0.07, heart: 0.026, outline: starOutline(5, 0.75), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
+  daisy: { height: 0.45, head: 0.12, heart: 0.05, outline: starOutline(12, 0.8), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
+  poppy: { height: 0.55, head: 0.12, heart: 0.045, outline: starOutline(5, 0.86), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
+  cornflower: { height: 0.5, head: 0.1, heart: 0.04, outline: starOutline(8, 0.62), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
+  buttercup: { height: 0.35, head: 0.085, heart: 0.032, outline: starOutline(5, 0.86), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
   lavender: { height: 0.5, head: 0.042, heart: 0, outline: starOutline(5), leaves: 12, curve: 0.05, stretch: [1, 1.3], spike: 5 }
 };
 var LAVENDER_LEAVES = ["#2e3f4a", "#455a5a", "#647a6a", "#8ea084", "#bfc8a6"];
@@ -610,7 +614,7 @@ function create(given = {}) {
   const lavender = p.species === "lavender";
   const H = kind.height * p.height;
   const season = p.season;
-  const spread = shape.range(0.3, 0.55) * (lavender ? 1.2 : 1);
+  const spread = shape.range(0.35, 0.6) * (lavender ? 1.2 : 1);
   const leanAngle = shape.range(0, TAU);
   const lean = new THREE3.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.18) * H);
   const unevenness = shape.range(0.15, 0.4);
@@ -619,8 +623,8 @@ function create(given = {}) {
   const petals = [];
   const hearts = [];
   const stemCount = Math.round(p.count * (lavender ? 3 : 1) * shape.range(0.85, 1.15));
-  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0) => {
-    blades.push({ base, bend, tip, width, tipWidth, normal, phase: detail.next(), variation: detail.next(), flex, baseOcclusion });
+  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0, phase = detail.next()) => {
+    blades.push({ base, bend, tip, width, tipWidth, normal, phase, variation: detail.next(), flex, baseOcclusion });
   };
   for (let i = 0; i < stemCount; i++) {
     const azimuth = i * 2.39996 + shape.range(-0.5, 0.5);
@@ -632,7 +636,8 @@ function create(given = {}) {
     const tip = base.clone().addScaledVector(out, spread * h * (0.4 + reach)).addScaledVector(UP, h).addScaledVector(lean, h / H);
     const bend = base.clone().addScaledVector(UP, h * 0.6).add(side).addScaledVector(lean, 0.3 * (h / H));
     const normal = out.clone().addScaledVector(UP, 1.2).normalize();
-    blade(base, bend, tip, 0.05, 0.035, normal, 0.6, 0.1);
+    const stemPhase = detail.next();
+    blade(base, bend, tip, 0.05, 0.035, normal, FLEX, 0.1, stemPhase);
     const headNormal = out.clone().multiplyScalar(0.4).addScaledVector(UP, 1).normalize();
     const direction = tip.clone().sub(bend).normalize();
     if (lavender) {
@@ -648,7 +653,7 @@ function create(given = {}) {
           normal: headNormal,
           phase: detail.next(),
           variation: detail.next(),
-          flex: 0.6,
+          flex: FLEX,
           occlusion: 0.75 + 0.25 * t
         });
       }
@@ -666,20 +671,21 @@ function create(given = {}) {
         stretch: kind.stretch,
         rotation: detail.range(0, TAU),
         normal: headNormal,
-        phase: detail.next(),
+        phase: stemPhase,
         variation: detail.next(),
-        flex: 0.6
+        flex: FLEX
       });
       hearts.push({
         position: head.clone(),
-        outline: starOutline(6),
+        outline: HEART,
+        lift: HEART_LIFT,
         size: kind.heart,
         stretch: [1, 0.85],
         rotation: 0,
         normal: headNormal,
-        phase: detail.next(),
+        phase: stemPhase,
         variation: detail.next(),
-        flex: 0.6
+        flex: FLEX
       });
     } else if (state === "bud") {
       petals.push({
@@ -689,9 +695,9 @@ function create(given = {}) {
         stretch: [0.8, 1.1],
         rotation: 0,
         normal: headNormal,
-        phase: detail.next(),
+        phase: stemPhase,
         variation: detail.next(),
-        flex: 0.6,
+        flex: FLEX,
         occlusion: 0.35
       });
     } else if (state === "seed") {
@@ -702,15 +708,16 @@ function create(given = {}) {
         stretch: [1, 1],
         rotation: 0,
         normal: headNormal,
-        phase: detail.next(),
+        phase: stemPhase,
         variation: detail.next(),
-        flex: 0.6
+        flex: FLEX
       });
     }
     if ((p.species === "buttercup" || p.species === "daisy") && state === "open" && detail.chance(0.4)) {
       const from = base.clone().lerp(tip, 0.55);
       const twigTip = from.clone().addScaledVector(out, 0.1 * H).addScaledVector(UP, 0.3 * h);
-      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, 0.6, 0.6);
+      const twigPhase = detail.next();
+      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, FLEX, 0.6, twigPhase);
       petals.push({
         position: twigTip.clone().addScaledVector(UP, 0.015),
         outline: kind.outline,
@@ -718,20 +725,21 @@ function create(given = {}) {
         stretch: kind.stretch,
         rotation: detail.range(0, TAU),
         normal: headNormal,
-        phase: detail.next(),
+        phase: twigPhase,
         variation: detail.next(),
-        flex: 0.6
+        flex: FLEX
       });
       hearts.push({
         position: twigTip.clone().addScaledVector(UP, 0.015),
-        outline: starOutline(6),
+        outline: HEART,
+        lift: HEART_LIFT,
         size: kind.heart * 0.85,
         stretch: [1, 0.85],
         rotation: 0,
         normal: headNormal,
-        phase: detail.next(),
+        phase: twigPhase,
         variation: detail.next(),
-        flex: 0.6
+        flex: FLEX
       });
     }
   }
@@ -791,9 +799,6 @@ function create(given = {}) {
       // même identifiant que les pétales : pas de contour entre le cœur et sa corolle
       sway
     });
-    heartMaterial.polygonOffset = true;
-    heartMaterial.polygonOffsetFactor = -2;
-    heartMaterial.polygonOffsetUnits = -8;
     addMesh("hearts", buildFanGeometry(hearts), heartMaterial);
   }
   group.userData.asset = { id: meta.id, params: p, stems: stemCount, flowers: petals.length };
