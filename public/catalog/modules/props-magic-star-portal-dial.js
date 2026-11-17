@@ -213,6 +213,10 @@ void main() {
         // Seules les feuilles du bord grandissent (aLeaf.y : 0 c\u0153ur, 1 dehors) : un c\u0153ur sombre agrandi ferait une
         // \xE9toile noire dans la couronne.
         cornerScale *= mix(1.0, aFar * mix(1.0, uLod.z, aLeaf.y), lod);
+        // De pr\xE8s, en perspective, les grosses touffes sombres qui remplissent le c\u0153ur de la couronne (aLeaf.y \u2248 0,
+        // faites pour la vue de haut) se verraient entre les feuilles comme des \xE9toiles noires : elles rapetissent.
+        float core = 1.0 - smoothstep(0.05, 0.35, aLeaf.y);
+        cornerScale *= mix(1.0, mix(0.3, 1.0, smoothstep(12.0, 40.0, distance(origin, cameraPosition))), core);
       }
     #endif
     #ifdef UNLIT
