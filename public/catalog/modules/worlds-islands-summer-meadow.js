@@ -1,4 +1,4 @@
-// Projet Vie 3D — Prairie d'été (worlds/islands/summer-meadow), version 2
+// Projet Vie 3D — Prairie d'été (worlds/islands/summer-meadow), version 3
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 var __defProp = Object.defineProperty;
@@ -8,7 +8,7 @@ var __export = (target, all) => {
 };
 
 // src/worlds/summer-meadow.js
-import * as THREE20 from "three";
+import * as THREE23 from "three";
 
 // src/engine/toon-material.js
 import * as THREE from "three";
@@ -755,7 +755,7 @@ function createRng(seed) {
 }
 function createNoise3(seed) {
   const salt = Math.imul(Math.floor(seed) + 1, 668265261);
-  const hash = (x, y, z) => {
+  const hash2 = (x, y, z) => {
     let h = Math.imul(x, 2376512323) ^ Math.imul(y, 3625334849) ^ Math.imul(z, 3407524639) ^ salt | 0;
     h = Math.imul(h ^ h >>> 15, 739982445);
     h = Math.imul(h ^ h >>> 12, 695872825);
@@ -766,7 +766,7 @@ function createNoise3(seed) {
   return (x, y, z) => {
     const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
     const u = fade(x - xi), v = fade(y - yi), w = fade(z - zi);
-    const corner = (dx, dy, dz) => hash(xi + dx, yi + dy, zi + dz);
+    const corner = (dx, dy, dz) => hash2(xi + dx, yi + dy, zi + dz);
     return lerp4(
       lerp4(lerp4(corner(0, 0, 0), corner(1, 0, 0), u), lerp4(corner(0, 1, 0), corner(1, 1, 0), u), v),
       lerp4(lerp4(corner(0, 0, 1), corner(1, 0, 1), u), lerp4(corner(0, 1, 1), corner(1, 1, 1), u), v),
@@ -775,7 +775,7 @@ function createNoise3(seed) {
   };
 }
 
-// src/assets/nature/plants/flower-clump.js
+// src/assets/nature/terrain/meadow-ground.js
 import * as THREE3 from "three";
 
 // src/assets/kit/geometry.js
@@ -1326,1106 +1326,9 @@ function pick(table, only) {
   return Object.fromEntries(only.map((key) => [key, table[key]]));
 }
 
-// src/assets/nature/plants/flower-clump.js
-var params = {
-  seed: seedParam("Change le bouquet : nombre et hauteur des tiges, inclinaison, place des fleurs et des feuilles."),
-  species: choiceParam(
-    "Fleur",
-    FLOWERS,
-    "Marguerite blanche \xE0 c\u0153ur jaune, coquelicot rouge \xE0 c\u0153ur noir, bleuet bleu, bouton d'or, ou \xE9pis de lavande."
-  ),
-  season: seasonParam("Printemps : boutons et fleurs m\xEAl\xE9s. \xC9t\xE9 : pleine floraison. Automne : t\xEAtes fan\xE9es. Hiver : tiges s\xE8ches."),
-  count: numberParam("Tiges", 7, 3, 15, "Nombre de tiges fleuries (tripl\xE9 pour la lavande).", { step: 1 }),
-  height: numberParam("Hauteur", 1, 0.6, 1.5, "Hauteur relative \xE0 la taille naturelle de la fleur (35 \xE0 55 cm).")
-};
-var meta = {
-  id: "nature/plants/flower-clump",
-  name: "Massif de fleurs",
-  nameEn: "Flower clump",
-  category: "nature",
-  subcategory: "plants",
-  description: "Petit massif de fleurs des champs : tiges fines au-dessus d'une rosette de feuilles, corolles et c\u0153urs qui ondulent au vent. Cinq fleurs (marguerite, coquelicot, bleuet, bouton d'or, lavande) et quatre saisons.",
-  tags: [
-    "fleurs",
-    "massif de fleurs",
-    "marguerite",
-    "coquelicot",
-    "bleuet",
-    "bouton d'or",
-    "lavande",
-    "fleur des champs",
-    "plante",
-    "v\xE9g\xE9tation",
-    "jardin",
-    "vent",
-    "saisons",
-    "ext\xE9rieur",
-    "flowers",
-    "flower clump",
-    "daisy",
-    "poppy",
-    "cornflower",
-    "buttercup",
-    "lavender",
-    "wildflower",
-    "plant",
-    "vegetation",
-    "garden",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["meadow", "garden", "village", "forest", "mountain"],
-  version: 2,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au c\u0153ur du massif",
-  footprint: { radius: 0.7, height: 0.68 },
-  animated: ["wind"],
-  params,
-  variants: variantsOf("species", params.species)
-};
-var TAU = Math.PI * 2;
-var FLEX = 0.3;
-var HEART_LIFT = 0.03;
-var HEART = starOutline(8);
-var UP = new THREE3.Vector3(0, 1, 0);
-var SPECIES = {
-  daisy: { height: 0.45, head: 0.12, heart: 0.05, outline: starOutline(12, 0.8), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
-  poppy: { height: 0.55, head: 0.12, heart: 0.045, outline: starOutline(5, 0.86), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
-  cornflower: { height: 0.5, head: 0.1, heart: 0.04, outline: starOutline(8, 0.62), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
-  buttercup: { height: 0.35, head: 0.085, heart: 0.032, outline: starOutline(5, 0.86), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
-  lavender: { height: 0.5, head: 0.042, heart: 0, outline: starOutline(5), leaves: 12, curve: 0.05, stretch: [1, 1.3], spike: 5 }
-};
-var LAVENDER_LEAVES = ["#2e3f4a", "#455a5a", "#647a6a", "#8ea084", "#bfc8a6"];
-function create(given = {}) {
-  const p = resolveParams(meta.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const kind = SPECIES[p.species];
-  const colors = FLOWERS[p.species];
-  const lavender = p.species === "lavender";
-  const H = kind.height * p.height;
-  const season = p.season;
-  const spread = shape.range(0.35, 0.6) * (lavender ? 1.2 : 1);
-  const leanAngle = shape.range(0, TAU);
-  const lean = new THREE3.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.18) * H);
-  const unevenness = shape.range(0.15, 0.4);
-  const footRadius = shape.range(0.06, 0.13) * (lavender ? 1.4 : 1);
-  const blades = [];
-  const petals = [];
-  const hearts = [];
-  const stemCount = Math.round(p.count * (lavender ? 3 : 1) * shape.range(0.85, 1.15));
-  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0, phase = detail.next()) => {
-    blades.push({ base, bend, tip, width, tipWidth, normal, phase, variation: detail.next(), flex, baseOcclusion });
-  };
-  for (let i = 0; i < stemCount; i++) {
-    const azimuth = i * 2.39996 + shape.range(-0.5, 0.5);
-    const out = new THREE3.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-    const reach = Math.sqrt(shape.next());
-    const base = out.clone().multiplyScalar(footRadius * reach);
-    const h = H * (1 - unevenness * shape.next()) * (season === "winter" ? 0.85 : 1);
-    const side = new THREE3.Vector3(-out.z, 0, out.x).multiplyScalar(shape.range(-1, 1) * kind.curve * h);
-    const tip = base.clone().addScaledVector(out, spread * h * (0.4 + reach)).addScaledVector(UP, h).addScaledVector(lean, h / H);
-    const bend = base.clone().addScaledVector(UP, h * 0.6).add(side).addScaledVector(lean, 0.3 * (h / H));
-    const normal = out.clone().addScaledVector(UP, 1.2).normalize();
-    const stemPhase = detail.next();
-    blade(base, bend, tip, 0.05, 0.035, normal, FLEX, 0.1, stemPhase);
-    const headNormal = out.clone().multiplyScalar(0.4).addScaledVector(UP, 1).normalize();
-    const direction = tip.clone().sub(bend).normalize();
-    if (lavender) {
-      if (season === "winter" && detail.chance(0.4)) continue;
-      for (let k = 0; k < kind.spike; k++) {
-        const t = k / (kind.spike - 1);
-        petals.push({
-          position: tip.clone().addScaledVector(direction, -0.14 * H * (1 - t) + 0.02),
-          outline: kind.outline,
-          size: kind.head * (1 - 0.35 * t) * detail.range(0.9, 1.1),
-          stretch: kind.stretch,
-          rotation: detail.range(-0.4, 0.4),
-          normal: headNormal,
-          phase: detail.next(),
-          variation: detail.next(),
-          flex: FLEX,
-          occlusion: 0.75 + 0.25 * t
-        });
-      }
-      continue;
-    }
-    const roll = detail.next();
-    const state = season === "spring" ? roll < 0.45 ? "bud" : "open" : season === "summer" ? roll < 0.1 ? "bud" : "open" : season === "autumn" ? roll < 0.35 ? "open" : "seed" : roll < 0.6 ? "seed" : "none";
-    const head = tip.clone().addScaledVector(direction, 0.02);
-    const size = kind.head * detail.range(0.85, 1.15);
-    if (state === "open") {
-      petals.push({
-        position: head,
-        outline: kind.outline,
-        size,
-        stretch: kind.stretch,
-        rotation: detail.range(0, TAU),
-        normal: headNormal,
-        phase: stemPhase,
-        variation: detail.next(),
-        flex: FLEX
-      });
-      hearts.push({
-        position: head.clone(),
-        outline: HEART,
-        lift: HEART_LIFT,
-        size: kind.heart,
-        stretch: [1, 0.85],
-        rotation: 0,
-        normal: headNormal,
-        phase: stemPhase,
-        variation: detail.next(),
-        flex: FLEX
-      });
-    } else if (state === "bud") {
-      petals.push({
-        position: head,
-        outline: starOutline(5, 0.8),
-        size: size * 0.45,
-        stretch: [0.8, 1.1],
-        rotation: 0,
-        normal: headNormal,
-        phase: stemPhase,
-        variation: detail.next(),
-        flex: FLEX,
-        occlusion: 0.35
-      });
-    } else if (state === "seed") {
-      hearts.push({
-        position: head,
-        outline: starOutline(6, 0.8),
-        size: Math.max(0.04, kind.heart * 1.3),
-        stretch: [1, 1],
-        rotation: 0,
-        normal: headNormal,
-        phase: stemPhase,
-        variation: detail.next(),
-        flex: FLEX
-      });
-    }
-    if ((p.species === "buttercup" || p.species === "daisy") && state === "open" && detail.chance(0.4)) {
-      const from = base.clone().lerp(tip, 0.55);
-      const twigTip = from.clone().addScaledVector(out, 0.1 * H).addScaledVector(UP, 0.3 * h);
-      const twigPhase = detail.next();
-      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, FLEX, 0.6, twigPhase);
-      petals.push({
-        position: twigTip.clone().addScaledVector(UP, 0.015),
-        outline: kind.outline,
-        size: size * 0.8,
-        stretch: kind.stretch,
-        rotation: detail.range(0, TAU),
-        normal: headNormal,
-        phase: twigPhase,
-        variation: detail.next(),
-        flex: FLEX
-      });
-      hearts.push({
-        position: twigTip.clone().addScaledVector(UP, 0.015),
-        outline: HEART,
-        lift: HEART_LIFT,
-        size: kind.heart * 0.85,
-        stretch: [1, 0.85],
-        rotation: 0,
-        normal: headNormal,
-        phase: twigPhase,
-        variation: detail.next(),
-        flex: FLEX
-      });
-    }
-  }
-  const leafCount = Math.round(kind.leaves * (season === "winter" && !lavender ? 0.4 : 1) * shape.range(0.8, 1.25));
-  for (let i = 0; i < leafCount; i++) {
-    const azimuth = shape.range(0, TAU);
-    const out = new THREE3.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-    const base = out.clone().multiplyScalar(footRadius * shape.range(0, 0.7));
-    const length = (lavender ? 0.22 : 0.18) * shape.range(0.7, 1.2) * p.height;
-    const rise = lavender ? shape.range(0.5, 0.9) : shape.range(0.25, 0.55);
-    const tip = base.clone().addScaledVector(out, length * (1 - rise * 0.5)).addScaledVector(UP, length * rise);
-    const bend = base.clone().addScaledVector(out, length * 0.3).addScaledVector(UP, length * rise * 0.9);
-    blade(base, bend, tip, lavender ? 0.065 : 0.09, 0, out.clone().addScaledVector(UP, 1.2).normalize(), 0.3, 0.1);
-  }
-  const sway = { amplitude: 0.07 * H, height: H };
-  const group = new THREE3.Group();
-  group.name = meta.name;
-  const addMesh = (name, geometry, material) => {
-    geometry.computeBoundingSphere();
-    geometry.boundingSphere.radius += 0.15;
-    const mesh = new THREE3.Mesh(geometry, material);
-    mesh.name = name;
-    mesh.customDepthMaterial = material.userData.depthMaterial;
-    mesh.castShadow = true;
-    mesh.receiveShadow = true;
-    group.add(mesh);
-    return mesh;
-  };
-  const stemRamp = lavender ? LAVENDER_LEAVES : GRASSES[season].ramp;
-  addMesh(
-    "stems",
-    buildBladeGeometry(blades, { segments: 2 }),
-    createToonMaterial({ ramp: stemRamp, steps: [0.3, 0.5, 0.7, 0.9], foliage: true, leafShade: [0.12, 0.4], id: 12, sway })
-  );
-  const faded = season === "winter" || lavender && season === "autumn";
-  if (petals.length) {
-    addMesh(
-      "petals",
-      buildFanGeometry(petals),
-      createToonMaterial({
-        ramp: faded ? colors.dry : colors.petals,
-        steps: [0.3, 0.5, 0.7],
-        foliage: true,
-        leafShade: [0.1, 0.5],
-        id: 13,
-        sway
-      })
-    );
-  }
-  if (hearts.length) {
-    const heartMaterial = createToonMaterial({
-      ramp: season === "autumn" || season === "winter" ? colors.dry : colors.heart,
-      steps: [0.3, 0.5, 0.7],
-      foliage: true,
-      leafShade: [0.08, 0],
-      id: 13,
-      // même identifiant que les pétales : pas de contour entre le cœur et sa corolle
-      sway
-    });
-    addMesh("hearts", buildFanGeometry(hearts), heartMaterial);
-  }
-  group.userData.asset = { id: meta.id, params: p, stems: stemCount, flowers: petals.length };
-  return group;
-}
-
-// src/assets/nature/plants/grass-tuft.js
-import * as THREE4 from "three";
-var params2 = {
-  seed: seedParam("Change le port de la touffe : pench\xE9e ou dress\xE9e, ouverte ou serr\xE9e, brins plus longs d'un c\xF4t\xE9."),
-  season: seasonParam("Vert tendre au printemps, blond en automne, paille grise et couch\xE9e en hiver."),
-  kind: choiceParam(
-    "Herbe",
-    { meadow: "Herbe des pr\xE9s", tall: "Hautes herbes \xE0 \xE9pis" },
-    "Herbe des pr\xE9s : touffe basse et fournie. Hautes herbes : tiges deux fois plus hautes, avec des \xE9pis."
-  ),
-  height: numberParam("Hauteur", 0.5, 0.2, 1, "Hauteur des plus longs brins (doubl\xE9e pour les hautes herbes).", { step: 0.05, unit: "m" }),
-  fullness: numberParam("Densit\xE9", 1, 0.5, 1.6, "Nombre de brins (et de triangles).")
-};
-var meta2 = {
-  id: "nature/plants/grass-tuft",
-  name: "Touffe d'herbe",
-  nameEn: "Grass tuft",
-  category: "nature",
-  subcategory: "plants",
-  description: "Touffe d'herbe en \xE9ventail : brins effil\xE9s sombres au pied et clairs \xE0 la pointe, qui ploient au vent. Herbe des pr\xE9s ou hautes herbes \xE0 \xE9pis, quatre saisons ; la graine change le port de la touffe.",
-  tags: [
-    "herbe",
-    "touffe d'herbe",
-    "brins",
-    "hautes herbes",
-    "\xE9pis",
-    "plante",
-    "v\xE9g\xE9tation",
-    "vent",
-    "saisons",
-    "ext\xE9rieur",
-    "grass",
-    "grass tuft",
-    "blades",
-    "tall grass",
-    "seed heads",
-    "plant",
-    "vegetation",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["meadow", "forest", "garden", "village", "swamp", "mountain", "beach"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au c\u0153ur de la touffe",
-  footprint: { radius: 0.85, height: 1.35 },
-  animated: ["wind"],
-  params: params2,
-  variants: variantsOf("season", params2.season)
-};
-var TAU2 = Math.PI * 2;
-var UP2 = new THREE4.Vector3(0, 1, 0);
-var EAR = starOutline(6);
-function create2(given = {}) {
-  const p = resolveParams(meta2.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const tall = p.kind === "tall";
-  const winter = p.season === "winter";
-  const H = p.height * (tall ? 2 : 1) * (winter ? 0.8 : 1);
-  const leanAngle = shape.range(0, TAU2);
-  const lean = new THREE4.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.32) * H);
-  const spread = shape.range(0.5, 1.05);
-  const longSide = shape.range(0, TAU2);
-  const longBias = shape.range(0, 0.4);
-  const footRadius = shape.range(0.05, 0.12) * Math.sqrt(p.height / 0.5);
-  const droop = (winter ? 0.55 : 0.18) + shape.range(0, 0.2);
-  const blades = [];
-  const ears = [];
-  const count = Math.round((tall ? 14 : 20) * p.fullness * shape.range(0.85, 1.2));
-  for (let i = 0; i < count; i++) {
-    const azimuth = i * 2.39996 + shape.range(-0.6, 0.6);
-    const out = new THREE4.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-    const reach = Math.sqrt(shape.next());
-    const base = out.clone().multiplyScalar(footRadius * reach);
-    const side = 1 + longBias * Math.cos(azimuth - longSide);
-    const h = H * side * (1 - 0.4 * reach) * shape.range(0.55, 1) / (1 + longBias) * (tall ? 1.25 : 1);
-    const open = (0.15 + spread * reach) * h * shape.range(0.7, 1.3) * (tall ? 0.6 : 1);
-    const sag = shape.chance(tall ? 0.6 : droop) ? shape.range(0.25, 0.5) : 0;
-    const tip = base.clone().addScaledVector(out, open * (1 + sag)).addScaledVector(UP2, h * (1 - sag)).addScaledVector(lean, h / H);
-    const bend = base.clone().addScaledVector(out, open * 0.3).addScaledVector(UP2, h * 0.75).addScaledVector(lean, h / H * 0.4);
-    blades.push({
-      base,
-      bend,
-      tip,
-      width: shape.range(0.085, 0.12),
-      normal: out.clone().addScaledVector(UP2, 1.1).normalize(),
-      phase: detail.next(),
-      variation: detail.next(),
-      flex: detail.range(0.35, 0.6)
-    });
-  }
-  if (tall) {
-    const stems = Math.round(shape.int(3, 6) * Math.min(1.3, p.fullness));
-    for (let i = 0; i < stems; i++) {
-      const azimuth = shape.range(0, TAU2);
-      const out = new THREE4.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-      const base = out.clone().multiplyScalar(footRadius * shape.range(0, 0.6));
-      const h = H * shape.range(1, 1.25);
-      const tip = base.clone().addScaledVector(out, h * shape.range(0.15, 0.4)).addScaledVector(UP2, h).addScaledVector(lean, 1.1);
-      const bend = base.clone().addScaledVector(UP2, h * 0.6).addScaledVector(lean, 0.4);
-      blades.push({
-        base,
-        bend,
-        tip,
-        width: 0.06,
-        tipWidth: 0.045,
-        normal: out.clone().addScaledVector(UP2, 1.1).normalize(),
-        phase: detail.next(),
-        variation: detail.next(),
-        flex: 0.7,
-        baseOcclusion: 0.3
-      });
-      const direction = tip.clone().sub(bend).normalize();
-      ears.push({
-        position: tip.clone().addScaledVector(direction, 0.07),
-        outline: EAR,
-        size: 0.1,
-        stretch: [0.45, 1],
-        rotation: -Math.atan2(direction.x + direction.z * 0.5, direction.y) * 0.6,
-        normal: UP2,
-        phase: detail.next(),
-        variation: 1,
-        flex: 0.8
-      });
-    }
-  }
-  const parts = [buildBladeGeometry(blades, { segments: tall ? 3 : 2 })];
-  if (ears.length) parts.push(buildFanGeometry(ears));
-  const geometry = parts.length > 1 ? mergeGeometries(parts) : parts[0];
-  geometry.computeBoundingSphere();
-  geometry.boundingSphere.radius += 0.2;
-  const material = createToonMaterial({
-    ramp: GRASSES[p.season].ramp,
-    steps: [0.24, 0.42, 0.6, 0.78],
-    foliage: true,
-    leafShade: [0.14, 0.5],
-    id: 12,
-    sway: { amplitude: 0.06 * H, height: H }
-  });
-  const mesh = new THREE4.Mesh(geometry, material);
-  mesh.name = "grass";
-  mesh.customDepthMaterial = material.userData.depthMaterial;
-  mesh.castShadow = true;
-  mesh.receiveShadow = true;
-  const group = new THREE4.Group();
-  group.name = meta2.name;
-  group.add(mesh);
-  group.userData.asset = { id: meta2.id, params: p, blades: blades.length };
-  return group;
-}
-
-// src/assets/nature/rocks/boulder.js
-import * as THREE5 from "three";
-
-// src/assets/kit/ground-cover.js
-function snowMound(rng, noise, { radius, height, offset = [0, 0, 0], rotation = 0, drifts = 0 }) {
-  const relief = (x, z) => (noise(x * 1.8 + offset[0], 0.5, z * 1.8 + offset[2]) - 0.5) * height * 1.1;
-  const parts = [
-    buildMound(rng, { radius, height, lobes: 0.4, power: 0.9, relief, rings: 7, sectors: 22, offset, rotation })
-  ];
-  for (let i = 0; i < drifts; i++) {
-    const angle = rng.range(0, Math.PI * 2);
-    const reach = rng.range(0.45, 0.75);
-    const k = rng.range(0.4, 0.6);
-    parts.push(
-      buildMound(rng, {
-        radius: [radius[0] * k, radius[1] * k],
-        height: height * rng.range(0.7, 1.2),
-        lobes: 0.3,
-        power: 0.9,
-        rings: 4,
-        sectors: 14,
-        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
-        rotation: rng.range(0, Math.PI * 2)
-      })
-    );
-  }
-  return parts.length === 1 ? parts[0] : mergeGeometries(parts);
-}
-function mossMound(rng, noise, { radius, height = 0.05, cushions = 6, offset = [0, 0, 0], rotation = 0 }) {
-  const relief = (x, z) => (noise(x * 4 + offset[0], 2.5, z * 4 + offset[2]) - 0.5) * 0.05;
-  const parts = [buildMound(rng, { radius, height, lobes: 0.4, power: 0.4, relief, rings: 4, sectors: 20, offset, rotation })];
-  const size = Math.min(radius[0], radius[1]);
-  for (let i = 0; i < cushions; i++) {
-    const angle = rng.range(0, Math.PI * 2);
-    const reach = Math.sqrt(rng.next()) * 0.62;
-    const r = size * rng.range(0.18, 0.34);
-    parts.push(
-      buildMound(rng, {
-        radius: [r, r * rng.range(0.75, 1)],
-        height: height + r * rng.range(0.7, 1),
-        lobes: 0.2,
-        power: 0.45,
-        rings: 3,
-        sectors: 10,
-        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
-        rotation: rng.range(0, Math.PI * 2)
-      })
-    );
-  }
-  return mergeGeometries(parts);
-}
-function dirtMound(rng, noise, { radius, height, clods = 6, offset = [0, 0, 0], rotation = 0 }) {
-  const relief = (x, z) => (noise(x * 2.4 + offset[0], 4.5, z * 2.4 + offset[2]) - 0.5) * height * 0.9;
-  const parts = [buildMound(rng, { radius, height, lobes: 0.3, power: 0.9, relief, rings: 5, sectors: 16, flat: true, offset, rotation })];
-  for (let i = 0; i < clods; i++) {
-    const angle = rng.range(0, Math.PI * 2);
-    const reach = rng.range(0.55, 1.08);
-    const r = Math.max(0.08, Math.min(radius[0], radius[1]) * rng.range(0.1, 0.2));
-    const x = offset[0] + Math.cos(angle) * radius[0] * reach;
-    const z = offset[2] + Math.sin(angle) * radius[1] * reach;
-    const rest = height * Math.max(0, 1 - reach * reach) * 0.8;
-    parts.push(
-      buildRock(rng, {
-        detail: 0,
-        lumps: 2,
-        lumpSize: 0.2,
-        cuts: 2,
-        cutDepth: [0.7, 0.9],
-        scale: [r, r * rng.range(0.55, 0.8), r * rng.range(0.8, 1.1)],
-        rotation: [rng.range(-0.4, 0.4), rng.range(0, Math.PI * 2), rng.range(-0.4, 0.4)],
-        offset: [x, offset[1] + rest + r * 0.3, z],
-        floorY: offset[1] - 0.02
-      })
-    );
-  }
-  return mergeGeometries(parts);
-}
-function snowCap(geometry, noise, { amount: amount2 = 0, thickness = 0.08, minY = -Infinity } = {}) {
-  return buildDrape(
-    geometry,
-    (p, n) => p.y < minY ? -1 : (n.y - 0.5 + amount2 * 0.35) * 2.4 + (noise(p.x * 2.2, p.y * 2.2, p.z * 2.2) - 0.5) * 1.1,
-    { subdivisions: 3, lift: (w) => 0.014 + Math.min(1, w * 1.5) * thickness }
-  );
-}
-function mossCap(geometry, noise, { amount: amount2 = 0, minY = -Infinity } = {}) {
-  return buildDrape(
-    geometry,
-    (p, n) => p.y < minY ? -1 : (n.y - 0.55 + amount2 * 0.4) * 1.4 + (noise(p.x * 2.6 + 9, p.y * 2.6, p.z * 2.6) - 0.5) * 2.4,
-    { subdivisions: 3, lift: (w, p) => 0.012 + Math.min(1, w * 3) * 0.035 * noise(p.x * 8, p.y * 8 + 3, p.z * 8) }
-  );
-}
-function coverMaterial(kind, variant, { seed = 0, id = 11 } = {}) {
-  if (kind === "snow") {
-    const snow = SNOWS[variant ?? "fresh"];
-    return createToonMaterial({ ramp: snow.ramp, ink: snow.ink, steps: [0.42, 0.62, 0.8], pattern: "speckle", patternParams: [16, 0.03, 0.15, 0.3], seed, id });
-  }
-  if (kind === "moss") {
-    const moss = MOSSES[variant ?? "summer"];
-    return createToonMaterial({ ramp: moss.ramp, ink: moss.ink, steps: [0.36, 0.58, 0.8], pattern: "speckle", patternParams: [16, 0.1, 0.2, 1], seed, id });
-  }
-  const ground = GROUNDS[variant ?? "dirt"];
-  return createToonMaterial({ ramp: ground.ramp, ink: ground.ink, steps: [0.32, 0.55, 0.76], pattern: "speckle", patternParams: [16, 0.07, 0.2, 1], seed, id });
-}
-
-// src/assets/nature/rocks/boulder.js
-var params3 = {
-  seed: seedParam("Change la silhouette : rond, haut ou trapu, facettes, inclinaison, cailloux au pied."),
-  stone: stoneParam("Type de pierre : couleurs et grain."),
-  cover: coverParam("Mousse ou neige drap\xE9es sur le dessus du rocher, et pos\xE9es au sol autour."),
-  size: numberParam("Hauteur", 1.1, 0.4, 2.5, "Hauteur du rocher ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
-  roughness: numberParam("Taille de la pierre", 1, 0, 1.5, "0 = galet arrondi, 1,5 = bloc tr\xE8s taill\xE9.")
-};
-var meta3 = {
-  id: "nature/rocks/boulder",
-  name: "Rocher pos\xE9",
-  nameEn: "Boulder",
-  category: "nature",
-  subcategory: "rocks",
-  description: "Rocher \xE0 facettes pos\xE9 sur le sol, parfois accompagn\xE9 de cailloux. Cinq pierres (granit, gr\xE8s, calcaire, basalte, ardoise), nu, moussu ou enneig\xE9 ; chaque graine donne une autre silhouette.",
-  tags: [
-    "rocher",
-    "roche",
-    "pierre",
-    "bloc",
-    "caillou",
-    "min\xE9ral",
-    "facettes",
-    "pos\xE9",
-    "mousse",
-    "neige",
-    "ext\xE9rieur",
-    "boulder",
-    "rock",
-    "stone",
-    "pebble",
-    "mineral",
-    "faceted",
-    "moss",
-    "snow",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["forest", "meadow", "mountain", "desert", "snow", "beach", "cave", "garden", "village", "swamp"],
-  version: 2,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre du rocher",
-  footprint: { radius: 1.9, height: 1.2 },
-  animated: [],
-  params: params3,
-  variants: variantsOf("stone", params3.stone)
-};
-function create3(given = {}) {
-  const p = resolveParams(meta3.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const stone = STONES[p.stone];
-  const h = p.size;
-  const rough = p.roughness;
-  const half = h / 2;
-  const width = half * shape.range(0.95, 1.9);
-  const depth = width * shape.range(0.6, 0.95);
-  const sink = 0.12 * h;
-  const parts = [
-    buildRock(shape, {
-      detail: 1,
-      lumps: 4,
-      lumpSize: 0.14,
-      cuts: Math.round(4 + 5 * rough),
-      cutDepth: [0.82 - 0.22 * rough, 0.95 - 0.1 * rough],
-      scale: [width, half + sink / 2, depth],
-      rotation: [shape.range(-0.25, 0.25), shape.range(0, Math.PI * 2), shape.range(-0.25, 0.25)],
-      offset: [0, half - sink / 2, 0],
-      floorY: -0.02
-    })
-  ];
-  const pebbles = shape.int(0, 3);
-  for (let i = 0; i < pebbles; i++) {
-    const angle = shape.range(0, Math.PI * 2);
-    const r = shape.range(0.12, 0.22) * Math.max(1, h);
-    const distance = width * shape.range(0.95, 1.15) + r;
-    parts.push(
-      buildRock(shape, {
-        detail: 0,
-        lumps: 2,
-        lumpSize: 0.15,
-        cuts: 3,
-        cutDepth: [0.7, 0.9],
-        scale: [r, r * shape.range(0.5, 0.8), r * shape.range(0.8, 1.1)],
-        rotation: [0, shape.range(0, Math.PI * 2), 0],
-        offset: [Math.cos(angle) * distance, r * 0.4, Math.sin(angle) * distance * (depth / width)],
-        floorY: -0.02
-      })
-    );
-  }
-  const group = new THREE5.Group();
-  group.name = meta3.name;
-  const rock = mergeGeometries(parts);
-  if (p.cover !== "bare") {
-    const cover = createRng(p.seed * 31337 + 5);
-    const noise = createNoise3(p.seed + 101);
-    const layers = [];
-    if (p.cover === "snow") {
-      layers.push(snowCap(rock, noise, { amount: -0.15, thickness: 0.07 * Math.min(1.5, h), minY: h * 0.15 }));
-      layers.push(
-        snowMound(cover, noise, {
-          radius: [width * 1.5, depth * 1.5],
-          height: 0.1 * Math.min(1.5, h),
-          rotation: cover.range(0, Math.PI * 2),
-          drifts: cover.int(1, 2)
-        })
-      );
-    } else {
-      layers.push(mossCap(rock, noise, { amount: 0, minY: h * 0.12 }));
-      const patches = cover.int(0, 2);
-      for (let i = 0; i < patches; i++) {
-        const angle = cover.range(0, Math.PI * 2);
-        const r = width * cover.range(0.35, 0.6);
-        const reach = width * cover.range(0.7, 1);
-        layers.push(
-          mossMound(cover, noise, {
-            radius: [r, r * cover.range(0.6, 0.9)],
-            height: 0.035,
-            cushions: cover.int(2, 4),
-            offset: [Math.cos(angle) * reach, 0, Math.sin(angle) * reach * (depth / width)],
-            rotation: cover.range(0, Math.PI * 2)
-          })
-        );
-      }
-    }
-    const coverMesh = new THREE5.Mesh(mergeGeometries(layers), coverMaterial(p.cover, void 0, { seed: detail.int(0, 96), id: 11 }));
-    coverMesh.name = p.cover;
-    coverMesh.castShadow = true;
-    coverMesh.receiveShadow = true;
-    group.add(coverMesh);
-  }
-  const stoneMesh = new THREE5.Mesh(
-    rock,
-    createToonMaterial({
-      ramp: stone.ramp,
-      ink: stone.ink,
-      steps: [0.36, 0.58, 0.8],
-      patternParams: [16, 0.05, 0.2, 1],
-      crease: true,
-      pattern: "speckle",
-      seed: detail.int(0, 96),
-      id: 10
-    })
-  );
-  stoneMesh.name = "stone";
-  stoneMesh.castShadow = true;
-  stoneMesh.receiveShadow = true;
-  group.add(stoneMesh);
-  group.userData.asset = { id: meta3.id, params: p };
-  return group;
-}
-
-// src/assets/nature/rocks/buried-rock.js
-import * as THREE6 from "three";
-var params4 = {
-  seed: seedParam("Change la silhouette : dalle plate ou bosse, inclinaison, part qui d\xE9passe, talus de terre."),
-  stone: stoneParam("Type de pierre : couleurs et grain."),
-  cover: coverParam("Mousse ou neige drap\xE9es sur le dessus de la roche et sur le talus."),
-  size: numberParam("Largeur", 1.6, 0.5, 3.5, "Largeur de la partie visible ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
-  emergence: numberParam("Affleurement", 0.5, 0.2, 0.8, "Part de la roche qui sort du sol (0,2 = \xE0 peine visible).")
-};
-var meta4 = {
-  id: "nature/rocks/buried-rock",
-  name: "Roche enterr\xE9e",
-  nameEn: "Buried rock",
-  category: "nature",
-  subcategory: "rocks",
-  description: "Roche \xE0 facettes \xE0 moiti\xE9 enterr\xE9e, qui affleure en dalle inclin\xE9e au milieu d'un talus de terre. Cinq pierres, nue, moussue ou enneig\xE9e ; la graine change l'inclinaison et la forme, l'affleurement se r\xE8gle.",
-  tags: [
-    "roche",
-    "rocher",
-    "pierre",
-    "dalle",
-    "affleurement",
-    "enterr\xE9",
-    "min\xE9ral",
-    "terre",
-    "facettes",
-    "mousse",
-    "neige",
-    "ext\xE9rieur",
-    "buried rock",
-    "rock",
-    "stone",
-    "outcrop",
-    "slab",
-    "embedded",
-    "mineral",
-    "dirt",
-    "moss",
-    "snow",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["forest", "meadow", "mountain", "desert", "snow", "garden", "village", "swamp", "cave"],
-  version: 2,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la roche",
-  footprint: { radius: 1.7, height: 0.8 },
-  animated: [],
-  params: params4,
-  variants: variantsOf("stone", params4.stone)
-};
-var FLOOR = -0.03;
-function create4(given = {}) {
-  const p = resolveParams(meta4.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const stone = STONES[p.stone];
-  const radius = p.size / 2 / Math.sqrt(1 - (1 - p.emergence) ** 2 * 0.8);
-  const rx = radius * shape.range(0.9, 1.1);
-  const rz = radius * shape.range(0.6, 0.95);
-  const ry = radius * shape.range(0.55, 0.85);
-  const tiltX = shape.range(-0.45, 0.45);
-  const tiltZ = shape.range(-0.45, 0.45);
-  const rock = buildRock(shape, {
-    detail: 1,
-    lumps: 4,
-    lumpSize: 0.14,
-    cuts: 8,
-    cutDepth: [0.6, 0.88],
-    scale: [rx, ry, rz],
-    rotation: [tiltX, shape.range(0, Math.PI * 2), tiltZ],
-    offset: [0, ry * (2 * p.emergence - 1), 0],
-    floorY: FLOOR
-  });
-  rock.computeBoundingBox();
-  const box = rock.boundingBox;
-  const spanX = Math.max(-box.min.x, box.max.x);
-  const spanZ = Math.max(-box.min.z, box.max.z);
-  const noise = createNoise3(p.seed + 101);
-  const talus = dirtMound(shape, noise, {
-    radius: [spanX * 1.15 + 0.12, spanZ * 1.15 + 0.12],
-    height: Math.min(0.16, 0.08 * p.size) + 0.04,
-    clods: shape.int(3, 6)
-  });
-  const group = new THREE6.Group();
-  group.name = meta4.name;
-  if (p.cover !== "bare") {
-    const cover = createRng(p.seed * 31337 + 5);
-    const layers = [];
-    if (p.cover === "snow") {
-      layers.push(snowCap(rock, noise, { amount: -0.2, thickness: 0.06, minY: 0.08 }));
-      layers.push(
-        snowMound(cover, noise, {
-          radius: [spanX * 1.3 + 0.15, spanZ * 1.3 + 0.15],
-          height: 0.08,
-          rotation: cover.range(0, Math.PI * 2),
-          drifts: cover.int(0, 2)
-        })
-      );
-    } else {
-      layers.push(mossCap(rock, noise, { amount: 0, minY: 0.04 }));
-      const patches = cover.int(1, 2);
-      for (let i = 0; i < patches; i++) {
-        const angle = cover.range(0, Math.PI * 2);
-        const r = spanX * cover.range(0.35, 0.55);
-        layers.push(
-          mossMound(cover, noise, {
-            radius: [r, r * cover.range(0.6, 0.9)],
-            height: 0.06,
-            cushions: cover.int(2, 4),
-            offset: [Math.cos(angle) * spanX * 1, 0.04, Math.sin(angle) * spanZ * 1],
-            rotation: cover.range(0, Math.PI * 2)
-          })
-        );
-      }
-    }
-    const coverMesh = new THREE6.Mesh(mergeGeometries(layers), coverMaterial(p.cover, void 0, { seed: detail.int(0, 96), id: 11 }));
-    coverMesh.name = p.cover;
-    coverMesh.castShadow = true;
-    coverMesh.receiveShadow = true;
-    group.add(coverMesh);
-  }
-  const stoneMesh = new THREE6.Mesh(
-    rock,
-    createToonMaterial({ ramp: stone.ramp, ink: stone.ink, steps: [0.36, 0.58, 0.8], crease: true, pattern: "speckle", patternParams: [16, 0.05, 0.2, 1], seed: detail.int(0, 96), id: 10 })
-  );
-  stoneMesh.name = "stone";
-  stoneMesh.castShadow = true;
-  stoneMesh.receiveShadow = true;
-  group.add(stoneMesh);
-  if (p.cover !== "snow") {
-    const dirtMesh = new THREE6.Mesh(talus, coverMaterial("dirt", "dirt", { seed: detail.int(0, 96), id: 12 }));
-    dirtMesh.name = "dirt";
-    dirtMesh.receiveShadow = true;
-    group.add(dirtMesh);
-  } else {
-    talus.dispose();
-  }
-  group.userData.asset = { id: meta4.id, params: p };
-  return group;
-}
-
-// src/assets/nature/terrain/dirt-mound.js
-import * as THREE7 from "three";
-var params5 = {
-  seed: seedParam("Change le contour, les bosses et la place des mottes."),
-  soil: choiceParam("Sol", GROUNDS, "Terre brune, argile rouge ou boue sombre."),
-  size: numberParam("Largeur", 1.4, 0.4, 3, "Largeur de la butte.", { step: 0.1, unit: "m" }),
-  height: numberParam("Hauteur", 0.3, 0.05, 0.6, "Hauteur au centre.", { step: 0.05, unit: "m" })
-};
-var meta5 = {
-  id: "nature/terrain/dirt-mound",
-  name: "Terre remu\xE9e",
-  nameEn: "Dirt mound",
-  category: "nature",
-  subcategory: "terrain",
-  description: "Butte de terre fra\xEEchement remu\xE9e, bossel\xE9e, entour\xE9e de mottes. Terre, argile ou boue ; la graine change la forme et les mottes.",
-  tags: [
-    "terre",
-    "terre remu\xE9e",
-    "butte",
-    "motte",
-    "tas",
-    "argile",
-    "boue",
-    "sol",
-    "terrain",
-    "chantier",
-    "jardin",
-    "ext\xE9rieur",
-    "dirt",
-    "dirt mound",
-    "mound",
-    "clod",
-    "pile",
-    "clay",
-    "mud",
-    "soil",
-    "ground",
-    "digging",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["garden", "village", "forest", "meadow", "swamp", "desert"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la butte",
-  footprint: { radius: 0.7, height: 0.35 },
-  animated: [],
-  params: params5,
-  variants: variantsOf("soil", params5.soil)
-};
-function create5(given = {}) {
-  const p = resolveParams(meta5.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const noise = createNoise3(p.seed);
-  const half = p.size / 2;
-  const mesh = new THREE7.Mesh(
-    dirtMound(shape, noise, {
-      radius: [half * 0.8, half * 0.8 * shape.range(0.65, 0.95)],
-      height: p.height * (p.soil === "mud" ? 0.6 : 1),
-      clods: shape.int(4, 8),
-      rotation: shape.range(0, Math.PI * 2)
-    }),
-    coverMaterial("dirt", p.soil, { seed: detail.int(0, 96), id: 12 })
-  );
-  mesh.name = "dirt";
-  mesh.receiveShadow = true;
-  mesh.castShadow = true;
-  const group = new THREE7.Group();
-  group.name = meta5.name;
-  group.add(mesh);
-  group.userData.asset = { id: meta5.id, params: p };
-  return group;
-}
-
-// src/assets/nature/terrain/lawn.js
-import * as THREE8 from "three";
-var params6 = {
-  seed: seedParam("Change le contour de la plaque, les zones plus drues ou plus rases, la place des fleurs."),
-  season: seasonParam("Vert vif au printemps, blondi en automne, ras et jauni en hiver."),
-  cut: choiceParam(
-    "Coupe",
-    { mown: "Tondue", long: "Haute", wild: "Folle" },
-    "Tondue : gazon ras et r\xE9gulier. Haute : brins longs qui ploient. Folle : hauteurs m\xEAl\xE9es, touffes et p\xE2querettes."
-  ),
-  shape: choiceParam(
-    "Forme",
-    { patch: "Plaque", tile: "Dalle carr\xE9e" },
-    "Plaque au bord irr\xE9gulier, \xE0 poser seule ; ou dalle carr\xE9e dont les bords se raccordent \xE0 la dalle voisine."
-  ),
-  size: numberParam("Largeur", 1.6, 0.5, 3, "Largeur de la plaque ou c\xF4t\xE9 de la dalle.", { step: 0.1, unit: "m" }),
-  fullness: numberParam("Densit\xE9", 1, 0.5, 1.5, "Nombre de brins (et de triangles).")
-};
-var meta6 = {
-  id: "nature/terrain/lawn",
-  name: "Pelouse",
-  nameEn: "Lawn",
-  category: "nature",
-  subcategory: "terrain",
-  description: "Pelouse : motte de gazon couverte de brins qui ondulent au vent. Tondue, haute ou folle avec des p\xE2querettes ; en plaque au bord irr\xE9gulier ou en dalle carr\xE9e raccordable. Quatre saisons.",
-  tags: [
-    "pelouse",
-    "gazon",
-    "herbe",
-    "prairie",
-    "p\xE2querettes",
-    "dalle",
-    "sol",
-    "terrain",
-    "v\xE9g\xE9tation",
-    "vent",
-    "saisons",
-    "ext\xE9rieur",
-    "lawn",
-    "turf",
-    "grass",
-    "meadow",
-    "daisies",
-    "tile",
-    "ground",
-    "vegetation",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["meadow", "garden", "village", "forest"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la plaque",
-  footprint: { radius: 1.05, height: 0.48 },
-  animated: ["wind"],
-  params: params6,
-  variants: variantsOf("season", params6.season)
-};
-var TAU3 = Math.PI * 2;
-var UP3 = new THREE8.Vector3(0, 1, 0);
-var DAISY = starOutline(5, 0.55);
-var CUTS = {
-  mown: { spacing: 0.085, height: [0.07, 0.13], segments: 1, open: 0.25, flowers: 0 },
-  long: { spacing: 0.11, height: [0.16, 0.3], segments: 2, open: 0.55, flowers: 0 },
-  wild: { spacing: 0.1, height: [0.06, 0.46], segments: 2, open: 0.45, flowers: 1 }
-};
-function create6(given = {}) {
-  const p = resolveParams(meta6.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const noise = createNoise3(p.seed);
-  const cut = CUTS[p.cut];
-  const winter = p.season === "winter";
-  const half = p.size / 2;
-  const tile = p.shape === "tile";
-  const grass = GRASSES[p.season];
-  const relief = (x, z) => (noise(x * 2 + 3, 0.5, z * 2) - 0.5) * 0.03;
-  let inside;
-  let sodGeometry;
-  if (tile) {
-    sodGeometry = buildGroundTile({ size: p.size, height: 0.03, divisions: Math.max(3, Math.round(p.size * 4)), relief });
-    const margin = 0.02;
-    inside = (x, z) => Math.abs(x) < half - margin && Math.abs(z) < half - margin;
-  } else {
-    const radius = [half, half * shape.range(0.7, 0.95)];
-    sodGeometry = buildMound(shape, { radius, height: 0.035, lobes: 0.3, power: 0.25, relief, rings: 4, sectors: 22, rotation: shape.range(0, TAU3) });
-    const outline = outerRing(sodGeometry, 4, 22);
-    inside = (x, z) => insidePolygon(outline, x * 1.07, z * 1.07);
-  }
-  const vigor = (x, z) => noise(x * 1.3, 7.5, z * 1.3);
-  const blades = [];
-  const flowers = [];
-  const spacing = cut.spacing / Math.sqrt(p.fullness);
-  const cells = Math.ceil(p.size / spacing);
-  const heightScale = winter ? 0.7 : p.season === "autumn" ? 0.9 : 1;
-  for (let i = 0; i < cells; i++) {
-    for (let j = 0; j < cells; j++) {
-      const x = -half + (j + detail.next()) * spacing;
-      const z = -half + (i + detail.next()) * spacing;
-      if (!inside(x, z)) continue;
-      const v = vigor(x, z);
-      if (p.cut !== "mown" && v < 0.25 && detail.chance(0.5)) continue;
-      const base = new THREE8.Vector3(x, 0, z);
-      const azimuth = detail.range(0, TAU3);
-      const out = new THREE8.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-      let h = THREE8.MathUtils.lerp(cut.height[0], cut.height[1], p.cut === "mown" ? detail.next() : Math.min(1, v * 1.3 * detail.range(0.5, 1.1)));
-      h *= heightScale;
-      const open = h * cut.open * detail.range(0.4, 1.2) * (winter ? 1.6 : 1);
-      const tip = base.clone().addScaledVector(out, open).addScaledVector(UP3, h * (winter ? 0.75 : 1));
-      if (tile) {
-        tip.x = THREE8.MathUtils.clamp(tip.x, -half, half);
-        tip.z = THREE8.MathUtils.clamp(tip.z, -half, half);
-      }
-      blades.push({
-        base,
-        bend: base.clone().addScaledVector(out, open * 0.25).addScaledVector(UP3, h * 0.7),
-        tip,
-        width: detail.range(0.075, 0.1),
-        normal: out.clone().addScaledVector(UP3, 1.3).normalize(),
-        phase: detail.next(),
-        variation: detail.next(),
-        flex: p.cut === "mown" ? 0.15 : detail.range(0.3, 0.55),
-        baseOcclusion: 0.15
-      });
-      if (cut.flowers && !winter && v < 0.55 && detail.chance(p.season === "autumn" ? 0.05 : 0.14)) {
-        flowers.push({
-          position: base.clone().add(new THREE8.Vector3(detail.range(-0.03, 0.03), cut.height[1] * heightScale * detail.range(0.55, 0.85), detail.range(-0.03, 0.03))),
-          outline: DAISY,
-          size: detail.range(0.075, 0.095),
-          rotation: detail.range(0, TAU3),
-          normal: new THREE8.Vector3(detail.range(-0.3, 0.3), 1, detail.range(-0.3, 0.3)).normalize(),
-          phase: detail.next(),
-          variation: detail.next(),
-          flex: 0.3
-        });
-      }
-    }
-  }
-  const group = new THREE8.Group();
-  group.name = meta6.name;
-  const sod = new THREE8.Mesh(
-    sodGeometry,
-    createToonMaterial({ ramp: grass.sod, steps: [0.36, 0.58, 0.8], pattern: "speckle", patternParams: [16, 0.08, 0.2, 1], seed: p.seed % 89, id: 11 })
-  );
-  sod.name = "sod";
-  sod.receiveShadow = true;
-  group.add(sod);
-  const maxHeight = cut.height[1] * heightScale;
-  const sway = { amplitude: 0.05 * maxHeight, height: maxHeight };
-  const bladeGeometry = buildBladeGeometry(blades, { segments: cut.segments });
-  bladeGeometry.computeBoundingSphere();
-  bladeGeometry.boundingSphere.radius += 0.1;
-  const bladeMaterial = createToonMaterial({
-    ramp: grass.ramp,
-    steps: [0.24, 0.42, 0.6, 0.78],
-    foliage: true,
-    leafShade: [0.16, 0.45],
-    id: 11,
-    // même identifiant que la motte : pas de contour autour de chaque brin
-    sway
-  });
-  const bladeMesh = new THREE8.Mesh(bladeGeometry, bladeMaterial);
-  bladeMesh.name = "grass";
-  bladeMesh.customDepthMaterial = bladeMaterial.userData.depthMaterial;
-  bladeMesh.castShadow = p.cut !== "mown";
-  bladeMesh.receiveShadow = true;
-  group.add(bladeMesh);
-  if (flowers.length) {
-    const flowerMaterial = createToonMaterial({ ramp: FLOWERS.daisy.petals, steps: [0.25, 0.45, 0.65], foliage: true, leafShade: [0.1, 0], id: 11, sway });
-    const flowerMesh = new THREE8.Mesh(buildFanGeometry(flowers), flowerMaterial);
-    flowerMesh.name = "daisies";
-    flowerMesh.customDepthMaterial = flowerMaterial.userData.depthMaterial;
-    flowerMesh.receiveShadow = true;
-    group.add(flowerMesh);
-  }
-  group.userData.asset = { id: meta6.id, params: p, blades: blades.length, flowers: flowers.length };
-  return group;
-}
-function outerRing(geometry, rings, sectors) {
-  const position = geometry.attributes.position;
-  const start = 1 + (rings - 1) * sectors;
-  const ring = [];
-  for (let s = 0; s < sectors; s++) ring.push([position.getX(start + s), position.getZ(start + s)]);
-  return ring;
-}
-function insidePolygon(polygon, x, z) {
-  let inside = false;
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const [xi, zi] = polygon[i];
-    const [xj, zj] = polygon[j];
-    if (zi > z !== zj > z && x < (xj - xi) * (z - zi) / (zj - zi) + xi) inside = !inside;
-  }
-  return inside;
-}
-
 // src/assets/nature/terrain/meadow-ground.js
-import * as THREE9 from "three";
 var tileParam = (label, description) => ({ type: "int", default: 0, min: -500, max: 500, label, description });
-var params7 = {
+var params = {
   seed: seedParam(
     "Graine du monde : relief et place des taches. Tous les morceaux d'une m\xEAme carte prennent la m\xEAme graine."
   ),
@@ -2449,7 +1352,7 @@ var params7 = {
     "Un morceau seul, ou les 4 morceaux (X, Z) \xE0 (X + 1, Z + 1) pos\xE9s c\xF4te \xE0 c\xF4te, pour voir le raccord."
   )
 };
-var meta7 = {
+var meta = {
   id: "nature/terrain/meadow-ground",
   name: "Sol de prairie",
   nameEn: "Meadow ground",
@@ -2493,7 +1396,7 @@ var meta7 = {
   animated: [],
   pedestal: false,
   // la visionneuse ne pose pas de socle : le morceau est lui-même un sol
-  params: params7,
+  params,
   variants: [
     { id: "summer", name: "\xC9t\xE9 \u2014 pixel art", params: { season: "summer", finish: "pixel" } },
     { id: "summer-smooth", name: "\xC9t\xE9 \u2014 lisse", params: { season: "summer", finish: "smooth" } },
@@ -2509,12 +1412,12 @@ function groundHeight(seed = 1, relief = 1.4) {
     const swell = noise(X * 0.12 + 40, 3.5, Z * 0.12 - 17);
     const bump = noise(X * 0.33 - 9, 6.5, Z * 0.33 + 5);
     const h = broad * 0.62 + swell * 0.28 + bump * 0.1;
-    const t = THREE9.MathUtils.clamp((h - 0.28) / 0.44, 0, 1);
+    const t = THREE3.MathUtils.clamp((h - 0.28) / 0.44, 0, 1);
     return relief * t * t * (3 - 2 * t);
   };
 }
-function create7(given = {}) {
-  const p = resolveParams(meta7.params, given);
+function create(given = {}) {
+  const p = resolveParams(meta.params, given);
   const palette = MEADOW_GROUNDS[p.season];
   const height = groundHeight(p.seed, p.relief);
   const winter = p.season === "winter";
@@ -2556,13 +1459,13 @@ function create7(given = {}) {
       ]
     }
   });
-  const group = new THREE9.Group();
-  group.name = meta7.name;
-  const top = new THREE9.Mesh(tops.length > 1 ? mergeGeometries(tops) : tops[0], topMaterial);
+  const group = new THREE3.Group();
+  group.name = meta.name;
+  const top = new THREE3.Mesh(tops.length > 1 ? mergeGeometries(tops) : tops[0], topMaterial);
   top.name = "ground";
   top.receiveShadow = true;
   group.add(top);
-  const skirt = new THREE9.Mesh(
+  const skirt = new THREE3.Mesh(
     skirts.length > 1 ? mergeGeometries(skirts) : skirts[0],
     createToonMaterial({
       ramp: MEADOW_GROUNDS.skirt,
@@ -2576,901 +1479,15 @@ function create7(given = {}) {
   skirt.name = "skirt";
   skirt.receiveShadow = true;
   group.add(skirt);
-  group.userData.asset = { id: meta7.id, params: p };
-  return group;
-}
-
-// src/assets/nature/terrain/moss-patch.js
-import * as THREE10 from "three";
-var params8 = {
-  seed: seedParam("Change le contour du tapis, le nombre et la place des coussinets."),
-  season: seasonParam("Vert tendre au printemps, olive et ocre en automne, terne en hiver."),
-  size: numberParam("Largeur", 1.2, 0.3, 3, "Largeur du tapis.", { step: 0.1, unit: "m" }),
-  cushions: numberParam("Coussinets", 6, 0, 14, "Nombre de coussinets bomb\xE9s.", { step: 1 })
-};
-var meta8 = {
-  id: "nature/terrain/moss-patch",
-  name: "Tapis de mousse",
-  nameEn: "Moss patch",
-  category: "nature",
-  subcategory: "terrain",
-  description: "Tapis de mousse pos\xE9 au sol, au contour d\xE9coup\xE9, sem\xE9 de coussinets ronds. Quatre saisons ; la graine change le contour et les coussinets.",
-  tags: [
-    "mousse",
-    "tapis de mousse",
-    "coussinet",
-    "sol",
-    "terrain",
-    "v\xE9g\xE9tation",
-    "sous-bois",
-    "saisons",
-    "ext\xE9rieur",
-    "moss",
-    "moss patch",
-    "cushion",
-    "ground",
-    "vegetation",
-    "undergrowth",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["forest", "swamp", "garden", "cave", "meadow"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre du tapis",
-  footprint: { radius: 0.6, height: 0.2 },
-  animated: [],
-  params: params8,
-  variants: variantsOf("season", params8.season)
-};
-function create8(given = {}) {
-  const p = resolveParams(meta8.params, given);
-  const shape = createRng(p.seed * 7919 + 17);
-  const detail = createRng(p.seed * 104729 + 71);
-  const noise = createNoise3(p.seed);
-  const half = p.size / 2;
-  const mesh = new THREE10.Mesh(
-    mossMound(shape, noise, {
-      radius: [half * 0.85, half * 0.85 * shape.range(0.65, 0.95)],
-      height: 0.04,
-      cushions: Math.round(p.cushions),
-      rotation: shape.range(0, Math.PI * 2)
-    }),
-    coverMaterial("moss", p.season, { seed: detail.int(0, 96), id: 11 })
-  );
-  mesh.name = "moss";
-  mesh.receiveShadow = true;
-  mesh.castShadow = true;
-  const group = new THREE10.Group();
-  group.name = meta8.name;
-  group.add(mesh);
-  group.userData.asset = { id: meta8.id, params: p };
-  return group;
-}
-
-// src/assets/nature/trees/birch.js
-var birch_exports = {};
-__export(birch_exports, {
-  create: () => create9,
-  dispose: () => disposeObject,
-  meta: () => meta9,
-  setWind: () => setWind,
-  tick: () => tick
-});
-import * as THREE11 from "three";
-var params9 = {
-  seed: seedParam("Change la silhouette : inclinaison du tronc, branches, touffes."),
-  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, l'arbre est nu."),
-  height: numberParam("Hauteur", 7.5, 5, 9.5, "Hauteur du tronc ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
-  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.4, "Quantit\xE9 de feuilles (et de triangles).")
-};
-var meta9 = {
-  id: "nature/trees/birch",
-  name: "Bouleau",
-  nameEn: "Birch tree",
-  category: "nature",
-  subcategory: "trees",
-  description: "Bouleau au tronc blanc marqu\xE9 de tirets sombres, feuillage l\xE9ger en touffes avec des brins pendants qui bougent au vent. Quatre saisons, forme diff\xE9rente pour chaque graine.",
-  tags: [
-    "arbre",
-    "bouleau",
-    "feuillu",
-    "v\xE9g\xE9tation",
-    "tronc blanc",
-    "feuillage",
-    "vent",
-    "saisons",
-    "ext\xE9rieur",
-    "tree",
-    "birch",
-    "deciduous",
-    "vegetation",
-    "foliage",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["forest", "meadow", "garden", "village"],
-  version: 1,
-  added: "2026-11-15",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
-  footprint: { radius: 3.2, height: 8.4 },
-  animated: ["wind"],
-  params: params9,
-  variants: variantsOf("season", params9.season)
-};
-var BARK_RAMP = ["#77728f", "#b0aec2", "#e0dfe6", "#fbf8ee"];
-var BARK_INK = "#2a2233";
-var SEASONS2 = {
-  spring: { ramp: ["#2a6350", "#3f8a52", "#63ad55", "#96cf5e", "#d2ec84"], density: 0.78, leafSize: 0.92 },
-  summer: { ramp: ["#1d4945", "#2a6947", "#3f8d45", "#6db348", "#b3da5b"], density: 1, leafSize: 1 },
-  autumn: { ramp: ["#7b3d1d", "#b3651e", "#da9422", "#f2bf3a", "#ffe889"], density: 0.86, leafSize: 1 },
-  winter: { ramp: ["#1d4945", "#2a6947", "#3f8d45", "#6db348", "#b3da5b"], density: 0, leafSize: 1 }
-};
-var TAU4 = Math.PI * 2;
-var UP4 = new THREE11.Vector3(0, 1, 0);
-var lerp = THREE11.MathUtils.lerp;
-function create9(params14 = {}) {
-  const p = resolveParams(meta9.params, params14);
-  const season = SEASONS2[p.season];
-  const rng = createRng(p.seed * 7919 + 17);
-  const s = p.height / 7.5;
-  const leanAzimuth = rng.range(0, TAU4);
-  const lean = rng.range(0.2, 0.55) * s;
-  const trunkPoints = [];
-  for (let i = 0; i < 6; i++) {
-    const t = i / 5;
-    const wobble = i === 0 ? 0 : 0.11 * s;
-    trunkPoints.push(
-      new THREE11.Vector3(
-        Math.cos(leanAzimuth) * lean * t * t + rng.range(-wobble, wobble),
-        p.height * t,
-        Math.sin(leanAzimuth) * lean * t * t + rng.range(-wobble, wobble)
-      )
-    );
-  }
-  const baseRadius = 0.21 * s;
-  const trunkRadius = (t) => lerp(baseRadius, baseRadius * 0.24, Math.pow(t, 0.85)) + baseRadius * 0.5 * Math.exp(-t * 22);
-  const trunk = buildTube(trunkPoints, trunkRadius, { radialSegments: 7, lengthSegments: 14 });
-  const trunkCurve = trunk.userData.curve;
-  const wood = [trunk];
-  const clumps = [];
-  const branchCount = 10 + rng.int(0, 3);
-  const minRadius = 0.034;
-  for (let i = 0; i < branchCount; i++) {
-    const u = i / (branchCount - 1);
-    const start = trunkCurve.getPoint(0.4 + 0.54 * Math.pow(u, 0.9));
-    const azimuth = i * 2.39996 + rng.range(-0.5, 0.5);
-    const out = new THREE11.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-    const length = lerp(2.5, 0.95, Math.pow(u, 1.1)) * rng.range(0.85, 1.15) * s;
-    const rise = lerp(0.3, 0.55, u) * length;
-    const points = [
-      start,
-      start.clone().addScaledVector(out, length * 0.35).addScaledVector(UP4, rise),
-      start.clone().addScaledVector(out, length * 0.75).addScaledVector(UP4, rise + length * 0.2),
-      start.clone().addScaledVector(out, length).addScaledVector(UP4, rise + length * 0.06)
-    ];
-    const r0 = Math.max(minRadius, lerp(0.078, 0.045, u) * s);
-    const branch = buildTube(points, (t) => lerp(r0, minRadius, t), {
-      radialSegments: 5,
-      lengthSegments: 5,
-      vOffset: rng.range(3, 30)
-    });
-    wood.push(branch);
-    const branchCurve = branch.userData.curve;
-    const size = lerp(0.92, 0.55, u) * s;
-    for (const [t, k] of [[0.5, 1], [0.78, 0.9], [1, 0.74]]) {
-      const radius = size * k * rng.range(0.85, 1.15);
-      const center = branchCurve.getPoint(t);
-      center.y -= radius * 0.18;
-      clumps.push({ center, radius, hanging: t > 0.6 });
-    }
-    const twigCount = u < 0.75 ? 2 : 1;
-    for (let j = 0; j < twigCount; j++) {
-      const from = branchCurve.getPoint(rng.range(0.3, 0.75));
-      const side = azimuth + (rng.chance(0.5) ? 1 : -1) * rng.range(0.7, 1.3);
-      const direction = new THREE11.Vector3(Math.cos(side), rng.range(0.1, 0.5), Math.sin(side)).normalize();
-      const twigLength = rng.range(0.55, 1) * s * lerp(1, 0.7, u);
-      const tip = from.clone().addScaledVector(direction, twigLength);
-      tip.y -= twigLength * 0.2;
-      const middle = from.clone().addScaledVector(direction, twigLength * 0.55);
-      wood.push(
-        buildTube([from, middle, tip], () => minRadius, { radialSegments: 4, lengthSegments: 3, vOffset: rng.range(3, 30) })
-      );
-      clumps.push({ center: tip, radius: rng.range(0.42, 0.56) * s, hanging: true });
-    }
-  }
-  const top = trunkCurve.getPoint(1);
-  clumps.push({ center: top.clone().add(new THREE11.Vector3(0, 0.15 * s, 0)), radius: 0.58 * s, hanging: false });
-  const crownStart = rng.range(0, TAU4);
-  for (let i = 0; i < 5; i++) {
-    const angle = crownStart + i * 2.39996;
-    const center = trunkCurve.getPoint(0.56 + i * 0.085);
-    const reach = lerp(0.75, 0.4, i / 4) * s;
-    center.x += Math.cos(angle) * reach;
-    center.z += Math.sin(angle) * reach;
-    clumps.push({ center, radius: lerp(0.8, 0.55, i / 4) * s, hanging: false });
-  }
-  const sway = { amplitude: 0.09 * s, height: p.height };
-  const group = new THREE11.Group();
-  group.name = meta9.name;
-  const woodMesh = new THREE11.Mesh(
-    mergeGeometries(wood),
-    createToonMaterial({
-      ramp: BARK_RAMP,
-      steps: [0.3, 0.52, 0.76],
-      ink: BARK_INK,
-      pattern: "bark",
-      patternParams: [16, 0.34, 0.95 * s, 0.78],
-      seed: p.seed % 97,
-      id: 10,
-      sway
-    })
-  );
-  woodMesh.name = "wood";
-  woodMesh.castShadow = true;
-  woodMesh.receiveShadow = true;
-  group.add(woodMesh);
-  const leaves = [];
-  if (season.density > 0) {
-    const canopyCenter = trunkCurve.getPoint(0.68);
-    const density = season.density * p.fullness;
-    const leafSize = () => rng.range(0.075, 0.13) * season.leafSize;
-    const shadeNormal = (position, direction) => direction.clone().addScaledVector(position.clone().sub(canopyCenter).normalize(), 0.4).addScaledVector(UP4, 0.25).normalize();
-    const DOWN2 = new THREE11.Vector3(0, -1, 0);
-    for (const clump of clumps) {
-      const { center, radius } = clump;
-      for (const rotation of [0, Math.PI]) {
-        leaves.push({ position: center, normal: DOWN2, size: radius * 0.44, rotation, phase: rng.next(), occlusion: 0, variation: 0, flex: 0.3 });
-      }
-      const count = Math.round(density * 105 * radius * radius);
-      for (let i = 0; i < count; i++) {
-        const y = rng.range(-1, 1);
-        const angle = rng.range(0, TAU4);
-        const ring = Math.sqrt(1 - y * y);
-        const direction = new THREE11.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
-        const k = 0.4 + 0.6 * Math.sqrt(rng.next());
-        const position = center.clone().add(direction.clone().multiply(new THREE11.Vector3(radius * k, radius * k * 0.85, radius * k)));
-        if (y < 0) position.y -= y * y * radius * 0.35;
-        leaves.push({
-          position,
-          normal: shadeNormal(position, direction),
-          size: leafSize(),
-          rotation: rng.range(-0.9, 0.9),
-          phase: rng.next(),
-          occlusion: THREE11.MathUtils.smoothstep(k, 0.4, 0.95) * (0.8 + 0.2 * (y * 0.5 + 0.5)),
-          variation: rng.next(),
-          flex: rng.range(0.55, 1)
-        });
-      }
-      if (clump.hanging) {
-        const strands = rng.int(1, 3);
-        for (let j = 0; j < strands; j++) {
-          const angle = rng.range(0, TAU4);
-          const reach = rng.range(0.2, 0.75) * radius;
-          const position = center.clone().add(new THREE11.Vector3(Math.cos(angle) * reach, -radius * 0.7, Math.sin(angle) * reach));
-          const direction = new THREE11.Vector3(Math.cos(angle), -0.2, Math.sin(angle)).normalize();
-          const links = Math.round(rng.int(4, 8) * Math.min(1, density + 0.2));
-          for (let n = 0; n < links; n++) {
-            position.y -= 0.13 * s;
-            position.x += rng.range(-0.03, 0.03);
-            position.z += rng.range(-0.03, 0.03);
-            leaves.push({
-              position: position.clone(),
-              normal: shadeNormal(position, direction),
-              size: leafSize(),
-              rotation: rng.range(-0.35, 0.35),
-              phase: rng.next(),
-              occlusion: 0.9,
-              variation: rng.next(),
-              flex: 0.8 + 0.7 * (n / links)
-            });
-          }
-        }
-      }
-    }
-    if (p.season === "autumn") {
-      for (let i = 0; i < 34; i++) {
-        const angle = rng.range(0, TAU4);
-        const distance = rng.range(0.4, 2.8) * s;
-        leaves.push({
-          position: new THREE11.Vector3(Math.cos(angle) * distance, 0.04, Math.sin(angle) * distance),
-          normal: UP4,
-          size: leafSize(),
-          rotation: rng.range(0, TAU4),
-          phase: rng.next(),
-          occlusion: 1,
-          variation: rng.next(),
-          flex: 0
-        });
-      }
-    }
-    const leafGeometry = buildLeafGeometry(leaves);
-    leafGeometry.computeBoundingSphere();
-    leafGeometry.boundingSphere.radius += 0.6;
-    const leafMaterial = createToonMaterial({
-      ramp: season.ramp,
-      steps: [0.22, 0.42, 0.6, 0.78],
-      foliage: true,
-      id: 11,
-      sway
-    });
-    const leafMesh = new THREE11.Mesh(leafGeometry, leafMaterial);
-    leafMesh.name = "leaves";
-    leafMesh.customDepthMaterial = leafMaterial.userData.depthMaterial;
-    leafMesh.castShadow = true;
-    leafMesh.receiveShadow = true;
-    group.add(leafMesh);
-  }
-  group.userData.asset = { id: meta9.id, params: p, leaves: leaves.length };
-  return group;
-}
-
-// src/assets/nature/trees/linden.js
-var linden_exports = {};
-__export(linden_exports, {
-  create: () => create10,
-  dispose: () => disposeObject,
-  meta: () => meta10,
-  setWind: () => setWind,
-  tick: () => tick
-});
-import * as THREE13 from "three";
-
-// src/assets/kit/foliage.js
-import * as THREE12 from "three";
-var TAU5 = Math.PI * 2;
-var UP5 = new THREE12.Vector3(0, 1, 0);
-var DOWN = new THREE12.Vector3(0, -1, 0);
-function leafNormal(position, direction, canopyCenter, canopyWeight = 0.4) {
-  return direction.clone().addScaledVector(position.clone().sub(canopyCenter).normalize(), canopyWeight).addScaledVector(UP5, 0.25).normalize();
-}
-function fillClump(rng, leaves, {
-  center,
-  radius,
-  count,
-  canopyCenter,
-  leafSize,
-  squash = 0.85,
-  sag = 0.35,
-  canopyWeight = 0.4,
-  core = true,
-  flex = [0.55, 1],
-  coreSize = 0.44,
-  shell = 0.4
-}) {
-  if (core) {
-    for (const rotation of [0, Math.PI]) {
-      leaves.push({ position: center, normal: DOWN, size: radius * coreSize, rotation, phase: rng.next(), occlusion: 0, variation: 0, flex: 0.3 });
-    }
-  }
-  const surface = [];
-  const scale = new THREE12.Vector3();
-  for (let i = 0; i < count; i++) {
-    const y = rng.range(-1, 1);
-    const angle = rng.range(0, TAU5);
-    const ring = Math.sqrt(1 - y * y);
-    const direction = new THREE12.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
-    const k = shell + (1 - shell) * Math.sqrt(rng.next());
-    scale.set(radius * k, radius * k * squash, radius * k);
-    const position = center.clone().add(direction.clone().multiply(scale));
-    if (y < 0) position.y -= y * y * radius * sag;
-    leaves.push({
-      position,
-      normal: leafNormal(position, direction, canopyCenter, canopyWeight),
-      size: leafSize(),
-      rotation: rng.range(-0.9, 0.9),
-      phase: rng.next(),
-      occlusion: THREE12.MathUtils.smoothstep(k, shell, 0.95) * (0.8 + 0.2 * (y * 0.5 + 0.5)),
-      variation: rng.next(),
-      flex: rng.range(flex[0], flex[1])
-    });
-    if (k > 0.85) surface.push({ position, direction });
-  }
-  return surface;
-}
-function fallenLeaves(rng, leaves, { count, minRadius, maxRadius, leafSize }) {
-  for (let i = 0; i < count; i++) {
-    const angle = rng.range(0, TAU5);
-    const distance = rng.range(minRadius, maxRadius);
-    leaves.push({
-      position: new THREE12.Vector3(Math.cos(angle) * distance, 0.04, Math.sin(angle) * distance),
-      normal: UP5,
-      size: leafSize(),
-      rotation: rng.range(0, TAU5),
-      phase: rng.next(),
-      occlusion: 1,
-      variation: rng.next(),
-      flex: 0
-    });
-  }
-}
-
-// src/assets/nature/trees/linden.js
-var params10 = {
-  seed: seedParam("Change la silhouette : ogive plus ou moins large, penchant de la couronne, branches, rejets au pied."),
-  season: seasonParam("Couleur du feuillage ; fleurs jaune p\xE2le l'\xE9t\xE9, or \xE0 l'automne, nu l'hiver."),
-  height: numberParam("Hauteur", 10, 7, 13, "Hauteur de l'arbre ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
-  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.3, "Quantit\xE9 de feuilles (et de triangles).")
-};
-var meta10 = {
-  id: "nature/trees/linden",
-  name: "Tilleul",
-  nameEn: "Linden tree",
-  category: "nature",
-  subcategory: "trees",
-  description: "Tilleul au tronc droit et gris, couronne dense et r\xE9guli\xE8re en ogive ; fleurs jaune p\xE2le en \xE9t\xE9, feuillage dor\xE9 en automne, rejets au pied. Quatre saisons, forme diff\xE9rente pour chaque graine.",
-  tags: [
-    "tilleul",
-    "arbre",
-    "feuillu",
-    "v\xE9g\xE9tation",
-    "couronne en ogive",
-    "tronc droit",
-    "fleurs",
-    "floraison",
-    "feuillage",
-    "vent",
-    "saisons",
-    "place de village",
-    "ext\xE9rieur",
-    "linden",
-    "lime tree",
-    "tree",
-    "deciduous",
-    "vegetation",
-    "dense crown",
-    "flowers",
-    "blossom",
-    "foliage",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["village", "garden", "meadow", "forest"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
-  footprint: { radius: 4.1, height: 10.2 },
-  animated: ["wind"],
-  params: params10,
-  variants: variantsOf("season", params10.season)
-};
-var BARK_RAMP2 = ["#4c4655", "#6f6870", "#958d8a", "#bab1a3"];
-var BARK_INK2 = "#2b2430";
-var FLOWER_RAMP = ["#b8ad52", "#dcd36a", "#f1eb98", "#fffbd6"];
-var SEASONS3 = {
-  spring: { ramp: ["#2a6345", "#448c49", "#6db64c", "#a6d85c", "#e2f394"], density: 0.85, leafSize: 0.9 },
-  summer: { ramp: ["#1b463c", "#28653f", "#3f8b42", "#6cb147", "#b2db62"], density: 1, leafSize: 1, flowers: true },
-  autumn: { ramp: ["#6a4a1e", "#9c731f", "#c99d25", "#e8c63c", "#fbec8c"], density: 0.84, leafSize: 1 },
-  winter: { ramp: ["#1b463c", "#28653f", "#3f8b42", "#6cb147", "#b2db62"], density: 0, leafSize: 1 }
-};
-var TAU6 = Math.PI * 2;
-var UP6 = new THREE13.Vector3(0, 1, 0);
-var lerp2 = THREE13.MathUtils.lerp;
-function create10(params14 = {}) {
-  const p = resolveParams(meta10.params, params14);
-  const season = SEASONS3[p.season];
-  const rng = createRng(p.seed * 7919 + 31);
-  const s = p.height / 10;
-  const crownBottom = rng.range(2.4, 3.2) * s;
-  const crownTop = p.height - 0.6 * s;
-  const crownWidth = rng.range(3.1, 3.8) * s;
-  const widest = rng.range(0.28, 0.4);
-  const envelope = (u) => {
-    if (u < widest) return crownWidth * (0.55 + 0.45 * Math.sin(u / widest * Math.PI * 0.5));
-    const v = (u - widest) / (1 - widest);
-    return crownWidth * Math.pow(Math.max(0, 1 - v * v), 0.62);
-  };
-  const crownLean = new THREE13.Vector3(rng.range(-0.35, 0.35) * s, 0, rng.range(-0.35, 0.35) * s);
-  const trunkPoints = [];
-  const leaderTop = crownBottom + (crownTop - crownBottom) * 0.82;
-  for (let i = 0; i < 6; i++) {
-    const t = i / 5;
-    const wobble = i === 0 ? 0 : 0.06 * s;
-    trunkPoints.push(new THREE13.Vector3(
-      crownLean.x * t * t + rng.range(-wobble, wobble),
-      leaderTop * t,
-      crownLean.z * t * t + rng.range(-wobble, wobble)
-    ));
-  }
-  const baseRadius = rng.range(0.3, 0.35) * s;
-  const trunk = buildTube(
-    trunkPoints,
-    (t) => lerp2(baseRadius, baseRadius * 0.2, Math.pow(t, 1.1)) + baseRadius * 0.4 * Math.exp(-t * 18),
-    { radialSegments: 7, lengthSegments: 12 }
-  );
-  const trunkCurve = trunk.userData.curve;
-  const wood = [trunk];
-  const clumps = [];
-  const minRadius = 0.035;
-  const crownAxis = (y) => {
-    const t = THREE13.MathUtils.clamp(y / p.height, 0, 1);
-    return new THREE13.Vector3(crownLean.x * t * t, y, crownLean.z * t * t);
-  };
-  const branchCount = rng.int(11, 14);
-  for (let i = 0; i < branchCount; i++) {
-    const u = i / (branchCount - 1);
-    const startT = lerp2(crownBottom / leaderTop, 0.95, Math.pow(u, 0.95));
-    const start = trunkCurve.getPoint(startT);
-    const azimuth = i * 2.39996 + rng.range(-0.4, 0.4);
-    const out = new THREE13.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
-    const elevation = lerp2(0.55, 1.05, u) + rng.range(-0.1, 0.1);
-    const tipY = Math.min(crownTop - 0.6 * s, start.y + Math.tan(elevation) * envelope((start.y - crownBottom) / (crownTop - crownBottom)) * 0.6);
-    const reach = envelope((tipY - crownBottom) / (crownTop - crownBottom)) * rng.range(0.74, 0.88);
-    const tip = crownAxis(tipY).addScaledVector(out, reach);
-    const middle = start.clone().lerp(tip, 0.5);
-    middle.y -= 0.12 * s;
-    const points = [start, start.clone().lerp(middle, 0.5), middle, tip];
-    const r0 = Math.max(minRadius, lerp2(0.1, 0.05, u) * s);
-    const branch = buildTube(points, (t) => lerp2(r0, minRadius, t), { radialSegments: 5, lengthSegments: 5, vOffset: rng.range(3, 30) });
-    wood.push(branch);
-    const curve = branch.userData.curve;
-    for (const [t, k] of [[0.55, 0.85], [1, 1]]) {
-      clumps.push({ center: curve.getPoint(t).add(new THREE13.Vector3(0, 0.2 * s, 0)), radius: lerp2(1.15, 0.85, u) * k * rng.range(0.9, 1.1) * s });
-    }
-    for (let j = 0; j < 2; j++) {
-      const from = curve.getPoint(rng.range(0.35, 0.8));
-      const side = azimuth + (j === 0 ? 1 : -1) * rng.range(0.5, 1);
-      const direction = new THREE13.Vector3(Math.cos(side), rng.range(0.6, 1.1), Math.sin(side)).normalize();
-      const length = rng.range(0.6, 1) * s;
-      const end = from.clone().addScaledVector(direction, length);
-      wood.push(buildTube([from, from.clone().addScaledVector(direction, length * 0.5), end], () => minRadius, {
-        radialSegments: 4,
-        lengthSegments: 2,
-        vOffset: rng.range(3, 30)
-      }));
-      if (j === 0) clumps.push({ center: end, radius: rng.range(0.6, 0.75) * s });
-    }
-  }
-  const fillCount = 16;
-  const fillStart = rng.range(0, TAU6);
-  for (let i = 0; i < fillCount; i++) {
-    const u = 0.12 + 0.82 * ((i + 0.5) / fillCount);
-    const y = lerp2(crownBottom, crownTop, u);
-    const angle = fillStart + i * 2.39996;
-    const radius = lerp2(1.1, 0.75, u) * s;
-    const reach = Math.max(0, envelope(u) - radius * 0.9);
-    clumps.push({ center: crownAxis(y).add(new THREE13.Vector3(Math.cos(angle) * reach, 0, Math.sin(angle) * reach)), radius });
-  }
-  clumps.push({ center: crownAxis(crownTop - 0.55 * s), radius: 0.75 * s });
-  const sprouts = [];
-  if (rng.chance(0.7)) {
-    const count = rng.int(2, 4);
-    const start = rng.range(0, TAU6);
-    for (let i = 0; i < count; i++) {
-      const angle = start + i * rng.range(0.9, 1.6);
-      const reach = baseRadius * 1.25;
-      const base = new THREE13.Vector3(Math.cos(angle) * reach, 0, Math.sin(angle) * reach);
-      const top = base.clone().add(new THREE13.Vector3(Math.cos(angle) * 0.15 * s, rng.range(0.45, 0.8) * s, Math.sin(angle) * 0.15 * s));
-      wood.push(buildTube([base, base.clone().lerp(top, 0.5), top], () => minRadius, { radialSegments: 4, lengthSegments: 2 }));
-      sprouts.push({ center: top.clone().add(new THREE13.Vector3(0, -0.05 * s, 0)), radius: rng.range(0.32, 0.42) * s });
-    }
-  }
-  const sway = { amplitude: 0.07 * s, height: p.height };
-  const group = new THREE13.Group();
-  group.name = meta10.name;
-  const woodMesh = new THREE13.Mesh(
-    mergeGeometries(wood),
-    createToonMaterial({
-      ramp: BARK_RAMP2,
-      steps: [0.3, 0.52, 0.76],
-      ink: BARK_INK2,
-      pattern: "furrow",
-      patternParams: [16, 4, 0.05, 0.4],
-      seed: p.seed % 97,
-      id: 10,
-      sway
-    })
-  );
-  woodMesh.name = "wood";
-  woodMesh.castShadow = true;
-  woodMesh.receiveShadow = true;
-  group.add(woodMesh);
-  const leaves = [];
-  const flowers = [];
-  if (season.density > 0) {
-    const canopyCenter = crownAxis(lerp2(crownBottom, crownTop, 0.42));
-    const density = season.density * p.fullness;
-    const leafSize = () => rng.range(0.1, 0.16) * season.leafSize;
-    const flowerRng = createRng(p.seed * 131 + 7);
-    for (const clump of [...clumps, ...sprouts]) {
-      const surface = fillClump(rng, leaves, {
-        center: clump.center,
-        radius: clump.radius,
-        count: Math.round(density * 60 * clump.radius * clump.radius),
-        canopyCenter,
-        leafSize,
-        squash: 0.9,
-        sag: 0.2,
-        canopyWeight: 0.55,
-        coreSize: 0.48,
-        shell: 0.5
-      });
-      if (season.flowers) {
-        for (const { position, direction } of surface) {
-          if (direction.y < -0.2 || !flowerRng.chance(0.36)) continue;
-          const hang = position.clone().addScaledVector(direction, 0.06);
-          const links = flowerRng.int(2, 3);
-          for (let n = 0; n < links; n++) {
-            hang.y -= 0.11;
-            flowers.push({
-              position: hang.clone().add(new THREE13.Vector3(flowerRng.range(-0.05, 0.05), 0, flowerRng.range(-0.05, 0.05))),
-              normal: leafNormal(hang, direction, canopyCenter, 0.55),
-              size: flowerRng.range(0.1, 0.13),
-              rotation: flowerRng.range(0, TAU6),
-              phase: flowerRng.next(),
-              occlusion: 1,
-              variation: flowerRng.next(),
-              flex: 0.9
-            });
-          }
-        }
-      }
-    }
-    if (p.season === "autumn") {
-      fallenLeaves(rng, leaves, { count: 40, minRadius: 0.5 * s, maxRadius: 3.2 * s, leafSize });
-    }
-    const addFoliage = (list, ramp, steps, name) => {
-      const geometry = buildLeafGeometry(list);
-      geometry.computeBoundingSphere();
-      geometry.boundingSphere.radius += 0.6;
-      const material = createToonMaterial({ ramp, steps, foliage: true, id: 11, sway });
-      const mesh = new THREE13.Mesh(geometry, material);
-      mesh.name = name;
-      mesh.customDepthMaterial = material.userData.depthMaterial;
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
-      group.add(mesh);
-    };
-    addFoliage(leaves, season.ramp, [0.22, 0.42, 0.6, 0.78], "leaves");
-    if (flowers.length > 0) addFoliage(flowers, FLOWER_RAMP, [0.3, 0.5, 0.7], "flowers");
-  }
-  group.userData.asset = { id: meta10.id, params: p, leaves: leaves.length, flowers: flowers.length };
-  return group;
-}
-
-// src/assets/nature/trees/oak.js
-var oak_exports = {};
-__export(oak_exports, {
-  create: () => create11,
-  dispose: () => disposeObject,
-  meta: () => meta11,
-  setWind: () => setWind,
-  tick: () => tick
-});
-import * as THREE14 from "three";
-var params11 = {
-  seed: seedParam("Change la silhouette : nombre et direction des grosses branches, torsions, masses de feuillage."),
-  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, il garde quelques feuilles mortes."),
-  height: numberParam("Hauteur", 9, 6, 12, "Hauteur de l'arbre ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
-  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.3, "Quantit\xE9 de feuilles (et de triangles).")
-};
-var meta11 = {
-  id: "nature/trees/oak",
-  name: "Ch\xEAne",
-  nameEn: "Oak tree",
-  category: "nature",
-  subcategory: "trees",
-  description: "Ch\xEAne trapu au tronc sombre et crevass\xE9, grosses branches tortueuses \xE9tal\xE9es, couronne large et bossel\xE9e en masses de feuillage. Quatre saisons (feuilles mortes gard\xE9es l'hiver), forme diff\xE9rente pour chaque graine.",
-  tags: [
-    "ch\xEAne",
-    "arbre",
-    "feuillu",
-    "v\xE9g\xE9tation",
-    "tronc crevass\xE9",
-    "couronne large",
-    "branches tortueuses",
-    "feuillage",
-    "feuilles mortes",
-    "vent",
-    "saisons",
-    "ext\xE9rieur",
-    "oak",
-    "tree",
-    "deciduous",
-    "vegetation",
-    "broad crown",
-    "gnarled",
-    "foliage",
-    "wind",
-    "seasons",
-    "outdoor",
-    "procedural"
-  ],
-  biomes: ["forest", "meadow", "village", "garden"],
-  version: 1,
-  added: "2026-11-16",
-  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
-  footprint: { radius: 5.8, height: 9.2 },
-  animated: ["wind"],
-  params: params11,
-  variants: variantsOf("season", params11.season)
-};
-var BARK_RAMP3 = ["#33283a", "#544549", "#786559", "#9d8a72"];
-var BARK_INK3 = "#1b141c";
-var SEASONS4 = {
-  spring: { ramp: ["#265743", "#3b7c47", "#5fa14a", "#96c656", "#d4e884"], density: 0.82, leafSize: 0.92 },
-  summer: { ramp: ["#173a38", "#21533d", "#33723f", "#56953f", "#98c250"], density: 1, leafSize: 1 },
-  autumn: { ramp: ["#4a2722", "#7b3b22", "#a65a25", "#cc8834", "#ebbb5e"], density: 0.86, leafSize: 1 },
-  // Marcescence : le chêne garde des feuilles mortes, brunes et clairsemées, jusqu'au printemps.
-  winter: { ramp: ["#3b2826", "#5d3b2b", "#83573a", "#a97a4c", "#cba36c"], density: 0.55, leafSize: 0.85 }
-};
-var TAU7 = Math.PI * 2;
-var lerp3 = THREE14.MathUtils.lerp;
-function create11(params14 = {}) {
-  const p = resolveParams(meta11.params, params14);
-  const season = SEASONS4[p.season];
-  const rng = createRng(p.seed * 7919 + 23);
-  const s = p.height / 9;
-  const boleHeight = rng.range(2.3, 3.3) * s;
-  const leanAzimuth = rng.range(0, TAU7);
-  const lean = rng.range(0.1, 0.45) * s;
-  const trunkPoints = [];
-  for (let i = 0; i < 5; i++) {
-    const t = i / 4;
-    const wobble = i === 0 ? 0 : 0.14 * s;
-    trunkPoints.push(new THREE14.Vector3(
-      Math.cos(leanAzimuth) * lean * t + rng.range(-wobble, wobble),
-      (boleHeight + 0.5 * s) * t,
-      Math.sin(leanAzimuth) * lean * t + rng.range(-wobble, wobble)
-    ));
-  }
-  const baseRadius = rng.range(0.46, 0.54) * s;
-  const trunk = buildTube(
-    trunkPoints,
-    (t) => lerp3(baseRadius, baseRadius * 0.78, t) + baseRadius * 0.55 * Math.exp(-t * 10),
-    { radialSegments: 8, lengthSegments: 8 }
-  );
-  const trunkCurve = trunk.userData.curve;
-  const wood = [trunk];
-  const clumps = [];
-  const minRadius = 0.04;
-  const limb = (start, azimuth, elevation, length, r0, r1, { kink = 0.22, droop = 0.15, sides = 6 } = {}) => {
-    const direction = new THREE14.Vector3(
-      Math.cos(azimuth) * Math.cos(elevation),
-      Math.sin(elevation),
-      Math.sin(azimuth) * Math.cos(elevation)
-    );
-    const side = new THREE14.Vector3(-Math.sin(azimuth), 0, Math.cos(azimuth));
-    const points = [start.clone()];
-    for (const t of [0.33, 0.66, 1]) {
-      const point = start.clone().addScaledVector(direction, length * t);
-      point.addScaledVector(side, rng.range(-kink, kink) * length * (t < 1 ? 1 : 0.5));
-      point.y += rng.range(-kink, kink) * length * 0.5 - droop * length * t * t;
-      points.push(point);
-    }
-    const tube = buildTube(points, (t) => lerp3(r0, r1, Math.pow(t, 0.8)), {
-      radialSegments: sides,
-      lengthSegments: 6,
-      vOffset: rng.range(3, 30)
-    });
-    wood.push(tube);
-    return tube.userData.curve;
-  };
-  const limbCount = rng.int(3, 5);
-  const limbStart = rng.range(0, TAU7);
-  const limbs = [];
-  for (let i = 0; i < limbCount; i++) {
-    limbs.push({
-      azimuth: limbStart + i / limbCount * TAU7 + rng.range(-0.45, 0.45),
-      elevation: rng.range(0.35, 0.8),
-      length: rng.range(3, 4.2) * s,
-      from: rng.range(0.78, 1)
-    });
-  }
-  if (rng.chance(0.55)) {
-    limbs.push({ azimuth: rng.range(0, TAU7), elevation: rng.range(0.08, 0.25), length: rng.range(3.4, 4.4) * s, from: rng.range(0.5, 0.65), low: true });
-  }
-  limbs.push({ azimuth: leanAzimuth + rng.range(-1, 1), elevation: rng.range(1.15, 1.4), length: rng.range(2.8, 3.6) * s, from: 1, leader: true });
-  for (const L of limbs) {
-    const start = trunkCurve.getPoint(L.from);
-    const r0 = baseRadius * (L.leader ? 0.6 : rng.range(0.5, 0.62));
-    const curve = limb(start, L.azimuth, L.elevation, L.length, r0, r0 * 0.4, { droop: L.leader ? 0 : 0.12 });
-    const tip = curve.getPoint(1);
-    clumps.push({ center: tip.clone().add(new THREE14.Vector3(0, 0.35 * s, 0)), radius: rng.range(1.35, 1.6) * s });
-    const forks = L.leader ? 2 : rng.int(2, 3);
-    for (let j = 0; j < forks; j++) {
-      const t = lerp3(0.4, 0.82, forks === 1 ? 0.5 : j / (forks - 1)) + rng.range(-0.06, 0.06);
-      const from = curve.getPoint(t);
-      const sign = j % 2 === 0 ? 1 : -1;
-      const azimuth = L.azimuth + sign * rng.range(0.55, 1.1);
-      const elevation = L.leader ? rng.range(0.5, 0.8) : rng.range(0.45, 0.95);
-      const length = L.length * rng.range(0.42, 0.58);
-      const childCurve = limb(from, azimuth, elevation, length, Math.max(minRadius, r0 * 0.45), minRadius, { sides: 5, droop: 0.05 });
-      const end = childCurve.getPoint(1);
-      clumps.push({ center: end.clone().add(new THREE14.Vector3(0, 0.3 * s, 0)), radius: rng.range(1.15, 1.4) * s });
-      if (L.low || rng.chance(0.35)) {
-        clumps.push({ center: childCurve.getPoint(0.5).add(new THREE14.Vector3(0, 0.5 * s, 0)), radius: rng.range(0.95, 1.1) * s });
-      }
-    }
-  }
-  const crownBase = trunkCurve.getPoint(1);
-  const fillStart = rng.range(0, TAU7);
-  for (let i = 0; i < 4; i++) {
-    const angle = fillStart + i * 2.39996;
-    const reach = rng.range(1, 1.8) * s;
-    clumps.push({
-      center: crownBase.clone().add(new THREE14.Vector3(Math.cos(angle) * reach, rng.range(2, 2.9) * s, Math.sin(angle) * reach)),
-      radius: rng.range(1.3, 1.55) * s
-    });
-  }
-  const sway = { amplitude: 0.06 * s, height: p.height };
-  const group = new THREE14.Group();
-  group.name = meta11.name;
-  const woodMesh = new THREE14.Mesh(
-    mergeGeometries(wood),
-    createToonMaterial({
-      ramp: BARK_RAMP3,
-      steps: [0.3, 0.52, 0.76],
-      ink: BARK_INK3,
-      pattern: "furrow",
-      patternParams: [16, 3, 0.1, 0.2],
-      seed: p.seed % 97,
-      id: 10,
-      sway
-    })
-  );
-  woodMesh.name = "wood";
-  woodMesh.castShadow = true;
-  woodMesh.receiveShadow = true;
-  group.add(woodMesh);
-  const leaves = [];
-  if (season.density > 0) {
-    const canopyCenter = crownBase.clone().add(new THREE14.Vector3(0, 2 * s, 0));
-    const density = season.density * p.fullness;
-    const leafSize = () => rng.range(0.12, 0.19) * season.leafSize;
-    const winter = p.season === "winter";
-    for (const clump of clumps) {
-      if (winter && !rng.chance(0.4)) continue;
-      const radius = winter ? clump.radius * 0.7 : clump.radius;
-      fillClump(rng, leaves, {
-        center: clump.center,
-        radius,
-        count: Math.round(density * 64 * radius * radius),
-        canopyCenter,
-        leafSize,
-        squash: 0.78,
-        sag: 0.1,
-        canopyWeight: 0.3,
-        core: p.season !== "winter",
-        flex: [0.4, 0.8],
-        coreSize: 0.5,
-        shell: 0.55
-      });
-    }
-    if (p.season === "autumn") {
-      fallenLeaves(rng, leaves, { count: 48, minRadius: 0.6 * s, maxRadius: 4.2 * s, leafSize });
-    }
-    const leafGeometry = buildLeafGeometry(leaves);
-    leafGeometry.computeBoundingSphere();
-    leafGeometry.boundingSphere.radius += 0.6;
-    const leafMaterial = createToonMaterial({
-      ramp: season.ramp,
-      steps: [0.24, 0.44, 0.62, 0.8],
-      foliage: true,
-      id: 11,
-      sway
-    });
-    const leafMesh = new THREE14.Mesh(leafGeometry, leafMaterial);
-    leafMesh.name = "leaves";
-    leafMesh.customDepthMaterial = leafMaterial.userData.depthMaterial;
-    leafMesh.castShadow = true;
-    leafMesh.receiveShadow = true;
-    group.add(leafMesh);
-  }
-  group.userData.asset = { id: meta11.id, params: p, leaves: leaves.length };
+  group.userData.asset = { id: meta.id, params: p };
   return group;
 }
 
 // src/worlds/kit/scatter.js
-import * as THREE15 from "three";
-var _frustum = new THREE15.Frustum();
-var _viewProjection = new THREE15.Matrix4();
-var _child = new THREE15.Matrix4();
+import * as THREE4 from "three";
+var _frustum = new THREE4.Frustum();
+var _viewProjection = new THREE4.Matrix4();
+var _child = new THREE4.Matrix4();
 var ScatterField = class {
   /**
    * @param {object} options
@@ -3493,7 +1510,7 @@ var ScatterField = class {
     }
   }) {
     this.bounds = bounds;
-    this.group = new THREE15.Group();
+    this.group = new THREE4.Group();
     this.group.name = "scatter";
     this.layers = [];
     this.classes = {};
@@ -3515,9 +1532,9 @@ var ScatterField = class {
             low = Math.min(low, h);
             high = Math.max(high, h);
           }
-          boxes.push(new THREE15.Box3(
-            new THREE15.Vector3(x - margin, low - 0.3, z - margin),
-            new THREE15.Vector3(x + cellSize + margin, high + 0.2 + height, z + cellSize + margin)
+          boxes.push(new THREE4.Box3(
+            new THREE4.Vector3(x - margin, low - 0.3, z - margin),
+            new THREE4.Vector3(x + cellSize + margin, high + 0.2 + height, z + cellSize + margin)
           ));
         }
       }
@@ -3602,11 +1619,11 @@ var ScatterField = class {
         for (const part of layer.parts) disposeObject(part);
         continue;
       }
-      const matrices = new THREE15.InstancedBufferAttribute(new Float32Array(layer.count * 16), 16);
-      matrices.setUsage(THREE15.DynamicDrawUsage);
+      const matrices = new THREE4.InstancedBufferAttribute(new Float32Array(layer.count * 16), 16);
+      matrices.setUsage(THREE4.DynamicDrawUsage);
       layer.matrices = matrices;
       for (const part of layer.parts) {
-        const mesh = new THREE15.InstancedMesh(part.geometry, part.material, 0);
+        const mesh = new THREE4.InstancedMesh(part.geometry, part.material, 0);
         mesh.name = `${layer.name} / ${part.name}`;
         mesh.instanceMatrix = matrices;
         mesh.customDepthMaterial = part.customDepthMaterial;
@@ -3641,7 +1658,7 @@ var ScatterField = class {
   update(camera, fraction = 1) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
-    const step = Math.round(THREE15.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
+    const step = Math.round(THREE4.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
     let changed = step !== this.fraction || this._first;
     this._first = false;
     this.fraction = step;
@@ -3697,8 +1714,8 @@ var ScatterField = class {
     this.layers = [];
   }
   _cellIndex(cls, x, z) {
-    const col = THREE15.MathUtils.clamp(Math.floor((x - this.bounds.minX) / cls.cellSize), 0, cls.cols - 1);
-    const row = THREE15.MathUtils.clamp(Math.floor((z - this.bounds.minZ) / cls.cellSize), 0, cls.rows - 1);
+    const col = THREE4.MathUtils.clamp(Math.floor((x - this.bounds.minX) / cls.cellSize), 0, cls.cols - 1);
+    const row = THREE4.MathUtils.clamp(Math.floor((z - this.bounds.minZ) / cls.cellSize), 0, cls.rows - 1);
     return row * cls.cols + col;
   }
   _refill(fraction) {
@@ -3744,7 +1761,7 @@ function shuffleMatrices(array, rng) {
 }
 
 // src/worlds/kit/cloud-sea.js
-import * as THREE16 from "three";
+import * as THREE5 from "three";
 var VERTEX2 = (
   /* glsl */
   `
@@ -3858,25 +1875,25 @@ function createCloudSea({ bounds, seaLevel = -60, mistLevel = -32, inset = 30 })
       quad([inner[side], inner[next], outer[next], outer[side]], [a.y, a.y, b.y, b.y], [a.density, a.density, b.density, b.density]);
     }
   }
-  const geometry = new THREE16.BufferGeometry();
-  geometry.setAttribute("position", new THREE16.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("aMist", new THREE16.Float32BufferAttribute(mist, 1));
+  const geometry = new THREE5.BufferGeometry();
+  geometry.setAttribute("position", new THREE5.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("aMist", new THREE5.Float32BufferAttribute(mist, 1));
   geometry.setIndex(index);
-  const material = new THREE16.ShaderMaterial({
+  const material = new THREE5.ShaderMaterial({
     name: "CloudSea",
-    side: THREE16.DoubleSide,
+    side: THREE5.DoubleSide,
     uniforms: {
       ...sharedUniforms,
-      uColors: { value: ["#93a7d6", "#c3cfec", "#e9eef8", "#ffffff"].map((hex) => new THREE16.Color(hex)).map((c) => new THREE16.Vector3(c.r, c.g, c.b)) },
-      uHaze: { value: new THREE16.Vector3(0.86, 0.94, 0.91) },
-      uSun: { value: new THREE16.Vector2(0, 1) },
-      uCenter: { value: new THREE16.Vector2(centerX, centerZ) },
+      uColors: { value: ["#93a7d6", "#c3cfec", "#e9eef8", "#ffffff"].map((hex) => new THREE5.Color(hex)).map((c) => new THREE5.Vector3(c.r, c.g, c.b)) },
+      uHaze: { value: new THREE5.Vector3(0.86, 0.94, 0.91) },
+      uSun: { value: new THREE5.Vector2(0, 1) },
+      uCenter: { value: new THREE5.Vector2(centerX, centerZ) },
       uFade: { value: reach * 0.9 }
     },
     vertexShader: VERTEX2,
     fragmentShader: FRAGMENT2
   });
-  const mesh = new THREE16.Mesh(geometry, material);
+  const mesh = new THREE5.Mesh(geometry, material);
   mesh.name = "cloud sea";
   mesh.frustumCulled = false;
   mesh.matrixAutoUpdate = false;
@@ -3901,10 +1918,10 @@ function createCloudSea({ bounds, seaLevel = -60, mistLevel = -32, inset = 30 })
 }
 
 // src/worlds/kit/sky.js
-import * as THREE18 from "three";
+import * as THREE7 from "three";
 
 // src/assets/nature/sky/cloud.js
-import * as THREE17 from "three";
+import * as THREE6 from "three";
 var KINDS = {
   cumulus: {
     label: "Cumulus",
@@ -3934,12 +1951,12 @@ var KINDS = {
     depth: 0.85
   }
 };
-var params12 = {
+var params2 = {
   seed: seedParam("Change la silhouette : nombre, taille et place des boules, tours qui montent, longueur du nuage."),
   kind: choiceParam("Type", KINDS, "Cumulus blanc et bomb\xE9, stratus en long banc plat, ou nuage d'orage sombre et haut."),
   size: numberParam("Longueur", 5, 2.5, 9, "Longueur du nuage ; toute la forme garde ses proportions.", { step: 0.5, unit: "m" })
 };
-var meta12 = {
+var meta2 = {
   id: "nature/sky/cloud",
   name: "Nuage",
   nameEn: "Cloud",
@@ -3972,12 +1989,12 @@ var meta12 = {
   units: "1 unit\xE9 = 1 m\xE8tre (taille de pr\xE9sentation : un monde l'agrandit et le place haut) ; l'origine est au sol, le dessous du nuage flotte \xE0 1,2 m",
   footprint: { radius: 3, height: 4 },
   animated: [],
-  params: params12,
-  variants: variantsOf("kind", params12.kind)
+  params: params2,
+  variants: variantsOf("kind", params2.kind)
 };
 var BASE = 1.2;
 function puff(center, radius, squash, floor) {
-  const geometry = new THREE17.SphereGeometry(radius, 12, 8);
+  const geometry = new THREE6.SphereGeometry(radius, 12, 8);
   geometry.deleteAttribute("uv");
   geometry.scale(1, squash, 1);
   geometry.translate(center.x, center.y, center.z);
@@ -3991,8 +2008,8 @@ function puff(center, radius, squash, floor) {
   }
   return geometry;
 }
-function create12(given = {}) {
-  const p = resolveParams(meta12.params, given);
+function create2(given = {}) {
+  const p = resolveParams(meta2.params, given);
   const kind = KINDS[p.kind];
   const shape = createRng(p.seed * 7919 + 17);
   const length = p.size * shape.range(0.85, 1.1);
@@ -4005,11 +2022,11 @@ function create12(given = {}) {
   for (let i = 0; i < count; i++) {
     const u = count === 1 ? 0 : i / (count - 1) * 2 - 1;
     const bell = Math.exp(-((u - peak) ** 2) * 1.6);
-    const radius = p.size * THREE17.MathUtils.lerp(kind.radius[0], kind.radius[1], bell) * shape.range(0.85, 1.15);
+    const radius = p.size * THREE6.MathUtils.lerp(kind.radius[0], kind.radius[1], bell) * shape.range(0.85, 1.15);
     const x = u * (half - radius * 0.7) + shape.range(-0.1, 0.1) * radius;
     const z = shape.range(-0.35, 0.35) * radius * kind.depth;
     const y = floor + radius * kind.squash * shape.range(0.15, 0.4);
-    puffs.push({ center: new THREE17.Vector3(x, y, z), radius });
+    puffs.push({ center: new THREE6.Vector3(x, y, z), radius });
   }
   for (let i = 0; i < count - 1; i++) {
     const a = puffs[i];
@@ -4036,8 +2053,8 @@ function create12(given = {}) {
     if (p.kind === "storm") base.push({ center, radius });
   }
   for (const { center, radius } of puffs) geometries.push(puff(center, radius, kind.squash, floor));
-  const group = new THREE17.Group();
-  group.name = meta12.name;
+  const group = new THREE6.Group();
+  group.name = meta2.name;
   const material = createToonMaterial({
     ramp: kind.ramp,
     steps: [0.34, 0.55, 0.76],
@@ -4045,26 +2062,26 @@ function create12(given = {}) {
     shadowLit: 0.5,
     id: 22
   });
-  const mesh = new THREE17.Mesh(mergeGeometries(geometries), material);
+  const mesh = new THREE6.Mesh(mergeGeometries(geometries), material);
   mesh.name = "cloud";
   mesh.castShadow = true;
   mesh.receiveShadow = true;
   group.add(mesh);
-  group.userData.asset = { id: meta12.id, params: p, puffs: puffs.length };
+  group.userData.asset = { id: meta2.id, params: p, puffs: puffs.length };
   return group;
 }
 
 // src/worlds/kit/sky.js
-var WORLD_UP = new THREE18.Vector3(0, 1, 0);
-function createDaylight({ azimuth = THREE18.MathUtils.degToRad(-17), elevation = THREE18.MathUtils.degToRad(44), mapSize = 1024 } = {}) {
-  const light = new THREE18.DirectionalLight(16777215, 1);
+var WORLD_UP = new THREE7.Vector3(0, 1, 0);
+function createDaylight({ azimuth = THREE7.MathUtils.degToRad(-17), elevation = THREE7.MathUtils.degToRad(44), mapSize = 1024 } = {}) {
+  const light = new THREE7.DirectionalLight(16777215, 1);
   light.castShadow = true;
   light.shadow.mapSize.set(mapSize, mapSize);
   light.shadow.bias = -15e-4;
   light.shadow.normalBias = 0.05;
-  const direction = new THREE18.Vector3();
-  const right = new THREE18.Vector3();
-  const up = new THREE18.Vector3();
+  const direction = new THREE7.Vector3();
+  const right = new THREE7.Vector3();
+  const up = new THREE7.Vector3();
   const DISTANCE = 140;
   let radius = 0;
   const daylight = {
@@ -4091,7 +2108,7 @@ function createDaylight({ azimuth = THREE18.MathUtils.degToRad(-17), elevation =
      * @param {number} reach rayon à couvrir (m)
      */
     update(target, reach) {
-      const wanted = Math.ceil(THREE18.MathUtils.clamp(reach, 16, 90) / 8) * 8;
+      const wanted = Math.ceil(THREE7.MathUtils.clamp(reach, 16, 90) / 8) * 8;
       const camera = light.shadow.camera;
       if (wanted !== radius) {
         radius = wanted;
@@ -4120,7 +2137,7 @@ function createDaylight({ azimuth = THREE18.MathUtils.degToRad(-17), elevation =
   return daylight;
 }
 function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36] }) {
-  const group = new THREE18.Group();
+  const group = new THREE7.Group();
   group.name = "cloud shadows";
   const margin = 45;
   const span = {
@@ -4130,14 +2147,14 @@ function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36] }) {
     maxZ: bounds.maxZ + margin
   };
   const prototypes = [
-    create12({ seed: rng.int(1, 400), kind: "cumulus", size: 9 }),
-    create12({ seed: rng.int(1, 400), kind: "cumulus", size: 7 })
+    create2({ seed: rng.int(1, 400), kind: "cumulus", size: 9 }),
+    create2({ seed: rng.int(1, 400), kind: "cumulus", size: 7 })
   ].map((prototype) => prototype.children[0]);
   for (const prototype of prototypes) prototype.material.dispose();
-  const shadowOnly = new THREE18.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
+  const shadowOnly = new THREE7.MeshBasicMaterial({ colorWrite: false, depthWrite: false });
   const clouds = [];
   for (let i = 0; i < count; i++) {
-    const mesh = new THREE18.Mesh(prototypes[rng.int(0, 1)].geometry, shadowOnly);
+    const mesh = new THREE7.Mesh(prototypes[rng.int(0, 1)].geometry, shadowOnly);
     mesh.name = "cloud shadow";
     mesh.castShadow = true;
     mesh.position.set(rng.range(span.minX, span.maxX), rng.range(altitude[0], altitude[1]), rng.range(span.minZ, span.maxZ));
@@ -4148,14 +2165,29 @@ function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36] }) {
   }
   return {
     group,
-    /** @param {number} dt secondes écoulées depuis l'image précédente */
-    update(dt) {
+    /**
+     * @param {number} dt secondes écoulées depuis l'image précédente
+     * @param {THREE.Vector3} [center] monde sans bord : les nuages dérivent dans l'emprise donnée, recentrée sur ce
+     *   point (le promeneur) ; un nuage qui sort d'un côté revient de l'autre
+     */
+    update(dt, center) {
       const wind = sharedUniforms.uWindDir.value;
       const strength = sharedUniforms.uWindStrength.value;
       for (const cloud of clouds) {
         const position = cloud.mesh.position;
         position.x += wind.x * cloud.speed * strength * dt;
         position.z += wind.y * cloud.speed * strength * dt;
+        if (center) {
+          const width = span.maxX - span.minX;
+          const depth = span.maxZ - span.minZ;
+          const x = position.x - center.x;
+          const z = position.z - center.z;
+          if (x > span.maxX) position.x -= width * Math.ceil((x - span.maxX) / width);
+          else if (x < span.minX) position.x += width * Math.ceil((span.minX - x) / width);
+          if (z > span.maxZ) position.z -= depth * Math.ceil((z - span.maxZ) / depth);
+          else if (z < span.minZ) position.z += depth * Math.ceil((span.minZ - z) / depth);
+          continue;
+        }
         if (position.x > span.maxX) position.x = span.minX;
         else if (position.x < span.minX) position.x = span.maxX;
         if (position.z > span.maxZ) position.z = span.minZ;
@@ -4171,7 +2203,7 @@ function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36] }) {
 }
 
 // src/worlds/kit/terrain.js
-import * as THREE19 from "three";
+import * as THREE8 from "three";
 function groundNormal(height, x, z, target, e = 0.4) {
   const dx = (height(x + e, z) - height(x - e, z)) / (2 * e);
   const dz = (height(x, z + e) - height(x, z - e)) / (2 * e);
@@ -4205,9 +2237,9 @@ function buildIslandBand({ bounds, top, bottom, spacing = 0.5 }) {
       index.push(a, b, a + 1, b, b + 1, a + 1);
     }
   }
-  const geometry = new THREE19.BufferGeometry();
-  geometry.setAttribute("position", new THREE19.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("normal", new THREE19.Float32BufferAttribute(normals, 3));
+  const geometry = new THREE8.BufferGeometry();
+  geometry.setAttribute("position", new THREE8.Float32BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE8.Float32BufferAttribute(normals, 3));
   geometry.setIndex(index);
   return geometry;
 }
@@ -4270,10 +2302,2895 @@ function buildIslandUnderside({ bounds, top, depth, noise, spacing = 2, rings = 
     push(last[(k + 1) % count]);
     push(tip);
   }
-  const geometry = new THREE19.BufferGeometry();
-  geometry.setAttribute("position", new THREE19.Float32BufferAttribute(positions, 3));
+  const geometry = new THREE8.BufferGeometry();
+  geometry.setAttribute("position", new THREE8.Float32BufferAttribute(positions, 3));
   geometry.computeVertexNormals();
   return geometry;
+}
+function buildGroundPatch({ size, spacing = 0.5, origin, height }) {
+  const n = Math.max(1, Math.round(size / spacing));
+  const step = size / n;
+  const half = size / 2;
+  const [ox, oz] = origin;
+  const side = n + 3;
+  const heights = new Float32Array(side * side);
+  for (let i = 0; i < side; i++) {
+    for (let j = 0; j < side; j++) heights[i * side + j] = height(ox - half + (j - 1) * step, oz - half + (i - 1) * step);
+  }
+  const count = (n + 1) * (n + 1);
+  const positions = new Float32Array(count * 3);
+  const normals = new Float32Array(count * 3);
+  const ground = new Float32Array(count * 2);
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      const v = i * (n + 1) + j;
+      const g = (i + 1) * side + (j + 1);
+      const x = -half + j * step;
+      const z = -half + i * step;
+      positions[v * 3] = x;
+      positions[v * 3 + 1] = heights[g];
+      positions[v * 3 + 2] = z;
+      const dx = (heights[g + 1] - heights[g - 1]) / (2 * step);
+      const dz = (heights[g + side] - heights[g - side]) / (2 * step);
+      const len = Math.hypot(dx, 1, dz);
+      normals[v * 3] = -dx / len;
+      normals[v * 3 + 1] = 1 / len;
+      normals[v * 3 + 2] = -dz / len;
+      ground[v * 2] = ox + x;
+      ground[v * 2 + 1] = oz + z;
+    }
+  }
+  const index = new Uint16Array(n * n * 6);
+  const at = (i, j) => i * (n + 1) + j;
+  let k = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      const quad = (i + j) % 2 === 0 ? [at(i, j), at(i + 1, j), at(i, j + 1), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1)] : [at(i, j), at(i + 1, j + 1), at(i, j + 1), at(i, j), at(i + 1, j), at(i + 1, j + 1)];
+      index.set(quad, k);
+      k += 6;
+    }
+  }
+  const geometry = new THREE8.BufferGeometry();
+  geometry.setAttribute("position", new THREE8.BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE8.BufferAttribute(normals, 3));
+  geometry.setAttribute("aGround", new THREE8.BufferAttribute(ground, 2));
+  geometry.setIndex(new THREE8.BufferAttribute(index, 1));
+  return geometry;
+}
+
+// src/worlds/summer-meadow-endless.js
+import * as THREE22 from "three";
+
+// src/worlds/kit/streaming-scatter.js
+import * as THREE9 from "three";
+var _frustum2 = new THREE9.Frustum();
+var _viewProjection2 = new THREE9.Matrix4();
+var _identity = new THREE9.Matrix4();
+var StreamingScatter = class {
+  /**
+   * @param {object} options
+   * @param {number} options.chunkSize côté d'un morceau (m), multiple du côté des cases de chaque famille
+   * @param {(x: number, z: number) => number} [options.heightAt] hauteur du sol (bornes des cases au plus juste)
+   * @param {Record<string, {cellSize: number, height: number, margin: number}>} [options.classes] familles de
+   *   couches, comme pour `ScatterField`
+   */
+  constructor({
+    chunkSize,
+    heightAt = () => 0,
+    classes = {
+      fine: { cellSize: 4, height: 1.6, margin: 1.6 },
+      low: { cellSize: 8, height: 3, margin: 3.5 },
+      tall: { cellSize: 4, height: 15, margin: 8.5 }
+    }
+  }) {
+    this.chunkSize = chunkSize;
+    this.heightAt = heightAt;
+    this.group = new THREE9.Group();
+    this.group.name = "streaming scatter";
+    this.layers = [];
+    this.classes = {};
+    this.fraction = 1;
+    this._dirty = true;
+    this._chunk = null;
+    for (const [name, { cellSize, height, margin }] of Object.entries(classes)) {
+      const per = Math.round(chunkSize / cellSize);
+      if (Math.abs(per * cellSize - chunkSize) > 1e-6) throw new Error(`streaming-scatter : ${chunkSize} m n'est pas un multiple de ${cellSize} m`);
+      this.classes[name] = { name, cellSize, per, height, margin, cells: [], visible: [], previous: [] };
+    }
+  }
+  /**
+   * Déclare une couche à partir d'un asset modèle (même contrat que `ScatterField.addLayer`).
+   * @returns {{add: (matrix: THREE.Matrix4) => void, index: number, triangles: number}}
+   */
+  addLayer(prototype, { reach = "low", thin = false, castShadow, skip = [] } = {}) {
+    const parts = [];
+    prototype.updateMatrixWorld(true);
+    prototype.traverse((child) => {
+      if (!child.isMesh) return;
+      if (skip.includes(child.name)) {
+        disposeObject(child);
+        return;
+      }
+      parts.push(child);
+    });
+    const cls = this.classes[reach];
+    const layer = {
+      name: prototype.name,
+      reach,
+      thin,
+      index: this.layers.length,
+      meshes: [],
+      matrices: null,
+      capacity: 0,
+      triangles: 0,
+      add: (matrix) => {
+        const chunk = this._chunk;
+        const e = matrix.elements;
+        const col = THREE9.MathUtils.clamp(Math.floor((e[12] - chunk.minX) / cls.cellSize), 0, cls.per - 1);
+        const row = THREE9.MathUtils.clamp(Math.floor((e[14] - chunk.minZ) / cls.cellSize), 0, cls.per - 1);
+        const lists = chunk.pending[reach][row * cls.per + col];
+        (lists[layer.index] ??= []).push(...e);
+      }
+    };
+    for (const part of parts) {
+      const geometry = part.geometry;
+      layer.triangles += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
+      const mesh = new THREE9.InstancedMesh(geometry, part.material, 0);
+      mesh.name = `${layer.name} / ${part.name}`;
+      mesh.customDepthMaterial = part.customDepthMaterial;
+      mesh.castShadow = castShadow ?? part.castShadow;
+      mesh.receiveShadow = part.receiveShadow;
+      mesh.frustumCulled = false;
+      mesh.visible = false;
+      mesh.matrixAutoUpdate = false;
+      if (!part.matrixWorld.equals(_identity)) mesh.matrix.copy(part.matrixWorld);
+      layer.meshes.push(mesh);
+      this.group.add(mesh);
+    }
+    this._grow(layer, 256);
+    this.layers.push(layer);
+    return layer;
+  }
+  /**
+   * Commence un morceau : les `add` qui suivent lui appartiennent, jusqu'à `endChunk`.
+   * @param {number} minX coin du morceau (m)
+   * @param {number} minZ
+   */
+  beginChunk(minX, minZ) {
+    const pending = {};
+    for (const [name, cls] of Object.entries(this.classes)) {
+      pending[name] = Array.from({ length: cls.per * cls.per }, () => []);
+    }
+    this._chunk = { minX, minZ, pending };
+  }
+  /**
+   * Fige le morceau en cours et le met en jeu.
+   * @param {{next: () => number}} rng mélange l'ordre des copies fines de chaque case
+   * @returns {object} le morceau, à rendre à `removeChunk`
+   */
+  endChunk(rng) {
+    const { minX, minZ, pending } = this._chunk;
+    this._chunk = null;
+    const chunk = { cells: [] };
+    for (const [name, cls] of Object.entries(this.classes)) {
+      pending[name].forEach((lists, index) => {
+        if (!lists.some(Boolean)) return;
+        const x = minX + index % cls.per * cls.cellSize;
+        const z = minZ + Math.floor(index / cls.per) * cls.cellSize;
+        let low = Infinity;
+        let high = -Infinity;
+        for (let k = 0; k < 9; k++) {
+          const h = this.heightAt(x + k % 3 / 2 * cls.cellSize, z + Math.floor(k / 3) / 2 * cls.cellSize);
+          low = Math.min(low, h);
+          high = Math.max(high, h);
+        }
+        const cell = {
+          cls,
+          box: new THREE9.Box3(
+            new THREE9.Vector3(x - cls.margin, low - 0.3, z - cls.margin),
+            new THREE9.Vector3(x + cls.cellSize + cls.margin, high + 0.2 + cls.height, z + cls.cellSize + cls.margin)
+          ),
+          // Une liste de matrices par couche (null : rien de cette couche dans la case).
+          data: lists.map((list, layerIndex) => {
+            if (!list) return null;
+            const array = new Float32Array(list);
+            if (this.layers[layerIndex].thin) shuffleMatrices2(array, rng);
+            return array;
+          }),
+          dither: cellDither2(x, z)
+        };
+        cls.cells.push(cell);
+        chunk.cells.push(cell);
+      });
+    }
+    this._dirty = true;
+    return chunk;
+  }
+  /** Retire un morceau : ses copies ne sont plus dessinées, ses matrices sont libérées. */
+  removeChunk(chunk) {
+    const gone = new Set(chunk.cells);
+    for (const cls of Object.values(this.classes)) {
+      if (cls.cells.some((cell) => gone.has(cell))) cls.cells = cls.cells.filter((cell) => !gone.has(cell));
+    }
+    chunk.cells.length = 0;
+    this._dirty = true;
+  }
+  /**
+   * À appeler à chaque image avant le rendu (mêmes règles que `ScatterField.update`) : `fraction` ne dépend que
+   * du cadrage, jamais de ce qui est dans la vue, sinon l'herbe clignoterait pendant la marche.
+   * @param {THREE.Camera} camera
+   * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
+   */
+  update(camera, fraction = 1) {
+    _viewProjection2.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    _frustum2.setFromProjectionMatrix(_viewProjection2);
+    const step = Math.round(THREE9.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
+    let changed = step !== this.fraction || this._dirty;
+    this._dirty = false;
+    this.fraction = step;
+    for (const cls of Object.values(this.classes)) {
+      const { cells, visible, previous } = cls;
+      let length = 0;
+      for (let i = 0; i < cells.length; i++) {
+        if (_frustum2.intersectsBox(cells[i].box)) visible[length++] = cells[i];
+      }
+      visible.length = length;
+      let same = length === previous.length;
+      for (let i = 0; same && i < length; i++) same = visible[i] === previous[i];
+      if (!same) {
+        previous.length = length;
+        for (let i = 0; i < length; i++) previous[i] = visible[i];
+        changed = true;
+      }
+    }
+    if (changed) this._refill(step);
+    return changed;
+  }
+  /** Copies et triangles dessinés à cet instant (hors passe d'ombre). */
+  stats() {
+    let instances = 0;
+    let triangles = 0;
+    let drawCalls = 0;
+    for (const layer of this.layers) {
+      const count = layer.meshes[0]?.count ?? 0;
+      instances += count;
+      triangles += count * layer.triangles;
+      if (count > 0) drawCalls += layer.meshes.length;
+    }
+    let cells = 0;
+    for (const cls of Object.values(this.classes)) cells += cls.cells.length;
+    return { instances, triangles, drawCalls, cells };
+  }
+  dispose() {
+    for (const layer of this.layers) {
+      for (const mesh of layer.meshes) {
+        disposeObject(mesh);
+        mesh.dispose();
+      }
+    }
+    this.group.clear();
+    this.layers = [];
+    for (const cls of Object.values(this.classes)) cls.cells = cls.visible = cls.previous = [];
+  }
+  /** Agrandit le tampon de matrices d'une couche (rare : la place gagnée sert aux morceaux suivants). */
+  _grow(layer, capacity) {
+    const matrices = new THREE9.InstancedBufferAttribute(new Float32Array(capacity * 16), 16);
+    matrices.setUsage(THREE9.DynamicDrawUsage);
+    for (const mesh of layer.meshes) {
+      if (layer.matrices) mesh.dispose();
+      mesh.instanceMatrix = matrices;
+    }
+    layer.matrices = matrices;
+    layer.capacity = capacity;
+  }
+  _refill(fraction) {
+    for (const layer of this.layers) {
+      const cls = this.classes[layer.reach];
+      const visible = cls.visible;
+      const thinned = layer.thin && fraction < 1;
+      let needed = 0;
+      for (let i = 0; i < visible.length; i++) {
+        const cell = visible[i].data[layer.index];
+        if (!cell) continue;
+        const total = cell.length / 16;
+        needed += thinned ? Math.floor(total * fraction + ditherFor(visible[i], layer.index)) : total;
+      }
+      if (needed > layer.capacity) this._grow(layer, Math.ceil(needed * 1.5));
+      const array = layer.matrices.array;
+      let offset = 0;
+      for (let i = 0; i < visible.length; i++) {
+        const cell = visible[i].data[layer.index];
+        if (!cell) continue;
+        const total = cell.length / 16;
+        const count = thinned ? Math.floor(total * fraction + ditherFor(visible[i], layer.index)) : total;
+        if (count === 0) continue;
+        array.set(count === total ? cell : cell.subarray(0, count * 16), offset);
+        offset += count * 16;
+      }
+      layer.matrices.clearUpdateRanges();
+      if (offset > 0) {
+        layer.matrices.addUpdateRange(0, offset);
+        layer.matrices.needsUpdate = true;
+      }
+      for (const mesh of layer.meshes) {
+        mesh.count = offset / 16;
+        mesh.visible = offset > 0;
+      }
+    }
+  }
+};
+function cellDither2(x, z) {
+  const value = Math.sin(x * 12.9898 + z * 4.1414) * 43758.5453;
+  return value - Math.floor(value);
+}
+function ditherFor(cell, layerIndex) {
+  const value = Math.sin(cell.dither * 91.7 + layerIndex * 78.233) * 43758.5453;
+  return value - Math.floor(value);
+}
+function shuffleMatrices2(array, rng) {
+  const count = array.length / 16;
+  const swap = new Float32Array(16);
+  for (let i = count - 1; i > 0; i--) {
+    const j = Math.floor(rng.next() * (i + 1));
+    if (i === j) continue;
+    swap.set(array.subarray(i * 16, i * 16 + 16));
+    array.copyWithin(i * 16, j * 16, j * 16 + 16);
+    array.set(swap, j * 16);
+  }
+}
+
+// src/worlds/summer-meadow-rules.js
+import * as THREE21 from "three";
+
+// src/assets/nature/plants/flower-clump.js
+import * as THREE10 from "three";
+var params3 = {
+  seed: seedParam("Change le bouquet : nombre et hauteur des tiges, inclinaison, place des fleurs et des feuilles."),
+  species: choiceParam(
+    "Fleur",
+    FLOWERS,
+    "Marguerite blanche \xE0 c\u0153ur jaune, coquelicot rouge \xE0 c\u0153ur noir, bleuet bleu, bouton d'or, ou \xE9pis de lavande."
+  ),
+  season: seasonParam("Printemps : boutons et fleurs m\xEAl\xE9s. \xC9t\xE9 : pleine floraison. Automne : t\xEAtes fan\xE9es. Hiver : tiges s\xE8ches."),
+  count: numberParam("Tiges", 7, 3, 15, "Nombre de tiges fleuries (tripl\xE9 pour la lavande).", { step: 1 }),
+  height: numberParam("Hauteur", 1, 0.6, 1.5, "Hauteur relative \xE0 la taille naturelle de la fleur (35 \xE0 55 cm).")
+};
+var meta3 = {
+  id: "nature/plants/flower-clump",
+  name: "Massif de fleurs",
+  nameEn: "Flower clump",
+  category: "nature",
+  subcategory: "plants",
+  description: "Petit massif de fleurs des champs : tiges fines au-dessus d'une rosette de feuilles, corolles et c\u0153urs qui ondulent au vent. Cinq fleurs (marguerite, coquelicot, bleuet, bouton d'or, lavande) et quatre saisons.",
+  tags: [
+    "fleurs",
+    "massif de fleurs",
+    "marguerite",
+    "coquelicot",
+    "bleuet",
+    "bouton d'or",
+    "lavande",
+    "fleur des champs",
+    "plante",
+    "v\xE9g\xE9tation",
+    "jardin",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "flowers",
+    "flower clump",
+    "daisy",
+    "poppy",
+    "cornflower",
+    "buttercup",
+    "lavender",
+    "wildflower",
+    "plant",
+    "vegetation",
+    "garden",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["meadow", "garden", "village", "forest", "mountain"],
+  version: 2,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au c\u0153ur du massif",
+  footprint: { radius: 0.7, height: 0.68 },
+  animated: ["wind"],
+  params: params3,
+  variants: variantsOf("species", params3.species)
+};
+var TAU = Math.PI * 2;
+var FLEX = 0.3;
+var HEART_LIFT = 0.03;
+var HEART = starOutline(8);
+var UP = new THREE10.Vector3(0, 1, 0);
+var SPECIES = {
+  daisy: { height: 0.45, head: 0.12, heart: 0.05, outline: starOutline(12, 0.8), leaves: 7, curve: 0.08, stretch: [1, 0.85] },
+  poppy: { height: 0.55, head: 0.12, heart: 0.045, outline: starOutline(5, 0.86), leaves: 6, curve: 0.18, stretch: [1, 0.8] },
+  cornflower: { height: 0.5, head: 0.1, heart: 0.04, outline: starOutline(8, 0.62), leaves: 5, curve: 0.1, stretch: [1, 0.9] },
+  buttercup: { height: 0.35, head: 0.085, heart: 0.032, outline: starOutline(5, 0.86), leaves: 8, curve: 0.12, stretch: [1, 0.85] },
+  lavender: { height: 0.5, head: 0.042, heart: 0, outline: starOutline(5), leaves: 12, curve: 0.05, stretch: [1, 1.3], spike: 5 }
+};
+var LAVENDER_LEAVES = ["#2e3f4a", "#455a5a", "#647a6a", "#8ea084", "#bfc8a6"];
+function create3(given = {}) {
+  const p = resolveParams(meta3.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const kind = SPECIES[p.species];
+  const colors = FLOWERS[p.species];
+  const lavender = p.species === "lavender";
+  const H = kind.height * p.height;
+  const season = p.season;
+  const spread = shape.range(0.35, 0.6) * (lavender ? 1.2 : 1);
+  const leanAngle = shape.range(0, TAU);
+  const lean = new THREE10.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.18) * H);
+  const unevenness = shape.range(0.15, 0.4);
+  const footRadius = shape.range(0.06, 0.13) * (lavender ? 1.4 : 1);
+  const blades = [];
+  const petals = [];
+  const hearts = [];
+  const stemCount = Math.round(p.count * (lavender ? 3 : 1) * shape.range(0.85, 1.15));
+  const blade = (base, bend, tip, width, tipWidth, normal, flex, baseOcclusion = 0, phase = detail.next()) => {
+    blades.push({ base, bend, tip, width, tipWidth, normal, phase, variation: detail.next(), flex, baseOcclusion });
+  };
+  for (let i = 0; i < stemCount; i++) {
+    const azimuth = i * 2.39996 + shape.range(-0.5, 0.5);
+    const out = new THREE10.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+    const reach = Math.sqrt(shape.next());
+    const base = out.clone().multiplyScalar(footRadius * reach);
+    const h = H * (1 - unevenness * shape.next()) * (season === "winter" ? 0.85 : 1);
+    const side = new THREE10.Vector3(-out.z, 0, out.x).multiplyScalar(shape.range(-1, 1) * kind.curve * h);
+    const tip = base.clone().addScaledVector(out, spread * h * (0.4 + reach)).addScaledVector(UP, h).addScaledVector(lean, h / H);
+    const bend = base.clone().addScaledVector(UP, h * 0.6).add(side).addScaledVector(lean, 0.3 * (h / H));
+    const normal = out.clone().addScaledVector(UP, 1.2).normalize();
+    const stemPhase = detail.next();
+    blade(base, bend, tip, 0.05, 0.035, normal, FLEX, 0.1, stemPhase);
+    const headNormal = out.clone().multiplyScalar(0.4).addScaledVector(UP, 1).normalize();
+    const direction = tip.clone().sub(bend).normalize();
+    if (lavender) {
+      if (season === "winter" && detail.chance(0.4)) continue;
+      for (let k = 0; k < kind.spike; k++) {
+        const t = k / (kind.spike - 1);
+        petals.push({
+          position: tip.clone().addScaledVector(direction, -0.14 * H * (1 - t) + 0.02),
+          outline: kind.outline,
+          size: kind.head * (1 - 0.35 * t) * detail.range(0.9, 1.1),
+          stretch: kind.stretch,
+          rotation: detail.range(-0.4, 0.4),
+          normal: headNormal,
+          phase: detail.next(),
+          variation: detail.next(),
+          flex: FLEX,
+          occlusion: 0.75 + 0.25 * t
+        });
+      }
+      continue;
+    }
+    const roll = detail.next();
+    const state = season === "spring" ? roll < 0.45 ? "bud" : "open" : season === "summer" ? roll < 0.1 ? "bud" : "open" : season === "autumn" ? roll < 0.35 ? "open" : "seed" : roll < 0.6 ? "seed" : "none";
+    const head = tip.clone().addScaledVector(direction, 0.02);
+    const size = kind.head * detail.range(0.85, 1.15);
+    if (state === "open") {
+      petals.push({
+        position: head,
+        outline: kind.outline,
+        size,
+        stretch: kind.stretch,
+        rotation: detail.range(0, TAU),
+        normal: headNormal,
+        phase: stemPhase,
+        variation: detail.next(),
+        flex: FLEX
+      });
+      hearts.push({
+        position: head.clone(),
+        outline: HEART,
+        lift: HEART_LIFT,
+        size: kind.heart,
+        stretch: [1, 0.85],
+        rotation: 0,
+        normal: headNormal,
+        phase: stemPhase,
+        variation: detail.next(),
+        flex: FLEX
+      });
+    } else if (state === "bud") {
+      petals.push({
+        position: head,
+        outline: starOutline(5, 0.8),
+        size: size * 0.45,
+        stretch: [0.8, 1.1],
+        rotation: 0,
+        normal: headNormal,
+        phase: stemPhase,
+        variation: detail.next(),
+        flex: FLEX,
+        occlusion: 0.35
+      });
+    } else if (state === "seed") {
+      hearts.push({
+        position: head,
+        outline: starOutline(6, 0.8),
+        size: Math.max(0.04, kind.heart * 1.3),
+        stretch: [1, 1],
+        rotation: 0,
+        normal: headNormal,
+        phase: stemPhase,
+        variation: detail.next(),
+        flex: FLEX
+      });
+    }
+    if ((p.species === "buttercup" || p.species === "daisy") && state === "open" && detail.chance(0.4)) {
+      const from = base.clone().lerp(tip, 0.55);
+      const twigTip = from.clone().addScaledVector(out, 0.1 * H).addScaledVector(UP, 0.3 * h);
+      const twigPhase = detail.next();
+      blade(from, from.clone().addScaledVector(UP, 0.15 * h), twigTip, 0.045, 0.035, normal, FLEX, 0.6, twigPhase);
+      petals.push({
+        position: twigTip.clone().addScaledVector(UP, 0.015),
+        outline: kind.outline,
+        size: size * 0.8,
+        stretch: kind.stretch,
+        rotation: detail.range(0, TAU),
+        normal: headNormal,
+        phase: twigPhase,
+        variation: detail.next(),
+        flex: FLEX
+      });
+      hearts.push({
+        position: twigTip.clone().addScaledVector(UP, 0.015),
+        outline: HEART,
+        lift: HEART_LIFT,
+        size: kind.heart * 0.85,
+        stretch: [1, 0.85],
+        rotation: 0,
+        normal: headNormal,
+        phase: twigPhase,
+        variation: detail.next(),
+        flex: FLEX
+      });
+    }
+  }
+  const leafCount = Math.round(kind.leaves * (season === "winter" && !lavender ? 0.4 : 1) * shape.range(0.8, 1.25));
+  for (let i = 0; i < leafCount; i++) {
+    const azimuth = shape.range(0, TAU);
+    const out = new THREE10.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+    const base = out.clone().multiplyScalar(footRadius * shape.range(0, 0.7));
+    const length = (lavender ? 0.22 : 0.18) * shape.range(0.7, 1.2) * p.height;
+    const rise = lavender ? shape.range(0.5, 0.9) : shape.range(0.25, 0.55);
+    const tip = base.clone().addScaledVector(out, length * (1 - rise * 0.5)).addScaledVector(UP, length * rise);
+    const bend = base.clone().addScaledVector(out, length * 0.3).addScaledVector(UP, length * rise * 0.9);
+    blade(base, bend, tip, lavender ? 0.065 : 0.09, 0, out.clone().addScaledVector(UP, 1.2).normalize(), 0.3, 0.1);
+  }
+  const sway = { amplitude: 0.07 * H, height: H };
+  const group = new THREE10.Group();
+  group.name = meta3.name;
+  const addMesh = (name, geometry, material) => {
+    geometry.computeBoundingSphere();
+    geometry.boundingSphere.radius += 0.15;
+    const mesh = new THREE10.Mesh(geometry, material);
+    mesh.name = name;
+    mesh.customDepthMaterial = material.userData.depthMaterial;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+    return mesh;
+  };
+  const stemRamp = lavender ? LAVENDER_LEAVES : GRASSES[season].ramp;
+  addMesh(
+    "stems",
+    buildBladeGeometry(blades, { segments: 2 }),
+    createToonMaterial({ ramp: stemRamp, steps: [0.3, 0.5, 0.7, 0.9], foliage: true, leafShade: [0.12, 0.4], id: 12, sway })
+  );
+  const faded = season === "winter" || lavender && season === "autumn";
+  if (petals.length) {
+    addMesh(
+      "petals",
+      buildFanGeometry(petals),
+      createToonMaterial({
+        ramp: faded ? colors.dry : colors.petals,
+        steps: [0.3, 0.5, 0.7],
+        foliage: true,
+        leafShade: [0.1, 0.5],
+        id: 13,
+        sway
+      })
+    );
+  }
+  if (hearts.length) {
+    const heartMaterial = createToonMaterial({
+      ramp: season === "autumn" || season === "winter" ? colors.dry : colors.heart,
+      steps: [0.3, 0.5, 0.7],
+      foliage: true,
+      leafShade: [0.08, 0],
+      id: 13,
+      // même identifiant que les pétales : pas de contour entre le cœur et sa corolle
+      sway
+    });
+    addMesh("hearts", buildFanGeometry(hearts), heartMaterial);
+  }
+  group.userData.asset = { id: meta3.id, params: p, stems: stemCount, flowers: petals.length };
+  return group;
+}
+
+// src/assets/nature/plants/grass-tuft.js
+import * as THREE11 from "three";
+var params4 = {
+  seed: seedParam("Change le port de la touffe : pench\xE9e ou dress\xE9e, ouverte ou serr\xE9e, brins plus longs d'un c\xF4t\xE9."),
+  season: seasonParam("Vert tendre au printemps, blond en automne, paille grise et couch\xE9e en hiver."),
+  kind: choiceParam(
+    "Herbe",
+    { meadow: "Herbe des pr\xE9s", tall: "Hautes herbes \xE0 \xE9pis" },
+    "Herbe des pr\xE9s : touffe basse et fournie. Hautes herbes : tiges deux fois plus hautes, avec des \xE9pis."
+  ),
+  height: numberParam("Hauteur", 0.5, 0.2, 1, "Hauteur des plus longs brins (doubl\xE9e pour les hautes herbes).", { step: 0.05, unit: "m" }),
+  fullness: numberParam("Densit\xE9", 1, 0.5, 1.6, "Nombre de brins (et de triangles).")
+};
+var meta4 = {
+  id: "nature/plants/grass-tuft",
+  name: "Touffe d'herbe",
+  nameEn: "Grass tuft",
+  category: "nature",
+  subcategory: "plants",
+  description: "Touffe d'herbe en \xE9ventail : brins effil\xE9s sombres au pied et clairs \xE0 la pointe, qui ploient au vent. Herbe des pr\xE9s ou hautes herbes \xE0 \xE9pis, quatre saisons ; la graine change le port de la touffe.",
+  tags: [
+    "herbe",
+    "touffe d'herbe",
+    "brins",
+    "hautes herbes",
+    "\xE9pis",
+    "plante",
+    "v\xE9g\xE9tation",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "grass",
+    "grass tuft",
+    "blades",
+    "tall grass",
+    "seed heads",
+    "plant",
+    "vegetation",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["meadow", "forest", "garden", "village", "swamp", "mountain", "beach"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au c\u0153ur de la touffe",
+  footprint: { radius: 0.85, height: 1.35 },
+  animated: ["wind"],
+  params: params4,
+  variants: variantsOf("season", params4.season)
+};
+var TAU2 = Math.PI * 2;
+var UP2 = new THREE11.Vector3(0, 1, 0);
+var EAR = starOutline(6);
+function create4(given = {}) {
+  const p = resolveParams(meta4.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const tall = p.kind === "tall";
+  const winter = p.season === "winter";
+  const H = p.height * (tall ? 2 : 1) * (winter ? 0.8 : 1);
+  const leanAngle = shape.range(0, TAU2);
+  const lean = new THREE11.Vector3(Math.cos(leanAngle), 0, Math.sin(leanAngle)).multiplyScalar(shape.range(0, 0.32) * H);
+  const spread = shape.range(0.5, 1.05);
+  const longSide = shape.range(0, TAU2);
+  const longBias = shape.range(0, 0.4);
+  const footRadius = shape.range(0.05, 0.12) * Math.sqrt(p.height / 0.5);
+  const droop = (winter ? 0.55 : 0.18) + shape.range(0, 0.2);
+  const blades = [];
+  const ears = [];
+  const count = Math.round((tall ? 14 : 20) * p.fullness * shape.range(0.85, 1.2));
+  for (let i = 0; i < count; i++) {
+    const azimuth = i * 2.39996 + shape.range(-0.6, 0.6);
+    const out = new THREE11.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+    const reach = Math.sqrt(shape.next());
+    const base = out.clone().multiplyScalar(footRadius * reach);
+    const side = 1 + longBias * Math.cos(azimuth - longSide);
+    const h = H * side * (1 - 0.4 * reach) * shape.range(0.55, 1) / (1 + longBias) * (tall ? 1.25 : 1);
+    const open = (0.15 + spread * reach) * h * shape.range(0.7, 1.3) * (tall ? 0.6 : 1);
+    const sag = shape.chance(tall ? 0.6 : droop) ? shape.range(0.25, 0.5) : 0;
+    const tip = base.clone().addScaledVector(out, open * (1 + sag)).addScaledVector(UP2, h * (1 - sag)).addScaledVector(lean, h / H);
+    const bend = base.clone().addScaledVector(out, open * 0.3).addScaledVector(UP2, h * 0.75).addScaledVector(lean, h / H * 0.4);
+    blades.push({
+      base,
+      bend,
+      tip,
+      width: shape.range(0.085, 0.12),
+      normal: out.clone().addScaledVector(UP2, 1.1).normalize(),
+      phase: detail.next(),
+      variation: detail.next(),
+      flex: detail.range(0.35, 0.6)
+    });
+  }
+  if (tall) {
+    const stems = Math.round(shape.int(3, 6) * Math.min(1.3, p.fullness));
+    for (let i = 0; i < stems; i++) {
+      const azimuth = shape.range(0, TAU2);
+      const out = new THREE11.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+      const base = out.clone().multiplyScalar(footRadius * shape.range(0, 0.6));
+      const h = H * shape.range(1, 1.25);
+      const tip = base.clone().addScaledVector(out, h * shape.range(0.15, 0.4)).addScaledVector(UP2, h).addScaledVector(lean, 1.1);
+      const bend = base.clone().addScaledVector(UP2, h * 0.6).addScaledVector(lean, 0.4);
+      blades.push({
+        base,
+        bend,
+        tip,
+        width: 0.06,
+        tipWidth: 0.045,
+        normal: out.clone().addScaledVector(UP2, 1.1).normalize(),
+        phase: detail.next(),
+        variation: detail.next(),
+        flex: 0.7,
+        baseOcclusion: 0.3
+      });
+      const direction = tip.clone().sub(bend).normalize();
+      ears.push({
+        position: tip.clone().addScaledVector(direction, 0.07),
+        outline: EAR,
+        size: 0.1,
+        stretch: [0.45, 1],
+        rotation: -Math.atan2(direction.x + direction.z * 0.5, direction.y) * 0.6,
+        normal: UP2,
+        phase: detail.next(),
+        variation: 1,
+        flex: 0.8
+      });
+    }
+  }
+  const parts = [buildBladeGeometry(blades, { segments: tall ? 3 : 2 })];
+  if (ears.length) parts.push(buildFanGeometry(ears));
+  const geometry = parts.length > 1 ? mergeGeometries(parts) : parts[0];
+  geometry.computeBoundingSphere();
+  geometry.boundingSphere.radius += 0.2;
+  const material = createToonMaterial({
+    ramp: GRASSES[p.season].ramp,
+    steps: [0.24, 0.42, 0.6, 0.78],
+    foliage: true,
+    leafShade: [0.14, 0.5],
+    id: 12,
+    sway: { amplitude: 0.06 * H, height: H }
+  });
+  const mesh = new THREE11.Mesh(geometry, material);
+  mesh.name = "grass";
+  mesh.customDepthMaterial = material.userData.depthMaterial;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  const group = new THREE11.Group();
+  group.name = meta4.name;
+  group.add(mesh);
+  group.userData.asset = { id: meta4.id, params: p, blades: blades.length };
+  return group;
+}
+
+// src/assets/nature/rocks/boulder.js
+import * as THREE12 from "three";
+
+// src/assets/kit/ground-cover.js
+function snowMound(rng, noise, { radius, height, offset = [0, 0, 0], rotation = 0, drifts = 0 }) {
+  const relief = (x, z) => (noise(x * 1.8 + offset[0], 0.5, z * 1.8 + offset[2]) - 0.5) * height * 1.1;
+  const parts = [
+    buildMound(rng, { radius, height, lobes: 0.4, power: 0.9, relief, rings: 7, sectors: 22, offset, rotation })
+  ];
+  for (let i = 0; i < drifts; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = rng.range(0.45, 0.75);
+    const k = rng.range(0.4, 0.6);
+    parts.push(
+      buildMound(rng, {
+        radius: [radius[0] * k, radius[1] * k],
+        height: height * rng.range(0.7, 1.2),
+        lobes: 0.3,
+        power: 0.9,
+        rings: 4,
+        sectors: 14,
+        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
+        rotation: rng.range(0, Math.PI * 2)
+      })
+    );
+  }
+  return parts.length === 1 ? parts[0] : mergeGeometries(parts);
+}
+function mossMound(rng, noise, { radius, height = 0.05, cushions = 6, offset = [0, 0, 0], rotation = 0 }) {
+  const relief = (x, z) => (noise(x * 4 + offset[0], 2.5, z * 4 + offset[2]) - 0.5) * 0.05;
+  const parts = [buildMound(rng, { radius, height, lobes: 0.4, power: 0.4, relief, rings: 4, sectors: 20, offset, rotation })];
+  const size = Math.min(radius[0], radius[1]);
+  for (let i = 0; i < cushions; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = Math.sqrt(rng.next()) * 0.62;
+    const r = size * rng.range(0.18, 0.34);
+    parts.push(
+      buildMound(rng, {
+        radius: [r, r * rng.range(0.75, 1)],
+        height: height + r * rng.range(0.7, 1),
+        lobes: 0.2,
+        power: 0.45,
+        rings: 3,
+        sectors: 10,
+        offset: [offset[0] + Math.cos(angle) * radius[0] * reach, offset[1], offset[2] + Math.sin(angle) * radius[1] * reach],
+        rotation: rng.range(0, Math.PI * 2)
+      })
+    );
+  }
+  return mergeGeometries(parts);
+}
+function dirtMound(rng, noise, { radius, height, clods = 6, offset = [0, 0, 0], rotation = 0 }) {
+  const relief = (x, z) => (noise(x * 2.4 + offset[0], 4.5, z * 2.4 + offset[2]) - 0.5) * height * 0.9;
+  const parts = [buildMound(rng, { radius, height, lobes: 0.3, power: 0.9, relief, rings: 5, sectors: 16, flat: true, offset, rotation })];
+  for (let i = 0; i < clods; i++) {
+    const angle = rng.range(0, Math.PI * 2);
+    const reach = rng.range(0.55, 1.08);
+    const r = Math.max(0.08, Math.min(radius[0], radius[1]) * rng.range(0.1, 0.2));
+    const x = offset[0] + Math.cos(angle) * radius[0] * reach;
+    const z = offset[2] + Math.sin(angle) * radius[1] * reach;
+    const rest = height * Math.max(0, 1 - reach * reach) * 0.8;
+    parts.push(
+      buildRock(rng, {
+        detail: 0,
+        lumps: 2,
+        lumpSize: 0.2,
+        cuts: 2,
+        cutDepth: [0.7, 0.9],
+        scale: [r, r * rng.range(0.55, 0.8), r * rng.range(0.8, 1.1)],
+        rotation: [rng.range(-0.4, 0.4), rng.range(0, Math.PI * 2), rng.range(-0.4, 0.4)],
+        offset: [x, offset[1] + rest + r * 0.3, z],
+        floorY: offset[1] - 0.02
+      })
+    );
+  }
+  return mergeGeometries(parts);
+}
+function snowCap(geometry, noise, { amount: amount2 = 0, thickness = 0.08, minY = -Infinity } = {}) {
+  return buildDrape(
+    geometry,
+    (p, n) => p.y < minY ? -1 : (n.y - 0.5 + amount2 * 0.35) * 2.4 + (noise(p.x * 2.2, p.y * 2.2, p.z * 2.2) - 0.5) * 1.1,
+    { subdivisions: 3, lift: (w) => 0.014 + Math.min(1, w * 1.5) * thickness }
+  );
+}
+function mossCap(geometry, noise, { amount: amount2 = 0, minY = -Infinity } = {}) {
+  return buildDrape(
+    geometry,
+    (p, n) => p.y < minY ? -1 : (n.y - 0.55 + amount2 * 0.4) * 1.4 + (noise(p.x * 2.6 + 9, p.y * 2.6, p.z * 2.6) - 0.5) * 2.4,
+    { subdivisions: 3, lift: (w, p) => 0.012 + Math.min(1, w * 3) * 0.035 * noise(p.x * 8, p.y * 8 + 3, p.z * 8) }
+  );
+}
+function coverMaterial(kind, variant, { seed = 0, id = 11 } = {}) {
+  if (kind === "snow") {
+    const snow = SNOWS[variant ?? "fresh"];
+    return createToonMaterial({ ramp: snow.ramp, ink: snow.ink, steps: [0.42, 0.62, 0.8], pattern: "speckle", patternParams: [16, 0.03, 0.15, 0.3], seed, id });
+  }
+  if (kind === "moss") {
+    const moss = MOSSES[variant ?? "summer"];
+    return createToonMaterial({ ramp: moss.ramp, ink: moss.ink, steps: [0.36, 0.58, 0.8], pattern: "speckle", patternParams: [16, 0.1, 0.2, 1], seed, id });
+  }
+  const ground = GROUNDS[variant ?? "dirt"];
+  return createToonMaterial({ ramp: ground.ramp, ink: ground.ink, steps: [0.32, 0.55, 0.76], pattern: "speckle", patternParams: [16, 0.07, 0.2, 1], seed, id });
+}
+
+// src/assets/nature/rocks/boulder.js
+var params5 = {
+  seed: seedParam("Change la silhouette : rond, haut ou trapu, facettes, inclinaison, cailloux au pied."),
+  stone: stoneParam("Type de pierre : couleurs et grain."),
+  cover: coverParam("Mousse ou neige drap\xE9es sur le dessus du rocher, et pos\xE9es au sol autour."),
+  size: numberParam("Hauteur", 1.1, 0.4, 2.5, "Hauteur du rocher ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
+  roughness: numberParam("Taille de la pierre", 1, 0, 1.5, "0 = galet arrondi, 1,5 = bloc tr\xE8s taill\xE9.")
+};
+var meta5 = {
+  id: "nature/rocks/boulder",
+  name: "Rocher pos\xE9",
+  nameEn: "Boulder",
+  category: "nature",
+  subcategory: "rocks",
+  description: "Rocher \xE0 facettes pos\xE9 sur le sol, parfois accompagn\xE9 de cailloux. Cinq pierres (granit, gr\xE8s, calcaire, basalte, ardoise), nu, moussu ou enneig\xE9 ; chaque graine donne une autre silhouette.",
+  tags: [
+    "rocher",
+    "roche",
+    "pierre",
+    "bloc",
+    "caillou",
+    "min\xE9ral",
+    "facettes",
+    "pos\xE9",
+    "mousse",
+    "neige",
+    "ext\xE9rieur",
+    "boulder",
+    "rock",
+    "stone",
+    "pebble",
+    "mineral",
+    "faceted",
+    "moss",
+    "snow",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "meadow", "mountain", "desert", "snow", "beach", "cave", "garden", "village", "swamp"],
+  version: 2,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre du rocher",
+  footprint: { radius: 1.9, height: 1.2 },
+  animated: [],
+  params: params5,
+  variants: variantsOf("stone", params5.stone)
+};
+function create5(given = {}) {
+  const p = resolveParams(meta5.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const stone = STONES[p.stone];
+  const h = p.size;
+  const rough = p.roughness;
+  const half = h / 2;
+  const width = half * shape.range(0.95, 1.9);
+  const depth = width * shape.range(0.6, 0.95);
+  const sink = 0.12 * h;
+  const parts = [
+    buildRock(shape, {
+      detail: 1,
+      lumps: 4,
+      lumpSize: 0.14,
+      cuts: Math.round(4 + 5 * rough),
+      cutDepth: [0.82 - 0.22 * rough, 0.95 - 0.1 * rough],
+      scale: [width, half + sink / 2, depth],
+      rotation: [shape.range(-0.25, 0.25), shape.range(0, Math.PI * 2), shape.range(-0.25, 0.25)],
+      offset: [0, half - sink / 2, 0],
+      floorY: -0.02
+    })
+  ];
+  const pebbles = shape.int(0, 3);
+  for (let i = 0; i < pebbles; i++) {
+    const angle = shape.range(0, Math.PI * 2);
+    const r = shape.range(0.12, 0.22) * Math.max(1, h);
+    const distance = width * shape.range(0.95, 1.15) + r;
+    parts.push(
+      buildRock(shape, {
+        detail: 0,
+        lumps: 2,
+        lumpSize: 0.15,
+        cuts: 3,
+        cutDepth: [0.7, 0.9],
+        scale: [r, r * shape.range(0.5, 0.8), r * shape.range(0.8, 1.1)],
+        rotation: [0, shape.range(0, Math.PI * 2), 0],
+        offset: [Math.cos(angle) * distance, r * 0.4, Math.sin(angle) * distance * (depth / width)],
+        floorY: -0.02
+      })
+    );
+  }
+  const group = new THREE12.Group();
+  group.name = meta5.name;
+  const rock = mergeGeometries(parts);
+  if (p.cover !== "bare") {
+    const cover = createRng(p.seed * 31337 + 5);
+    const noise = createNoise3(p.seed + 101);
+    const layers = [];
+    if (p.cover === "snow") {
+      layers.push(snowCap(rock, noise, { amount: -0.15, thickness: 0.07 * Math.min(1.5, h), minY: h * 0.15 }));
+      layers.push(
+        snowMound(cover, noise, {
+          radius: [width * 1.5, depth * 1.5],
+          height: 0.1 * Math.min(1.5, h),
+          rotation: cover.range(0, Math.PI * 2),
+          drifts: cover.int(1, 2)
+        })
+      );
+    } else {
+      layers.push(mossCap(rock, noise, { amount: 0, minY: h * 0.12 }));
+      const patches = cover.int(0, 2);
+      for (let i = 0; i < patches; i++) {
+        const angle = cover.range(0, Math.PI * 2);
+        const r = width * cover.range(0.35, 0.6);
+        const reach = width * cover.range(0.7, 1);
+        layers.push(
+          mossMound(cover, noise, {
+            radius: [r, r * cover.range(0.6, 0.9)],
+            height: 0.035,
+            cushions: cover.int(2, 4),
+            offset: [Math.cos(angle) * reach, 0, Math.sin(angle) * reach * (depth / width)],
+            rotation: cover.range(0, Math.PI * 2)
+          })
+        );
+      }
+    }
+    const coverMesh = new THREE12.Mesh(mergeGeometries(layers), coverMaterial(p.cover, void 0, { seed: detail.int(0, 96), id: 11 }));
+    coverMesh.name = p.cover;
+    coverMesh.castShadow = true;
+    coverMesh.receiveShadow = true;
+    group.add(coverMesh);
+  }
+  const stoneMesh = new THREE12.Mesh(
+    rock,
+    createToonMaterial({
+      ramp: stone.ramp,
+      ink: stone.ink,
+      steps: [0.36, 0.58, 0.8],
+      patternParams: [16, 0.05, 0.2, 1],
+      crease: true,
+      pattern: "speckle",
+      seed: detail.int(0, 96),
+      id: 10
+    })
+  );
+  stoneMesh.name = "stone";
+  stoneMesh.castShadow = true;
+  stoneMesh.receiveShadow = true;
+  group.add(stoneMesh);
+  group.userData.asset = { id: meta5.id, params: p };
+  return group;
+}
+
+// src/assets/nature/rocks/buried-rock.js
+import * as THREE13 from "three";
+var params6 = {
+  seed: seedParam("Change la silhouette : dalle plate ou bosse, inclinaison, part qui d\xE9passe, talus de terre."),
+  stone: stoneParam("Type de pierre : couleurs et grain."),
+  cover: coverParam("Mousse ou neige drap\xE9es sur le dessus de la roche et sur le talus."),
+  size: numberParam("Largeur", 1.6, 0.5, 3.5, "Largeur de la partie visible ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
+  emergence: numberParam("Affleurement", 0.5, 0.2, 0.8, "Part de la roche qui sort du sol (0,2 = \xE0 peine visible).")
+};
+var meta6 = {
+  id: "nature/rocks/buried-rock",
+  name: "Roche enterr\xE9e",
+  nameEn: "Buried rock",
+  category: "nature",
+  subcategory: "rocks",
+  description: "Roche \xE0 facettes \xE0 moiti\xE9 enterr\xE9e, qui affleure en dalle inclin\xE9e au milieu d'un talus de terre. Cinq pierres, nue, moussue ou enneig\xE9e ; la graine change l'inclinaison et la forme, l'affleurement se r\xE8gle.",
+  tags: [
+    "roche",
+    "rocher",
+    "pierre",
+    "dalle",
+    "affleurement",
+    "enterr\xE9",
+    "min\xE9ral",
+    "terre",
+    "facettes",
+    "mousse",
+    "neige",
+    "ext\xE9rieur",
+    "buried rock",
+    "rock",
+    "stone",
+    "outcrop",
+    "slab",
+    "embedded",
+    "mineral",
+    "dirt",
+    "moss",
+    "snow",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "meadow", "mountain", "desert", "snow", "garden", "village", "swamp", "cave"],
+  version: 2,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la roche",
+  footprint: { radius: 1.7, height: 0.8 },
+  animated: [],
+  params: params6,
+  variants: variantsOf("stone", params6.stone)
+};
+var FLOOR = -0.03;
+function create6(given = {}) {
+  const p = resolveParams(meta6.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const stone = STONES[p.stone];
+  const radius = p.size / 2 / Math.sqrt(1 - (1 - p.emergence) ** 2 * 0.8);
+  const rx = radius * shape.range(0.9, 1.1);
+  const rz = radius * shape.range(0.6, 0.95);
+  const ry = radius * shape.range(0.55, 0.85);
+  const tiltX = shape.range(-0.45, 0.45);
+  const tiltZ = shape.range(-0.45, 0.45);
+  const rock = buildRock(shape, {
+    detail: 1,
+    lumps: 4,
+    lumpSize: 0.14,
+    cuts: 8,
+    cutDepth: [0.6, 0.88],
+    scale: [rx, ry, rz],
+    rotation: [tiltX, shape.range(0, Math.PI * 2), tiltZ],
+    offset: [0, ry * (2 * p.emergence - 1), 0],
+    floorY: FLOOR
+  });
+  rock.computeBoundingBox();
+  const box = rock.boundingBox;
+  const spanX = Math.max(-box.min.x, box.max.x);
+  const spanZ = Math.max(-box.min.z, box.max.z);
+  const noise = createNoise3(p.seed + 101);
+  const talus = dirtMound(shape, noise, {
+    radius: [spanX * 1.15 + 0.12, spanZ * 1.15 + 0.12],
+    height: Math.min(0.16, 0.08 * p.size) + 0.04,
+    clods: shape.int(3, 6)
+  });
+  const group = new THREE13.Group();
+  group.name = meta6.name;
+  if (p.cover !== "bare") {
+    const cover = createRng(p.seed * 31337 + 5);
+    const layers = [];
+    if (p.cover === "snow") {
+      layers.push(snowCap(rock, noise, { amount: -0.2, thickness: 0.06, minY: 0.08 }));
+      layers.push(
+        snowMound(cover, noise, {
+          radius: [spanX * 1.3 + 0.15, spanZ * 1.3 + 0.15],
+          height: 0.08,
+          rotation: cover.range(0, Math.PI * 2),
+          drifts: cover.int(0, 2)
+        })
+      );
+    } else {
+      layers.push(mossCap(rock, noise, { amount: 0, minY: 0.04 }));
+      const patches = cover.int(1, 2);
+      for (let i = 0; i < patches; i++) {
+        const angle = cover.range(0, Math.PI * 2);
+        const r = spanX * cover.range(0.35, 0.55);
+        layers.push(
+          mossMound(cover, noise, {
+            radius: [r, r * cover.range(0.6, 0.9)],
+            height: 0.06,
+            cushions: cover.int(2, 4),
+            offset: [Math.cos(angle) * spanX * 1, 0.04, Math.sin(angle) * spanZ * 1],
+            rotation: cover.range(0, Math.PI * 2)
+          })
+        );
+      }
+    }
+    const coverMesh = new THREE13.Mesh(mergeGeometries(layers), coverMaterial(p.cover, void 0, { seed: detail.int(0, 96), id: 11 }));
+    coverMesh.name = p.cover;
+    coverMesh.castShadow = true;
+    coverMesh.receiveShadow = true;
+    group.add(coverMesh);
+  }
+  const stoneMesh = new THREE13.Mesh(
+    rock,
+    createToonMaterial({ ramp: stone.ramp, ink: stone.ink, steps: [0.36, 0.58, 0.8], crease: true, pattern: "speckle", patternParams: [16, 0.05, 0.2, 1], seed: detail.int(0, 96), id: 10 })
+  );
+  stoneMesh.name = "stone";
+  stoneMesh.castShadow = true;
+  stoneMesh.receiveShadow = true;
+  group.add(stoneMesh);
+  if (p.cover !== "snow") {
+    const dirtMesh = new THREE13.Mesh(talus, coverMaterial("dirt", "dirt", { seed: detail.int(0, 96), id: 12 }));
+    dirtMesh.name = "dirt";
+    dirtMesh.receiveShadow = true;
+    group.add(dirtMesh);
+  } else {
+    talus.dispose();
+  }
+  group.userData.asset = { id: meta6.id, params: p };
+  return group;
+}
+
+// src/assets/nature/terrain/dirt-mound.js
+import * as THREE14 from "three";
+var params7 = {
+  seed: seedParam("Change le contour, les bosses et la place des mottes."),
+  soil: choiceParam("Sol", GROUNDS, "Terre brune, argile rouge ou boue sombre."),
+  size: numberParam("Largeur", 1.4, 0.4, 3, "Largeur de la butte.", { step: 0.1, unit: "m" }),
+  height: numberParam("Hauteur", 0.3, 0.05, 0.6, "Hauteur au centre.", { step: 0.05, unit: "m" })
+};
+var meta7 = {
+  id: "nature/terrain/dirt-mound",
+  name: "Terre remu\xE9e",
+  nameEn: "Dirt mound",
+  category: "nature",
+  subcategory: "terrain",
+  description: "Butte de terre fra\xEEchement remu\xE9e, bossel\xE9e, entour\xE9e de mottes. Terre, argile ou boue ; la graine change la forme et les mottes.",
+  tags: [
+    "terre",
+    "terre remu\xE9e",
+    "butte",
+    "motte",
+    "tas",
+    "argile",
+    "boue",
+    "sol",
+    "terrain",
+    "chantier",
+    "jardin",
+    "ext\xE9rieur",
+    "dirt",
+    "dirt mound",
+    "mound",
+    "clod",
+    "pile",
+    "clay",
+    "mud",
+    "soil",
+    "ground",
+    "digging",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["garden", "village", "forest", "meadow", "swamp", "desert"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la butte",
+  footprint: { radius: 0.7, height: 0.35 },
+  animated: [],
+  params: params7,
+  variants: variantsOf("soil", params7.soil)
+};
+function create7(given = {}) {
+  const p = resolveParams(meta7.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const noise = createNoise3(p.seed);
+  const half = p.size / 2;
+  const mesh = new THREE14.Mesh(
+    dirtMound(shape, noise, {
+      radius: [half * 0.8, half * 0.8 * shape.range(0.65, 0.95)],
+      height: p.height * (p.soil === "mud" ? 0.6 : 1),
+      clods: shape.int(4, 8),
+      rotation: shape.range(0, Math.PI * 2)
+    }),
+    coverMaterial("dirt", p.soil, { seed: detail.int(0, 96), id: 12 })
+  );
+  mesh.name = "dirt";
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
+  const group = new THREE14.Group();
+  group.name = meta7.name;
+  group.add(mesh);
+  group.userData.asset = { id: meta7.id, params: p };
+  return group;
+}
+
+// src/assets/nature/terrain/lawn.js
+import * as THREE15 from "three";
+var params8 = {
+  seed: seedParam("Change le contour de la plaque, les zones plus drues ou plus rases, la place des fleurs."),
+  season: seasonParam("Vert vif au printemps, blondi en automne, ras et jauni en hiver."),
+  cut: choiceParam(
+    "Coupe",
+    { mown: "Tondue", long: "Haute", wild: "Folle" },
+    "Tondue : gazon ras et r\xE9gulier. Haute : brins longs qui ploient. Folle : hauteurs m\xEAl\xE9es, touffes et p\xE2querettes."
+  ),
+  shape: choiceParam(
+    "Forme",
+    { patch: "Plaque", tile: "Dalle carr\xE9e" },
+    "Plaque au bord irr\xE9gulier, \xE0 poser seule ; ou dalle carr\xE9e dont les bords se raccordent \xE0 la dalle voisine."
+  ),
+  size: numberParam("Largeur", 1.6, 0.5, 3, "Largeur de la plaque ou c\xF4t\xE9 de la dalle.", { step: 0.1, unit: "m" }),
+  fullness: numberParam("Densit\xE9", 1, 0.5, 1.5, "Nombre de brins (et de triangles).")
+};
+var meta8 = {
+  id: "nature/terrain/lawn",
+  name: "Pelouse",
+  nameEn: "Lawn",
+  category: "nature",
+  subcategory: "terrain",
+  description: "Pelouse : motte de gazon couverte de brins qui ondulent au vent. Tondue, haute ou folle avec des p\xE2querettes ; en plaque au bord irr\xE9gulier ou en dalle carr\xE9e raccordable. Quatre saisons.",
+  tags: [
+    "pelouse",
+    "gazon",
+    "herbe",
+    "prairie",
+    "p\xE2querettes",
+    "dalle",
+    "sol",
+    "terrain",
+    "v\xE9g\xE9tation",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "lawn",
+    "turf",
+    "grass",
+    "meadow",
+    "daisies",
+    "tile",
+    "ground",
+    "vegetation",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["meadow", "garden", "village", "forest"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre de la plaque",
+  footprint: { radius: 1.05, height: 0.48 },
+  animated: ["wind"],
+  params: params8,
+  variants: variantsOf("season", params8.season)
+};
+var TAU3 = Math.PI * 2;
+var UP3 = new THREE15.Vector3(0, 1, 0);
+var DAISY = starOutline(5, 0.55);
+var CUTS = {
+  mown: { spacing: 0.085, height: [0.07, 0.13], segments: 1, open: 0.25, flowers: 0 },
+  long: { spacing: 0.11, height: [0.16, 0.3], segments: 2, open: 0.55, flowers: 0 },
+  wild: { spacing: 0.1, height: [0.06, 0.46], segments: 2, open: 0.45, flowers: 1 }
+};
+function create8(given = {}) {
+  const p = resolveParams(meta8.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const noise = createNoise3(p.seed);
+  const cut = CUTS[p.cut];
+  const winter = p.season === "winter";
+  const half = p.size / 2;
+  const tile = p.shape === "tile";
+  const grass = GRASSES[p.season];
+  const relief = (x, z) => (noise(x * 2 + 3, 0.5, z * 2) - 0.5) * 0.03;
+  let inside;
+  let sodGeometry;
+  if (tile) {
+    sodGeometry = buildGroundTile({ size: p.size, height: 0.03, divisions: Math.max(3, Math.round(p.size * 4)), relief });
+    const margin = 0.02;
+    inside = (x, z) => Math.abs(x) < half - margin && Math.abs(z) < half - margin;
+  } else {
+    const radius = [half, half * shape.range(0.7, 0.95)];
+    sodGeometry = buildMound(shape, { radius, height: 0.035, lobes: 0.3, power: 0.25, relief, rings: 4, sectors: 22, rotation: shape.range(0, TAU3) });
+    const outline = outerRing(sodGeometry, 4, 22);
+    inside = (x, z) => insidePolygon(outline, x * 1.07, z * 1.07);
+  }
+  const vigor = (x, z) => noise(x * 1.3, 7.5, z * 1.3);
+  const blades = [];
+  const flowers = [];
+  const spacing = cut.spacing / Math.sqrt(p.fullness);
+  const cells = Math.ceil(p.size / spacing);
+  const heightScale = winter ? 0.7 : p.season === "autumn" ? 0.9 : 1;
+  for (let i = 0; i < cells; i++) {
+    for (let j = 0; j < cells; j++) {
+      const x = -half + (j + detail.next()) * spacing;
+      const z = -half + (i + detail.next()) * spacing;
+      if (!inside(x, z)) continue;
+      const v = vigor(x, z);
+      if (p.cut !== "mown" && v < 0.25 && detail.chance(0.5)) continue;
+      const base = new THREE15.Vector3(x, 0, z);
+      const azimuth = detail.range(0, TAU3);
+      const out = new THREE15.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+      let h = THREE15.MathUtils.lerp(cut.height[0], cut.height[1], p.cut === "mown" ? detail.next() : Math.min(1, v * 1.3 * detail.range(0.5, 1.1)));
+      h *= heightScale;
+      const open = h * cut.open * detail.range(0.4, 1.2) * (winter ? 1.6 : 1);
+      const tip = base.clone().addScaledVector(out, open).addScaledVector(UP3, h * (winter ? 0.75 : 1));
+      if (tile) {
+        tip.x = THREE15.MathUtils.clamp(tip.x, -half, half);
+        tip.z = THREE15.MathUtils.clamp(tip.z, -half, half);
+      }
+      blades.push({
+        base,
+        bend: base.clone().addScaledVector(out, open * 0.25).addScaledVector(UP3, h * 0.7),
+        tip,
+        width: detail.range(0.075, 0.1),
+        normal: out.clone().addScaledVector(UP3, 1.3).normalize(),
+        phase: detail.next(),
+        variation: detail.next(),
+        flex: p.cut === "mown" ? 0.15 : detail.range(0.3, 0.55),
+        baseOcclusion: 0.15
+      });
+      if (cut.flowers && !winter && v < 0.55 && detail.chance(p.season === "autumn" ? 0.05 : 0.14)) {
+        flowers.push({
+          position: base.clone().add(new THREE15.Vector3(detail.range(-0.03, 0.03), cut.height[1] * heightScale * detail.range(0.55, 0.85), detail.range(-0.03, 0.03))),
+          outline: DAISY,
+          size: detail.range(0.075, 0.095),
+          rotation: detail.range(0, TAU3),
+          normal: new THREE15.Vector3(detail.range(-0.3, 0.3), 1, detail.range(-0.3, 0.3)).normalize(),
+          phase: detail.next(),
+          variation: detail.next(),
+          flex: 0.3
+        });
+      }
+    }
+  }
+  const group = new THREE15.Group();
+  group.name = meta8.name;
+  const sod = new THREE15.Mesh(
+    sodGeometry,
+    createToonMaterial({ ramp: grass.sod, steps: [0.36, 0.58, 0.8], pattern: "speckle", patternParams: [16, 0.08, 0.2, 1], seed: p.seed % 89, id: 11 })
+  );
+  sod.name = "sod";
+  sod.receiveShadow = true;
+  group.add(sod);
+  const maxHeight = cut.height[1] * heightScale;
+  const sway = { amplitude: 0.05 * maxHeight, height: maxHeight };
+  const bladeGeometry = buildBladeGeometry(blades, { segments: cut.segments });
+  bladeGeometry.computeBoundingSphere();
+  bladeGeometry.boundingSphere.radius += 0.1;
+  const bladeMaterial = createToonMaterial({
+    ramp: grass.ramp,
+    steps: [0.24, 0.42, 0.6, 0.78],
+    foliage: true,
+    leafShade: [0.16, 0.45],
+    id: 11,
+    // même identifiant que la motte : pas de contour autour de chaque brin
+    sway
+  });
+  const bladeMesh = new THREE15.Mesh(bladeGeometry, bladeMaterial);
+  bladeMesh.name = "grass";
+  bladeMesh.customDepthMaterial = bladeMaterial.userData.depthMaterial;
+  bladeMesh.castShadow = p.cut !== "mown";
+  bladeMesh.receiveShadow = true;
+  group.add(bladeMesh);
+  if (flowers.length) {
+    const flowerMaterial = createToonMaterial({ ramp: FLOWERS.daisy.petals, steps: [0.25, 0.45, 0.65], foliage: true, leafShade: [0.1, 0], id: 11, sway });
+    const flowerMesh = new THREE15.Mesh(buildFanGeometry(flowers), flowerMaterial);
+    flowerMesh.name = "daisies";
+    flowerMesh.customDepthMaterial = flowerMaterial.userData.depthMaterial;
+    flowerMesh.receiveShadow = true;
+    group.add(flowerMesh);
+  }
+  group.userData.asset = { id: meta8.id, params: p, blades: blades.length, flowers: flowers.length };
+  return group;
+}
+function outerRing(geometry, rings, sectors) {
+  const position = geometry.attributes.position;
+  const start = 1 + (rings - 1) * sectors;
+  const ring = [];
+  for (let s = 0; s < sectors; s++) ring.push([position.getX(start + s), position.getZ(start + s)]);
+  return ring;
+}
+function insidePolygon(polygon, x, z) {
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const [xi, zi] = polygon[i];
+    const [xj, zj] = polygon[j];
+    if (zi > z !== zj > z && x < (xj - xi) * (z - zi) / (zj - zi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// src/assets/nature/terrain/moss-patch.js
+import * as THREE16 from "three";
+var params9 = {
+  seed: seedParam("Change le contour du tapis, le nombre et la place des coussinets."),
+  season: seasonParam("Vert tendre au printemps, olive et ocre en automne, terne en hiver."),
+  size: numberParam("Largeur", 1.2, 0.3, 3, "Largeur du tapis.", { step: 0.1, unit: "m" }),
+  cushions: numberParam("Coussinets", 6, 0, 14, "Nombre de coussinets bomb\xE9s.", { step: 1 })
+};
+var meta9 = {
+  id: "nature/terrain/moss-patch",
+  name: "Tapis de mousse",
+  nameEn: "Moss patch",
+  category: "nature",
+  subcategory: "terrain",
+  description: "Tapis de mousse pos\xE9 au sol, au contour d\xE9coup\xE9, sem\xE9 de coussinets ronds. Quatre saisons ; la graine change le contour et les coussinets.",
+  tags: [
+    "mousse",
+    "tapis de mousse",
+    "coussinet",
+    "sol",
+    "terrain",
+    "v\xE9g\xE9tation",
+    "sous-bois",
+    "saisons",
+    "ext\xE9rieur",
+    "moss",
+    "moss patch",
+    "cushion",
+    "ground",
+    "vegetation",
+    "undergrowth",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "swamp", "garden", "cave", "meadow"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au sol, au centre du tapis",
+  footprint: { radius: 0.6, height: 0.2 },
+  animated: [],
+  params: params9,
+  variants: variantsOf("season", params9.season)
+};
+function create9(given = {}) {
+  const p = resolveParams(meta9.params, given);
+  const shape = createRng(p.seed * 7919 + 17);
+  const detail = createRng(p.seed * 104729 + 71);
+  const noise = createNoise3(p.seed);
+  const half = p.size / 2;
+  const mesh = new THREE16.Mesh(
+    mossMound(shape, noise, {
+      radius: [half * 0.85, half * 0.85 * shape.range(0.65, 0.95)],
+      height: 0.04,
+      cushions: Math.round(p.cushions),
+      rotation: shape.range(0, Math.PI * 2)
+    }),
+    coverMaterial("moss", p.season, { seed: detail.int(0, 96), id: 11 })
+  );
+  mesh.name = "moss";
+  mesh.receiveShadow = true;
+  mesh.castShadow = true;
+  const group = new THREE16.Group();
+  group.name = meta9.name;
+  group.add(mesh);
+  group.userData.asset = { id: meta9.id, params: p };
+  return group;
+}
+
+// src/assets/nature/trees/birch.js
+var birch_exports = {};
+__export(birch_exports, {
+  create: () => create10,
+  dispose: () => disposeObject,
+  meta: () => meta10,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE17 from "three";
+var params10 = {
+  seed: seedParam("Change la silhouette : inclinaison du tronc, branches, touffes."),
+  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, l'arbre est nu."),
+  height: numberParam("Hauteur", 7.5, 5, 9.5, "Hauteur du tronc ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.4, "Quantit\xE9 de feuilles (et de triangles).")
+};
+var meta10 = {
+  id: "nature/trees/birch",
+  name: "Bouleau",
+  nameEn: "Birch tree",
+  category: "nature",
+  subcategory: "trees",
+  description: "Bouleau au tronc blanc marqu\xE9 de tirets sombres, feuillage l\xE9ger en touffes avec des brins pendants qui bougent au vent. Quatre saisons, forme diff\xE9rente pour chaque graine.",
+  tags: [
+    "arbre",
+    "bouleau",
+    "feuillu",
+    "v\xE9g\xE9tation",
+    "tronc blanc",
+    "feuillage",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "tree",
+    "birch",
+    "deciduous",
+    "vegetation",
+    "foliage",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "meadow", "garden", "village"],
+  version: 1,
+  added: "2026-11-15",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
+  footprint: { radius: 3.2, height: 8.4 },
+  animated: ["wind"],
+  params: params10,
+  variants: variantsOf("season", params10.season)
+};
+var BARK_RAMP = ["#77728f", "#b0aec2", "#e0dfe6", "#fbf8ee"];
+var BARK_INK = "#2a2233";
+var SEASONS2 = {
+  spring: { ramp: ["#2a6350", "#3f8a52", "#63ad55", "#96cf5e", "#d2ec84"], density: 0.78, leafSize: 0.92 },
+  summer: { ramp: ["#1d4945", "#2a6947", "#3f8d45", "#6db348", "#b3da5b"], density: 1, leafSize: 1 },
+  autumn: { ramp: ["#7b3d1d", "#b3651e", "#da9422", "#f2bf3a", "#ffe889"], density: 0.86, leafSize: 1 },
+  winter: { ramp: ["#1d4945", "#2a6947", "#3f8d45", "#6db348", "#b3da5b"], density: 0, leafSize: 1 }
+};
+var TAU4 = Math.PI * 2;
+var UP4 = new THREE17.Vector3(0, 1, 0);
+var lerp = THREE17.MathUtils.lerp;
+function create10(params14 = {}) {
+  const p = resolveParams(meta10.params, params14);
+  const season = SEASONS2[p.season];
+  const rng = createRng(p.seed * 7919 + 17);
+  const s = p.height / 7.5;
+  const leanAzimuth = rng.range(0, TAU4);
+  const lean = rng.range(0.2, 0.55) * s;
+  const trunkPoints = [];
+  for (let i = 0; i < 6; i++) {
+    const t = i / 5;
+    const wobble = i === 0 ? 0 : 0.11 * s;
+    trunkPoints.push(
+      new THREE17.Vector3(
+        Math.cos(leanAzimuth) * lean * t * t + rng.range(-wobble, wobble),
+        p.height * t,
+        Math.sin(leanAzimuth) * lean * t * t + rng.range(-wobble, wobble)
+      )
+    );
+  }
+  const baseRadius = 0.21 * s;
+  const trunkRadius = (t) => lerp(baseRadius, baseRadius * 0.24, Math.pow(t, 0.85)) + baseRadius * 0.5 * Math.exp(-t * 22);
+  const trunk = buildTube(trunkPoints, trunkRadius, { radialSegments: 7, lengthSegments: 14 });
+  const trunkCurve = trunk.userData.curve;
+  const wood = [trunk];
+  const clumps = [];
+  const branchCount = 10 + rng.int(0, 3);
+  const minRadius = 0.034;
+  for (let i = 0; i < branchCount; i++) {
+    const u = i / (branchCount - 1);
+    const start = trunkCurve.getPoint(0.4 + 0.54 * Math.pow(u, 0.9));
+    const azimuth = i * 2.39996 + rng.range(-0.5, 0.5);
+    const out = new THREE17.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+    const length = lerp(2.5, 0.95, Math.pow(u, 1.1)) * rng.range(0.85, 1.15) * s;
+    const rise = lerp(0.3, 0.55, u) * length;
+    const points = [
+      start,
+      start.clone().addScaledVector(out, length * 0.35).addScaledVector(UP4, rise),
+      start.clone().addScaledVector(out, length * 0.75).addScaledVector(UP4, rise + length * 0.2),
+      start.clone().addScaledVector(out, length).addScaledVector(UP4, rise + length * 0.06)
+    ];
+    const r0 = Math.max(minRadius, lerp(0.078, 0.045, u) * s);
+    const branch = buildTube(points, (t) => lerp(r0, minRadius, t), {
+      radialSegments: 5,
+      lengthSegments: 5,
+      vOffset: rng.range(3, 30)
+    });
+    wood.push(branch);
+    const branchCurve = branch.userData.curve;
+    const size = lerp(0.92, 0.55, u) * s;
+    for (const [t, k] of [[0.5, 1], [0.78, 0.9], [1, 0.74]]) {
+      const radius = size * k * rng.range(0.85, 1.15);
+      const center = branchCurve.getPoint(t);
+      center.y -= radius * 0.18;
+      clumps.push({ center, radius, hanging: t > 0.6 });
+    }
+    const twigCount = u < 0.75 ? 2 : 1;
+    for (let j = 0; j < twigCount; j++) {
+      const from = branchCurve.getPoint(rng.range(0.3, 0.75));
+      const side = azimuth + (rng.chance(0.5) ? 1 : -1) * rng.range(0.7, 1.3);
+      const direction = new THREE17.Vector3(Math.cos(side), rng.range(0.1, 0.5), Math.sin(side)).normalize();
+      const twigLength = rng.range(0.55, 1) * s * lerp(1, 0.7, u);
+      const tip = from.clone().addScaledVector(direction, twigLength);
+      tip.y -= twigLength * 0.2;
+      const middle = from.clone().addScaledVector(direction, twigLength * 0.55);
+      wood.push(
+        buildTube([from, middle, tip], () => minRadius, { radialSegments: 4, lengthSegments: 3, vOffset: rng.range(3, 30) })
+      );
+      clumps.push({ center: tip, radius: rng.range(0.42, 0.56) * s, hanging: true });
+    }
+  }
+  const top = trunkCurve.getPoint(1);
+  clumps.push({ center: top.clone().add(new THREE17.Vector3(0, 0.15 * s, 0)), radius: 0.58 * s, hanging: false });
+  const crownStart = rng.range(0, TAU4);
+  for (let i = 0; i < 5; i++) {
+    const angle = crownStart + i * 2.39996;
+    const center = trunkCurve.getPoint(0.56 + i * 0.085);
+    const reach = lerp(0.75, 0.4, i / 4) * s;
+    center.x += Math.cos(angle) * reach;
+    center.z += Math.sin(angle) * reach;
+    clumps.push({ center, radius: lerp(0.8, 0.55, i / 4) * s, hanging: false });
+  }
+  const sway = { amplitude: 0.09 * s, height: p.height };
+  const group = new THREE17.Group();
+  group.name = meta10.name;
+  const woodMesh = new THREE17.Mesh(
+    mergeGeometries(wood),
+    createToonMaterial({
+      ramp: BARK_RAMP,
+      steps: [0.3, 0.52, 0.76],
+      ink: BARK_INK,
+      pattern: "bark",
+      patternParams: [16, 0.34, 0.95 * s, 0.78],
+      seed: p.seed % 97,
+      id: 10,
+      sway
+    })
+  );
+  woodMesh.name = "wood";
+  woodMesh.castShadow = true;
+  woodMesh.receiveShadow = true;
+  group.add(woodMesh);
+  const leaves = [];
+  if (season.density > 0) {
+    const canopyCenter = trunkCurve.getPoint(0.68);
+    const density = season.density * p.fullness;
+    const leafSize = () => rng.range(0.075, 0.13) * season.leafSize;
+    const shadeNormal = (position, direction) => direction.clone().addScaledVector(position.clone().sub(canopyCenter).normalize(), 0.4).addScaledVector(UP4, 0.25).normalize();
+    const DOWN2 = new THREE17.Vector3(0, -1, 0);
+    for (const clump of clumps) {
+      const { center, radius } = clump;
+      for (const rotation of [0, Math.PI]) {
+        leaves.push({ position: center, normal: DOWN2, size: radius * 0.44, rotation, phase: rng.next(), occlusion: 0, variation: 0, flex: 0.3 });
+      }
+      const count = Math.round(density * 105 * radius * radius);
+      for (let i = 0; i < count; i++) {
+        const y = rng.range(-1, 1);
+        const angle = rng.range(0, TAU4);
+        const ring = Math.sqrt(1 - y * y);
+        const direction = new THREE17.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
+        const k = 0.4 + 0.6 * Math.sqrt(rng.next());
+        const position = center.clone().add(direction.clone().multiply(new THREE17.Vector3(radius * k, radius * k * 0.85, radius * k)));
+        if (y < 0) position.y -= y * y * radius * 0.35;
+        leaves.push({
+          position,
+          normal: shadeNormal(position, direction),
+          size: leafSize(),
+          rotation: rng.range(-0.9, 0.9),
+          phase: rng.next(),
+          occlusion: THREE17.MathUtils.smoothstep(k, 0.4, 0.95) * (0.8 + 0.2 * (y * 0.5 + 0.5)),
+          variation: rng.next(),
+          flex: rng.range(0.55, 1)
+        });
+      }
+      if (clump.hanging) {
+        const strands = rng.int(1, 3);
+        for (let j = 0; j < strands; j++) {
+          const angle = rng.range(0, TAU4);
+          const reach = rng.range(0.2, 0.75) * radius;
+          const position = center.clone().add(new THREE17.Vector3(Math.cos(angle) * reach, -radius * 0.7, Math.sin(angle) * reach));
+          const direction = new THREE17.Vector3(Math.cos(angle), -0.2, Math.sin(angle)).normalize();
+          const links = Math.round(rng.int(4, 8) * Math.min(1, density + 0.2));
+          for (let n = 0; n < links; n++) {
+            position.y -= 0.13 * s;
+            position.x += rng.range(-0.03, 0.03);
+            position.z += rng.range(-0.03, 0.03);
+            leaves.push({
+              position: position.clone(),
+              normal: shadeNormal(position, direction),
+              size: leafSize(),
+              rotation: rng.range(-0.35, 0.35),
+              phase: rng.next(),
+              occlusion: 0.9,
+              variation: rng.next(),
+              flex: 0.8 + 0.7 * (n / links)
+            });
+          }
+        }
+      }
+    }
+    if (p.season === "autumn") {
+      for (let i = 0; i < 34; i++) {
+        const angle = rng.range(0, TAU4);
+        const distance = rng.range(0.4, 2.8) * s;
+        leaves.push({
+          position: new THREE17.Vector3(Math.cos(angle) * distance, 0.04, Math.sin(angle) * distance),
+          normal: UP4,
+          size: leafSize(),
+          rotation: rng.range(0, TAU4),
+          phase: rng.next(),
+          occlusion: 1,
+          variation: rng.next(),
+          flex: 0
+        });
+      }
+    }
+    const leafGeometry = buildLeafGeometry(leaves);
+    leafGeometry.computeBoundingSphere();
+    leafGeometry.boundingSphere.radius += 0.6;
+    const leafMaterial = createToonMaterial({
+      ramp: season.ramp,
+      steps: [0.22, 0.42, 0.6, 0.78],
+      foliage: true,
+      id: 11,
+      sway
+    });
+    const leafMesh = new THREE17.Mesh(leafGeometry, leafMaterial);
+    leafMesh.name = "leaves";
+    leafMesh.customDepthMaterial = leafMaterial.userData.depthMaterial;
+    leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
+    group.add(leafMesh);
+  }
+  group.userData.asset = { id: meta10.id, params: p, leaves: leaves.length };
+  return group;
+}
+
+// src/assets/nature/trees/linden.js
+var linden_exports = {};
+__export(linden_exports, {
+  create: () => create11,
+  dispose: () => disposeObject,
+  meta: () => meta11,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE19 from "three";
+
+// src/assets/kit/foliage.js
+import * as THREE18 from "three";
+var TAU5 = Math.PI * 2;
+var UP5 = new THREE18.Vector3(0, 1, 0);
+var DOWN = new THREE18.Vector3(0, -1, 0);
+function leafNormal(position, direction, canopyCenter, canopyWeight = 0.4) {
+  return direction.clone().addScaledVector(position.clone().sub(canopyCenter).normalize(), canopyWeight).addScaledVector(UP5, 0.25).normalize();
+}
+function fillClump(rng, leaves, {
+  center,
+  radius,
+  count,
+  canopyCenter,
+  leafSize,
+  squash = 0.85,
+  sag = 0.35,
+  canopyWeight = 0.4,
+  core = true,
+  flex = [0.55, 1],
+  coreSize = 0.44,
+  shell = 0.4
+}) {
+  if (core) {
+    for (const rotation of [0, Math.PI]) {
+      leaves.push({ position: center, normal: DOWN, size: radius * coreSize, rotation, phase: rng.next(), occlusion: 0, variation: 0, flex: 0.3 });
+    }
+  }
+  const surface = [];
+  const scale = new THREE18.Vector3();
+  for (let i = 0; i < count; i++) {
+    const y = rng.range(-1, 1);
+    const angle = rng.range(0, TAU5);
+    const ring = Math.sqrt(1 - y * y);
+    const direction = new THREE18.Vector3(Math.cos(angle) * ring, y, Math.sin(angle) * ring);
+    const k = shell + (1 - shell) * Math.sqrt(rng.next());
+    scale.set(radius * k, radius * k * squash, radius * k);
+    const position = center.clone().add(direction.clone().multiply(scale));
+    if (y < 0) position.y -= y * y * radius * sag;
+    leaves.push({
+      position,
+      normal: leafNormal(position, direction, canopyCenter, canopyWeight),
+      size: leafSize(),
+      rotation: rng.range(-0.9, 0.9),
+      phase: rng.next(),
+      occlusion: THREE18.MathUtils.smoothstep(k, shell, 0.95) * (0.8 + 0.2 * (y * 0.5 + 0.5)),
+      variation: rng.next(),
+      flex: rng.range(flex[0], flex[1])
+    });
+    if (k > 0.85) surface.push({ position, direction });
+  }
+  return surface;
+}
+function fallenLeaves(rng, leaves, { count, minRadius, maxRadius, leafSize }) {
+  for (let i = 0; i < count; i++) {
+    const angle = rng.range(0, TAU5);
+    const distance = rng.range(minRadius, maxRadius);
+    leaves.push({
+      position: new THREE18.Vector3(Math.cos(angle) * distance, 0.04, Math.sin(angle) * distance),
+      normal: UP5,
+      size: leafSize(),
+      rotation: rng.range(0, TAU5),
+      phase: rng.next(),
+      occlusion: 1,
+      variation: rng.next(),
+      flex: 0
+    });
+  }
+}
+
+// src/assets/nature/trees/linden.js
+var params11 = {
+  seed: seedParam("Change la silhouette : ogive plus ou moins large, penchant de la couronne, branches, rejets au pied."),
+  season: seasonParam("Couleur du feuillage ; fleurs jaune p\xE2le l'\xE9t\xE9, or \xE0 l'automne, nu l'hiver."),
+  height: numberParam("Hauteur", 10, 7, 13, "Hauteur de l'arbre ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.3, "Quantit\xE9 de feuilles (et de triangles).")
+};
+var meta11 = {
+  id: "nature/trees/linden",
+  name: "Tilleul",
+  nameEn: "Linden tree",
+  category: "nature",
+  subcategory: "trees",
+  description: "Tilleul au tronc droit et gris, couronne dense et r\xE9guli\xE8re en ogive ; fleurs jaune p\xE2le en \xE9t\xE9, feuillage dor\xE9 en automne, rejets au pied. Quatre saisons, forme diff\xE9rente pour chaque graine.",
+  tags: [
+    "tilleul",
+    "arbre",
+    "feuillu",
+    "v\xE9g\xE9tation",
+    "couronne en ogive",
+    "tronc droit",
+    "fleurs",
+    "floraison",
+    "feuillage",
+    "vent",
+    "saisons",
+    "place de village",
+    "ext\xE9rieur",
+    "linden",
+    "lime tree",
+    "tree",
+    "deciduous",
+    "vegetation",
+    "dense crown",
+    "flowers",
+    "blossom",
+    "foliage",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["village", "garden", "meadow", "forest"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
+  footprint: { radius: 4.1, height: 10.2 },
+  animated: ["wind"],
+  params: params11,
+  variants: variantsOf("season", params11.season)
+};
+var BARK_RAMP2 = ["#4c4655", "#6f6870", "#958d8a", "#bab1a3"];
+var BARK_INK2 = "#2b2430";
+var FLOWER_RAMP = ["#b8ad52", "#dcd36a", "#f1eb98", "#fffbd6"];
+var SEASONS3 = {
+  spring: { ramp: ["#2a6345", "#448c49", "#6db64c", "#a6d85c", "#e2f394"], density: 0.85, leafSize: 0.9 },
+  summer: { ramp: ["#1b463c", "#28653f", "#3f8b42", "#6cb147", "#b2db62"], density: 1, leafSize: 1, flowers: true },
+  autumn: { ramp: ["#6a4a1e", "#9c731f", "#c99d25", "#e8c63c", "#fbec8c"], density: 0.84, leafSize: 1 },
+  winter: { ramp: ["#1b463c", "#28653f", "#3f8b42", "#6cb147", "#b2db62"], density: 0, leafSize: 1 }
+};
+var TAU6 = Math.PI * 2;
+var UP6 = new THREE19.Vector3(0, 1, 0);
+var lerp2 = THREE19.MathUtils.lerp;
+function create11(params14 = {}) {
+  const p = resolveParams(meta11.params, params14);
+  const season = SEASONS3[p.season];
+  const rng = createRng(p.seed * 7919 + 31);
+  const s = p.height / 10;
+  const crownBottom = rng.range(2.4, 3.2) * s;
+  const crownTop = p.height - 0.6 * s;
+  const crownWidth = rng.range(3.1, 3.8) * s;
+  const widest = rng.range(0.28, 0.4);
+  const envelope = (u) => {
+    if (u < widest) return crownWidth * (0.55 + 0.45 * Math.sin(u / widest * Math.PI * 0.5));
+    const v = (u - widest) / (1 - widest);
+    return crownWidth * Math.pow(Math.max(0, 1 - v * v), 0.62);
+  };
+  const crownLean = new THREE19.Vector3(rng.range(-0.35, 0.35) * s, 0, rng.range(-0.35, 0.35) * s);
+  const trunkPoints = [];
+  const leaderTop = crownBottom + (crownTop - crownBottom) * 0.82;
+  for (let i = 0; i < 6; i++) {
+    const t = i / 5;
+    const wobble = i === 0 ? 0 : 0.06 * s;
+    trunkPoints.push(new THREE19.Vector3(
+      crownLean.x * t * t + rng.range(-wobble, wobble),
+      leaderTop * t,
+      crownLean.z * t * t + rng.range(-wobble, wobble)
+    ));
+  }
+  const baseRadius = rng.range(0.3, 0.35) * s;
+  const trunk = buildTube(
+    trunkPoints,
+    (t) => lerp2(baseRadius, baseRadius * 0.2, Math.pow(t, 1.1)) + baseRadius * 0.4 * Math.exp(-t * 18),
+    { radialSegments: 7, lengthSegments: 12 }
+  );
+  const trunkCurve = trunk.userData.curve;
+  const wood = [trunk];
+  const clumps = [];
+  const minRadius = 0.035;
+  const crownAxis = (y) => {
+    const t = THREE19.MathUtils.clamp(y / p.height, 0, 1);
+    return new THREE19.Vector3(crownLean.x * t * t, y, crownLean.z * t * t);
+  };
+  const branchCount = rng.int(11, 14);
+  for (let i = 0; i < branchCount; i++) {
+    const u = i / (branchCount - 1);
+    const startT = lerp2(crownBottom / leaderTop, 0.95, Math.pow(u, 0.95));
+    const start = trunkCurve.getPoint(startT);
+    const azimuth = i * 2.39996 + rng.range(-0.4, 0.4);
+    const out = new THREE19.Vector3(Math.cos(azimuth), 0, Math.sin(azimuth));
+    const elevation = lerp2(0.55, 1.05, u) + rng.range(-0.1, 0.1);
+    const tipY = Math.min(crownTop - 0.6 * s, start.y + Math.tan(elevation) * envelope((start.y - crownBottom) / (crownTop - crownBottom)) * 0.6);
+    const reach = envelope((tipY - crownBottom) / (crownTop - crownBottom)) * rng.range(0.74, 0.88);
+    const tip = crownAxis(tipY).addScaledVector(out, reach);
+    const middle = start.clone().lerp(tip, 0.5);
+    middle.y -= 0.12 * s;
+    const points = [start, start.clone().lerp(middle, 0.5), middle, tip];
+    const r0 = Math.max(minRadius, lerp2(0.1, 0.05, u) * s);
+    const branch = buildTube(points, (t) => lerp2(r0, minRadius, t), { radialSegments: 5, lengthSegments: 5, vOffset: rng.range(3, 30) });
+    wood.push(branch);
+    const curve = branch.userData.curve;
+    for (const [t, k] of [[0.55, 0.85], [1, 1]]) {
+      clumps.push({ center: curve.getPoint(t).add(new THREE19.Vector3(0, 0.2 * s, 0)), radius: lerp2(1.15, 0.85, u) * k * rng.range(0.9, 1.1) * s });
+    }
+    for (let j = 0; j < 2; j++) {
+      const from = curve.getPoint(rng.range(0.35, 0.8));
+      const side = azimuth + (j === 0 ? 1 : -1) * rng.range(0.5, 1);
+      const direction = new THREE19.Vector3(Math.cos(side), rng.range(0.6, 1.1), Math.sin(side)).normalize();
+      const length = rng.range(0.6, 1) * s;
+      const end = from.clone().addScaledVector(direction, length);
+      wood.push(buildTube([from, from.clone().addScaledVector(direction, length * 0.5), end], () => minRadius, {
+        radialSegments: 4,
+        lengthSegments: 2,
+        vOffset: rng.range(3, 30)
+      }));
+      if (j === 0) clumps.push({ center: end, radius: rng.range(0.6, 0.75) * s });
+    }
+  }
+  const fillCount = 16;
+  const fillStart = rng.range(0, TAU6);
+  for (let i = 0; i < fillCount; i++) {
+    const u = 0.12 + 0.82 * ((i + 0.5) / fillCount);
+    const y = lerp2(crownBottom, crownTop, u);
+    const angle = fillStart + i * 2.39996;
+    const radius = lerp2(1.1, 0.75, u) * s;
+    const reach = Math.max(0, envelope(u) - radius * 0.9);
+    clumps.push({ center: crownAxis(y).add(new THREE19.Vector3(Math.cos(angle) * reach, 0, Math.sin(angle) * reach)), radius });
+  }
+  clumps.push({ center: crownAxis(crownTop - 0.55 * s), radius: 0.75 * s });
+  const sprouts = [];
+  if (rng.chance(0.7)) {
+    const count = rng.int(2, 4);
+    const start = rng.range(0, TAU6);
+    for (let i = 0; i < count; i++) {
+      const angle = start + i * rng.range(0.9, 1.6);
+      const reach = baseRadius * 1.25;
+      const base = new THREE19.Vector3(Math.cos(angle) * reach, 0, Math.sin(angle) * reach);
+      const top = base.clone().add(new THREE19.Vector3(Math.cos(angle) * 0.15 * s, rng.range(0.45, 0.8) * s, Math.sin(angle) * 0.15 * s));
+      wood.push(buildTube([base, base.clone().lerp(top, 0.5), top], () => minRadius, { radialSegments: 4, lengthSegments: 2 }));
+      sprouts.push({ center: top.clone().add(new THREE19.Vector3(0, -0.05 * s, 0)), radius: rng.range(0.32, 0.42) * s });
+    }
+  }
+  const sway = { amplitude: 0.07 * s, height: p.height };
+  const group = new THREE19.Group();
+  group.name = meta11.name;
+  const woodMesh = new THREE19.Mesh(
+    mergeGeometries(wood),
+    createToonMaterial({
+      ramp: BARK_RAMP2,
+      steps: [0.3, 0.52, 0.76],
+      ink: BARK_INK2,
+      pattern: "furrow",
+      patternParams: [16, 4, 0.05, 0.4],
+      seed: p.seed % 97,
+      id: 10,
+      sway
+    })
+  );
+  woodMesh.name = "wood";
+  woodMesh.castShadow = true;
+  woodMesh.receiveShadow = true;
+  group.add(woodMesh);
+  const leaves = [];
+  const flowers = [];
+  if (season.density > 0) {
+    const canopyCenter = crownAxis(lerp2(crownBottom, crownTop, 0.42));
+    const density = season.density * p.fullness;
+    const leafSize = () => rng.range(0.1, 0.16) * season.leafSize;
+    const flowerRng = createRng(p.seed * 131 + 7);
+    for (const clump of [...clumps, ...sprouts]) {
+      const surface = fillClump(rng, leaves, {
+        center: clump.center,
+        radius: clump.radius,
+        count: Math.round(density * 60 * clump.radius * clump.radius),
+        canopyCenter,
+        leafSize,
+        squash: 0.9,
+        sag: 0.2,
+        canopyWeight: 0.55,
+        coreSize: 0.48,
+        shell: 0.5
+      });
+      if (season.flowers) {
+        for (const { position, direction } of surface) {
+          if (direction.y < -0.2 || !flowerRng.chance(0.36)) continue;
+          const hang = position.clone().addScaledVector(direction, 0.06);
+          const links = flowerRng.int(2, 3);
+          for (let n = 0; n < links; n++) {
+            hang.y -= 0.11;
+            flowers.push({
+              position: hang.clone().add(new THREE19.Vector3(flowerRng.range(-0.05, 0.05), 0, flowerRng.range(-0.05, 0.05))),
+              normal: leafNormal(hang, direction, canopyCenter, 0.55),
+              size: flowerRng.range(0.1, 0.13),
+              rotation: flowerRng.range(0, TAU6),
+              phase: flowerRng.next(),
+              occlusion: 1,
+              variation: flowerRng.next(),
+              flex: 0.9
+            });
+          }
+        }
+      }
+    }
+    if (p.season === "autumn") {
+      fallenLeaves(rng, leaves, { count: 40, minRadius: 0.5 * s, maxRadius: 3.2 * s, leafSize });
+    }
+    const addFoliage = (list, ramp, steps, name) => {
+      const geometry = buildLeafGeometry(list);
+      geometry.computeBoundingSphere();
+      geometry.boundingSphere.radius += 0.6;
+      const material = createToonMaterial({ ramp, steps, foliage: true, id: 11, sway });
+      const mesh = new THREE19.Mesh(geometry, material);
+      mesh.name = name;
+      mesh.customDepthMaterial = material.userData.depthMaterial;
+      mesh.castShadow = true;
+      mesh.receiveShadow = true;
+      group.add(mesh);
+    };
+    addFoliage(leaves, season.ramp, [0.22, 0.42, 0.6, 0.78], "leaves");
+    if (flowers.length > 0) addFoliage(flowers, FLOWER_RAMP, [0.3, 0.5, 0.7], "flowers");
+  }
+  group.userData.asset = { id: meta11.id, params: p, leaves: leaves.length, flowers: flowers.length };
+  return group;
+}
+
+// src/assets/nature/trees/oak.js
+var oak_exports = {};
+__export(oak_exports, {
+  create: () => create12,
+  dispose: () => disposeObject,
+  meta: () => meta12,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE20 from "three";
+var params12 = {
+  seed: seedParam("Change la silhouette : nombre et direction des grosses branches, torsions, masses de feuillage."),
+  season: seasonParam("Couleur et densit\xE9 du feuillage ; l'hiver, il garde quelques feuilles mortes."),
+  height: numberParam("Hauteur", 9, 6, 12, "Hauteur de l'arbre ; tout l'arbre garde ses proportions.", { step: 0.5, unit: "m" }),
+  fullness: numberParam("Densit\xE9 du feuillage", 1, 0.5, 1.3, "Quantit\xE9 de feuilles (et de triangles).")
+};
+var meta12 = {
+  id: "nature/trees/oak",
+  name: "Ch\xEAne",
+  nameEn: "Oak tree",
+  category: "nature",
+  subcategory: "trees",
+  description: "Ch\xEAne trapu au tronc sombre et crevass\xE9, grosses branches tortueuses \xE9tal\xE9es, couronne large et bossel\xE9e en masses de feuillage. Quatre saisons (feuilles mortes gard\xE9es l'hiver), forme diff\xE9rente pour chaque graine.",
+  tags: [
+    "ch\xEAne",
+    "arbre",
+    "feuillu",
+    "v\xE9g\xE9tation",
+    "tronc crevass\xE9",
+    "couronne large",
+    "branches tortueuses",
+    "feuillage",
+    "feuilles mortes",
+    "vent",
+    "saisons",
+    "ext\xE9rieur",
+    "oak",
+    "tree",
+    "deciduous",
+    "vegetation",
+    "broad crown",
+    "gnarled",
+    "foliage",
+    "wind",
+    "seasons",
+    "outdoor",
+    "procedural"
+  ],
+  biomes: ["forest", "meadow", "village", "garden"],
+  version: 1,
+  added: "2026-11-16",
+  units: "1 unit\xE9 = 1 m\xE8tre ; l'origine est au pied du tronc, au niveau du sol",
+  footprint: { radius: 5.8, height: 9.2 },
+  animated: ["wind"],
+  params: params12,
+  variants: variantsOf("season", params12.season)
+};
+var BARK_RAMP3 = ["#33283a", "#544549", "#786559", "#9d8a72"];
+var BARK_INK3 = "#1b141c";
+var SEASONS4 = {
+  spring: { ramp: ["#265743", "#3b7c47", "#5fa14a", "#96c656", "#d4e884"], density: 0.82, leafSize: 0.92 },
+  summer: { ramp: ["#173a38", "#21533d", "#33723f", "#56953f", "#98c250"], density: 1, leafSize: 1 },
+  autumn: { ramp: ["#4a2722", "#7b3b22", "#a65a25", "#cc8834", "#ebbb5e"], density: 0.86, leafSize: 1 },
+  // Marcescence : le chêne garde des feuilles mortes, brunes et clairsemées, jusqu'au printemps.
+  winter: { ramp: ["#3b2826", "#5d3b2b", "#83573a", "#a97a4c", "#cba36c"], density: 0.55, leafSize: 0.85 }
+};
+var TAU7 = Math.PI * 2;
+var lerp3 = THREE20.MathUtils.lerp;
+function create12(params14 = {}) {
+  const p = resolveParams(meta12.params, params14);
+  const season = SEASONS4[p.season];
+  const rng = createRng(p.seed * 7919 + 23);
+  const s = p.height / 9;
+  const boleHeight = rng.range(2.3, 3.3) * s;
+  const leanAzimuth = rng.range(0, TAU7);
+  const lean = rng.range(0.1, 0.45) * s;
+  const trunkPoints = [];
+  for (let i = 0; i < 5; i++) {
+    const t = i / 4;
+    const wobble = i === 0 ? 0 : 0.14 * s;
+    trunkPoints.push(new THREE20.Vector3(
+      Math.cos(leanAzimuth) * lean * t + rng.range(-wobble, wobble),
+      (boleHeight + 0.5 * s) * t,
+      Math.sin(leanAzimuth) * lean * t + rng.range(-wobble, wobble)
+    ));
+  }
+  const baseRadius = rng.range(0.46, 0.54) * s;
+  const trunk = buildTube(
+    trunkPoints,
+    (t) => lerp3(baseRadius, baseRadius * 0.78, t) + baseRadius * 0.55 * Math.exp(-t * 10),
+    { radialSegments: 8, lengthSegments: 8 }
+  );
+  const trunkCurve = trunk.userData.curve;
+  const wood = [trunk];
+  const clumps = [];
+  const minRadius = 0.04;
+  const limb = (start, azimuth, elevation, length, r0, r1, { kink = 0.22, droop = 0.15, sides = 6 } = {}) => {
+    const direction = new THREE20.Vector3(
+      Math.cos(azimuth) * Math.cos(elevation),
+      Math.sin(elevation),
+      Math.sin(azimuth) * Math.cos(elevation)
+    );
+    const side = new THREE20.Vector3(-Math.sin(azimuth), 0, Math.cos(azimuth));
+    const points = [start.clone()];
+    for (const t of [0.33, 0.66, 1]) {
+      const point = start.clone().addScaledVector(direction, length * t);
+      point.addScaledVector(side, rng.range(-kink, kink) * length * (t < 1 ? 1 : 0.5));
+      point.y += rng.range(-kink, kink) * length * 0.5 - droop * length * t * t;
+      points.push(point);
+    }
+    const tube = buildTube(points, (t) => lerp3(r0, r1, Math.pow(t, 0.8)), {
+      radialSegments: sides,
+      lengthSegments: 6,
+      vOffset: rng.range(3, 30)
+    });
+    wood.push(tube);
+    return tube.userData.curve;
+  };
+  const limbCount = rng.int(3, 5);
+  const limbStart = rng.range(0, TAU7);
+  const limbs = [];
+  for (let i = 0; i < limbCount; i++) {
+    limbs.push({
+      azimuth: limbStart + i / limbCount * TAU7 + rng.range(-0.45, 0.45),
+      elevation: rng.range(0.35, 0.8),
+      length: rng.range(3, 4.2) * s,
+      from: rng.range(0.78, 1)
+    });
+  }
+  if (rng.chance(0.55)) {
+    limbs.push({ azimuth: rng.range(0, TAU7), elevation: rng.range(0.08, 0.25), length: rng.range(3.4, 4.4) * s, from: rng.range(0.5, 0.65), low: true });
+  }
+  limbs.push({ azimuth: leanAzimuth + rng.range(-1, 1), elevation: rng.range(1.15, 1.4), length: rng.range(2.8, 3.6) * s, from: 1, leader: true });
+  for (const L of limbs) {
+    const start = trunkCurve.getPoint(L.from);
+    const r0 = baseRadius * (L.leader ? 0.6 : rng.range(0.5, 0.62));
+    const curve = limb(start, L.azimuth, L.elevation, L.length, r0, r0 * 0.4, { droop: L.leader ? 0 : 0.12 });
+    const tip = curve.getPoint(1);
+    clumps.push({ center: tip.clone().add(new THREE20.Vector3(0, 0.35 * s, 0)), radius: rng.range(1.35, 1.6) * s });
+    const forks = L.leader ? 2 : rng.int(2, 3);
+    for (let j = 0; j < forks; j++) {
+      const t = lerp3(0.4, 0.82, forks === 1 ? 0.5 : j / (forks - 1)) + rng.range(-0.06, 0.06);
+      const from = curve.getPoint(t);
+      const sign = j % 2 === 0 ? 1 : -1;
+      const azimuth = L.azimuth + sign * rng.range(0.55, 1.1);
+      const elevation = L.leader ? rng.range(0.5, 0.8) : rng.range(0.45, 0.95);
+      const length = L.length * rng.range(0.42, 0.58);
+      const childCurve = limb(from, azimuth, elevation, length, Math.max(minRadius, r0 * 0.45), minRadius, { sides: 5, droop: 0.05 });
+      const end = childCurve.getPoint(1);
+      clumps.push({ center: end.clone().add(new THREE20.Vector3(0, 0.3 * s, 0)), radius: rng.range(1.15, 1.4) * s });
+      if (L.low || rng.chance(0.35)) {
+        clumps.push({ center: childCurve.getPoint(0.5).add(new THREE20.Vector3(0, 0.5 * s, 0)), radius: rng.range(0.95, 1.1) * s });
+      }
+    }
+  }
+  const crownBase = trunkCurve.getPoint(1);
+  const fillStart = rng.range(0, TAU7);
+  for (let i = 0; i < 4; i++) {
+    const angle = fillStart + i * 2.39996;
+    const reach = rng.range(1, 1.8) * s;
+    clumps.push({
+      center: crownBase.clone().add(new THREE20.Vector3(Math.cos(angle) * reach, rng.range(2, 2.9) * s, Math.sin(angle) * reach)),
+      radius: rng.range(1.3, 1.55) * s
+    });
+  }
+  const sway = { amplitude: 0.06 * s, height: p.height };
+  const group = new THREE20.Group();
+  group.name = meta12.name;
+  const woodMesh = new THREE20.Mesh(
+    mergeGeometries(wood),
+    createToonMaterial({
+      ramp: BARK_RAMP3,
+      steps: [0.3, 0.52, 0.76],
+      ink: BARK_INK3,
+      pattern: "furrow",
+      patternParams: [16, 3, 0.1, 0.2],
+      seed: p.seed % 97,
+      id: 10,
+      sway
+    })
+  );
+  woodMesh.name = "wood";
+  woodMesh.castShadow = true;
+  woodMesh.receiveShadow = true;
+  group.add(woodMesh);
+  const leaves = [];
+  if (season.density > 0) {
+    const canopyCenter = crownBase.clone().add(new THREE20.Vector3(0, 2 * s, 0));
+    const density = season.density * p.fullness;
+    const leafSize = () => rng.range(0.12, 0.19) * season.leafSize;
+    const winter = p.season === "winter";
+    for (const clump of clumps) {
+      if (winter && !rng.chance(0.4)) continue;
+      const radius = winter ? clump.radius * 0.7 : clump.radius;
+      fillClump(rng, leaves, {
+        center: clump.center,
+        radius,
+        count: Math.round(density * 64 * radius * radius),
+        canopyCenter,
+        leafSize,
+        squash: 0.78,
+        sag: 0.1,
+        canopyWeight: 0.3,
+        core: p.season !== "winter",
+        flex: [0.4, 0.8],
+        coreSize: 0.5,
+        shell: 0.55
+      });
+    }
+    if (p.season === "autumn") {
+      fallenLeaves(rng, leaves, { count: 48, minRadius: 0.6 * s, maxRadius: 4.2 * s, leafSize });
+    }
+    const leafGeometry = buildLeafGeometry(leaves);
+    leafGeometry.computeBoundingSphere();
+    leafGeometry.boundingSphere.radius += 0.6;
+    const leafMaterial = createToonMaterial({
+      ramp: season.ramp,
+      steps: [0.24, 0.44, 0.62, 0.8],
+      foliage: true,
+      id: 11,
+      sway
+    });
+    const leafMesh = new THREE20.Mesh(leafGeometry, leafMaterial);
+    leafMesh.name = "leaves";
+    leafMesh.customDepthMaterial = leafMaterial.userData.depthMaterial;
+    leafMesh.castShadow = true;
+    leafMesh.receiveShadow = true;
+    group.add(leafMesh);
+  }
+  group.userData.asset = { id: meta12.id, params: p, leaves: leaves.length };
+  return group;
+}
+
+// src/worlds/summer-meadow-rules.js
+var TILE = 16;
+var SEASON = "summer";
+var GROUND_ID = 11;
+var GROUND_GRAIN = 10;
+var FULL_DETAIL_AREA = 380;
+var CELLS = { tree: 4, lawn: 3, tuft: 1, flower: 1.3 };
+var MAX_TREE_SPACING = 7.5;
+var MAX_CROWN = 5.6 * 1.18;
+var TAU8 = Math.PI * 2;
+var UP7 = new THREE21.Vector3(0, 1, 0);
+var smoothstep = THREE21.MathUtils.smoothstep;
+var SPECIES2 = {
+  oak: { module: oak_exports, seeds: [3, 8], height: 11, scale: [0.82, 1.18], spacing: 7.5, crown: 5.6, trunk: 0.5 },
+  linden: { module: linden_exports, seeds: [2, 5], height: 12.5, scale: [0.8, 1.18], spacing: 6.5, crown: 4.4, trunk: 0.42 },
+  birch: { module: birch_exports, seeds: [1, 4], height: 9, scale: [0.8, 1.2], spacing: 3.4, crown: 3.2, trunk: 0.24 }
+};
+var FLOWERS2 = {
+  daisy: { count: 5, bias: () => 0, threshold: 0.68, slot: 10, wavelength: 21 },
+  poppy: { count: 5, bias: (wet) => (0.5 - wet) * 0.3, threshold: 0.69, slot: 11, wavelength: 25 },
+  cornflower: { count: 5, bias: (wet) => (0.5 - wet) * 0.2, threshold: 0.7, slot: 12, wavelength: 19 },
+  buttercup: { count: 6, bias: (wet) => (wet - 0.5) * 0.4, threshold: 0.7, slot: 13, wavelength: 17 },
+  lavender: { count: 3, bias: (wet) => (0.5 - wet) * 0.45, threshold: 0.82, slot: 14, wavelength: 15 }
+};
+function meadowRules({ seed, relief, trees: treeAmount, flowers: flowerAmount }) {
+  const RELIEF = THREE21.MathUtils.clamp(relief, 0.2, 3);
+  const heightAt = groundHeight(seed, RELIEF);
+  const noise = createNoise3(seed * 17 + 3);
+  const field = (x, z, wavelength, slot) => noise(x / wavelength + slot * 19.7, slot * 3.1 + 0.5, z / wavelength - slot * 7.3);
+  const fbm = (x, z, wavelength, slot) => field(x, z, wavelength, slot) * 0.65 + field(x, z, wavelength / 2.7, slot + 50) * 0.35;
+  const flowerSpread = (flowerAmount - 1) * 0.05;
+  return {
+    RELIEF,
+    heightAt,
+    field,
+    fbm,
+    /**
+     * Bosquets (0..1) : les arbres se serrent là où le champ est haut, et laissent de grandes clairières ailleurs.
+     * Plus d'arbres : des bosquets plus étendus, pas seulement plus serrés.
+     */
+    grove: (x, z) => smoothstep(fbm(x, z, 44, 1) + (treeAmount - 1) * 0.12, 0.5, 0.68),
+    /** Essence d'un arbre ; les arbres isolés sont surtout de grands chênes. */
+    treeKind(x, z, grove, pick2) {
+      if (grove > 0.2) {
+        const essence = field(x, z, 75, 2);
+        return essence < 0.4 ? "birch" : essence < 0.68 ? "oak" : "linden";
+      }
+      return pick2 < 0.55 ? "oak" : pick2 < 0.85 ? "linden" : "birch";
+    },
+    /** Creux humides (1) et bosses sèches (0). */
+    moisture: (x, z) => (1 - heightAt(x, z) / RELIEF) * 0.55 + field(x, z, 32, 6) * 0.45,
+    /** Chance qu'une touffe pousse (avant l'abondance d'herbe), selon l'ombre des couronnes (`open`). */
+    tuftChance(x, z, open) {
+      const vigor = fbm(x, z, 11, 3) * 0.7 + field(x, z, 48, 4) * 0.3;
+      const chance = 0.22 + smoothstep(vigor, 0.36, 0.62);
+      return open < 1 ? chance * 0.5 : chance;
+    },
+    /** Nappes de hautes herbes à épis (0..1). */
+    tallZone: (x, z) => fbm(x, z, 27, 5),
+    /** L'espèce de fleur la plus à sa place ici, et de combien elle dépasse son seuil. */
+    flowerAt(x, z, wet, flowers) {
+      let best = null;
+      let bestValue = 0;
+      for (const kind of Object.values(flowers)) {
+        const value = fbm(x, z, kind.wavelength, kind.slot) + kind.bias(wet) - kind.threshold + flowerSpread;
+        if (value > bestValue) {
+          best = kind;
+          bestValue = value;
+        }
+      }
+      return { best, bestValue };
+    }
+  };
+}
+function createMeadowLayers(addLayer) {
+  const addGroundCover = (prototype, { outlined = [], ...options } = {}) => {
+    prototype.traverse((child) => {
+      if (child.isMesh && !outlined.includes(child.name)) child.material.uniforms.uId.value = GROUND_ID;
+    });
+    return addLayer(prototype, { reach: "fine", thin: true, castShadow: false, ...options });
+  };
+  const species = {};
+  for (const [name, kind] of Object.entries(SPECIES2)) {
+    species[name] = {
+      ...kind,
+      layers: kind.seeds.map(
+        (treeSeed) => addLayer(kind.module.create({ seed: treeSeed, season: SEASON, height: kind.height, fullness: 0.75 }), { reach: "tall" })
+      )
+    };
+  }
+  const boulders = [
+    { seed: 1, size: 1.3 },
+    { seed: 4, size: 1, cover: "moss" },
+    { seed: 7, size: 0.6, roughness: 0.5 }
+  ].map((given) => ({ ...given, layer: addLayer(create5({ stone: "granite", ...given }), { reach: "low" }) }));
+  const slabs = [
+    { seed: 2, size: 2.2 },
+    { seed: 5, size: 1.4, cover: "moss" }
+  ].map((given) => ({ ...given, layer: addLayer(create6({ stone: "granite", ...given }), { reach: "low" }) }));
+  const lawns = [
+    { cut: "wild", seed: 1, size: 2.8 },
+    { cut: "wild", seed: 2, size: 2.2 },
+    { cut: "long", seed: 3, size: 2.4 }
+  ].map((given) => addGroundCover(create8({ season: SEASON, shape: "patch", fullness: 0.5, ...given }), { skip: ["sod"] }));
+  const tufts = [1, 2, 3].map(
+    (tuftSeed) => addGroundCover(create4({ seed: tuftSeed, season: SEASON, kind: "meadow", height: 0.5, fullness: 0.6 }))
+  );
+  const tallTufts = [4, 5].map(
+    (tuftSeed) => addGroundCover(create4({ seed: tuftSeed, season: SEASON, kind: "tall", height: 0.42, fullness: 0.6 }))
+  );
+  const flowers = {};
+  for (const [name, kind] of Object.entries(FLOWERS2)) {
+    flowers[name] = {
+      ...kind,
+      layer: addGroundCover(create3({ seed: kind.slot, species: name, season: SEASON, count: kind.count }), { outlined: ["petals", "hearts"] })
+    };
+  }
+  const moss = addLayer(create9({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "low", castShadow: false });
+  const molehill = addLayer(create7({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "low", castShadow: false });
+  return { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill };
+}
+function createPlacer(heightAt) {
+  const position = new THREE21.Vector3();
+  const scaleVector = new THREE21.Vector3();
+  const yawQuaternion = new THREE21.Quaternion();
+  const tiltQuaternion = new THREE21.Quaternion();
+  const normal = new THREE21.Vector3();
+  const matrix = new THREE21.Matrix4();
+  return (layer, x, z, { yaw = 0, scale = 1, tilt = false, sink = 0 } = {}) => {
+    position.set(x, heightAt(x, z) - sink, z);
+    yawQuaternion.setFromAxisAngle(UP7, yaw);
+    if (tilt) tiltQuaternion.setFromUnitVectors(UP7, groundNormal(heightAt, x, z, normal)).multiply(yawQuaternion);
+    else tiltQuaternion.copy(yawQuaternion);
+    layer.add(matrix.compose(position, tiltQuaternion, scaleVector.setScalar(scale)));
+  };
+}
+
+// src/worlds/summer-meadow-endless.js
+var HALF = TILE / 2;
+var smoothstep2 = THREE22.MathUtils.smoothstep;
+var WINDOW = 7;
+var NEED_MARGIN = 9;
+var PREFETCH_MARGIN = 20;
+var KEEP_MARGIN = 36;
+var PREFETCH_BUDGET = 4;
+var _frustum3 = new THREE22.Frustum();
+var _viewProjection3 = new THREE22.Matrix4();
+var _box = new THREE22.Box3();
+var keyOf = (cx, cz) => (cx + 32768) * 65536 + (cz + 32768);
+function hash(...values) {
+  let h = 2166136261;
+  for (const value of values) {
+    h = Math.imul(h ^ (value | 0), 16777619);
+    h ^= h >>> 15;
+    h = Math.imul(h, 739982445);
+    h ^= h >>> 12;
+  }
+  return (h >>> 0) % 2147483647;
+}
+function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1 } = {}) {
+  seed = THREE22.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
+  const rules = meadowRules({ seed, relief, trees: treeAmount, flowers: flowerAmount });
+  const { RELIEF, heightAt } = rules;
+  const group = new THREE22.Group();
+  group.name = "Prairie d'\xE9t\xE9 (infinie)";
+  const counts = { trees: 0, rocks: 0, tufts: 0, flowers: 0, lawns: 0, patches: 0 };
+  const sample = create({ seed, season: SEASON, finish: "pixel", tileX: 0, tileZ: 0, size: TILE, relief: RELIEF, dryness: 0.25 });
+  const groundMaterial = sample.getObjectByName("ground").material;
+  sample.getObjectByName("ground").geometry.dispose();
+  disposeObject(sample.getObjectByName("skirt"));
+  groundMaterial.uniforms.uSelfEdge.value = 4;
+  groundMaterial.uniforms.uPattern.value.x = GROUND_GRAIN;
+  const ground = new THREE22.Group();
+  ground.name = "ground";
+  group.add(ground);
+  const scatter = new StreamingScatter({ chunkSize: TILE, heightAt });
+  const { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill } = createMeadowLayers((prototype, options) => scatter.addLayer(prototype, options));
+  group.add(scatter.group);
+  const place = createPlacer(heightAt);
+  const daylight = createDaylight();
+  const cloudShadows = createCloudShadows(createRng(seed * 131 + 1), { bounds: { minX: -60, maxX: 60, minZ: -60, maxZ: 60 }, count: 8 });
+  group.add(daylight.light, daylight.light.target, cloudShadows.group);
+  const TREE_CELLS = TILE / CELLS.tree;
+  const candidateMemo = /* @__PURE__ */ new Map();
+  const treeMemo = /* @__PURE__ */ new Map();
+  const candidatesOf = (cx, cz) => {
+    const key = keyOf(cx, cz);
+    let list = candidateMemo.get(key);
+    if (list) return list;
+    list = [];
+    for (let j = 0; j < TREE_CELLS; j++) {
+      for (let i = 0; i < TREE_CELLS; i++) {
+        const rng = createRng(hash(seed, 1, cx * TREE_CELLS + i, cz * TREE_CELLS + j));
+        const x = cx * TILE - HALF + (i + rng.next()) * CELLS.tree;
+        const z = cz * TILE - HALF + (j + rng.next()) * CELLS.tree;
+        const roll = rng.next();
+        const pick2 = rng.next();
+        const model = rng.next();
+        const size = rng.next();
+        const yaw = rng.range(0, TAU8);
+        const priority = rng.next();
+        const grove = rules.grove(x, z);
+        if (roll > (0.015 + grove * 0.55) * treeAmount) continue;
+        const name = rules.treeKind(x, z, grove, pick2);
+        const kind = species[name];
+        const scale = THREE22.MathUtils.lerp(kind.scale[0], kind.scale[1], size);
+        list.push({ x, z, kind, name, scale, yaw, priority, layer: kind.layers[Math.floor(model * kind.layers.length)], crown: kind.crown * scale });
+      }
+    }
+    candidateMemo.set(key, list);
+    return list;
+  };
+  const treesOf = (cx, cz) => {
+    const key = keyOf(cx, cz);
+    let list = treeMemo.get(key);
+    if (list) return list;
+    const rivals = [];
+    for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) rivals.push(...candidatesOf(cx + dx, cz + dz));
+    list = candidatesOf(cx, cz).filter(
+      (tree) => !rivals.some((other) => other !== tree && other.priority > tree.priority && Math.hypot(other.x - tree.x, other.z - tree.z) < (other.kind.spacing + tree.kind.spacing) / 2)
+    );
+    treeMemo.set(key, list);
+    return list;
+  };
+  if (MAX_TREE_SPACING > TILE) throw new Error("summer-meadow-endless : espacement des arbres plus grand qu'un morceau");
+  const loaded = /* @__PURE__ */ new Map();
+  const loadChunk = (cx, cz) => {
+    const minX = cx * TILE - HALF;
+    const minZ = cz * TILE - HALF;
+    const maxX = minX + TILE;
+    const maxZ = minZ + TILE;
+    const inside = (x, z, margin) => x >= minX + margin && x < maxX - margin && z >= minZ + margin && z < maxZ - margin;
+    const rng = createRng(hash(seed, 2, cx, cz));
+    const detail = createRng(hash(seed, 3, cx, cz));
+    const local = { trees: 0, rocks: 0, tufts: 0, flowers: 0, lawns: 0, patches: 0 };
+    const colliders = [];
+    scatter.beginChunk(minX, minZ);
+    const own = treesOf(cx, cz);
+    for (const tree of own) {
+      place(tree.layer, tree.x, tree.z, { yaw: tree.yaw, scale: tree.scale, sink: 0.12 });
+      colliders.push({ x: tree.x, z: tree.z, radius: tree.kind.trunk * tree.scale });
+    }
+    local.trees = own.length;
+    const near = [];
+    for (let dz = -1; dz <= 1; dz++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        for (const tree of treesOf(cx + dx, cz + dz)) {
+          if (tree.x > minX - MAX_CROWN && tree.x < maxX + MAX_CROWN && tree.z > minZ - MAX_CROWN && tree.z < maxZ + MAX_CROWN) near.push(tree);
+        }
+      }
+    }
+    const rocks = [];
+    const addRock = (x, z, big) => {
+      if (!inside(x, z, 3)) return;
+      if (near.some((tree) => Math.hypot(tree.x - x, tree.z - z) < 1.6)) return;
+      const yaw = rng.range(0, TAU8);
+      if (big || rng.chance(0.55)) {
+        const model = big ? boulders[rng.int(0, 1)] : rng.pick(boulders);
+        const scale = big ? rng.range(1.05, 1.5) : rng.range(0.6, 1.1);
+        place(model.layer, x, z, { yaw, scale, sink: 0.06 * model.size * scale });
+        const height = model.size * scale;
+        rocks.push({ x, z, radius: height * 1.05 });
+        if (height > 0.75) colliders.push({ x, z, radius: height * 0.55 });
+      } else {
+        const model = rng.pick(slabs);
+        const scale = rng.range(0.7, 1.25);
+        place(model.layer, x, z, { yaw, scale, sink: 0.02 });
+        rocks.push({ x, z, radius: model.size * scale * 0.6 });
+      }
+    };
+    const outcrops = Math.floor(TILE * TILE / 1200 * rockAmount + rng.next());
+    for (let n = 0; n < outcrops; n++) {
+      let site = null;
+      for (let t = 0; t < 3; t++) {
+        const x = rng.range(minX + 4, maxX - 4);
+        const z = rng.range(minZ + 4, maxZ - 4);
+        const h = heightAt(x, z);
+        if (!site || h > site.h) site = { x, z, h };
+      }
+      addRock(site.x, site.z, true);
+      const followers = rng.int(2, 6);
+      for (let k = 0; k < followers; k++) {
+        const angle = rng.range(0, TAU8);
+        const distance = 1.2 + Math.sqrt(rng.next()) * 4;
+        addRock(site.x + Math.cos(angle) * distance, site.z + Math.sin(angle) * distance, false);
+      }
+    }
+    const loners = Math.floor(TILE * TILE / 650 * rockAmount + rng.next());
+    for (let n = 0; n < loners; n++) addRock(rng.range(minX, maxX), rng.range(minZ, maxZ), false);
+    local.rocks = rocks.length;
+    const openness = (x, z) => {
+      let open = 2;
+      for (const tree of near) open = Math.min(open, Math.hypot(tree.x - x, tree.z - z) / tree.crown);
+      return open;
+    };
+    const onRock = (x, z, margin = 0) => rocks.some((rock) => Math.hypot(rock.x - x, rock.z - z) < rock.radius + margin);
+    const { moisture } = rules;
+    const lawnCells = Math.ceil(TILE / CELLS.lawn);
+    for (let j = 0; j < lawnCells; j++) {
+      for (let i = 0; i < lawnCells; i++) {
+        const x = minX + (i + detail.next()) * CELLS.lawn;
+        const z = minZ + (j + detail.next()) * CELLS.lawn;
+        const roll = detail.next();
+        const model = detail.next();
+        const yaw = detail.range(0, TAU8);
+        const scale = detail.range(0.85, 1.15);
+        if (!inside(x, z, 0) || onRock(x, z, 0.8) || openness(x, z) < 0.3) continue;
+        if (roll > smoothstep2(moisture(x, z), 0.42, 0.66) * 0.45 * grass) continue;
+        place(lawns[Math.floor(model * lawns.length)], x, z, { yaw, scale, tilt: true });
+        local.lawns += 1;
+      }
+    }
+    const tuftCells = TILE / CELLS.tuft;
+    for (let j = 0; j < tuftCells; j++) {
+      for (let i = 0; i < tuftCells; i++) {
+        const x = minX + (i + detail.next()) * CELLS.tuft;
+        const z = minZ + (j + detail.next()) * CELLS.tuft;
+        const roll = detail.next();
+        const tallRoll = detail.next();
+        const model = detail.next();
+        const yaw = detail.range(0, TAU8);
+        const scale = detail.range(0.75, 1.25);
+        if (onRock(x, z, 0.15)) continue;
+        const open = openness(x, z);
+        if (open < 0.14) continue;
+        if (roll > rules.tuftChance(x, z, open) * grass) continue;
+        if (open >= 1.1 && tallRoll < smoothstep2(rules.tallZone(x, z), 0.56, 0.7) * 0.75) {
+          place(tallTufts[Math.floor(model * tallTufts.length)], x, z, { yaw, scale });
+        } else {
+          place(tufts[Math.floor(model * tufts.length)], x, z, { yaw, scale: scale * (open < 1 ? 0.8 : 1) });
+        }
+        local.tufts += 1;
+      }
+    }
+    const flowerCells = Math.ceil(TILE / CELLS.flower);
+    for (let j = 0; j < flowerCells; j++) {
+      for (let i = 0; i < flowerCells; i++) {
+        const x = minX + (i + detail.next()) * CELLS.flower;
+        const z = minZ + (j + detail.next()) * CELLS.flower;
+        const roll = detail.next();
+        const stray = detail.next();
+        const yaw = detail.range(0, TAU8);
+        const scale = detail.range(0.85, 1.08);
+        if (!inside(x, z, 0) || onRock(x, z, 0.2)) continue;
+        if (openness(x, z) < 0.75) continue;
+        const { best, bestValue } = rules.flowerAt(x, z, moisture(x, z), flowers);
+        if (best && roll < (0.15 + smoothstep2(bestValue, 0, 0.1) * 0.5) * Math.min(1.6, flowerAmount)) {
+          place(best.layer, x, z, { yaw, scale });
+          local.flowers += 1;
+        } else if (stray < 0.01 * flowerAmount) {
+          place(stray < 6e-3 * flowerAmount ? flowers.daisy.layer : flowers.buttercup.layer, x, z, { yaw, scale: scale * 0.9 });
+          local.flowers += 1;
+        }
+      }
+    }
+    for (const tree of own) {
+      if (!detail.chance(0.6)) continue;
+      const angle = Math.PI + detail.range(-0.9, 0.9);
+      const distance = tree.kind.trunk * 1.2 + detail.range(0.3, 0.9);
+      place(moss, tree.x + Math.sin(angle) * distance, tree.z + Math.cos(angle) * distance, { yaw: detail.range(0, TAU8), scale: detail.range(0.7, 1.2), tilt: true });
+      local.patches += 1;
+    }
+    for (const rock of rocks) {
+      if (!detail.chance(0.3)) continue;
+      const angle = detail.range(0, TAU8);
+      const x = rock.x + Math.cos(angle) * (rock.radius + 0.3);
+      const z = rock.z + Math.sin(angle) * (rock.radius + 0.3);
+      place(moss, x, z, { yaw: detail.range(0, TAU8), scale: detail.range(0.5, 0.9), tilt: true });
+      local.patches += 1;
+    }
+    if (detail.next() < TILE * TILE / 1500) {
+      const colonyX = detail.range(minX + 3, maxX - 3);
+      const colonyZ = detail.range(minZ + 3, maxZ - 3);
+      const hills = detail.int(3, 6);
+      for (let k = 0; k < hills; k++) {
+        const angle = detail.range(0, TAU8);
+        const distance = detail.range(0.4, 3.2);
+        const x = colonyX + Math.cos(angle) * distance;
+        const z = colonyZ + Math.sin(angle) * distance;
+        if (openness(x, z) < 1.1 || onRock(x, z, 0.4)) continue;
+        place(molehill, x, z, { yaw: detail.range(0, TAU8), scale: detail.range(0.7, 1.15), tilt: true });
+        local.patches += 1;
+      }
+    }
+    const scattered = scatter.endChunk(createRng(hash(seed, 4, cx, cz)));
+    const mesh = new THREE22.Mesh(buildGroundPatch({ size: TILE, spacing: 0.5, origin: [cx * TILE, cz * TILE], height: heightAt }), groundMaterial);
+    mesh.name = "ground";
+    mesh.receiveShadow = true;
+    mesh.position.set(cx * TILE, 0, cz * TILE);
+    mesh.matrixAutoUpdate = false;
+    mesh.updateMatrix();
+    ground.add(mesh);
+    for (const name in counts) counts[name] += local[name];
+    loaded.set(keyOf(cx, cz), { cx, cz, scattered, mesh, colliders, counts: local });
+  };
+  const unloadChunk = (key, chunk) => {
+    scatter.removeChunk(chunk.scattered);
+    ground.remove(chunk.mesh);
+    chunk.mesh.geometry.dispose();
+    for (const name in counts) counts[name] -= chunk.counts[name];
+    loaded.delete(key);
+  };
+  const chunkBox = (cx, cz, margin) => {
+    _box.min.set(cx * TILE - HALF - margin, -0.5, cz * TILE - HALF - margin);
+    _box.max.set(cx * TILE + HALF + margin, RELIEF + 15, cz * TILE + HALF + margin);
+    return _box;
+  };
+  let frameIndex = 0;
+  const stream = (camera, target) => {
+    _viewProjection3.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    _frustum3.setFromProjectionMatrix(_viewProjection3);
+    const tx = Math.round(target.x / TILE);
+    const tz = Math.round(target.z / TILE);
+    let bestKey = -1;
+    let bestDistance = Infinity;
+    let bestX = 0;
+    let bestZ = 0;
+    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
+      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+        const cx = tx + dx;
+        const cz = tz + dz;
+        const key = keyOf(cx, cz);
+        if (loaded.has(key)) continue;
+        if (_frustum3.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
+          loadChunk(cx, cz);
+        } else if (_frustum3.intersectsBox(chunkBox(cx, cz, PREFETCH_MARGIN))) {
+          const distance = dx * dx + dz * dz;
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            bestKey = key;
+            bestX = cx;
+            bestZ = cz;
+          }
+        }
+      }
+    }
+    if (bestKey >= 0) {
+      const start = performance.now();
+      timedLoad(bestX, bestZ);
+      while (performance.now() - start + chunkTime < PREFETCH_BUDGET) {
+        if (!loadNearestPending(tx, tz)) break;
+      }
+    }
+    if (frameIndex++ % 30 === 0) {
+      for (const [key, chunk] of loaded) {
+        const far = Math.abs(chunk.cx - tx) > WINDOW + 1 || Math.abs(chunk.cz - tz) > WINDOW + 1;
+        if (far || !_frustum3.intersectsBox(chunkBox(chunk.cx, chunk.cz, KEEP_MARGIN))) unloadChunk(key, chunk);
+      }
+      for (const memo of [candidateMemo, treeMemo]) {
+        for (const key of memo.keys()) {
+          const cx = Math.floor(key / 65536) - 32768;
+          const cz = key % 65536 - 32768;
+          if (Math.abs(cx - tx) > WINDOW + 3 || Math.abs(cz - tz) > WINDOW + 3) memo.delete(key);
+        }
+      }
+    }
+  };
+  const loadNearestPending = (tx, tz) => {
+    let best = null;
+    let bestDistance = Infinity;
+    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
+      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+        const distance = dx * dx + dz * dz;
+        if (distance >= bestDistance || loaded.has(keyOf(tx + dx, tz + dz))) continue;
+        if (_frustum3.intersectsBox(chunkBox(tx + dx, tz + dz, PREFETCH_MARGIN))) {
+          best = [tx + dx, tz + dz];
+          bestDistance = distance;
+        }
+      }
+    }
+    if (!best) return false;
+    timedLoad(best[0], best[1]);
+    return true;
+  };
+  let chunkTime = 3;
+  const timedLoad = (cx, cz) => {
+    const start = performance.now();
+    loadChunk(cx, cz);
+    chunkTime += (performance.now() - start - chunkTime) * 0.2;
+  };
+  for (let cz = -1; cz <= 1; cz++) for (let cx = -1; cx <= 1; cx++) loadChunk(cx, cz);
+  const nearbyColliders = (x, z, visit) => {
+    const cx = Math.round(x / TILE);
+    const cz = Math.round(z / TILE);
+    for (let dz = -1; dz <= 1; dz++) {
+      for (let dx = -1; dx <= 1; dx++) {
+        const chunk = loaded.get(keyOf(cx + dx, cz + dz));
+        if (chunk) for (const collider of chunk.colliders) visit(collider);
+      }
+    }
+  };
+  const spawn = new THREE22.Vector3();
+  search: for (let ring = 0; ring < 12; ring++) {
+    for (let k = 0; k < Math.max(1, ring * 6); k++) {
+      const angle = k / Math.max(1, ring * 6) * TAU8;
+      const x = Math.cos(angle) * ring * 2;
+      const z = Math.sin(angle) * ring * 2;
+      let free = true;
+      nearbyColliders(x, z, (collider) => {
+        if (Math.hypot(collider.x - x, collider.z - z) <= collider.radius + 2.5) free = false;
+      });
+      if (free) {
+        spawn.set(x, 0, z);
+        break search;
+      }
+    }
+  }
+  spawn.y = heightAt(spawn.x, spawn.z);
+  let pushX = 0;
+  let pushZ = 0;
+  let pushRadius = 0;
+  const push = (collider) => {
+    const dx = pushX - collider.x;
+    const dz = pushZ - collider.z;
+    const reach = collider.radius + pushRadius;
+    const distance = Math.hypot(dx, dz);
+    if (distance < reach && distance > 1e-4) {
+      pushX = collider.x + dx / distance * reach;
+      pushZ = collider.z + dz / distance * reach;
+    }
+  };
+  return {
+    group,
+    seed,
+    size: "endless",
+    endless: true,
+    meters: Infinity,
+    bounds: { minX: -Infinity, maxX: Infinity, minZ: -Infinity, maxZ: Infinity },
+    center: new THREE22.Vector3(),
+    spawn,
+    counts,
+    heightAt,
+    /** Empêche de traverser les troncs et les gros rochers des morceaux chargés : corrige `position` (x, z). */
+    collide(position, radius) {
+      pushX = position.x;
+      pushZ = position.z;
+      pushRadius = radius;
+      nearbyColliders(position.x, position.z, push);
+      position.x = pushX;
+      position.z = pushZ;
+    },
+    /** Position de l'astre (heure du jour). */
+    setMood(mood) {
+      daylight.setSun(mood.sunAzimuth, mood.sunElevation);
+    },
+    /** À appeler à chaque image, caméra à jour, avant le rendu (même contrat que l'île). */
+    update({ camera, target, dt, viewArea, viewRadius, shadows }) {
+      stream(camera, target);
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea);
+      cloudShadows.update(dt, target);
+      if (shadows) daylight.update(target, viewRadius + 14);
+    },
+    /** Ce qui est dessiné par le semis, la part de végétation fine affichée, les morceaux chargés et le temps moyen
+     * de fabrication d'un morceau (ms). */
+    stats() {
+      return { ...scatter.stats(), fraction: scatter.fraction, chunks: loaded.size, chunkTime };
+    },
+    dispose() {
+      for (const [key, chunk] of loaded) unloadChunk(key, chunk);
+      scatter.dispose();
+      cloudShadows.dispose();
+      daylight.dispose();
+      groundMaterial.dispose();
+      group.clear();
+    }
+  };
 }
 
 // src/worlds/summer-meadow.js
@@ -4282,45 +5199,37 @@ var MEADOW_SIZES = {
   medium: { label: "Moyen", meters: 96 },
   large: { label: "Grand", meters: 144 }
 };
-var TILE = 16;
-var SEASON = "summer";
-var GROUND_ID = 11;
-var GROUND_GRAIN = 10;
-var FULL_DETAIL_AREA = 380;
-var TAU8 = Math.PI * 2;
-var UP7 = new THREE20.Vector3(0, 1, 0);
-var smoothstep = THREE20.MathUtils.smoothstep;
-var _position = new THREE20.Vector3();
-var _scale = new THREE20.Vector3();
-var _yaw = new THREE20.Quaternion();
-var _tilt = new THREE20.Quaternion();
-var _normal2 = new THREE20.Vector3();
-var _matrix = new THREE20.Matrix4();
-function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1, diorama = false } = {}) {
-  const RELIEF = THREE20.MathUtils.clamp(relief, 0.2, 3);
-  seed = THREE20.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
+var MEADOW_EXTENTS = {
+  ...MEADOW_SIZES,
+  endless: { label: "Infini", meters: Infinity }
+};
+var smoothstep3 = THREE23.MathUtils.smoothstep;
+function createSummerMeadow(options = {}) {
+  if (options.size === "endless" && !options.diorama) return createEndlessMeadow(options);
+  return createIsland(options);
+}
+function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1, diorama = false } = {}) {
+  seed = THREE23.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
   const meters = (MEADOW_SIZES[size] ?? MEADOW_SIZES.medium).meters;
   const tiles = meters / TILE;
   const firstTile = -Math.floor(tiles / 2);
   const min = (firstTile - 0.5) * TILE;
   const bounds = { minX: min, maxX: min + meters, minZ: min, maxZ: min + meters };
-  const center = new THREE20.Vector3(min + meters / 2, 0, min + meters / 2);
+  const center = new THREE23.Vector3(min + meters / 2, 0, min + meters / 2);
   const area = meters * meters;
-  const heightAt = groundHeight(seed, RELIEF);
-  const noise = createNoise3(seed * 17 + 3);
-  const field = (x, z, wavelength, slot) => noise(x / wavelength + slot * 19.7, slot * 3.1 + 0.5, z / wavelength - slot * 7.3);
-  const fbm = (x, z, wavelength, slot) => field(x, z, wavelength, slot) * 0.65 + field(x, z, wavelength / 2.7, slot + 50) * 0.35;
-  const group = new THREE20.Group();
+  const rules = meadowRules({ seed, relief, trees: treeAmount, flowers: flowerAmount });
+  const { RELIEF, heightAt, field } = rules;
+  const group = new THREE23.Group();
   group.name = "Prairie d'\xE9t\xE9";
   const counts = {};
-  const ground = new THREE20.Group();
+  const ground = new THREE23.Group();
   ground.name = "ground";
   let groundMaterial = null;
   for (let j = 0; j < tiles; j++) {
     for (let i = 0; i < tiles; i++) {
       const tileX = firstTile + i;
       const tileZ = firstTile + j;
-      const tile = create7({ seed, season: SEASON, finish: "pixel", tileX, tileZ, size: TILE, relief: RELIEF, dryness: 0.25 });
+      const tile = create({ seed, season: SEASON, finish: "pixel", tileX, tileZ, size: TILE, relief: RELIEF, dryness: 0.25 });
       const mesh = tile.getObjectByName("ground");
       disposeObject(tile.getObjectByName("skirt"));
       if (groundMaterial) {
@@ -4340,54 +5249,33 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
   group.add(ground);
   const soilBottom = (x, z) => -1.1 - field(x, z, 9, 30) * 0.9;
   const rockBottom = diorama ? (x, z) => -4.5 - field(x, z, 6, 31) * 3.5 - field(x, z, 23, 32) * 3 : (x, z) => -3 - field(x, z, 6, 31) * 1.8 - field(x, z, 23, 32) * 1.5;
-  const soil = new THREE20.Mesh(
+  const soil = new THREE23.Mesh(
     buildIslandBand({ bounds, top: heightAt, bottom: soilBottom }),
     createToonMaterial({ ramp: GROUNDS.dirt.ramp, steps: [0.3, 0.5, 0.74], pattern: "speckle", patternParams: [16, 0.08, 0.2, 1], seed: 5, id: 12 })
   );
-  const bedrock = new THREE20.Mesh(
+  const bedrock = new THREE23.Mesh(
     buildIslandBand({ bounds, top: (x, z) => soilBottom(x, z) + 0.02, bottom: rockBottom }),
     createToonMaterial({ ramp: STONES.granite.ramp, ink: STONES.granite.ink, steps: [0.3, 0.5, 0.74], pattern: "speckle", patternParams: [8, 0.1, 0.2, 1], seed: 9, id: 13 })
   );
   soil.name = "soil";
   bedrock.name = "bedrock";
   group.add(soil, bedrock);
-  const keelDepth = THREE20.MathUtils.clamp(meters * 0.6, 28, 72);
+  const keelDepth = THREE23.MathUtils.clamp(meters * 0.6, 28, 72);
   let underside = null;
   if (!diorama) {
-    underside = new THREE20.Mesh(buildIslandUnderside({ bounds, top: rockBottom, depth: keelDepth, noise: (x, z) => field(x, z, 6, 33) }), bedrock.material);
+    underside = new THREE23.Mesh(buildIslandUnderside({ bounds, top: rockBottom, depth: keelDepth, noise: (x, z) => field(x, z, 6, 33) }), bedrock.material);
     underside.name = "underside";
     underside.matrixAutoUpdate = false;
     group.add(underside);
   }
   const scatter = new ScatterField({ bounds, heightAt });
-  const addGroundCover = (prototype, { outlined = [], ...options } = {}) => {
-    prototype.traverse((child) => {
-      if (child.isMesh && !outlined.includes(child.name)) child.material.uniforms.uId.value = GROUND_ID;
-    });
-    return scatter.addLayer(prototype, { reach: "fine", thin: true, castShadow: false, ...options });
-  };
   const rng = createRng(seed * 9973 + 11);
-  const place = (layer, x, z, { yaw = 0, scale = 1, tilt = false, sink = 0 } = {}) => {
-    _position.set(x, heightAt(x, z) - sink, z);
-    _yaw.setFromAxisAngle(UP7, yaw);
-    if (tilt) _tilt.setFromUnitVectors(UP7, groundNormal(heightAt, x, z, _normal2)).multiply(_yaw);
-    else _tilt.copy(_yaw);
-    layer.add(_matrix.compose(_position, _tilt, _scale.setScalar(scale)));
-  };
+  const place = createPlacer(heightAt);
   const inside = (x, z, margin) => x > bounds.minX + margin && x < bounds.maxX - margin && z > bounds.minZ + margin && z < bounds.maxZ - margin;
-  const species = {
-    oak: { module: oak_exports, seeds: [3, 8], height: 11, scale: [0.82, 1.18], spacing: 7.5, crown: 5.6, trunk: 0.5 },
-    linden: { module: linden_exports, seeds: [2, 5], height: 12.5, scale: [0.8, 1.18], spacing: 6.5, crown: 4.4, trunk: 0.42 },
-    birch: { module: birch_exports, seeds: [1, 4], height: 9, scale: [0.8, 1.2], spacing: 3.4, crown: 3.2, trunk: 0.24 }
-  };
-  for (const kind of Object.values(species)) {
-    kind.layers = kind.seeds.map(
-      (treeSeed) => scatter.addLayer(kind.module.create({ seed: treeSeed, season: SEASON, height: kind.height, fullness: 0.75 }), { reach: "tall" })
-    );
-  }
+  const { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill } = createMeadowLayers((prototype, options) => scatter.addLayer(prototype, options));
   const colliders = [];
   const trees = [];
-  const TREE_CELL = 4;
+  const TREE_CELL = CELLS.tree;
   const treeCells = Math.ceil(meters / TREE_CELL);
   for (let j = 0; j < treeCells; j++) {
     for (let i = 0; i < treeCells; i++) {
@@ -4399,28 +5287,18 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
       const size2 = rng.next();
       const yaw = rng.range(0, TAU8);
       if (!inside(x, z, 3.5)) continue;
-      const grove = smoothstep(fbm(x, z, 44, 1) + (treeAmount - 1) * 0.12, 0.5, 0.68);
+      const grove = rules.grove(x, z);
       if (roll > (0.015 + grove * 0.55) * treeAmount) continue;
-      const essence = field(x, z, 75, 2);
-      const name = grove > 0.2 ? essence < 0.4 ? "birch" : essence < 0.68 ? "oak" : "linden" : pick2 < 0.55 ? "oak" : pick2 < 0.85 ? "linden" : "birch";
+      const name = rules.treeKind(x, z, grove, pick2);
       const kind = species[name];
       if (trees.some((tree) => Math.hypot(tree.x - x, tree.z - z) < (tree.kind.spacing + kind.spacing) / 2)) continue;
-      const scale = THREE20.MathUtils.lerp(kind.scale[0], kind.scale[1], size2);
+      const scale = THREE23.MathUtils.lerp(kind.scale[0], kind.scale[1], size2);
       place(kind.layers[Math.floor(model * kind.layers.length)], x, z, { yaw, scale, sink: 0.12 });
       trees.push({ x, z, kind, name, crown: kind.crown * scale });
       colliders.push({ x, z, radius: kind.trunk * scale });
     }
   }
   counts.trees = trees.length;
-  const boulders = [
-    { seed: 1, size: 1.3 },
-    { seed: 4, size: 1, cover: "moss" },
-    { seed: 7, size: 0.6, roughness: 0.5 }
-  ].map((given) => ({ ...given, layer: scatter.addLayer(create3({ stone: "granite", ...given }), { reach: "low" }) }));
-  const slabs = [
-    { seed: 2, size: 2.2 },
-    { seed: 5, size: 1.4, cover: "moss" }
-  ].map((given) => ({ ...given, layer: scatter.addLayer(create4({ stone: "granite", ...given }), { reach: "low" }) }));
   const rocks = [];
   const addRock = (x, z, big) => {
     if (!inside(x, z, 2)) return;
@@ -4490,13 +5368,8 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
       return open;
     };
     const onRock = (x, z, margin = 0) => (buckets.get(bucketKey(x, z))?.rocks ?? []).some((rock) => Math.hypot(rock.x - x, rock.z - z) < rock.radius + margin);
-    const moisture = (x, z) => (1 - heightAt(x, z) / RELIEF) * 0.55 + field(x, z, 32, 6) * 0.45;
-    const lawns = [
-      { cut: "wild", seed: 1, size: 2.8 },
-      { cut: "wild", seed: 2, size: 2.2 },
-      { cut: "long", seed: 3, size: 2.4 }
-    ].map((given) => addGroundCover(create6({ season: SEASON, shape: "patch", fullness: 0.5, ...given }), { skip: ["sod"] }));
-    const LAWN_CELL = 3;
+    const { moisture } = rules;
+    const LAWN_CELL = CELLS.lawn;
     const lawnCells = Math.ceil(meters / LAWN_CELL);
     for (let j = 0; j < lawnCells; j++) {
       for (let i = 0; i < lawnCells; i++) {
@@ -4507,18 +5380,12 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         const yaw = detail.range(0, TAU8);
         const scale = detail.range(0.85, 1.15);
         if (!inside(x, z, 1.8) || onRock(x, z, 0.8) || openness(x, z) < 0.3) continue;
-        if (roll > smoothstep(moisture(x, z), 0.42, 0.66) * 0.45 * grass) continue;
+        if (roll > smoothstep3(moisture(x, z), 0.42, 0.66) * 0.45 * grass) continue;
         place(lawns[Math.floor(model * lawns.length)], x, z, { yaw, scale, tilt: true });
         counts.lawns += 1;
       }
     }
-    const tufts = [1, 2, 3].map(
-      (tuftSeed) => addGroundCover(create2({ seed: tuftSeed, season: SEASON, kind: "meadow", height: 0.5, fullness: 0.6 }))
-    );
-    const tallTufts = [4, 5].map(
-      (tuftSeed) => addGroundCover(create2({ seed: tuftSeed, season: SEASON, kind: "tall", height: 0.42, fullness: 0.6 }))
-    );
-    const TUFT_CELL = 1;
+    const TUFT_CELL = CELLS.tuft;
     const tuftCells = Math.ceil(meters / TUFT_CELL);
     for (let j = 0; j < tuftCells; j++) {
       for (let i = 0; i < tuftCells; i++) {
@@ -4532,12 +5399,8 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         if (!inside(x, z, 0.5) || onRock(x, z, 0.15)) continue;
         const open = openness(x, z);
         if (open < 0.14) continue;
-        const vigor = fbm(x, z, 11, 3) * 0.7 + field(x, z, 48, 4) * 0.3;
-        let chance = 0.22 + smoothstep(vigor, 0.36, 0.62);
-        if (open < 1) chance *= 0.5;
-        if (roll > chance * grass) continue;
-        const tallZone = fbm(x, z, 27, 5);
-        if (open >= 1.1 && tallRoll < smoothstep(tallZone, 0.56, 0.7) * 0.75) {
+        if (roll > rules.tuftChance(x, z, open) * grass) continue;
+        if (open >= 1.1 && tallRoll < smoothstep3(rules.tallZone(x, z), 0.56, 0.7) * 0.75) {
           place(tallTufts[Math.floor(model * tallTufts.length)], x, z, { yaw, scale });
         } else {
           place(tufts[Math.floor(model * tufts.length)], x, z, { yaw, scale: scale * (open < 1 ? 0.8 : 1) });
@@ -4545,18 +5408,7 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         counts.tufts += 1;
       }
     }
-    const flowers = {
-      daisy: { count: 5, bias: () => 0, threshold: 0.68, slot: 10, wavelength: 21 },
-      poppy: { count: 5, bias: (wet) => (0.5 - wet) * 0.3, threshold: 0.69, slot: 11, wavelength: 25 },
-      cornflower: { count: 5, bias: (wet) => (0.5 - wet) * 0.2, threshold: 0.7, slot: 12, wavelength: 19 },
-      buttercup: { count: 6, bias: (wet) => (wet - 0.5) * 0.4, threshold: 0.7, slot: 13, wavelength: 17 },
-      lavender: { count: 3, bias: (wet) => (0.5 - wet) * 0.45, threshold: 0.82, slot: 14, wavelength: 15 }
-    };
-    for (const [name, kind] of Object.entries(flowers)) {
-      kind.layer = addGroundCover(create({ seed: kind.slot, species: name, season: SEASON, count: kind.count }), { outlined: ["petals", "hearts"] });
-    }
-    const FLOWER_CELL = 1.3;
-    const flowerSpread = (flowerAmount - 1) * 0.05;
+    const FLOWER_CELL = CELLS.flower;
     const flowerCells = Math.ceil(meters / FLOWER_CELL);
     for (let j = 0; j < flowerCells; j++) {
       for (let i = 0; i < flowerCells; i++) {
@@ -4569,17 +5421,8 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         if (!inside(x, z, 0.6) || onRock(x, z, 0.2)) continue;
         const open = openness(x, z);
         if (open < 0.75) continue;
-        const wet = moisture(x, z);
-        let best = null;
-        let bestValue = 0;
-        for (const kind of Object.values(flowers)) {
-          const value = fbm(x, z, kind.wavelength, kind.slot) + kind.bias(wet) - kind.threshold + flowerSpread;
-          if (value > bestValue) {
-            best = kind;
-            bestValue = value;
-          }
-        }
-        if (best && roll < (0.15 + smoothstep(bestValue, 0, 0.1) * 0.5) * Math.min(1.6, flowerAmount)) {
+        const { best, bestValue } = rules.flowerAt(x, z, moisture(x, z), flowers);
+        if (best && roll < (0.15 + smoothstep3(bestValue, 0, 0.1) * 0.5) * Math.min(1.6, flowerAmount)) {
           place(best.layer, x, z, { yaw, scale });
           counts.flowers += 1;
         } else if (stray < 0.01 * flowerAmount) {
@@ -4588,7 +5431,6 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         }
       }
     }
-    const moss = scatter.addLayer(create8({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "low", castShadow: false });
     for (const tree of trees) {
       if (!detail.chance(0.6)) continue;
       const angle = Math.PI + detail.range(-0.9, 0.9);
@@ -4610,7 +5452,6 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
         counts.patches += 1;
       }
     }
-    const molehill = scatter.addLayer(create5({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "low", castShadow: false });
     const colonies = Math.max(1, Math.round(area / 1500));
     for (let n = 0; n < colonies; n++) {
       const cx = detail.range(bounds.minX + 5, bounds.maxX - 5);
@@ -4640,7 +5481,7 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
     cloudSea = createCloudSea({ bounds, seaLevel: -keelDepth - 30, mistLevel: -keelDepth * 0.82, inset: meters * 0.5 });
     group.add(daylight.light, daylight.light.target, cloudShadows.group, cloudSea.mesh);
   }
-  const spawn = new THREE20.Vector3(center.x, 0, center.z);
+  const spawn = new THREE23.Vector3(center.x, 0, center.z);
   search: for (let ring = 0; ring < 12; ring++) {
     for (let k = 0; k < Math.max(1, ring * 6); k++) {
       const angle = k / Math.max(1, ring * 6) * TAU8;
@@ -4679,8 +5520,8 @@ function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: tr
           position.z = collider.z + dz / distance * reach;
         }
       }
-      position.x = THREE20.MathUtils.clamp(position.x, bounds.minX + 0.6, bounds.maxX - 0.6);
-      position.z = THREE20.MathUtils.clamp(position.z, bounds.minZ + 0.6, bounds.maxZ - 0.6);
+      position.x = THREE23.MathUtils.clamp(position.x, bounds.minX + 0.6, bounds.maxX - 0.6);
+      position.z = THREE23.MathUtils.clamp(position.z, bounds.minZ + 0.6, bounds.maxZ - 0.6);
     },
     /**
      * Applique l'ambiance du moment (kit/atmosphere.js) : position de l'astre, teintes de la mer de nuages.
@@ -4744,7 +5585,7 @@ var meta13 = {
   nameEn: "Summer meadow",
   category: "worlds",
   subcategory: "islands",
-  description: "Un monde entier : une \xEEle de prairie vallonn\xE9e qui flotte dans une mer de nuages, assembl\xE9e \xE0 partir des assets de la biblioth\xE8que (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on r\xE8gle sa taille et l'abondance de chaque \xE9l\xE9ment, puis on s'y prom\xE8ne.",
+  description: "Un monde entier : une \xEEle de prairie vallonn\xE9e qui flotte dans une mer de nuages, assembl\xE9e \xE0 partir des assets de la biblioth\xE8que (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on r\xE8gle sa taille et l'abondance de chaque \xE9l\xE9ment, puis on s'y prom\xE8ne. Dans l'explorateur, la taille \xAB Infini \xBB \xF4te les bords : la prairie se fabrique au fil de la marche.",
   tags: [
     "monde",
     "carte",
@@ -4769,10 +5610,13 @@ var meta13 = {
     "composition",
     "explorable",
     "outdoor",
-    "procedural"
+    "procedural",
+    "infinite",
+    "endless",
+    "infini"
   ],
   biomes: ["meadow", "forest"],
-  version: 2,
+  version: 3,
   added: "2026-11-16",
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au centre de l'\xEEle (taille \xAB petit \xBB), au niveau le plus bas du pr\xE9. La tranche de l'\xEEle descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
   footprint: { radius: 35, height: 15 },

@@ -9163,7 +9163,7 @@
       "nameEn": "Summer meadow",
       "category": "worlds",
       "subcategory": "islands",
-      "description": "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène.",
+      "description": "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène. Dans l'explorateur, la taille « Infini » ôte les bords : la prairie se fabrique au fil de la marche.",
       "tags": [
         "monde",
         "carte",
@@ -9188,13 +9188,16 @@
         "composition",
         "explorable",
         "outdoor",
-        "procedural"
+        "procedural",
+        "infinite",
+        "endless",
+        "infini"
       ],
       "biomes": [
         "meadow",
         "forest"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de l'île descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
       "footprint": {
@@ -9312,6 +9315,13 @@
         "src/assets/kit/geometry.js",
         "src/assets/kit/params.js",
         "src/assets/kit/variation.js",
+        "src/assets/nature/terrain/meadow-ground.js",
+        "src/worlds/kit/scatter.js",
+        "src/worlds/kit/cloud-sea.js",
+        "src/assets/nature/sky/cloud.js",
+        "src/worlds/kit/sky.js",
+        "src/worlds/kit/terrain.js",
+        "src/worlds/kit/streaming-scatter.js",
         "src/assets/nature/plants/flower-clump.js",
         "src/assets/nature/plants/grass-tuft.js",
         "src/assets/kit/ground-cover.js",
@@ -9319,17 +9329,13 @@
         "src/assets/nature/rocks/buried-rock.js",
         "src/assets/nature/terrain/dirt-mound.js",
         "src/assets/nature/terrain/lawn.js",
-        "src/assets/nature/terrain/meadow-ground.js",
         "src/assets/nature/terrain/moss-patch.js",
         "src/assets/nature/trees/birch.js",
         "src/assets/kit/foliage.js",
         "src/assets/nature/trees/linden.js",
         "src/assets/nature/trees/oak.js",
-        "src/worlds/kit/scatter.js",
-        "src/worlds/kit/cloud-sea.js",
-        "src/assets/nature/sky/cloud.js",
-        "src/worlds/kit/sky.js",
-        "src/worlds/kit/terrain.js",
+        "src/worlds/summer-meadow-rules.js",
+        "src/worlds/summer-meadow-endless.js",
         "src/worlds/summer-meadow.js"
       ],
       "stats": {
@@ -9355,8 +9361,8 @@
         }
       },
       "bytes": {
-        "source": 4077,
-        "standalone": 192348
+        "source": 4223,
+        "standalone": 226830
       }
     }
   ]
