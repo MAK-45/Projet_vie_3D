@@ -28,7 +28,19 @@ export const sharedUniforms = {
   uGlowLights: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) }, // w = 0 : place libre
   uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
   uDarkness: { value: 0 },
+  // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
+  uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
 };
+
+/**
+ * Courbe le monde à l'affichage, comme une petite planète : au-delà de `start` mètres du centre (la caméra), le
+ * décor descend de (d − start)² / 2R. Le lointain passe derrière l'horizon : la vue n'a plus besoin de brume
+ * pour finir. Les ombres et les motifs restent calculés sur le monde plat. `radius` 0 ou Infinity : monde plat.
+ */
+export function setCurvature(x, z, radius, start = 0) {
+  const k = radius > 0 && Number.isFinite(radius) ? 1 / (2 * radius) : 0;
+  sharedUniforms.uCurve.value.set(x, z, k, start);
+}
 
 /**
  * Obscurité ambiante, 0 en plein jour, 1 en pleine nuit : les lumières de halo n'éclairent qu'à proportion.
@@ -94,6 +106,7 @@ const VERTEX = /* glsl */ `
 uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
+uniform vec4 uCurve;
 uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (× souplesse de chaque sommet)
 
@@ -212,7 +225,16 @@ void main() {
 
   vWorldPos = (toWorld * vec4(transformed, 1.0)).xyz;
 
-  #include <project_vertex>
+  #ifdef DEPTH_ONLY
+    #include <project_vertex>
+  #else
+    // Monde courbé (setCurvature) : seul l'affichage descend ; la passe d'ombre reste sur le monde plat.
+    vec4 bentWorld = vec4(vWorldPos, 1.0);
+    float bendDistance = max(distance(bentWorld.xz, uCurve.xy) - uCurve.w, 0.0);
+    bentWorld.y -= uCurve.z * bendDistance * bendDistance;
+    vec4 mvPosition = viewMatrix * bentWorld;
+    gl_Position = projectionMatrix * mvPosition;
+  #endif
 
   #ifdef FOLIAGE
     float cornerScale = length(toWorld[0].xyz);

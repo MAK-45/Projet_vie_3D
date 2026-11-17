@@ -1,0 +1,100 @@
+// Version lointaine d'un arbre (ou de tout modèle à feuillage) : mêmes matériaux, donc mêmes couleurs, même vent et
+// mêmes contours, mais une fraction des triangles. Vu à plus de 50 m, un arbre ne fait que quelques dizaines de
+// pixels d'art : le feuillage garde une feuille sur six ou sept (plutôt celles du bord, qui font la silhouette),
+// agrandies pour couvrir la même couronne, et le bois ne garde que le tronc et les maîtresses branches.
+
+import * as THREE from "three";
+
+/**
+ * @param {THREE.Object3D} prototype modèle complet (non modifié : ses géométries restent à lui)
+ * @param {object} [options]
+ * @param {number} [options.keep] part des feuilles gardées (0..1)
+ * @param {number} [options.wood] rayon minimal d'une branche gardée, en part du rayon du tronc (0..1)
+ * @returns {THREE.Group} modèle allégé, aux mêmes noms de maillages et aux mêmes matériaux
+ */
+export function createFarVersion(prototype, { keep = 0.15, wood = 0.3 } = {}) {
+  const far = new THREE.Group();
+  far.name = `${prototype.name} (loin)`;
+  prototype.updateMatrixWorld(true);
+  prototype.traverse((child) => {
+    if (!child.isMesh) return;
+    const attributes = child.geometry.attributes;
+    let geometry = null;
+    if (attributes.aCorner && attributes.aLeaf) geometry = thinLeaves(child.geometry, keep);
+    else if (attributes.aRadius) geometry = keepBranches(child.geometry, wood);
+    if (!geometry) return;
+    const mesh = new THREE.Mesh(geometry, child.material);
+    mesh.name = child.name;
+    mesh.matrixAutoUpdate = false;
+    mesh.matrix.copy(child.matrixWorld);
+    mesh.matrixWorld.copy(child.matrixWorld);
+    mesh.castShadow = false;
+    mesh.receiveShadow = child.receiveShadow;
+    far.add(mesh);
+  });
+  return far;
+}
+
+/** Hachage stable d'un entier en 0..1 (le même arbre lointain d'une fois à l'autre). */
+const hash = (n) => {
+  const x = Math.sin(n * 127.1 + 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+
+/**
+ * Feuillage (non indexé) : une feuille = les triangles consécutifs de même centre (`position`). On en garde une
+ * part, davantage au bord de la couronne (`aLeaf.y` : 0 au cœur, 1 dehors), et on agrandit leurs coins (`aCorner`)
+ * pour que la couronne reste aussi pleine.
+ */
+function thinLeaves(source, keep) {
+  if (source.index) return null;
+  const position = source.attributes.position.array;
+  const leaf = source.attributes.aLeaf.array;
+  const count = source.attributes.position.count;
+  const kept = [];
+  let leafIndex = 0;
+  for (let start = 0; start < count; ) {
+    let end = start + 3;
+    while (end < count && position[end * 3] === position[start * 3] && position[end * 3 + 1] === position[start * 3 + 1] && position[end * 3 + 2] === position[start * 3 + 2]) end += 3;
+    const outer = leaf[start * 4 + 1];
+    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) kept.push(start, end);
+    start = end;
+  }
+  const grow = Math.min(2.6, 0.85 / Math.sqrt(keep));
+  const geometry = new THREE.BufferGeometry();
+  for (const [name, attribute] of Object.entries(source.attributes)) {
+    const size = attribute.itemSize;
+    let total = 0;
+    for (let i = 0; i < kept.length; i += 2) total += kept[i + 1] - kept[i];
+    const array = new attribute.array.constructor(total * size);
+    let offset = 0;
+    for (let i = 0; i < kept.length; i += 2) {
+      const part = attribute.array.subarray(kept[i] * size, kept[i + 1] * size);
+      array.set(part, offset);
+      offset += part.length;
+    }
+    if (name === "aCorner") for (let i = 0; i < array.length; i++) array[i] *= grow;
+    geometry.setAttribute(name, new THREE.BufferAttribute(array, size));
+  }
+  geometry.boundingSphere = source.boundingSphere?.clone() ?? null;
+  return geometry;
+}
+
+/** Bois (indexé ou non) : seuls les triangles des branches assez épaisses (`aRadius`) restent. */
+function keepBranches(source, share) {
+  const radius = source.attributes.aRadius.array;
+  let max = 0;
+  for (const r of radius) max = Math.max(max, r);
+  const limit = max * share;
+  const geometry = source.clone();
+  if (source.index) {
+    const index = source.index.array;
+    const kept = [];
+    for (let i = 0; i < index.length; i += 3) {
+      if ((radius[index[i]] + radius[index[i + 1]] + radius[index[i + 2]]) / 3 >= limit) kept.push(index[i], index[i + 1], index[i + 2]);
+    }
+    geometry.setIndex(kept);
+    return geometry;
+  }
+  return geometry;
+}

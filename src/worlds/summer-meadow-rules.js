@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { createNoise3 } from "../assets/kit/rng.js";
+import { createFarVersion } from "./kit/far-tree.js";
 import * as flowerClump from "../assets/nature/plants/flower-clump.js";
 import * as grassTuft from "../assets/nature/plants/grass-tuft.js";
 import * as boulder from "../assets/nature/rocks/boulder.js";
@@ -140,7 +141,10 @@ export function createMeadowLayers(addLayer) {
     species[name] = {
       ...kind,
       layers: kind.seeds.map((treeSeed) =>
-        addLayer(kind.module.create({ seed: treeSeed, season: SEASON, height: kind.height, fullness: 0.75 }), { reach: "tall" }),
+        addLayer(kind.module.create({ seed: treeSeed, season: SEASON, height: kind.height, fullness: 0.75 }), {
+          reach: "tall",
+          farVersion: createFarVersion, // vue à la 3e personne : arbres allégés au loin (semis par morceaux seulement)
+        }),
       ),
     };
   }

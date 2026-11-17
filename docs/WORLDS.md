@@ -157,29 +157,35 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   raccourcit le recul.
 - **Champ** : 66° à l'horizontale, borné entre 46° et 74° à la verticale (un téléphone en hauteur voit moins large).
 - **Rendu** : le même pipeline pixel art. `PixelRenderer` reconnaît la caméra perspective : il linéarise la
-  profondeur (contours justes), fait grandir le seuil de contour avec la distance, et ajoute une **brume de
-  lointain** de 130 à 242 m (quatre paliers tramés vers la couleur du ciel) : la fin de la vue (250 m) n'est jamais une
-  ligne nette. Pas d'alignement sur la grille de pixels ici : en perspective, chaque pas redessine le décor.
+  profondeur (contours justes) et fait grandir le seuil de contour avec la distance. Pas d'alignement sur la grille
+  de pixels ici : en perspective, chaque pas redessine le décor.
+- **Monde courbé, sans brume** (prairie infinie) : le décor est courbé à l'affichage comme une petite planète
+  (`setCurvature` de `engine/toon-material.js`, dans le vertex shader de tous les matériaux toon) : au-delà de 20 m
+  de la caméra, il descend de (d − 20)² / 1 200 m (rayon 600 m). Le sol passe derrière l'horizon vers 60 m (caméra
+  à 3 m de haut), les rochers vers 110 m, les plus grands arbres (15 m) vers 200 à 225 m ; la vue s'arrête à 230 m,
+  sans qu'on la voie finir. Les ombres et les motifs restent calculés sur le monde plat (la passe d'ombre ne
+  courbe rien, `DEPTH_ONLY`). Sur une île, la vue garde une brume de lointain (120 à 223 m) : la mer de nuages
+  n'est pas courbée.
+- **Arbres lointains** : au-delà de 55 m (`lod`), chaque arbre est dessiné en version allégée
+  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur six environ (plutôt celles du bord),
+  agrandie d'autant, et seulement le tronc et les maîtresses branches : ≈ 700 triangles au lieu de ≈ 4 000. Une
+  couche la déclare par `farVersion` dans `addLayer` (semis par morceaux) ; le semis d'île l'ignore.
 - **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 40 m (au-delà, une touffe ne fait qu'un pixel), les
-  rochers à 110 m, les arbres jusqu'à la brume. La carte d'ombre est centrée 14 m devant le promeneur, et seules les
-  copies à moins de 58 m de la caméra projettent leur ombre (`shadowReach` : le semis range ses copies de la plus
-  proche à la plus lointaine et réduit `count` le temps de la passe d'ombre, `limitShadowCopies` dans
-  `kit/scatter.js`). Dans la prairie infinie, tous les morceaux dans un rayon de 150 m sont gardés prêts
-  (`around`), quelle que soit la direction de la vue : la caméra peut se retourner d'un geste sans saccade.
-  Au-delà, jusqu'à 250 m, seuls les morceaux dans le champ sont fabriqués, un peu par image (ils sont dans la
-  brume : leur arrivée ne se voit pas) ; la fenêtre de recherche passe de ±7 à ±17 morceaux.
-- **Mesures, vue à 250 m** (tout chargé) : téléphone 412 × 915 : ≈ 140 draw calls, ≈ 530 000 triangles,
-  ≈ 285 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 1 000 000 triangles, ≈ 380 morceaux (≈ 28 Mo).
-- **Mesures, vue à 150 m** (jugée fluide sur téléphone par l'utilisateur) (navigateur de capture, prairie infinie, à l'arrêt) : téléphone 412 × 915 : ≈ 96 draw
-  calls, ≈ 320 000 triangles, ≈ 165 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 610 000 triangles,
-  ≈ 195 morceaux. Portée en cours de réglage avec des mesures de fps sur téléphone.
-- **Mesures, ancienne vue à 85 m** (à l'arrêt et en marchant) : téléphone en hauteur 412 × 915 :
-  65 à 90 draw calls, 135 000 à 165 000 triangles (ombres comprises), dans le budget ; écran large 1280 × 720 :
-  ≈ 100 draw calls, ≈ 360 000 triangles, surtout des arbres (les bosquets de bouleaux en vue jusqu'à 85 m) :
-  au-dessus du budget téléphone. Une version allégée des arbres pour le lointain serait la prochaine économie.
-  110 à 150 morceaux chargés (≈ 9 Mo) au lieu de 60 à 70 en isométrique.
+  rochers à 115 m, le sol à 130 m (`groundReach` : plus loin, il est sous l'horizon), les arbres jusqu'au bout de la
+  vue. La carte d'ombre est centrée 14 m devant le promeneur, et seules les copies à moins de 58 m de la caméra
+  projettent leur ombre (`shadowReach` : le semis range ses copies de la plus proche à la plus lointaine et réduit
+  `count` le temps de la passe d'ombre, `limitShadowCopies` dans `kit/scatter.js`). Dans la prairie infinie, tous
+  les morceaux dans un rayon de 130 m sont gardés prêts (`around`), quelle que soit la direction de la vue : la
+  caméra peut se retourner d'un geste sans saccade. Au-delà, jusqu'à 230 m, seuls les morceaux dans le champ sont
+  fabriqués, un peu par image ; la fenêtre de recherche passe de ±7 à ±15 morceaux.
+- **Mesures, monde courbé** (navigateur de capture, prairie infinie, à l'arrêt, tout chargé) : téléphone
+  412 × 915 : ≈ 100 draw calls, ≈ 290 000 triangles ; écran large 1280 × 720 : ≈ 130 draw calls, ≈ 580 000
+  triangles ; 320 à 340 morceaux chargés. Avant (vue plate à 250 m avec brume) : téléphone ≈ 530 000 triangles,
+  mesuré à 43 i/s sur le téléphone de l'utilisateur (≈ 1 000 000 triangles, 194 draw calls) ; vue à 150 m jugée
+  fluide.
 
-Les mondes reçoivent dans `update` trois champs de plus, tous facultatifs : `reach` (portée du semis par famille),
+Les mondes reçoivent dans `update` des champs de plus, tous facultatifs : `lod` (distance des versions lointaines
+par famille), `groundReach` (portée du sol), `reach` (portée du semis par famille),
 `shadowReach` (portée de l'ombre du semis) et `shadowCenter` (centre de la carte d'ombre), plus `around` pour un
 monde sans bord.
 

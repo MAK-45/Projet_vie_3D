@@ -22,9 +22,9 @@ import {
 const HALF = TILE / 2;
 const smoothstep = THREE.MathUtils.smoothstep;
 /** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±120 m autour du promeneur en isométrique,
- * ±272 m à la 3e personne (`around` donné), dont la vue porte à 250 m. */
+ * ±248 m à la 3e personne (`around` donné), dont la vue porte à 230 m. */
 const WINDOW = 7;
-const WINDOW_AROUND = 17;
+const WINDOW_AROUND = 15;
 /** Débord des morceaux nécessaires tout de suite (m) : couronnes et ombres portées venues de hors champ. */
 const NEED_MARGIN = 9;
 /** Débord des morceaux préparés d'avance (m), un par image au plus. */
@@ -518,12 +518,20 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
     },
 
     /** À appeler à chaque image, caméra à jour, avant le rendu (même contrat que l'île). */
-    update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter, around = 0 }) {
+    update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter, around = 0, lod = null, groundReach = Infinity }) {
       // Fenêtre de recherche plus large à la 3e personne ; le disque `around` y reste.
       win = around > 0 ? WINDOW_AROUND : WINDOW;
       ringSq = Math.min((around + HALF) / TILE, win) ** 2 * (around > 0 ? 1 : 0);
       stream(camera, target);
-      scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach, lod });
+      // Monde courbé (3e personne) : le sol lointain est passé sous l'horizon, ses morceaux ne sont plus dessinés
+      // (leurs arbres, plus hauts, dépassent encore).
+      const groundLimit = (groundReach + HALF * Math.SQRT2) ** 2;
+      for (const chunk of loaded.values()) {
+        const dx = chunk.cx * TILE - camera.position.x;
+        const dz = chunk.cz * TILE - camera.position.z;
+        chunk.mesh.visible = dx * dx + dz * dz < groundLimit;
+      }
       cloudShadows.update(dt, target);
       if (shadows) daylight.update(shadowCenter ?? target, viewRadius + 14);
     },

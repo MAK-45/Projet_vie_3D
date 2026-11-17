@@ -213,7 +213,9 @@ var sharedUniforms = {
   uGlowLights: { value: Array.from({ length: 4 }, () => new THREE2.Vector4(0, 0, 0, 0)) },
   // w = 0 : place libre
   uGlowColors: { value: Array.from({ length: 4 }, () => new THREE2.Vector4(0, 0, 0, 0)) },
-  uDarkness: { value: 0 }
+  uDarkness: { value: 0 },
+  // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
+  uCurve: { value: new THREE2.Vector4(0, 0, 0, 0) }
 };
 function tick(seconds, fps = 12) {
   sharedUniforms.uTime.value = fps > 0 ? Math.floor(seconds * fps) / fps : seconds;
@@ -235,6 +237,7 @@ var VERTEX = (
 uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
+uniform vec4 uCurve;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
@@ -353,7 +356,16 @@ void main() {
 
   vWorldPos = (toWorld * vec4(transformed, 1.0)).xyz;
 
-  #include <project_vertex>
+  #ifdef DEPTH_ONLY
+    #include <project_vertex>
+  #else
+    // Monde courb\xE9 (setCurvature) : seul l'affichage descend ; la passe d'ombre reste sur le monde plat.
+    vec4 bentWorld = vec4(vWorldPos, 1.0);
+    float bendDistance = max(distance(bentWorld.xz, uCurve.xy) - uCurve.w, 0.0);
+    bentWorld.y -= uCurve.z * bendDistance * bendDistance;
+    vec4 mvPosition = viewMatrix * bentWorld;
+    gl_Position = projectionMatrix * mvPosition;
+  #endif
 
   #ifdef FOLIAGE
     float cornerScale = length(toWorld[0].xyz);

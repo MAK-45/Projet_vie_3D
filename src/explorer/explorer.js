@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { ChaseCamera } from "../engine/chase-camera.js";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
-import { setDarkness, setWind, tick } from "../engine/toon-material.js";
+import { setCurvature, setDarkness, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
 import { createSummerMeadow, MEADOW_EXTENTS } from "../worlds/summer-meadow.js";
@@ -27,16 +27,25 @@ const numberFormat = new Intl.NumberFormat("fr-FR");
 const POINTER_EVENTS = ["pointerdown", "pointermove", "pointerup", "pointercancel"];
 
 /**
- * Vue à la 3e personne : portée de la vue (m), début de la brume qui y mène, et portée du semis par famille.
- * L'herbe et les fleurs (« fine ») ne sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux
- * pixels d'art, et c'est elle qui coûte le plus de triangles. Les arbres vont jusqu'à la brume.
+ * Vue à la 3e personne : portée de la vue (m) et portée du semis par famille. L'herbe et les fleurs (« fine ») ne
+ * sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux pixels d'art.
+ *
+ * Dans un monde sans bord, pas de brume : le monde est courbé comme une petite planète (rayon THIRD_CURVE_RADIUS,
+ * à partir de THIRD_CURVE_START du promeneur). Le sol passe derrière l'horizon vers 60 m (caméra à 3 m), les
+ * rochers vers 110 m, les plus grands arbres (15 m) vers 200 à 225 m : la vue s'arrête juste après, sans qu'on la
+ * voie finir. Au-delà de THIRD_LOD, les arbres sont dessinés allégés (kit/far-tree.js) ; au-delà de
+ * THIRD_GROUND_REACH, le sol n'est plus dessiné (il est sous l'horizon). Sur une île (monde fini), la brume reste.
  */
-const THIRD_FAR = 250;
-const THIRD_FOG_NEAR = 130;
-const THIRD_REACH = { fine: 40, low: 110 };
+const THIRD_FAR = 230;
+const THIRD_CURVE_RADIUS = 600;
+const THIRD_CURVE_START = 20;
+const THIRD_REACH = { fine: 40, low: 115 };
+const THIRD_LOD = { tall: 55 };
+const THIRD_GROUND_REACH = 130;
+const THIRD_FOG_NEAR = 120; // île seulement
 /** Monde sans bord : rayon (m) où tout est gardé prêt quelle que soit la direction de la vue ; au-delà, seuls les
- * morceaux dans le champ sont fabriqués, un peu par image, dans la brume. */
-const THIRD_AROUND = 150;
+ * morceaux dans le champ sont fabriqués, un peu par image. */
+const THIRD_AROUND = 130;
 const THIRD_SHADOW_AHEAD = 14; // la carte d'ombre est centrée devant le promeneur, là où l'on regarde (m)
 const THIRD_SHADOW_RADIUS = 24; // (+ 14 m de marge dans le monde)
 /** Au-delà (m de la caméra), le semis ne projette plus d'ombre : c'est hors de la carte d'ombre. */
@@ -237,7 +246,7 @@ export class Explorer {
     // Vue à la 3e personne : caméra perspective derrière le promeneur, brume de lointain dans le rendu.
     this.chase = new ChaseCamera(this.canvas, { far: THIRD_FAR });
     this.pixel.fog.near = THIRD_FOG_NEAR;
-    this.pixel.fog.far = THIRD_FAR * 0.97;
+    this.pixel.fog.far = THIRD_FAR * 0.97; // remis à 0 (pas de brume) dans un monde courbé : voir _frame
     this._shadowCenter = new THREE.Vector3();
 
     this.scene = new THREE.Scene();
@@ -783,6 +792,9 @@ export class Explorer {
       view.area = 1;
       view.radius = THIRD_SHADOW_RADIUS;
       reach = THIRD_REACH;
+      const curved = Boolean(this.world.endless);
+      setCurvature(camera.position.x, camera.position.z, curved ? THIRD_CURVE_RADIUS : 0, THIRD_CURVE_START);
+      this.pixel.fog.far = curved ? 0 : THIRD_FAR * 0.97; // 0 : pas de brume
       // Ombres là où l'on regarde : un disque devant le promeneur, dans le sens de la vue.
       shadowCenter = this._shadowCenter.set(
         look.x - Math.sin(chase.yaw) * THIRD_SHADOW_AHEAD,
@@ -790,6 +802,7 @@ export class Explorer {
         look.z - Math.cos(chase.yaw) * THIRD_SHADOW_AHEAD,
       );
     } else {
+      setCurvature(0, 0, 0);
       this._steerCamera(dt, walker.speed > 0.5);
       iso.update();
       camera = iso.camera;
@@ -814,7 +827,9 @@ export class Explorer {
     world.update({
       camera, target: look, dt, viewArea: view.area, viewRadius: view.radius, shadows, reach, shadowCenter,
       shadowReach: third ? THIRD_SHADOW_REACH : Infinity,
-      around: third ? THIRD_AROUND : 0, // monde sans bord : tout autour est prêt, la vue peut se retourner
+      around: third ? THIRD_AROUND : 0,
+      lod: third ? THIRD_LOD : null,
+      groundReach: third ? THIRD_GROUND_REACH : Infinity, // monde sans bord : tout autour est prêt, la vue peut se retourner
     });
     pixel.renderer.shadowMap.needsUpdate = shadows;
     this.life.update(dt, elapsed, walker.position, view.radius);

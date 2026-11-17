@@ -49,7 +49,9 @@ export class StreamingScatter {
    * Déclare une couche à partir d'un asset modèle (même contrat que `ScatterField.addLayer`).
    * @returns {{add: (matrix: THREE.Matrix4) => void, index: number, triangles: number}}
    */
-  addLayer(prototype, { reach = "low", thin = false, castShadow, skip = [] } = {}) {
+  addLayer(prototype, { reach = "low", thin = false, castShadow, skip = [], farVersion = null } = {}) {
+    // Version lointaine (arbres allégés), fabriquée avant que le modèle ne soit démonté.
+    const farPrototype = farVersion?.(prototype) ?? null;
     const parts = [];
     prototype.updateMatrixWorld(true);
     prototype.traverse((child) => {
@@ -70,6 +72,7 @@ export class StreamingScatter {
       matrices: null,
       capacity: 0,
       triangles: 0,
+      far: null, // { meshes, matrices, capacity, triangles } : copies au-delà de la distance `lod` de la famille
       add: (matrix) => {
         const chunk = this._chunk;
         const e = matrix.elements;
@@ -79,6 +82,27 @@ export class StreamingScatter {
         (lists[layer.index] ??= []).push(...e);
       },
     };
+    if (farPrototype) {
+      layer.far = { meshes: [], matrices: null, capacity: 0, triangles: 0 };
+      farPrototype.updateMatrixWorld(true);
+      farPrototype.traverse((part) => {
+        if (!part.isMesh) return;
+        const geometry = part.geometry;
+        layer.far.triangles += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
+        const mesh = new THREE.InstancedMesh(geometry, part.material, 0);
+        mesh.name = `${layer.name} / ${part.name} (loin)`;
+        mesh.castShadow = false; // au loin, hors de la carte d'ombre
+        mesh.receiveShadow = part.receiveShadow;
+        mesh.frustumCulled = false;
+        mesh.visible = false;
+        mesh.matrixAutoUpdate = false;
+        mesh.userData.sharedMaterial = true;
+        if (!part.matrixWorld.equals(_identity)) mesh.matrix.copy(part.matrixWorld);
+        layer.far.meshes.push(mesh);
+        this.group.add(mesh);
+      });
+      this._grow(layer.far, 256);
+    }
     for (const part of parts) {
       const geometry = part.geometry;
       layer.triangles += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
@@ -178,8 +202,10 @@ export class StreamingScatter {
    *   caméra, les cases de la famille ne sont pas dessinées (l'herbe lointaine ne fait qu'un pixel)
    * @param {number} [options.shadowReach] seules les copies à moins de cette distance de la caméra (m) projettent
    *   leur ombre : les copies sont alors rangées de la plus proche à la plus lointaine
+   * @param {Record<string, number>} [options.lod] distance par famille (m) au-delà de laquelle les couches qui ont
+   *   une version lointaine (`farVersion`) la dessinent à la place du modèle complet
    */
-  update(camera, fraction = 1, { reach = null, shadowReach = Infinity } = {}) {
+  update(camera, fraction = 1, { reach = null, shadowReach = Infinity, lod = null } = {}) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
     const step = Math.round(THREE.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
@@ -189,13 +215,19 @@ export class StreamingScatter {
     for (const [name, cls] of Object.entries(this.classes)) {
       const { cells, visible, previous } = cls;
       const limit = reach?.[name] ?? Infinity;
+      const farFrom = lod?.[name] ?? Infinity;
       let length = 0;
       for (let i = 0; i < cells.length; i++) {
         const cell = cells[i];
         if (!_frustum.intersectsBox(cell.box)) continue;
-        const distance = limit === Infinity && shadowReach === Infinity ? 0 : cell.box.distanceToPoint(camera.position);
+        const distance = limit === Infinity && shadowReach === Infinity && farFrom === Infinity ? 0 : cell.box.distanceToPoint(camera.position);
         if (distance >= limit) continue;
         cell.distance = distance;
+        const far = distance >= farFrom;
+        if (far !== cell.far) {
+          cell.far = far;
+          changed = true;
+        }
         visible[length++] = cell;
       }
       visible.length = length;
@@ -218,10 +250,12 @@ export class StreamingScatter {
     let triangles = 0;
     let drawCalls = 0;
     for (const layer of this.layers) {
-      const count = layer.meshes[0]?.count ?? 0;
-      instances += count;
-      triangles += count * layer.triangles;
-      if (count > 0) drawCalls += layer.meshes.length;
+      for (const set of layer.far ? [layer, layer.far] : [layer]) {
+        const count = set.meshes[0]?.visible ? set.meshes[0].count : 0;
+        instances += count;
+        triangles += count * set.triangles;
+        if (count > 0) drawCalls += set.meshes.length;
+      }
     }
     let cells = 0;
     for (const cls of Object.values(this.classes)) cells += cls.cells.length;
@@ -230,6 +264,10 @@ export class StreamingScatter {
 
   dispose() {
     for (const layer of this.layers) {
+      for (const mesh of layer.far?.meshes ?? []) {
+        mesh.geometry.dispose(); // matériaux partagés avec le modèle complet
+        mesh.dispose();
+      }
       for (const mesh of layer.meshes) {
         disposeObject(mesh);
         mesh.dispose();
@@ -270,8 +308,11 @@ export class StreamingScatter {
         needed += thinned ? Math.floor(total * fraction + ditherFor(visible[i], layer.index)) : total;
       }
       if (needed > layer.capacity) this._grow(layer, Math.ceil(needed * 1.5));
+      const far = layer.far;
+      if (far && needed > far.capacity) this._grow(far, Math.ceil(needed * 1.5));
       const array = layer.matrices.array;
       let offset = 0;
+      let farOffset = 0;
       let shadowOffset = trim ? -1 : -16;
       for (let i = 0; i < visible.length; i++) {
         if (shadowOffset === -1 && visible[i].distance > shadowReach) shadowOffset = offset;
@@ -281,8 +322,25 @@ export class StreamingScatter {
         // Arrondi tiré une fois pour toutes par case : en moyenne exactement `fraction`, sans clignotement.
         const count = thinned ? Math.floor(total * fraction + ditherFor(visible[i], layer.index)) : total;
         if (count === 0) continue;
-        array.set(count === total ? cell : cell.subarray(0, count * 16), offset);
+        const copies = count === total ? cell : cell.subarray(0, count * 16);
+        if (far && visible[i].far) {
+          far.matrices.array.set(copies, farOffset);
+          farOffset += count * 16;
+          continue;
+        }
+        array.set(copies, offset);
         offset += count * 16;
+      }
+      if (far) {
+        far.matrices.clearUpdateRanges();
+        if (farOffset > 0) {
+          far.matrices.addUpdateRange(0, farOffset);
+          far.matrices.needsUpdate = true;
+        }
+        for (const mesh of far.meshes) {
+          mesh.count = farOffset / 16;
+          mesh.visible = farOffset > 0;
+        }
       }
       layer.matrices.clearUpdateRanges();
       if (offset > 0) {
