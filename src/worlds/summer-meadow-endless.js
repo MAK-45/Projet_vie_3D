@@ -21,9 +21,10 @@ import {
 
 const HALF = TILE / 2;
 const smoothstep = THREE.MathUtils.smoothstep;
-/** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±168 m autour du promeneur (la vue à la
- * 3e personne porte à 150 m). */
-const WINDOW = 10;
+/** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±120 m autour du promeneur en isométrique,
+ * ±272 m à la 3e personne (`around` donné), dont la vue porte à 250 m. */
+const WINDOW = 7;
+const WINDOW_AROUND = 17;
 /** Débord des morceaux nécessaires tout de suite (m) : couronnes et ombres portées venues de hors champ. */
 const NEED_MARGIN = 9;
 /** Débord des morceaux préparés d'avance (m), un par image au plus. */
@@ -359,6 +360,7 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
    * en 3e personne, la caméra peut faire demi-tour d'un geste, et tout ce qui entrerait alors dans le champ
    * serait fabriqué d'un coup, en saccade. 0 : rien que le champ (vue isométrique).
    */
+  let win = WINDOW;
   let ringSq = 0;
   const inRing = (dx, dz) => dx * dx + dz * dz <= ringSq;
   /** Fabrique ce que la caméra voit (tout de suite) ou va voir (d'avance, un peu par image) ; libère le reste. */
@@ -371,14 +373,16 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
     let bestDistance = Infinity;
     let bestX = 0;
     let bestZ = 0;
-    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
-      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+    for (let dz = -win; dz <= win; dz++) {
+      for (let dx = -win; dx <= win; dx++) {
         const cx = tx + dx;
         const cz = tz + dz;
         const key = keyOf(cx, cz);
         if (loaded.has(key)) continue;
-        if (_frustum.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
-          loadChunk(cx, cz); // dans le champ : sans attendre, sinon il apparaîtrait au milieu de l'image
+        // Dans le champ : sans attendre, sinon il apparaîtrait au milieu de l'image ; sauf en 3e personne au-delà du
+        // disque gardé prêt (`around`) : là, il est dans la brume et se prépare d'avance, sans saccade au demi-tour.
+        if ((ringSq === 0 || inRing(dx, dz)) && _frustum.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
+          loadChunk(cx, cz);
         } else if (inRing(dx, dz) || _frustum.intersectsBox(chunkBox(cx, cz, PREFETCH_MARGIN))) {
           const distance = dx * dx + dz * dz;
           if (distance < bestDistance) {
@@ -401,7 +405,7 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
     // Libération, de temps en temps : les morceaux loin du champ, et les arbres mémorisés loin du promeneur.
     if (frameIndex++ % 30 === 0) {
       for (const [key, chunk] of loaded) {
-        const far = Math.abs(chunk.cx - tx) > WINDOW + 1 || Math.abs(chunk.cz - tz) > WINDOW + 1;
+        const far = Math.abs(chunk.cx - tx) > win + 1 || Math.abs(chunk.cz - tz) > win + 1;
         const kept = inRing(chunk.cx - tx, chunk.cz - tz) || _frustum.intersectsBox(chunkBox(chunk.cx, chunk.cz, KEEP_MARGIN));
         if (far || !kept) unloadChunk(key, chunk);
       }
@@ -409,7 +413,7 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
         for (const key of memo.keys()) {
           const cx = Math.floor(key / 65536) - 32768;
           const cz = (key % 65536) - 32768;
-          if (Math.abs(cx - tx) > WINDOW + 3 || Math.abs(cz - tz) > WINDOW + 3) memo.delete(key);
+          if (Math.abs(cx - tx) > win + 3 || Math.abs(cz - tz) > win + 3) memo.delete(key);
         }
       }
     }
@@ -419,8 +423,8 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
   const loadNearestPending = (tx, tz) => {
     let best = null;
     let bestDistance = Infinity;
-    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
-      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+    for (let dz = -win; dz <= win; dz++) {
+      for (let dx = -win; dx <= win; dx++) {
         const distance = dx * dx + dz * dz;
         if (distance >= bestDistance || loaded.has(keyOf(tx + dx, tz + dz))) continue;
         if (inRing(dx, dz) || _frustum.intersectsBox(chunkBox(tx + dx, tz + dz, PREFETCH_MARGIN))) {
@@ -515,8 +519,9 @@ export function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount 
 
     /** À appeler à chaque image, caméra à jour, avant le rendu (même contrat que l'île). */
     update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter, around = 0 }) {
-      // Le disque reste dans la fenêtre de recherche (±WINDOW morceaux).
-      ringSq = Math.min((around + HALF) / TILE, WINDOW) ** 2 * (around > 0 ? 1 : 0);
+      // Fenêtre de recherche plus large à la 3e personne ; le disque `around` y reste.
+      win = around > 0 ? WINDOW_AROUND : WINDOW;
+      ringSq = Math.min((around + HALF) / TILE, win) ** 2 * (around > 0 ? 1 : 0);
       stream(camera, target);
       scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
       cloudShadows.update(dt, target);

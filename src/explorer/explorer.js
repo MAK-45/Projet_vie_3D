@@ -30,9 +30,12 @@ const numberFormat = new Intl.NumberFormat("fr-FR");
  * L'herbe et les fleurs (« fine ») ne sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux
  * pixels d'art, et c'est elle qui coûte le plus de triangles. Les arbres vont jusqu'à la brume.
  */
-const THIRD_FAR = 150;
-const THIRD_FOG_NEAR = 80;
-const THIRD_REACH = { fine: 36, low: 80 };
+const THIRD_FAR = 250;
+const THIRD_FOG_NEAR = 130;
+const THIRD_REACH = { fine: 40, low: 110 };
+/** Monde sans bord : rayon (m) où tout est gardé prêt quelle que soit la direction de la vue ; au-delà, seuls les
+ * morceaux dans le champ sont fabriqués, un peu par image, dans la brume. */
+const THIRD_AROUND = 150;
 const THIRD_SHADOW_AHEAD = 14; // la carte d'ombre est centrée devant le promeneur, là où l'on regarde (m)
 const THIRD_SHADOW_RADIUS = 24; // (+ 14 m de marge dans le monde)
 /** Au-delà (m de la caméra), le semis ne projette plus d'ombre : c'est hors de la carte d'ombre. */
@@ -655,7 +658,7 @@ export class Explorer {
     world.update({
       camera, target: look, dt, viewArea: view.area, viewRadius: view.radius, shadows, reach, shadowCenter,
       shadowReach: third ? THIRD_SHADOW_REACH : Infinity,
-      around: third ? THIRD_FAR : 0, // monde sans bord : tout autour est prêt, la vue peut se retourner
+      around: third ? THIRD_AROUND : 0, // monde sans bord : tout autour est prêt, la vue peut se retourner
     });
     pixel.renderer.shadowMap.needsUpdate = shadows;
     this.life.update(dt, elapsed, walker.position, view.radius);

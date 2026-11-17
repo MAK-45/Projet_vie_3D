@@ -144,15 +144,19 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
 - **Champ** : 66° à l'horizontale, borné entre 46° et 74° à la verticale (un téléphone en hauteur voit moins large).
 - **Rendu** : le même pipeline pixel art. `PixelRenderer` reconnaît la caméra perspective : il linéarise la
   profondeur (contours justes), fait grandir le seuil de contour avec la distance, et ajoute une **brume de
-  lointain** de 80 à 145 m (quatre paliers tramés vers la couleur du ciel) : la fin de la vue (150 m) n'est jamais une
+  lointain** de 130 à 242 m (quatre paliers tramés vers la couleur du ciel) : la fin de la vue (250 m) n'est jamais une
   ligne nette. Pas d'alignement sur la grille de pixels ici : en perspective, chaque pas redessine le décor.
-- **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 36 m (au-delà, une touffe ne fait qu'un pixel), les
-  rochers à 80 m, les arbres jusqu'à la brume. La carte d'ombre est centrée 14 m devant le promeneur, et seules les
+- **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 40 m (au-delà, une touffe ne fait qu'un pixel), les
+  rochers à 110 m, les arbres jusqu'à la brume. La carte d'ombre est centrée 14 m devant le promeneur, et seules les
   copies à moins de 58 m de la caméra projettent leur ombre (`shadowReach` : le semis range ses copies de la plus
   proche à la plus lointaine et réduit `count` le temps de la passe d'ombre, `limitShadowCopies` dans
   `kit/scatter.js`). Dans la prairie infinie, tous les morceaux dans un rayon de 150 m sont gardés prêts
   (`around`), quelle que soit la direction de la vue : la caméra peut se retourner d'un geste sans saccade.
-- **Mesures, vue à 150 m** (navigateur de capture, prairie infinie, à l'arrêt) : téléphone 412 × 915 : ≈ 96 draw
+  Au-delà, jusqu'à 250 m, seuls les morceaux dans le champ sont fabriqués, un peu par image (ils sont dans la
+  brume : leur arrivée ne se voit pas) ; la fenêtre de recherche passe de ±7 à ±17 morceaux.
+- **Mesures, vue à 250 m** (tout chargé) : téléphone 412 × 915 : ≈ 140 draw calls, ≈ 530 000 triangles,
+  ≈ 285 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 1 000 000 triangles, ≈ 380 morceaux (≈ 28 Mo).
+- **Mesures, vue à 150 m** (validée à 60 fps sur téléphone par l'utilisateur) (navigateur de capture, prairie infinie, à l'arrêt) : téléphone 412 × 915 : ≈ 96 draw
   calls, ≈ 320 000 triangles, ≈ 165 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 610 000 triangles,
   ≈ 195 morceaux. Portée en cours de réglage avec des mesures de fps sur téléphone.
 - **Mesures, ancienne vue à 85 m** (à l'arrêt et en marchant) : téléphone en hauteur 412 × 915 :

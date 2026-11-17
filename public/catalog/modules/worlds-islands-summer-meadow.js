@@ -4866,7 +4866,8 @@ function createPlacer(heightAt) {
 // src/worlds/summer-meadow-endless.js
 var HALF = TILE / 2;
 var smoothstep2 = THREE22.MathUtils.smoothstep;
-var WINDOW = 10;
+var WINDOW = 7;
+var WINDOW_AROUND = 17;
 var NEED_MARGIN = 9;
 var PREFETCH_MARGIN = 20;
 var KEEP_MARGIN = 36;
@@ -5134,6 +5135,7 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     return _box;
   };
   let frameIndex = 0;
+  let win = WINDOW;
   let ringSq = 0;
   const inRing = (dx, dz) => dx * dx + dz * dz <= ringSq;
   const stream = (camera, target) => {
@@ -5145,13 +5147,13 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     let bestDistance = Infinity;
     let bestX = 0;
     let bestZ = 0;
-    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
-      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+    for (let dz = -win; dz <= win; dz++) {
+      for (let dx = -win; dx <= win; dx++) {
         const cx = tx + dx;
         const cz = tz + dz;
         const key = keyOf(cx, cz);
         if (loaded.has(key)) continue;
-        if (_frustum3.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
+        if ((ringSq === 0 || inRing(dx, dz)) && _frustum3.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
           loadChunk(cx, cz);
         } else if (inRing(dx, dz) || _frustum3.intersectsBox(chunkBox(cx, cz, PREFETCH_MARGIN))) {
           const distance = dx * dx + dz * dz;
@@ -5173,7 +5175,7 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     }
     if (frameIndex++ % 30 === 0) {
       for (const [key, chunk] of loaded) {
-        const far = Math.abs(chunk.cx - tx) > WINDOW + 1 || Math.abs(chunk.cz - tz) > WINDOW + 1;
+        const far = Math.abs(chunk.cx - tx) > win + 1 || Math.abs(chunk.cz - tz) > win + 1;
         const kept = inRing(chunk.cx - tx, chunk.cz - tz) || _frustum3.intersectsBox(chunkBox(chunk.cx, chunk.cz, KEEP_MARGIN));
         if (far || !kept) unloadChunk(key, chunk);
       }
@@ -5181,7 +5183,7 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
         for (const key of memo.keys()) {
           const cx = Math.floor(key / 65536) - 32768;
           const cz = key % 65536 - 32768;
-          if (Math.abs(cx - tx) > WINDOW + 3 || Math.abs(cz - tz) > WINDOW + 3) memo.delete(key);
+          if (Math.abs(cx - tx) > win + 3 || Math.abs(cz - tz) > win + 3) memo.delete(key);
         }
       }
     }
@@ -5189,8 +5191,8 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
   const loadNearestPending = (tx, tz) => {
     let best = null;
     let bestDistance = Infinity;
-    for (let dz = -WINDOW; dz <= WINDOW; dz++) {
-      for (let dx = -WINDOW; dx <= WINDOW; dx++) {
+    for (let dz = -win; dz <= win; dz++) {
+      for (let dx = -win; dx <= win; dx++) {
         const distance = dx * dx + dz * dz;
         if (distance >= bestDistance || loaded.has(keyOf(tx + dx, tz + dz))) continue;
         if (inRing(dx, dz) || _frustum3.intersectsBox(chunkBox(tx + dx, tz + dz, PREFETCH_MARGIN))) {
@@ -5276,7 +5278,8 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     },
     /** À appeler à chaque image, caméra à jour, avant le rendu (même contrat que l'île). */
     update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter, around = 0 }) {
-      ringSq = Math.min((around + HALF) / TILE, WINDOW) ** 2 * (around > 0 ? 1 : 0);
+      win = around > 0 ? WINDOW_AROUND : WINDOW;
+      ringSq = Math.min((around + HALF) / TILE, win) ** 2 * (around > 0 ? 1 : 0);
       stream(camera, target);
       scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
       cloudShadows.update(dt, target);
