@@ -1,4 +1,4 @@
-// Projet Vie 3D — Console de la porte des étoiles (props/magic/star-portal-dial), version 2
+// Projet Vie 3D — Console de la porte des étoiles (props/magic/star-portal-dial), version 3
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -801,6 +801,38 @@ function buildGem({ length = 0.6, radius = 0.15, sides = 6, waist = 0.5, positio
   geometry.userData.facet = facet;
   return geometry;
 }
+function buildPrism(outline, bottom, top) {
+  const area = outline.reduce((sum, [x, z], i) => {
+    const [x2, z2] = outline[(i + 1) % outline.length];
+    return sum + x * z2 - x2 * z;
+  }, 0);
+  if (area < 0) outline = outline.slice().reverse();
+  const positions = [];
+  const normals = [];
+  const index = [];
+  const n = outline.length;
+  const face = (points) => {
+    const first = positions.length / 3;
+    const a = new THREE2.Vector3().subVectors(points[1], points[0]);
+    const b = new THREE2.Vector3().subVectors(points[2], points[0]);
+    const normal = new THREE2.Vector3().crossVectors(a, b).normalize();
+    for (const point of points) positions.push(point.x, point.y, point.z), normals.push(normal.x, normal.y, normal.z);
+    for (let k = 1; k < points.length - 1; k++) index.push(first, first + k, first + k + 1);
+  };
+  const up = outline.map(([x, z]) => new THREE2.Vector3(x, top(x, z), z));
+  const down = outline.map(([x, z]) => new THREE2.Vector3(x, bottom, z));
+  face(up.slice().reverse());
+  face(down);
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    face([down[i], down[j], up[j], up[i]].reverse());
+  }
+  const geometry = new THREE2.BufferGeometry();
+  geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE2.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  return geometry;
+}
 
 // src/assets/kit/palettes.js
 var STONES = {
@@ -990,7 +1022,7 @@ function energyRamp(key) {
 }
 var ENERGY_STEPS = [0.22, 0.45, 0.66, 0.85];
 var ENERGY_EMISSIVE = 0.44;
-var BASES = { stairs: "Escaliers", ramp: "Rampes", ruin: "Ruine" };
+var BASES = { stairs: "Escalier", ramp: "Rampe", ruin: "Ruine" };
 var STATES = { cycle: "Composition en boucle", dormant: "Endormie", open: "Ouverte" };
 var params = {
   seed: seedParam(
@@ -999,7 +1031,7 @@ var params = {
   base: choiceParam(
     "Plateforme",
     BASES,
-    "Escaliers devant et derri\xE8re, longues rampes en pente douce, ou ruine (marches cass\xE9es, dalles disjointes, pierres tomb\xE9es). La passerelle passe toujours au ras du bas de l'ouverture."
+    "Escalier devant, longue rampe en pente douce, ou ruine (marches cass\xE9es, dalles disjointes, pierres tomb\xE9es). La passerelle passe toujours au ras du bas de l'ouverture."
   ),
   state: choiceParam("\xC9tat", STATES, "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit, ondule puis se referme. Endormie ou ouverte : fig\xE9e."),
   probe: choiceParam("Sonde", { on: "Une sonde traverse", off: "Aucune" }, "Une petite sonde de cristal traverse le vortex ouvert, aller et retour, pour montrer l'onde de passage."),
@@ -1054,10 +1086,10 @@ var meta = {
     "procedural"
   ],
   biomes: ["forest", "meadow", "desert", "snow", "mountain", "cave", "beach", "swamp"],
-  version: 2,
+  version: 3,
   added: "2026-11-17",
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol au centre de la plateforme ; l'anneau fait face \xE0 +Z (le vortex jaillit vers +Z) ; la passerelle (dessus de la plateforme) est \xE0 `group.userData.walkway` m",
-  footprint: { radius: 6.9, height: 7.1 },
+  footprint: { radius: 7.2, height: 7.1 },
   animated: ["dial", "glow", "ripple"],
   params,
   variants: variantsOf("base", params.base)
@@ -1071,7 +1103,7 @@ var STYLES = { altar: "Autel \xE0 degr\xE9s", pillar: "Colonne", monolith: "Mono
 var STATES2 = { cycle: "Composition en boucle", dormant: "Endormie", open: "Porte ouverte" };
 var params2 = {
   seed: seedParam(
-    "La m\xEAme graine que la porte : m\xEAme adresse, m\xEAmes tablettes press\xE9es au m\xEAme moment. Change aussi les proportions de l'autel, l'inclinaison du plateau, les cornes de bronze et les gradins."
+    "La m\xEAme graine que la porte : m\xEAme adresse, m\xEAmes tablettes press\xE9es au m\xEAme moment. Change aussi les proportions de l'autel et de sa t\xEAte, l'inclinaison du plateau et les gradins."
   ),
   style: choiceParam("Forme", STYLES, "Autel \xE0 degr\xE9s (pyramide tronqu\xE9e), colonne \xE0 chapiteau, ou monolithe au plateau en surplomb."),
   state: choiceParam("\xC9tat", STATES2, "En boucle (synchronis\xE9e avec la porte), endormie, ou fig\xE9e porte ouverte."),
@@ -1123,10 +1155,10 @@ var meta2 = {
     "procedural"
   ],
   biomes: ["forest", "meadow", "desert", "snow", "mountain", "cave", "beach", "swamp"],
-  version: 2,
+  version: 3,
   added: "2026-11-17",
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol sous l'autel ; le plateau s'incline vers +Z (on se tient c\xF4t\xE9 +Z pour composer)",
-  footprint: { radius: 0.95, height: 1.75 },
+  footprint: { radius: 0.95, height: 1.9 },
   animated: ["dial", "glow"],
   params: params2,
   variants: variantsOf("style", params2.style)
@@ -1158,45 +1190,49 @@ function create(given = {}) {
     const body2 = shape.range(0.55, 0.65);
     stoneParts.push(buildBlock([w, body2, d], [0, y + body2 / 2, 0], [0, 0, 0], { taper: shape.range(0.08, 0.16) }));
     metalParts.push(buildBlock([w * 0.94 + 0.02, 0.06, d * 0.94 + 0.02], [0, y + body2 * 0.55, 0]));
-    top = y + body2 + 0.08;
+    top = y + body2;
   } else if (p.style === "pillar") {
     const h = shape.range(0.82, 0.92);
     const r = shape.range(0.2, 0.26);
     stoneParts.push(buildBlock([0.8, 0.12, 0.7], [0, 0.06, 0]));
     stoneParts.push(buildLathe([[0, 0.12], [r * 1.35, 0.12], [r * 1.35, 0.2], [r, 0.26], [r * 0.9, h * 0.8], [r * 1.6, h - 0.06], [r * 1.6, h], [0, h]], { segments: 8, facets: true, start: Math.PI / 8 }));
     for (const y of [0.3, h * 0.55]) metalParts.push(buildLathe([[r * 0.98, y], [r * 1.1, y], [r * 1.1, y + 0.05], [r * 0.98, y + 0.05]], { segments: 8, facets: true, start: Math.PI / 8 }));
-    top = h + 0.08;
+    stoneParts.push(buildBlock([panelW * 0.62, 0.1, panelD * 0.62], [0, h + 0.05, 0]));
+    top = h + 0.1;
   } else {
     const h = shape.range(0.8, 0.9);
-    const w = panelW * shape.range(0.62, 0.74);
+    const w = panelW * shape.range(0.78, 0.9);
     stoneParts.push(buildBlock([w + 0.2, 0.1, panelD * 0.7 + 0.2], [0, 0.05, 0]));
-    stoneParts.push(buildBlock([w, h - 0.1, panelD * 0.62], [0, 0.1 + (h - 0.1) / 2, -0.05], [0, 0, 0], { taper: -0.08 }));
-    for (const sx of [-0.28, 0, 0.28]) metalParts.push(buildBlock([0.05, h * 0.6, 0.04], [sx * w, h * 0.45, -0.05 + panelD * 0.31 + 0.01]));
-    top = h + 0.08;
+    stoneParts.push(buildBlock([w, h - 0.1, panelD * 0.66], [0, 0.1 + (h - 0.1) / 2, 0], [0, 0, 0], { taper: -0.06 }));
+    for (const sx of [-0.28, 0, 0.28]) metalParts.push(buildBlock([0.05, h * 0.6, 0.04], [sx * w, h * 0.45, panelD * 0.33 + 0.01]));
+    top = h;
   }
+  const seat = top;
+  const radiusP = panelW / 2;
+  const backZ = -panelD * 0.42;
+  const cosT = Math.cos(tilt), tanT = Math.tan(tilt);
+  const frontEdge = (backZ + radiusP) * cosT;
+  const lip = shape.range(0.12, 0.16);
+  const planeAt0 = seat + lip + frontEdge * tanT;
   const plate = new THREE4.Object3D();
-  plate.position.set(0, top, 0);
+  plate.position.set(0, planeAt0, 0);
   plate.rotation.x = tilt;
   plate.updateMatrix();
   const onPlate = (geometry) => geometry.applyMatrix4(plate.matrix);
-  const radiusP = panelW / 2;
-  const backZ = -panelD * 0.42;
-  const half = new THREE4.CylinderGeometry(radiusP, radiusP, 0.12, 16, 1, false, -Math.PI / 2, Math.PI);
-  half.deleteAttribute("uv");
-  half.translate(0, -0.06, backZ);
-  stoneParts.push(onPlate(half));
-  stoneParts.push(buildBlock([panelW * 0.5, 0.22, 0.42], [0, top - 0.1, 0]));
-  const rimSegments = 14;
-  for (let k = 0; k < rimSegments; k++) {
-    const a0 = -Math.PI / 2 + (k + 0.5) * (Math.PI / rimSegments);
-    const len = 2 * radiusP * Math.sin(Math.PI / rimSegments / 2) + 0.02;
-    metalParts.push(onPlate(buildBlock([len, 0.08, 0.05], [Math.sin(a0) * (radiusP + 0.02), -0.02, backZ + Math.cos(a0) * (radiusP + 0.02)], [0, a0 + Math.PI / 2 - Math.PI / 2, 0])));
+  const outline = [];
+  const ARC = 14;
+  for (let k = 0; k <= ARC; k++) {
+    const a0 = -Math.PI / 2 + k / ARC * Math.PI;
+    outline.push([Math.sin(a0) * radiusP, (backZ + Math.cos(a0) * radiusP) * cosT]);
   }
-  metalParts.push(onPlate(buildBlock([panelW + 0.08, 0.1, 0.06], [0, -0.01, backZ - 0.03])));
-  if (shape.chance(0.55)) {
-    const hornH = shape.range(0.25, 0.4);
-    for (const sx of [-1, 1]) metalParts.push(onPlate(buildBlock([0.07, hornH, 0.07], [sx * (radiusP + 0.02), hornH / 2, backZ - 0.03], [0, 0, -sx * 0.25], { taper: 0.5 })));
+  stoneParts.push(buildPrism(outline, seat - 0.02, (x, z) => planeAt0 - z * tanT));
+  for (let k = 0; k < ARC; k++) {
+    const a0 = -Math.PI / 2 + (k + 0.5) * (Math.PI / ARC);
+    const len = 2 * radiusP * Math.sin(Math.PI / ARC / 2) + 0.02;
+    metalParts.push(onPlate(buildBlock([len, 0.06, 0.06], [Math.sin(a0) * (radiusP - 0.01), 0, backZ + Math.cos(a0) * (radiusP - 0.01)], [0, a0, 0])));
   }
+  metalParts.push(onPlate(buildBlock([panelW + 0.04, 0.07, 0.07], [0, 0, backZ + 0.015])));
+  metalParts.push(buildPrism(outline.map(([x, z]) => [x * 1.01, z * 1.01 + (z < 0 ? -4e-3 : 0)]), seat - 0.03, () => seat + 0.03));
   const arcs = [0.36, 0.53, 0.7].map((k) => k * (radiusP - 0.08) / 0.7);
   const totalR = arcs.reduce((n, r) => n + r, 0);
   const perArc = arcs.map((r) => Math.round(G * r / totalR));
@@ -1228,7 +1264,7 @@ function create(given = {}) {
     }
   }
   const ringR = shape.range(0.17, 0.21);
-  const ringBase = new THREE4.Vector3(0, 0, backZ + 0.02).applyMatrix4(plate.matrix);
+  const ringBase = new THREE4.Vector3(0, 0, backZ + 0.09).applyMatrix4(plate.matrix);
   const ringCenter = ringBase.clone().add(new THREE4.Vector3(0, ringR + 0.06, 0));
   const ring = buildLathe([[ringR - 0.065, -0.045], [ringR, -0.045], [ringR, 0.045], [ringR - 0.065, 0.045]], { segments: 20, axis: "z" });
   ring.translate(ringCenter.x, ringCenter.y, ringCenter.z);

@@ -9213,11 +9213,11 @@
         "beach",
         "swamp"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-17",
       "units": "1 unité = 1 mètre ; origine au sol au centre de la plateforme ; l'anneau fait face à +Z (le vortex jaillit vers +Z) ; la passerelle (dessus de la plateforme) est à `group.userData.walkway` m",
       "footprint": {
-        "radius": 6.9,
+        "radius": 7.2,
         "height": 7.1
       },
       "animated": [
@@ -9243,12 +9243,12 @@
             "ruin"
           ],
           "labels": {
-            "stairs": "Escaliers",
-            "ramp": "Rampes",
+            "stairs": "Escalier",
+            "ramp": "Rampe",
             "ruin": "Ruine"
           },
           "label": "Plateforme",
-          "description": "Escaliers devant et derrière, longues rampes en pente douce, ou ruine (marches cassées, dalles disjointes, pierres tombées). La passerelle passe toujours au ras du bas de l'ouverture."
+          "description": "Escalier devant, longue rampe en pente douce, ou ruine (marches cassées, dalles disjointes, pierres tombées). La passerelle passe toujours au ras du bas de l'ouverture."
         },
         "state": {
           "type": "enum",
@@ -9330,14 +9330,14 @@
       "variants": [
         {
           "id": "stairs",
-          "name": "Escaliers",
+          "name": "Escalier",
           "params": {
             "base": "stairs"
           }
         },
         {
           "id": "ramp",
-          "name": "Rampes",
+          "name": "Rampe",
           "params": {
             "base": "ramp"
           }
@@ -9364,29 +9364,29 @@
       ],
       "stats": {
         "default": {
-          "triangles": 4676,
-          "vertices": 7849,
+          "triangles": 4520,
+          "vertices": 7537,
           "drawCalls": 3
         },
         "stairs": {
-          "triangles": 4676,
-          "vertices": 7849,
+          "triangles": 4520,
+          "vertices": 7537,
           "drawCalls": 3
         },
         "ramp": {
-          "triangles": 4532,
-          "vertices": 7561,
+          "triangles": 4496,
+          "vertices": 7489,
           "drawCalls": 3
         },
         "ruin": {
-          "triangles": 4640,
-          "vertices": 7777,
+          "triangles": 4532,
+          "vertices": 7561,
           "drawCalls": 3
         }
       },
       "bytes": {
-        "source": 30386,
-        "standalone": 65461
+        "source": 30740,
+        "standalone": 65509
       }
     },
     {
@@ -9441,12 +9441,12 @@
         "beach",
         "swamp"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-17",
       "units": "1 unité = 1 mètre ; origine au sol sous l'autel ; le plateau s'incline vers +Z (on se tient côté +Z pour composer)",
       "footprint": {
         "radius": 0.95,
-        "height": 1.75
+        "height": 1.9
       },
       "animated": [
         "dial",
@@ -9459,7 +9459,7 @@
           "min": 0,
           "max": 9999,
           "label": "Graine",
-          "description": "La même graine que la porte : même adresse, mêmes tablettes pressées au même moment. Change aussi les proportions de l'autel, l'inclinaison du plateau, les cornes de bronze et les gradins."
+          "description": "La même graine que la porte : même adresse, mêmes tablettes pressées au même moment. Change aussi les proportions de l'autel et de sa tête, l'inclinaison du plateau et les gradins."
         },
         "style": {
           "type": "enum",
@@ -9594,29 +9594,29 @@
       ],
       "stats": {
         "default": {
-          "triangles": 1400,
-          "vertices": 2784,
+          "triangles": 1412,
+          "vertices": 2792,
           "drawCalls": 3
         },
         "altar": {
-          "triangles": 1400,
-          "vertices": 2784,
+          "triangles": 1412,
+          "vertices": 2792,
           "drawCalls": 3
         },
         "pillar": {
-          "triangles": 1596,
-          "vertices": 3176,
+          "triangles": 1644,
+          "vertices": 3256,
           "drawCalls": 3
         },
         "monolith": {
-          "triangles": 1388,
-          "vertices": 2760,
+          "triangles": 1424,
+          "vertices": 2816,
           "drawCalls": 3
         }
       },
       "bytes": {
-        "source": 16062,
-        "standalone": 57613
+        "source": 16438,
+        "standalone": 59110
       }
     },
     {

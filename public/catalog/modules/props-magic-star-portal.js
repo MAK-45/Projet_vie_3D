@@ -1,4 +1,4 @@
-// Projet Vie 3D — Porte des étoiles (props/magic/star-portal), version 2
+// Projet Vie 3D — Porte des étoiles (props/magic/star-portal), version 3
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -1005,7 +1005,7 @@ function energyRamp(key) {
 }
 var ENERGY_STEPS = [0.22, 0.45, 0.66, 0.85];
 var ENERGY_EMISSIVE = 0.44;
-var BASES = { stairs: "Escaliers", ramp: "Rampes", ruin: "Ruine" };
+var BASES = { stairs: "Escalier", ramp: "Rampe", ruin: "Ruine" };
 var STATES = { cycle: "Composition en boucle", dormant: "Endormie", open: "Ouverte" };
 var params = {
   seed: seedParam(
@@ -1014,7 +1014,7 @@ var params = {
   base: choiceParam(
     "Plateforme",
     BASES,
-    "Escaliers devant et derri\xE8re, longues rampes en pente douce, ou ruine (marches cass\xE9es, dalles disjointes, pierres tomb\xE9es). La passerelle passe toujours au ras du bas de l'ouverture."
+    "Escalier devant, longue rampe en pente douce, ou ruine (marches cass\xE9es, dalles disjointes, pierres tomb\xE9es). La passerelle passe toujours au ras du bas de l'ouverture."
   ),
   state: choiceParam("\xC9tat", STATES, "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit, ondule puis se referme. Endormie ou ouverte : fig\xE9e."),
   probe: choiceParam("Sonde", { on: "Une sonde traverse", off: "Aucune" }, "Une petite sonde de cristal traverse le vortex ouvert, aller et retour, pour montrer l'onde de passage."),
@@ -1069,10 +1069,10 @@ var meta = {
     "procedural"
   ],
   biomes: ["forest", "meadow", "desert", "snow", "mountain", "cave", "beach", "swamp"],
-  version: 2,
+  version: 3,
   added: "2026-11-17",
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol au centre de la plateforme ; l'anneau fait face \xE0 +Z (le vortex jaillit vers +Z) ; la passerelle (dessus de la plateforme) est \xE0 `group.userData.walkway` m",
-  footprint: { radius: 6.9, height: 7.1 },
+  footprint: { radius: 7.2, height: 7.1 },
   animated: ["dial", "glow", "ripple"],
   params,
   variants: variantsOf("base", params.base)
@@ -1099,14 +1099,17 @@ function create(given = {}) {
   const steps = p.base === "ramp" ? 0 : baseRng.int(5, 7);
   const walkway = p.base === "ramp" ? baseRng.range(0.9, 1.15) : steps * rise;
   const width = baseRng.range(7.6, 8.4);
-  const depth = baseRng.range(2.8, 3.4);
+  const zBack = -baseRng.range(1.05, 1.3);
+  const zFront = baseRng.range(1.8, 2.5);
+  const depth = zFront - zBack;
+  const zMid = (zFront + zBack) / 2;
   const ruin = p.base === "ruin";
-  stoneParts.push(buildBlock([width, walkway - 0.08, depth], [0, (walkway - 0.08) / 2, 0]));
+  stoneParts.push(buildBlock([width, walkway - 0.08, depth], [0, (walkway - 0.08) / 2, zMid]));
   const cols = Math.round(width / 1.05), rows = Math.max(2, Math.round(depth / 1.05));
   for (let i = 0; i < cols; i++) {
     for (let j = 0; j < rows; j++) {
       const w = width / cols, d = depth / rows;
-      const x = -width / 2 + (i + 0.5) * w, z = -depth / 2 + (j + 0.5) * d;
+      const x = -width / 2 + (i + 0.5) * w, z = zBack + (j + 0.5) * d;
       if (ruin && Math.abs(x) > R_APERTURE && baseRng.chance(0.18)) continue;
       const tilt = ruin && Math.abs(x) > 1.2 ? [baseRng.range(-0.05, 0.05), 0, baseRng.range(-0.05, 0.05)] : [0, 0, 0];
       stoneParts.push(buildBlock([w - 0.06, 0.1, d - 0.06], [x, walkway - 0.05, z], tilt));
@@ -1114,36 +1117,36 @@ function create(given = {}) {
   }
   const stairWidth = baseRng.range(3.6, 4.4);
   const tread = baseRng.range(0.36, 0.44);
-  let reach = depth / 2;
-  for (const side of [1, -1]) {
+  let reach = zFront;
+  {
     if (p.base === "ramp") {
       const length = walkway / baseRng.range(0.22, 0.27);
       const slope = Math.atan2(walkway, length);
       const hyp = Math.hypot(length, walkway);
-      const mid = side * (depth / 2 + length / 2);
-      stoneParts.push(buildBlock([stairWidth, 0.24, hyp], [0, walkway / 2 - 0.1, mid], [side * slope, 0, 0]));
-      for (const sx of [-1, 1]) stoneParts.push(buildBlock([0.28, 0.42, hyp], [sx * (stairWidth / 2 + 0.14), walkway / 2 + 0.05, mid], [side * slope, 0, 0]));
-      reach = Math.max(reach, depth / 2 + length);
+      const mid = zFront + length / 2;
+      stoneParts.push(buildBlock([stairWidth, 0.24, hyp], [0, walkway / 2 - 0.1, mid], [slope, 0, 0]));
+      for (const sx of [-1, 1]) stoneParts.push(buildBlock([0.28, 0.42, hyp], [sx * (stairWidth / 2 + 0.14), walkway / 2 + 0.05, mid], [slope, 0, 0]));
+      reach = Math.max(reach, zFront + length);
     } else {
       for (let s = 0; s < steps; s++) {
         const h = walkway - s * rise;
         if (ruin && s > 0 && baseRng.chance(0.25)) continue;
-        const z = side * (depth / 2 + tread * (s + 0.5));
+        const z = zFront + tread * (s + 0.5);
         const tilt = ruin ? [baseRng.range(-0.04, 0.04), baseRng.range(-0.04, 0.04), baseRng.range(-0.04, 0.04)] : [0, 0, 0];
         stoneParts.push(buildBlock([stairWidth + s * 0.12, h, tread + 0.02], [0, h / 2, z], tilt));
       }
       if (!ruin) {
         for (const sx of [-1, 1]) {
           const l = tread * steps;
-          stoneParts.push(buildBlock([0.3, walkway, l], [sx * (stairWidth / 2 + steps * 0.06 + 0.15), walkway / 2, side * (depth / 2 + l / 2)], [0, 0, 0], { taper: 0 }));
+          stoneParts.push(buildBlock([0.3, walkway, l], [sx * (stairWidth / 2 + steps * 0.06 + 0.15), walkway / 2, zFront + l / 2], [0, 0, 0], { taper: 0 }));
         }
       }
-      reach = Math.max(reach, depth / 2 + tread * steps);
+      reach = Math.max(reach, zFront + tread * steps);
     }
   }
   if (baseRng.chance(0.65) && !ruin) {
     const bh = baseRng.range(0.6, 1);
-    for (const sx of [-1, 1]) for (const sz of [-1, 1]) stoneParts.push(buildBlock([0.5, bh, 0.5], [sx * (width / 2 - 0.35), walkway + bh / 2, sz * (depth / 2 - 0.35)], [0, 0, 0], { taper: 0.3 }));
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) stoneParts.push(buildBlock([0.5, bh, 0.5], [sx * (width / 2 - 0.35), walkway + bh / 2, sz > 0 ? zFront - 0.35 : zBack + 0.35], [0, 0, 0], { taper: 0.3 }));
   }
   const buttress = baseRng.range(0.7, 1.1);
   for (const sx of [-1, 1]) {
@@ -1155,7 +1158,7 @@ function create(given = {}) {
       const a = baseRng.range(0, TAU2);
       const d = baseRng.range(4.4, 5.8);
       const s = baseRng.range(0.25, 0.6);
-      stoneParts.push(buildBlock([s * baseRng.range(1, 1.8), s, s * baseRng.range(0.8, 1.4)], [Math.cos(a) * d * 0.9, s * 0.42, Math.sin(a) * d], [baseRng.range(-0.25, 0.25), baseRng.range(0, TAU2), baseRng.range(-0.25, 0.25)]));
+      stoneParts.push(buildBlock([s * baseRng.range(1, 1.8), s, s * baseRng.range(0.8, 1.4)], [Math.cos(a) * d * 0.9, s * 0.42, zMid + Math.sin(a) * d * 0.8], [baseRng.range(-0.25, 0.25), baseRng.range(0, TAU2), baseRng.range(-0.25, 0.25)]));
     }
   }
   const center = new THREE3.Vector3(0, walkway - 0.04 + R_APERTURE, 0);
@@ -1377,10 +1380,10 @@ function create(given = {}) {
     if (p.probe === "on" && horizonOpen) {
       const k = s.horizon === "open" && p.state === "cycle" ? s.k : s.t / 9 % 1;
       const leg = (from, to) => k >= from && k < to ? (k - from) / (to - from) : null;
-      const go = leg(0.12, 0.42), back = leg(0.55, 0.85);
+      const go = leg(0.12, 0.36), back = leg(0.6, 0.84);
       const u = go ?? back;
       if (u !== null) {
-        const z = go !== null ? 4.5 - 9 * u : -4.5 + 9 * u;
+        const z = go !== null ? 4.5 - 6 * u : -1.5 + 6 * u;
         probe = { x: Math.sin(u * 5) * 0.3, y: -R_APERTURE + 1.25 + Math.sin(u * TAU2) * 0.15, z };
       }
     }
@@ -1390,7 +1393,7 @@ function create(given = {}) {
     } else probeZ = null;
     for (let v2 = probeRange[0]; v2 < probeRange[1]; v2++) {
       const f = probeFacets[v2 - probeRange[0]];
-      if (!probe) {
+      if (!probe || probe.z < -0.3) {
         pa[v2 * 3] = pa[v2 * 3 + 1] = pa[v2 * 3 + 2] = 0;
         continue;
       }

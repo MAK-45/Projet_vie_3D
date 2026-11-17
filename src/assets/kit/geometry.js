@@ -926,3 +926,43 @@ export function buildGem({ length = 0.6, radius = 0.15, sides = 6, waist = 0.5, 
   geometry.userData.facet = facet;
   return geometry;
 }
+
+/**
+ * Prisme vertical à dessus libre (socle taillé, pupitre en pente, dalle biseautée) : contour convexe `outline`
+ * [[x, z], ...] dans le plan du sol (dans un sens ou dans l'autre), du bas
+ * `bottom` jusqu'à la hauteur `top(x, z)` en chaque sommet (un plan incliné donne un dessus plat en pente).
+ * Faces planes, normales nettes. Attributs : position, normal ; indexée.
+ */
+export function buildPrism(outline, bottom, top) {
+  // Sens du contour : on le remet dans le sens qui tourne les faces vers l'extérieur, quel qu'il soit.
+  const area = outline.reduce((sum, [x, z], i) => {
+    const [x2, z2] = outline[(i + 1) % outline.length];
+    return sum + x * z2 - x2 * z;
+  }, 0);
+  if (area < 0) outline = outline.slice().reverse();
+  const positions = [];
+  const normals = [];
+  const index = [];
+  const n = outline.length;
+  const face = (points) => {
+    const first = positions.length / 3;
+    const a = new THREE.Vector3().subVectors(points[1], points[0]);
+    const b = new THREE.Vector3().subVectors(points[2], points[0]);
+    const normal = new THREE.Vector3().crossVectors(a, b).normalize();
+    for (const point of points) positions.push(point.x, point.y, point.z), normals.push(normal.x, normal.y, normal.z);
+    for (let k = 1; k < points.length - 1; k++) index.push(first, first + k, first + k + 1);
+  };
+  const up = outline.map(([x, z]) => new THREE.Vector3(x, top(x, z), z));
+  const down = outline.map(([x, z]) => new THREE.Vector3(x, bottom, z));
+  face(up.slice().reverse());
+  face(down);
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    face([down[i], down[j], up[j], up[i]].reverse());
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  return geometry;
+}

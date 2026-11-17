@@ -12,7 +12,7 @@
 
 import * as THREE from "three";
 import { createGlowLight, createToonMaterial, rgb, sharedUniforms } from "../../../engine/toon-material.js";
-import { buildBlock, buildGem, buildLathe, mergeGeometries } from "../../kit/geometry.js";
+import { buildBlock, buildGem, buildLathe, buildPrism, mergeGeometries } from "../../kit/geometry.js";
 import { METALS, STONES } from "../../kit/palettes.js";
 import { resolveParams } from "../../kit/params.js";
 import { portalSequence, portalStateAt } from "../../kit/portal.js";
@@ -28,7 +28,7 @@ const STATES = { cycle: "Composition en boucle", dormant: "Endormie", open: "Por
 const params = {
   seed: seedParam(
     "La même graine que la porte : même adresse, mêmes tablettes pressées au même moment. Change aussi les " +
-      "proportions de l'autel, l'inclinaison du plateau, les cornes de bronze et les gradins.",
+      "proportions de l'autel et de sa tête, l'inclinaison du plateau et les gradins.",
   ),
   style: choiceParam("Forme", STYLES, "Autel à degrés (pyramide tronquée), colonne à chapiteau, ou monolithe au plateau en surplomb."),
   state: choiceParam("État", STATES, "En boucle (synchronisée avec la porte), endormie, ou figée porte ouverte."),
@@ -57,10 +57,10 @@ export const meta = {
     "travel", "magic", "sci-fi", "stone", "animated", "outdoor", "procedural",
   ],
   biomes: ["forest", "meadow", "desert", "snow", "mountain", "cave", "beach", "swamp"],
-  version: 2,
+  version: 3,
   added: "2026-11-17",
   units: "1 unité = 1 mètre ; origine au sol sous l'autel ; le plateau s'incline vers +Z (on se tient côté +Z pour composer)",
-  footprint: { radius: 0.95, height: 1.75 },
+  footprint: { radius: 0.95, height: 1.9 },
   animated: ["dial", "glow"],
   params,
   variants: variantsOf("style", params.style),
@@ -86,7 +86,7 @@ export function create(given = {}) {
   const panelW = shape.range(1.2, 1.36);
   const panelD = shape.range(0.68, 0.78);
   const tilt = shape.range(0.48, 0.62);
-  let top; // hauteur du centre du plateau
+  let top; // dessus plat du corps, où se pose la tête
   if (p.style === "altar") {
     // Pyramide tronquée à degrés.
     const tiers = shape.int(2, 3);
@@ -102,52 +102,57 @@ export function create(given = {}) {
     stoneParts.push(buildBlock([w, body, d], [0, y + body / 2, 0], [0, 0, 0], { taper: shape.range(0.08, 0.16) }));
     // Bandeau de métal autour du corps.
     metalParts.push(buildBlock([w * 0.94 + 0.02, 0.06, d * 0.94 + 0.02], [0, y + body * 0.55, 0]));
-    top = y + body + 0.08;
+    top = y + body;
   } else if (p.style === "pillar") {
     const h = shape.range(0.82, 0.92);
     const r = shape.range(0.2, 0.26);
     stoneParts.push(buildBlock([0.8, 0.12, 0.7], [0, 0.06, 0]));
     stoneParts.push(buildLathe([[0, 0.12], [r * 1.35, 0.12], [r * 1.35, 0.2], [r, 0.26], [r * 0.9, h * 0.8], [r * 1.6, h - 0.06], [r * 1.6, h], [0, h]], { segments: 8, facets: true, start: Math.PI / 8 }));
     for (const y of [0.3, h * 0.55]) metalParts.push(buildLathe([[r * 0.98, y], [r * 1.1, y], [r * 1.1, y + 0.05], [r * 0.98, y + 0.05]], { segments: 8, facets: true, start: Math.PI / 8 }));
-    top = h + 0.08;
+    // Abaque : une dalle carrée sur le chapiteau, qui porte la tête.
+    stoneParts.push(buildBlock([panelW * 0.62, 0.1, panelD * 0.62], [0, h + 0.05, 0]));
+    top = h + 0.1;
   } else {
     const h = shape.range(0.8, 0.9);
-    const w = panelW * shape.range(0.62, 0.74);
+    const w = panelW * shape.range(0.78, 0.9);
     stoneParts.push(buildBlock([w + 0.2, 0.1, panelD * 0.7 + 0.2], [0, 0.05, 0]));
-    stoneParts.push(buildBlock([w, h - 0.1, panelD * 0.62], [0, 0.1 + (h - 0.1) / 2, -0.05], [0, 0, 0], { taper: -0.08 }));
+    stoneParts.push(buildBlock([w, h - 0.1, panelD * 0.66], [0, 0.1 + (h - 0.1) / 2, 0], [0, 0, 0], { taper: -0.06 }));
     // Rainures verticales de métal sur la face avant.
-    for (const sx of [-0.28, 0, 0.28]) metalParts.push(buildBlock([0.05, h * 0.6, 0.04], [sx * w, h * 0.45, -0.05 + panelD * 0.31 + 0.01]));
-    top = h + 0.08;
+    for (const sx of [-0.28, 0, 0.28]) metalParts.push(buildBlock([0.05, h * 0.6, 0.04], [sx * w, h * 0.45, panelD * 0.33 + 0.01]));
+    top = h;
   }
 
-  // --- Plateau incliné vers +Z, en demi-lune : dalle de pierre, cerclage de métal. Le petit anneau se dresse au
-  // milieu du bord droit (au fond), les tablettes l'entourent en hémicycle, sur trois arcs.
+  // --- Tête du pupitre : un bloc de pierre en demi-lune taillé en pente, posé à plat sur le corps ; son dessus
+  // incliné vers +Z est le plateau. Le petit anneau se dresse au milieu du bord droit (au fond), les tablettes
+  // l'entourent en hémicycle, sur trois arcs. Cerclage de métal sur l'arête du plateau.
+  const seat = top; // dessus plat du corps
+  const radiusP = panelW / 2;
+  const backZ = -panelD * 0.42; // centre de l'hémicycle, dans le repère du plateau
+  const cosT = Math.cos(tilt), tanT = Math.tan(tilt);
+  const frontEdge = (backZ + radiusP) * cosT; // bord avant du plateau, au sol (z)
+  const lip = shape.range(0.12, 0.16); // épaisseur de la tête au bord avant
+  const planeAt0 = seat + lip + frontEdge * tanT; // hauteur du plateau en z = 0
   const plate = new THREE.Object3D();
-  plate.position.set(0, top, 0);
+  plate.position.set(0, planeAt0, 0);
   plate.rotation.x = tilt;
   plate.updateMatrix();
   const onPlate = (geometry) => geometry.applyMatrix4(plate.matrix);
-  const radiusP = panelW / 2;
-  const backZ = -panelD * 0.42; // centre de l'hémicycle
-  const half = new THREE.CylinderGeometry(radiusP, radiusP, 0.12, 16, 1, false, -Math.PI / 2, Math.PI);
-  half.deleteAttribute("uv");
-  half.translate(0, -0.06, backZ);
-  stoneParts.push(onPlate(half));
-  // Support sous le plateau.
-  stoneParts.push(buildBlock([panelW * 0.5, 0.22, 0.42], [0, top - 0.1, 0]));
-  // Cerclage : arc de plaques de métal le long du bord rond, barre droite au fond.
-  const rimSegments = 14;
-  for (let k = 0; k < rimSegments; k++) {
-    const a0 = -Math.PI / 2 + (k + 0.5) * (Math.PI / rimSegments);
-    const len = 2 * radiusP * Math.sin(Math.PI / rimSegments / 2) + 0.02;
-    metalParts.push(onPlate(buildBlock([len, 0.08, 0.05], [Math.sin(a0) * (radiusP + 0.02), -0.02, backZ + Math.cos(a0) * (radiusP + 0.02)], [0, a0 + Math.PI / 2 - Math.PI / 2, 0])));
+  const outline = [];
+  const ARC = 14;
+  for (let k = 0; k <= ARC; k++) {
+    const a0 = -Math.PI / 2 + (k / ARC) * Math.PI;
+    outline.push([Math.sin(a0) * radiusP, (backZ + Math.cos(a0) * radiusP) * cosT]);
   }
-  metalParts.push(onPlate(buildBlock([panelW + 0.08, 0.1, 0.06], [0, -0.01, backZ - 0.03])));
-  // Cornes de métal aux deux bouts du bord droit (une graine sur deux), comme des antennes anciennes.
-  if (shape.chance(0.55)) {
-    const hornH = shape.range(0.25, 0.4);
-    for (const sx of [-1, 1]) metalParts.push(onPlate(buildBlock([0.07, hornH, 0.07], [sx * (radiusP + 0.02), hornH / 2, backZ - 0.03], [0, 0, -sx * 0.25], { taper: 0.5 })));
+  stoneParts.push(buildPrism(outline, seat - 0.02, (x, z) => planeAt0 - z * tanT));
+  // Cerclage : plaques de métal à cheval sur l'arête ronde du plateau, barre droite au fond.
+  for (let k = 0; k < ARC; k++) {
+    const a0 = -Math.PI / 2 + (k + 0.5) * (Math.PI / ARC);
+    const len = 2 * radiusP * Math.sin(Math.PI / ARC / 2) + 0.02;
+    metalParts.push(onPlate(buildBlock([len, 0.06, 0.06], [Math.sin(a0) * (radiusP - 0.01), 0, backZ + Math.cos(a0) * (radiusP - 0.01)], [0, a0, 0])));
   }
+  metalParts.push(onPlate(buildBlock([panelW + 0.04, 0.07, 0.07], [0, 0, backZ + 0.015])));
+  // Bandeau de métal au pied de la tête.
+  metalParts.push(buildPrism(outline.map(([x, z]) => [x * 1.01, z * 1.01 + (z < 0 ? -0.004 : 0)]), seat - 0.03, () => seat + 0.03));
 
   // --- Tablettes : G tablettes de métal sur trois arcs concentriques, chacune incrustée de cristal.
   const arcs = [0.36, 0.53, 0.7].map((k) => k * (radiusP - 0.08) / 0.7);
@@ -183,7 +188,7 @@ export function create(given = {}) {
 
   // --- Petit anneau de métal dressé au centre de l'hémicycle, sur un socle ; cœur de cristal en lévitation.
   const ringR = shape.range(0.17, 0.21);
-  const ringBase = new THREE.Vector3(0, 0, backZ + 0.02).applyMatrix4(plate.matrix);
+  const ringBase = new THREE.Vector3(0, 0, backZ + 0.09).applyMatrix4(plate.matrix);
   const ringCenter = ringBase.clone().add(new THREE.Vector3(0, ringR + 0.06, 0));
   const ring = buildLathe([[ringR - 0.065, -0.045], [ringR, -0.045], [ringR, 0.045], [ringR - 0.065, 0.045]], { segments: 20, axis: "z" });
   ring.translate(ringCenter.x, ringCenter.y, ringCenter.z);

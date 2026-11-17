@@ -315,8 +315,10 @@ c'est ce fichier qui fait progresser les assets suivants.
   les demandes de mesures et de mise en scène de l'utilisateur, pas le décor d'un film ou d'une série.
 - **Mesures réelles demandées** : 6,70 m de diamètre extérieur, 4,76 m d'ouverture. **Mise en scène** : l'anneau
   est enfoncé d'un quart dans la plateforme ; le dessus de la plateforme (la passerelle) passe au ras du bas de
-  l'ouverture, pour la traverser de plain-pied ; escaliers ou rampes devant ET derrière. Premier jet (anneau posé
-  sur l'escalier, verrous dépassant à l'extérieur de l'anneau) refusé par l'utilisateur.
+  l'ouverture, pour la traverser de plain-pied. La porte a un avant (côté vortex) et un arrière : l'accès (escalier
+  ou rampe) n'est QUE devant, le dos de la plateforme est un mur plein juste derrière l'anneau ; un objet qui entre
+  disparaît (passé dans l'autre monde) et ressort par l'avant. Jets refusés : anneau posé sur l'escalier, verrous
+  dépassant à l'extérieur de l'anneau, escaliers des deux côtés.
 - Verrous **sur les faces de l'anneau**, pointés vers le centre, au-dessus de l'anneau intérieur, répartis sur
   260° (le bas est sous la passerelle). Ils glissent vers le centre en verrouillant et restent allumés.
 - **Séquence partagée** dans `kit/portal.js` (`portalSequence`, `portalStateAt`) : deux assets qui lisent la même
@@ -334,5 +336,7 @@ c'est ce fichier qui fait progresser les assets suivants.
   passage, puis **crête blanche + creux sombre juste derrière + 2e crête** qui s'élargissent ; une simple bosse
   claire se perd dans les reflets. Deux passages au même endroit à moins de 0,25 s = une seule onde.
 - Console : tablettes de métal en hémicycle (3 arcs) incrustées de cristal ; une grille droite faisait clavier
-  moderne. Plateau en demi-lune = `CylinderGeometry` ouverte sur π (sans uv) : fusionnable.
-- Outils ajoutés au kit : `buildLathe`, `buildBlock`, `buildGem` ; matière `METALS` (bronze, or, fer).
+  moderne. Une dalle inclinée posée sur un bloc plat le transperce (« mal intégré », refusé) : la tête du pupitre
+  est un bloc en demi-lune **taillé en pente** (`buildPrism` : contour au sol, dessus = plan incliné), posé à plat
+  sur le corps ; tablettes, cerclage et petit anneau sont posés sur ce plan.
+- Outils ajoutés au kit : `buildLathe`, `buildBlock`, `buildGem`, `buildPrism` ; matière `METALS` (bronze, or, fer).
