@@ -123,8 +123,21 @@ export function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36]
     clouds.push({ mesh, speed: rng.range(0.5, 0.95) });
   }
 
+  const halfX = (span.maxX - span.minX) / 2;
+  const halfZ = (span.maxZ - span.minZ) / 2;
+
   return {
     group,
+    /**
+     * Monde sans bord : la zone où les nuages dérivent et reviennent se recentre sur ce point (le promeneur).
+     * Un nuage qui en sort repart du bord opposé, loin hors de la carte d'ombre.
+     */
+    follow(x, z) {
+      span.minX = x - halfX;
+      span.maxX = x + halfX;
+      span.minZ = z - halfZ;
+      span.maxZ = z + halfZ;
+    },
     /** @param {number} dt secondes écoulées depuis l'image précédente */
     update(dt) {
       const wind = sharedUniforms.uWindDir.value;
@@ -133,10 +146,10 @@ export function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36]
         const position = cloud.mesh.position;
         position.x += wind.x * cloud.speed * strength * dt;
         position.z += wind.y * cloud.speed * strength * dt;
-        if (position.x > span.maxX) position.x = span.minX;
-        else if (position.x < span.minX) position.x = span.maxX;
-        if (position.z > span.maxZ) position.z = span.minZ;
-        else if (position.z < span.minZ) position.z = span.maxZ;
+        if (position.x > span.maxX) position.x -= halfX * 2;
+        else if (position.x < span.minX) position.x += halfX * 2;
+        if (position.z > span.maxZ) position.z -= halfZ * 2;
+        else if (position.z < span.minZ) position.z += halfZ * 2;
       }
     },
     dispose() {

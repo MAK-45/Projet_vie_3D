@@ -135,3 +135,164 @@ export function buildIslandUnderside({ bounds, top, depth, noise, spacing = 2, r
   geometry.computeVertexNormals();
   return geometry;
 }
+
+/**
+ * Morceau de sol d'un monde sans bord : une grille raccordable comme celle de `buildTerrainChunk` (attribut
+ * `aGround` en coordonnées du monde, aucune couture avec les voisins), mais qui n'évalue la hauteur qu'une fois
+ * par sommet (les normales viennent des sommets voisins, calculés sur une rangée de plus tout autour), et dont les
+ * triangles sont partagés entre deux matériaux : le pré (groupe 0) et la roche nue (groupe 1, là où
+ * `rockiness` dépasse 0,5 en moyenne sur le triangle). Une jupe courte, cachée sous les voisins, bouche les fentes
+ * entre deux morceaux de finesse différente.
+ *
+ * @param {object} options
+ * @param {number} options.size côté (m)
+ * @param {number} options.spacing écart entre deux sommets (m)
+ * @param {[number, number]} options.origin centre du morceau dans le monde [X, Z]
+ * @param {(x: number, z: number) => number} options.height hauteur du sol
+ * @param {(x: number, z: number, h: number, slope: number) => number} [options.rockiness] roche nue (> 0,5)
+ * @param {number} [options.edgeSpacing] écart des sommets le long des bords (multiple de `spacing`) : les sommets
+ *   intermédiaires du bord sont posés sur la droite entre leurs voisins. Deux morceaux de finesses différentes
+ *   ont alors le même bord, sans fente que la passe de contours soulignerait d'un trait sombre.
+ * @returns {{geometry: THREE.BufferGeometry, rock: boolean}} `rock` : le morceau a des triangles de roche
+ */
+export function buildGroundPatch(options) {
+  const steps = buildGroundPatchSteps(options);
+  let step = steps.next();
+  while (!step.done) step = steps.next();
+  return step.value;
+}
+
+/**
+ * `buildGroundPatch` en étapes, pour l'étaler sur plusieurs images : s'arrête (`yield`) toutes les `rows`
+ * rangées de sommets ; la dernière étape rend le résultat.
+ * @param {Parameters<typeof buildGroundPatch>[0] & {rows?: number}} options
+ */
+export function* buildGroundPatchSteps({ size, spacing, origin, height, rockiness = () => 0, edgeSpacing = spacing, rows = 16 }) {
+  const n = Math.max(1, Math.round(size / spacing));
+  const half = size / 2;
+  const step = size / n;
+  const [ox, oz] = origin;
+  // Coordonnée locale d'une colonne, exacte aux bords : deux morceaux voisins tombent sur les mêmes valeurs.
+  const local = (k) => (k === n ? half : -half + k * step);
+  const W = n + 3;
+  const H = new Float32Array(W * W);
+  for (let i = 0; i < W; i++) {
+    for (let j = 0; j < W; j++) H[i * W + j] = height(ox + (j === 0 ? -half - step : local(j - 1)), oz + (i === 0 ? -half - step : local(i - 1)));
+    if (i % rows === rows - 1) yield;
+  }
+  const count = (n + 1) * (n + 1);
+  const edge = 4 * (n + 1) * 2;
+  const positions = new Float32Array((count + edge) * 3);
+  const normals = new Float32Array((count + edge) * 3);
+  const ground = new Float32Array((count + edge) * 2);
+  const rocky = new Float32Array(count);
+  let lowest = Infinity;
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      const v = i * (n + 1) + j;
+      const g = (i + 1) * W + j + 1;
+      const h = H[g];
+      const dx = (H[g + 1] - H[g - 1]) / (2 * step);
+      const dz = (H[g + W] - H[g - W]) / (2 * step);
+      const len = Math.hypot(dx, 1, dz);
+      const x = local(j);
+      const z = local(i);
+      positions[v * 3] = x;
+      positions[v * 3 + 1] = h;
+      positions[v * 3 + 2] = z;
+      normals[v * 3] = -dx / len;
+      normals[v * 3 + 1] = 1 / len;
+      normals[v * 3 + 2] = -dz / len;
+      ground[v * 2] = ox + x;
+      ground[v * 2 + 1] = oz + z;
+      rocky[v] = rockiness(ox + x, oz + z, h, Math.hypot(dx, dz));
+      if (i === 0 || j === 0 || i === n || j === n) lowest = Math.min(lowest, h);
+    }
+    if (i % rows === rows - 1) yield;
+  }
+
+  const at = (i, j) => i * (n + 1) + j;
+  // Bords : les sommets entre deux sommets de la grille du bord prennent la moyenne de leurs voisins.
+  const stride = Math.max(1, Math.round(edgeSpacing / step));
+  if (stride > 1 && n % stride === 0) {
+    const snap = (v, a, b, t) => {
+      for (let c = 0; c < 3; c++) {
+        positions[v * 3 + c] = positions[a * 3 + c] + (positions[b * 3 + c] - positions[a * 3 + c]) * t;
+        normals[v * 3 + c] = normals[a * 3 + c] + (normals[b * 3 + c] - normals[a * 3 + c]) * t;
+      }
+    };
+    for (let k = 0; k <= n; k++) {
+      const r = k % stride;
+      if (r === 0) continue;
+      const k0 = k - r;
+      const k1 = k0 + stride;
+      const t = r / stride;
+      snap(at(0, k), at(0, k0), at(0, k1), t);
+      snap(at(n, k), at(n, k0), at(n, k1), t);
+      snap(at(k, 0), at(k0, 0), at(k1, 0), t);
+      snap(at(k, n), at(k0, n), at(k1, n), t);
+    }
+  }
+  const grass = [];
+  const rock = [];
+  const triangle = (a, b, c) => ((rocky[a] + rocky[b] + rocky[c]) / 3 > 0.5 ? rock : grass).push(a, b, c);
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      // Diagonale alternée : pas de « peigne » visible dans le relief.
+      const a = at(i, j), b = at(i + 1, j), c = at(i, j + 1), d = at(i + 1, j + 1);
+      if ((i + j) % 2 === 0) {
+        triangle(a, b, c);
+        triangle(c, b, d);
+      } else {
+        triangle(a, d, c);
+        triangle(a, b, d);
+      }
+    }
+  }
+
+  // Jupe : quatre bandes verticales, normales vers l'extérieur, jusqu'un peu sous le point le plus bas du bord.
+  const bottom = lowest - 0.8;
+  const sides = [
+    { from: (k) => at(0, k), normal: [0, 0, -1] },
+    { from: (k) => at(k, n), normal: [1, 0, 0] },
+    { from: (k) => at(n, n - k), normal: [0, 0, 1] },
+    { from: (k) => at(n - k, 0), normal: [-1, 0, 0] },
+  ];
+  let next = count;
+  for (const side of sides) {
+    const start = next;
+    for (let k = 0; k <= n; k++) {
+      const v = side.from(k);
+      for (let layer = 0; layer < 2; layer++) {
+        positions[next * 3] = positions[v * 3];
+        positions[next * 3 + 1] = layer === 0 ? positions[v * 3 + 1] : bottom;
+        positions[next * 3 + 2] = positions[v * 3 + 2];
+        normals.set(side.normal, next * 3);
+        ground[next * 2] = ground[v * 2];
+        ground[next * 2 + 1] = ground[v * 2 + 1];
+        next += 1;
+      }
+    }
+    for (let k = 0; k < n; k++) {
+      const a = start + k * 2;
+      const b = a + 2;
+      grass.push(a, b, a + 1, b, b + 1, a + 1);
+    }
+  }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+  geometry.setAttribute("aGround", new THREE.BufferAttribute(ground, 2));
+  const total = grass.length + rock.length;
+  const index = count + edge > 65535 ? new Uint32Array(total) : new Uint16Array(total);
+  index.set(grass);
+  index.set(rock, grass.length);
+  geometry.setIndex(new THREE.BufferAttribute(index, 1));
+  if (rock.length > 0) {
+    geometry.addGroup(0, grass.length, 0);
+    geometry.addGroup(grass.length, rock.length, 1);
+  }
+  geometry.computeBoundingSphere();
+  return { geometry, rock: rock.length > 0 };
+}
