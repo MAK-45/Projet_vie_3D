@@ -21,6 +21,9 @@ fichiers) en anglais.
    **Demande de création de monde → skill `create-world`.** Dès que l'utilisateur demande de créer, générer,
    assembler ou retoucher un monde, une carte, une île, un biome ou un décor à explorer, lancer ce skill et le
    suivre jusqu'au bout. Un asset qui manque au monde se crée d'abord avec `create-asset`.
+   **Projet « Le Complexe »** (le lieu ancien-technologique et ses artefacts, implémenté par lots) : dès que
+   l'utilisateur en parle (« on en est où ? », « on continue le Complexe », un lot, une salle, un artefact), lire
+   d'abord `docs/complexe/SUIVI.md` et suivre sa marche ; ne marquer un lot validé que sur son feu vert.
 2. **Toujours** charger les skills three.js utiles avant de coder du rendu (`threejs-fundamentals`,
    `threejs-performance` en permanence ; puis `-geometry`, `-materials`, `-shaders`, `-postprocessing`,
    `-lighting`, `-asset-pipeline`, `-loaders`, `-animation`, `-textures`, `-interaction` selon la tâche).
@@ -89,6 +92,7 @@ vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/
 | Mondes : assembler une carte, semis, ciel, explorateur, mesures | `docs/WORLDS.md` |
 | Créer un monde pas à pas, modèles de fichiers, recettes | `.claude/skills/create-world/` |
 | Effets pixelfx portés en 3D | `docs/PIXELFX-3D.md` |
+| Le Complexe : bible pixel art, plan par lots, **suivi de l'avancement** | `docs/complexe/` (commencer par `SUIVI.md`) |
 
 ## Git
 
