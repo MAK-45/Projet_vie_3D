@@ -308,6 +308,17 @@ html.pv3d-immersive body {
   display: none;
 }
 
+/* Aide propre à chaque vue (isométrique ou 3e personne) */
+.x-hint .x-iso-only,
+.x-hint .x-third-only {
+  display: inline;
+}
+.explorer.is-third .x-hint .x-iso-only,
+.explorer:not(.is-third) .x-hint .x-third-only,
+.x-hint .x-hint-touch {
+  display: none;
+}
+
 /* Manette tactile */
 .x-joystick {
   position: absolute;

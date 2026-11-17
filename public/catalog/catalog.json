@@ -182,7 +182,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 12642
+      "bytes": 14794
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -11827,7 +11827,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 228560
+        "standalone": 233020
       }
     }
   ]

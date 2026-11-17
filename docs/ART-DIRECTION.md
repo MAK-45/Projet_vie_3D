@@ -33,6 +33,7 @@ nettes, éléments animés (vent, eau, lumières). On garde ce rendu même quand
 |---|---|
 | Rendu basse résolution, contours, fond tramé | `src/engine/pixel-renderer.js` |
 | Caméra orthographique orbitale, alignement sur la grille de pixels | `src/engine/iso-camera.js` |
+| Caméra perspective à la 3e personne (exploration immersive), brume de lointain | `src/engine/chase-camera.js`, `src/engine/pixel-renderer.js` |
 | Ombrage par rampe de couleurs, ombres nettes, vent, motifs (écorce, grain) | `src/engine/toon-material.js` |
 | Lumières de halo (créature qui brille, lanterne) : le décor proche prend leur couleur dans le noir, en 3 paliers tramés qui échappent à la teinte de nuit | `src/engine/toon-material.js` (`createGlowLight`, `setDarkness`), `src/engine/pixel-renderer.js` |
 | Scène de présentation (soleil, socle), exemple complet d'utilisation | `src/gallery/viewer.js` |
@@ -44,5 +45,7 @@ par asset sont dans `.claude/skills/create-asset/references/recipes.md`.
 ## À éviter
 
 - Antialiasing, bloom flou, textures haute résolution, ombres douces PCF larges, dégradés lisses partout.
-- Perspective forte (sauf choix délibéré pour un plan cinématique).
+- Perspective forte (sauf choix délibéré : plan cinématique, ou la vue à la 3e personne de l'explorateur, voulue
+  pour se promener dans le décor ; le rendu pixel art, les contours et la palette restent les mêmes, et une brume
+  tramée cache la fin de la vue).
 - Recréer les visuels d'un jeu existant : on s'inspire du style, pas des assets.

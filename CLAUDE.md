@@ -44,7 +44,8 @@ fichiers) en anglais.
 
 ```
 src/
-  engine/     toon-material (matériau à palette + vent), pixel-renderer (basse réso + contours), iso-camera
+  engine/     toon-material (matériau à palette + vent), pixel-renderer (basse réso + contours), iso-camera,
+              chase-camera (3e personne, perspective)
   assets/     les dessins 3D en JS : index (registre), taxonomy (catégories), kit/ (outils), un fichier par asset
   gallery/    « Atelier Vie 3D » : galerie web des assets (visionneuse, catalogue par catégorie, code, fiche)
   worlds/     un fichier par monde/biome : génération procédurale + données (summer-meadow : la prairie d'été,
@@ -53,7 +54,8 @@ src/
               (streaming-scatter), lumière et ombres de nuages (sky), mer de nuages et brume (cloud-sea), heure et
               météo (atmosphere), tranche d'île et sol en morceaux (terrain).
               Chaque monde est aussi rangé comme asset dans assets/worlds/ (catégorie « Mondes »).
-  explorer/   l'explorateur d'un monde (classe Explorer) : réglages, promeneur de 1,80 m, caméras, heure, météo ;
+  explorer/   l'explorateur d'un monde (classe Explorer) : réglages, promeneur de 1,80 m, caméras (isométriques ou
+              3e personne), heure, météo ;
               monté par la fiche de l'asset dans la galerie, et seul dans explorer.html pour les captures
   creature/   (à venir) comportement de la créature dans un scénario ; ses corps et mouvements sont déjà des assets :
               personnages importés (creatures/humanoid) et 26 animations (catégorie « Animations »), kit/humanoid.js

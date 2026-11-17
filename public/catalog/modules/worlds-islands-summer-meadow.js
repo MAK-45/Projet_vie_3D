@@ -1530,6 +1530,17 @@ import * as THREE4 from "three";
 var _frustum = new THREE4.Frustum();
 var _viewProjection = new THREE4.Matrix4();
 var _child = new THREE4.Matrix4();
+function limitShadowCopies(mesh) {
+  mesh.userData.shadowCount = -1;
+  mesh.onBeforeShadow = () => {
+    const limit = mesh.userData.shadowCount;
+    mesh.userData.drawCount = mesh.count;
+    if (limit >= 0 && limit < mesh.count) mesh.count = limit;
+  };
+  mesh.onAfterShadow = () => {
+    mesh.count = mesh.userData.drawCount;
+  };
+}
 var ScatterField = class {
   /**
    * @param {object} options
@@ -1590,7 +1601,9 @@ var ScatterField = class {
         visible: new Int16Array(count),
         length: 0,
         previous: new Int16Array(count),
-        previousLength: -1
+        previousLength: -1,
+        distance: new Float32Array(count)
+        // distance de chaque case à la caméra, à la dernière image
       };
     }
   }
@@ -1674,6 +1687,7 @@ var ScatterField = class {
         mesh.frustumCulled = false;
         mesh.visible = false;
         mesh.matrixAutoUpdate = false;
+        limitShadowCopies(mesh);
         mesh.userData.offset = part.matrixWorld.equals(_child.identity()) ? null : part.matrixWorld.clone();
         if (mesh.userData.offset) mesh.matrix.copy(mesh.userData.offset);
         layer.meshes.push(mesh);
@@ -1695,20 +1709,31 @@ var ScatterField = class {
    *
    * @param {THREE.Camera} camera caméra de la vue (matrices à jour)
    * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
+   * @param {object} [options] pour une caméra perspective (vue à la 3e personne)
+   * @param {Record<string, number>} [options.reach] portée par famille (m) : au-delà de cette distance à la
+   *   caméra, les cases de la famille ne sont pas dessinées (l'herbe lointaine ne fait qu'un pixel)
+   * @param {number} [options.shadowReach] seules les copies à moins de cette distance de la caméra (m) projettent
+   *   leur ombre : les copies sont alors rangées de la plus proche à la plus lointaine
    * @returns {boolean} vrai si les copies ont été recopiées
    */
-  update(camera, fraction = 1) {
+  update(camera, fraction = 1, { reach = null, shadowReach = Infinity } = {}) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
     const step = Math.round(THREE4.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
     let changed = step !== this.fraction || this._first;
     this._first = false;
     this.fraction = step;
-    for (const cls of Object.values(this.classes)) {
+    for (const [name, cls] of Object.entries(this.classes)) {
+      const limit = reach?.[name] ?? Infinity;
       let length = 0;
       for (let i = 0; i < cls.active.length; i++) {
         const index = cls.active[i];
-        if (_frustum.intersectsBox(cls.boxes[index])) cls.visible[length++] = index;
+        const box = cls.boxes[index];
+        if (!_frustum.intersectsBox(box)) continue;
+        const distance = limit === Infinity && shadowReach === Infinity ? 0 : box.distanceToPoint(camera.position);
+        if (distance >= limit) continue;
+        cls.distance[index] = distance;
+        cls.visible[length++] = index;
       }
       let same = length === cls.previousLength;
       for (let i = 0; same && i < length; i++) same = cls.visible[i] === cls.previous[i];
@@ -1719,7 +1744,8 @@ var ScatterField = class {
         changed = true;
       }
     }
-    if (changed) this._refill(step);
+    if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
+    this._shadowReach = shadowReach;
     return changed;
   }
   /** Dessine toutes les copies, sans tri : pour un monde montré d'un bloc (vignette, fiche d'asset). */
@@ -1760,12 +1786,21 @@ var ScatterField = class {
     const row = THREE4.MathUtils.clamp(Math.floor((z - this.bounds.minZ) / cls.cellSize), 0, cls.rows - 1);
     return row * cls.cols + col;
   }
-  _refill(fraction) {
+  _refill(fraction, shadowReach = Infinity) {
+    const trim = shadowReach !== Infinity;
+    if (trim) {
+      for (const cls of Object.values(this.classes)) {
+        const { distance } = cls;
+        cls.visible.subarray(0, cls.length).sort((a, b) => distance[a] - distance[b]);
+      }
+    }
     for (const layer of this.layers) {
       const cls = this.classes[layer.reach];
       const array = layer.matrices.array;
       let offset = 0;
+      let shadowOffset = trim ? -1 : -16;
       for (let i = 0; i < cls.length; i++) {
+        if (shadowOffset === -1 && cls.distance[cls.visible[i]] > shadowReach) shadowOffset = offset;
         const cell = layer.cells[cls.visible[i]];
         if (!cell) continue;
         const total = cell.length / 16;
@@ -1779,9 +1814,11 @@ var ScatterField = class {
         layer.matrices.addUpdateRange(0, offset);
         layer.matrices.needsUpdate = true;
       }
+      if (shadowOffset === -1) shadowOffset = offset;
       for (const mesh of layer.meshes) {
         mesh.count = offset / 16;
         mesh.visible = offset > 0;
+        mesh.userData.shadowCount = shadowOffset / 16;
       }
     }
   }
@@ -2485,6 +2522,7 @@ var StreamingScatter = class {
       mesh.frustumCulled = false;
       mesh.visible = false;
       mesh.matrixAutoUpdate = false;
+      limitShadowCopies(mesh);
       if (!part.matrixWorld.equals(_identity)) mesh.matrix.copy(part.matrixWorld);
       layer.meshes.push(mesh);
       this.group.add(mesh);
@@ -2539,7 +2577,9 @@ var StreamingScatter = class {
             if (this.layers[layerIndex].thin) shuffleMatrices2(array, rng);
             return array;
           }),
-          dither: cellDither2(x, z)
+          dither: cellDither2(x, z),
+          distance: 0
+          // à la caméra, à la dernière image (tri des ombres)
         };
         cls.cells.push(cell);
         chunk.cells.push(cell);
@@ -2562,19 +2602,30 @@ var StreamingScatter = class {
    * du cadrage, jamais de ce qui est dans la vue, sinon l'herbe clignoterait pendant la marche.
    * @param {THREE.Camera} camera
    * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
+   * @param {object} [options] pour une caméra perspective (vue à la 3e personne)
+   * @param {Record<string, number>} [options.reach] portée par famille (m) : au-delà de cette distance à la
+   *   caméra, les cases de la famille ne sont pas dessinées (l'herbe lointaine ne fait qu'un pixel)
+   * @param {number} [options.shadowReach] seules les copies à moins de cette distance de la caméra (m) projettent
+   *   leur ombre : les copies sont alors rangées de la plus proche à la plus lointaine
    */
-  update(camera, fraction = 1) {
+  update(camera, fraction = 1, { reach = null, shadowReach = Infinity } = {}) {
     _viewProjection2.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum2.setFromProjectionMatrix(_viewProjection2);
     const step = Math.round(THREE9.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
     let changed = step !== this.fraction || this._dirty;
     this._dirty = false;
     this.fraction = step;
-    for (const cls of Object.values(this.classes)) {
+    for (const [name, cls] of Object.entries(this.classes)) {
       const { cells, visible, previous } = cls;
+      const limit = reach?.[name] ?? Infinity;
       let length = 0;
       for (let i = 0; i < cells.length; i++) {
-        if (_frustum2.intersectsBox(cells[i].box)) visible[length++] = cells[i];
+        const cell = cells[i];
+        if (!_frustum2.intersectsBox(cell.box)) continue;
+        const distance = limit === Infinity && shadowReach === Infinity ? 0 : cell.box.distanceToPoint(camera.position);
+        if (distance >= limit) continue;
+        cell.distance = distance;
+        visible[length++] = cell;
       }
       visible.length = length;
       let same = length === previous.length;
@@ -2585,7 +2636,8 @@ var StreamingScatter = class {
         changed = true;
       }
     }
-    if (changed) this._refill(step);
+    if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
+    this._shadowReach = shadowReach;
     return changed;
   }
   /** Copies et triangles dessinés à cet instant (hors passe d'ombre). */
@@ -2625,7 +2677,9 @@ var StreamingScatter = class {
     layer.matrices = matrices;
     layer.capacity = capacity;
   }
-  _refill(fraction) {
+  _refill(fraction, shadowReach = Infinity) {
+    const trim = shadowReach !== Infinity;
+    if (trim) for (const cls of Object.values(this.classes)) cls.visible.sort(byDistance);
     for (const layer of this.layers) {
       const cls = this.classes[layer.reach];
       const visible = cls.visible;
@@ -2640,7 +2694,9 @@ var StreamingScatter = class {
       if (needed > layer.capacity) this._grow(layer, Math.ceil(needed * 1.5));
       const array = layer.matrices.array;
       let offset = 0;
+      let shadowOffset = trim ? -1 : -16;
       for (let i = 0; i < visible.length; i++) {
+        if (shadowOffset === -1 && visible[i].distance > shadowReach) shadowOffset = offset;
         const cell = visible[i].data[layer.index];
         if (!cell) continue;
         const total = cell.length / 16;
@@ -2654,13 +2710,16 @@ var StreamingScatter = class {
         layer.matrices.addUpdateRange(0, offset);
         layer.matrices.needsUpdate = true;
       }
+      if (shadowOffset === -1) shadowOffset = offset;
       for (const mesh of layer.meshes) {
         mesh.count = offset / 16;
         mesh.visible = offset > 0;
+        mesh.userData.shadowCount = shadowOffset / 16;
       }
     }
   }
 };
+var byDistance = (a, b) => a.distance - b.distance;
 function cellDither2(x, z) {
   const value = Math.sin(x * 12.9898 + z * 4.1414) * 43758.5453;
   return value - Math.floor(value);
@@ -5075,6 +5134,8 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     return _box;
   };
   let frameIndex = 0;
+  let ringSq = 0;
+  const inRing = (dx, dz) => dx * dx + dz * dz <= ringSq;
   const stream = (camera, target) => {
     _viewProjection3.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum3.setFromProjectionMatrix(_viewProjection3);
@@ -5092,7 +5153,7 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
         if (loaded.has(key)) continue;
         if (_frustum3.intersectsBox(chunkBox(cx, cz, NEED_MARGIN))) {
           loadChunk(cx, cz);
-        } else if (_frustum3.intersectsBox(chunkBox(cx, cz, PREFETCH_MARGIN))) {
+        } else if (inRing(dx, dz) || _frustum3.intersectsBox(chunkBox(cx, cz, PREFETCH_MARGIN))) {
           const distance = dx * dx + dz * dz;
           if (distance < bestDistance) {
             bestDistance = distance;
@@ -5113,7 +5174,8 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
     if (frameIndex++ % 30 === 0) {
       for (const [key, chunk] of loaded) {
         const far = Math.abs(chunk.cx - tx) > WINDOW + 1 || Math.abs(chunk.cz - tz) > WINDOW + 1;
-        if (far || !_frustum3.intersectsBox(chunkBox(chunk.cx, chunk.cz, KEEP_MARGIN))) unloadChunk(key, chunk);
+        const kept = inRing(chunk.cx - tx, chunk.cz - tz) || _frustum3.intersectsBox(chunkBox(chunk.cx, chunk.cz, KEEP_MARGIN));
+        if (far || !kept) unloadChunk(key, chunk);
       }
       for (const memo of [candidateMemo, treeMemo]) {
         for (const key of memo.keys()) {
@@ -5131,7 +5193,7 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
       for (let dx = -WINDOW; dx <= WINDOW; dx++) {
         const distance = dx * dx + dz * dz;
         if (distance >= bestDistance || loaded.has(keyOf(tx + dx, tz + dz))) continue;
-        if (_frustum3.intersectsBox(chunkBox(tx + dx, tz + dz, PREFETCH_MARGIN))) {
+        if (inRing(dx, dz) || _frustum3.intersectsBox(chunkBox(tx + dx, tz + dz, PREFETCH_MARGIN))) {
           best = [tx + dx, tz + dz];
           bestDistance = distance;
         }
@@ -5213,11 +5275,12 @@ function createEndlessMeadow({ seed = 1, relief = 1.8, trees: treeAmount = 1, ro
       daylight.setSun(mood.sunAzimuth, mood.sunElevation);
     },
     /** À appeler à chaque image, caméra à jour, avant le rendu (même contrat que l'île). */
-    update({ camera, target, dt, viewArea, viewRadius, shadows }) {
+    update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter, around = 0 }) {
+      ringSq = Math.min((around + HALF) / TILE, WINDOW) ** 2 * (around > 0 ? 1 : 0);
       stream(camera, target);
-      scatter.update(camera, FULL_DETAIL_AREA / viewArea);
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
       cloudShadows.update(dt, target);
-      if (shadows) daylight.update(target, viewRadius + 14);
+      if (shadows) daylight.update(shadowCenter ?? target, viewRadius + 14);
     },
     /** Ce qui est dessiné par le semis, la part de végétation fine affichée, les morceaux chargés et le temps moyen
      * de fabrication d'un morceau (ms). */
@@ -5577,7 +5640,7 @@ function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmou
     /**
      * À appeler à chaque image, caméra à jour, avant le rendu.
      * @param {object} frame
-     * @param {THREE.OrthographicCamera} frame.camera
+     * @param {THREE.Camera} frame.camera orthographique (vue isométrique) ou perspective (3e personne)
      * @param {THREE.Vector3} frame.target point regardé (le personnage)
      * @param {number} frame.dt secondes depuis l'image précédente
      * @param {number} frame.viewArea surface de sol que couvre la vue (m²) : ne dépend que du zoom et de
@@ -5585,11 +5648,16 @@ function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmou
      * @param {number} frame.viewRadius demi-diagonale de la zone de sol vue (m)
      * @param {boolean} frame.shadows vrai les images où la carte d'ombre est refaite : la lumière ne suit la
      *   vue que ces images-là, sinon les ombres glisseraient sur le sol
+     * @param {Record<string, number>} [frame.reach] portée du semis par famille (m), pour une caméra perspective
+     * @param {number} [frame.shadowReach] distance à la caméra au-delà de laquelle le semis ne projette plus
+     *   d'ombre (m) ; hors de la carte d'ombre, c'est autant de triangles économisés
+     * @param {THREE.Vector3} [frame.shadowCenter] centre de la zone ombrée (défaut : `target`)
+     * @param {number} [frame.around] monde sans bord : rayon autour de `target` gardé prêt même hors champ (m)
      */
-    update({ camera, target, dt, viewArea, viewRadius, shadows }) {
-      scatter.update(camera, FULL_DETAIL_AREA / viewArea);
+    update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter }) {
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
       cloudShadows.update(dt);
-      if (shadows) daylight.update(target, viewRadius + 14);
+      if (shadows) daylight.update(shadowCenter ?? target, viewRadius + 14);
     },
     /** Ce qui est dessiné à cet instant par le semis, et la part de végétation fine affichée. */
     stats() {

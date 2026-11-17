@@ -3,6 +3,7 @@
 // « Prairie d'été » de l'Atelier, et passe en plein écran pour la balade.
 
 import * as THREE from "three";
+import { ChaseCamera } from "../engine/chase-camera.js";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
 import { setDarkness, setWind, tick } from "../engine/toon-material.js";
@@ -24,10 +25,28 @@ const MAX_ELEVATION = THREE.MathUtils.degToRad(68);
 const STEP = Math.PI / 4; // la caméra ne tourne d'elle-même que par huitièmes de tour
 const numberFormat = new Intl.NumberFormat("fr-FR");
 
+/**
+ * Vue à la 3e personne : portée de la vue (m), début de la brume qui y mène, et portée du semis par famille.
+ * L'herbe et les fleurs (« fine ») ne sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux
+ * pixels d'art, et c'est elle qui coûte le plus de triangles. Les arbres vont jusqu'à la brume.
+ */
+const THIRD_FAR = 85;
+const THIRD_FOG_NEAR = 40;
+const THIRD_REACH = { fine: 32, low: 60 };
+const THIRD_SHADOW_AHEAD = 14; // la carte d'ombre est centrée devant le promeneur, là où l'on regarde (m)
+const THIRD_SHADOW_RADIUS = 24; // (+ 14 m de marge dans le monde)
+/** Au-delà (m de la caméra), le semis ne projette plus d'ombre : c'est hors de la carte d'ombre. */
+const THIRD_SHADOW_REACH = THIRD_SHADOW_AHEAD + THIRD_SHADOW_RADIUS + 14 + 6;
+
+/**
+ * Caméras : les trois premières sont isométriques (la maquette vue d'en haut) et ne diffèrent que pendant la balade
+ * auto ; la 3e personne est une vraie caméra perspective derrière le promeneur, pour voir le décor devant soi.
+ */
 export const CAMERAS = {
   fixed: { label: "Fixe" },
   orbit: { label: "Pivote" },
   follow: { label: "Suit" },
+  third: { label: "3e pers." },
 };
 
 /** Curseurs d'abondance : nom du réglage, libellé, bornes. */
@@ -87,7 +106,7 @@ const TEMPLATE = `
     <div class="x-row"><span class="x-label">Personnage</span>${choice("character", "Personnage", CHARACTERS)}</div>
     <div class="x-row">
       <button type="button" class="x-button" data-ref="stroll" aria-pressed="false">Balade auto</button>
-      <span class="x-label">Caméra</span>${choice("camera", "Caméra pendant la balade", CAMERAS)}
+      <span class="x-label">Caméra</span>${choice("camera", "Caméra", CAMERAS)}
     </div>
     <div class="x-row">
       <button type="button" class="x-button" data-ref="recenter">Vue de départ</button>
@@ -98,8 +117,10 @@ const TEMPLATE = `
   </div>
 
   <p class="x-hint">
-    <span class="x-hint-keys">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner d'un cran · souris : tourner, incliner · molette : zoom</span>
-    <span class="x-hint-touch">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</span>
+    <span class="x-hint-keys x-iso-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner d'un cran · souris : tourner, incliner · molette : zoom</span>
+    <span class="x-hint-touch x-iso-only">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</span>
+    <span class="x-hint-keys x-third-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner la vue · souris : regarder autour · molette : reculer, approcher</span>
+    <span class="x-hint-touch x-third-only">Rond rouge : marcher (à fond : courir) · un doigt : regarder autour · deux doigts : reculer, approcher</span>
     <span data-ref="sizeNote"></span>
   </p>
 
@@ -155,6 +176,11 @@ export class Explorer {
     controls.minPolarAngle = Math.PI / 2 - MAX_ELEVATION;
     controls.maxPolarAngle = Math.PI / 2 - MIN_ELEVATION;
     controls.rotateSpeed = 0.6;
+    // Vue à la 3e personne : caméra perspective derrière le promeneur, brume de lointain dans le rendu.
+    this.chase = new ChaseCamera(this.canvas, { far: THIRD_FAR });
+    this.pixel.fog.near = THIRD_FOG_NEAR;
+    this.pixel.fog.far = THIRD_FAR * 0.97;
+    this._shadowCenter = new THREE.Vector3();
 
     this.scene = new THREE.Scene();
     this.walker = new Walker(this.settings.character);
@@ -193,6 +219,7 @@ export class Explorer {
     this.ui.settings.open = container.clientWidth > 720;
     this._resize();
     this._rebuild();
+    this._applyView();
     this.ui.loading.hidden = true;
     this._updateLoop();
   }
@@ -223,20 +250,35 @@ export class Explorer {
     }
   }
 
-  /** Vue de départ : isométrique, cadrée pour montrer à peu près la même surface de pré sur tous les écrans. */
+  /** Vue de départ : dans le dos du promeneur (3e personne), ou isométrique, cadrée pour montrer à peu près la même
+   * surface de pré sur tous les écrans. */
   resetView() {
+    if (this.settings.camera === "third") {
+      this.chase.reset(this.walker.heading);
+      return;
+    }
     const zoom = Math.max(1, Math.round(Math.sqrt((this.view.width * this.view.height) / 390) * 8) / 8);
     this._turn.active = false;
     this.iso.setView({ azimuth: Math.PI / 4, elevation: ISO_ELEVATION, target: this.look, zoom });
   }
 
-  /** Place la vue à la main (captures). Angles en degrés. */
+  /** Place la vue à la main (captures). Angles en degrés ; en 3e personne, `zoom` est le recul (m). */
   setView({ azimuth, elevation, zoom, x, z }) {
     if (x !== undefined || z !== undefined) {
       this.walker.placeAt(this.world, x ?? this.walker.position.x, z ?? this.walker.position.z);
       this.look.set(this.walker.position.x, this.walker.position.y + this.walker.lookHeight, this.walker.position.z);
       this.iso.follow(this.look);
       this.life.reset(this.world, this.walker.position);
+    }
+    if (this.settings.camera === "third") {
+      const toRad = THREE.MathUtils.degToRad;
+      if (azimuth !== undefined) this.walker.heading = toRad(azimuth) + Math.PI; // le promeneur regarde dans le sens de la vue
+      this.chase.setAngles({
+        yaw: azimuth !== undefined ? toRad(azimuth) : undefined,
+        pitch: elevation !== undefined ? toRad(elevation) : undefined,
+        distance: zoom,
+      });
+      return;
     }
     this.iso.setView({
       azimuth: azimuth !== undefined ? THREE.MathUtils.degToRad(azimuth) : this.iso.azimuth,
@@ -258,6 +300,7 @@ export class Explorer {
     this.life.dispose();
     this.walker.dispose();
     this.iso.dispose();
+    this.chase.dispose();
     this.pixel.dispose();
     this.root.remove();
   }
@@ -278,7 +321,10 @@ export class Explorer {
       size: () => regenerate(),
       moment: () => this._applyMood(),
       weather: () => this._applyMood(),
-      camera: () => this._save(),
+      camera: () => {
+        this._applyView();
+        this._save();
+      },
       character: () => {
         this.walker.setCharacter(settings.character);
         ui.sizeNote.textContent = SIZE_NOTES[this.walker.kind];
@@ -364,6 +410,17 @@ export class Explorer {
     } catch {
       // Sans mémoire locale, les réglages ne sont simplement pas retenus.
     }
+  }
+
+  /** Passe d'une vue à l'autre : une seule caméra reçoit les gestes. La 3e personne part du dos du promeneur. */
+  _applyView() {
+    const third = this.settings.camera === "third";
+    this.root.classList.toggle("is-third", third);
+    this.iso.controls.enabled = !third;
+    this.chase.enabled = third;
+    this._turn.active = false;
+    this.canvas.style.transform = "";
+    if (third) this.chase.reset(this.walker.heading);
   }
 
   _applyMood() {
@@ -458,6 +515,7 @@ export class Explorer {
     this.canvas.style.left = `${-this._artPixel}px`;
     this.canvas.style.top = `${-this._artPixel}px`;
     this.iso.setViewport(size.width, size.height);
+    this.chase.setViewport(size.width, size.height);
     this.view.width = size.width / PIXELS_PER_UNIT;
     this.view.height = size.height / PIXELS_PER_UNIT;
   }
@@ -518,7 +576,8 @@ export class Explorer {
   }
 
   _frame() {
-    const { iso, input, walker, world, look, view, pixel, atmosphere } = this;
+    const { iso, chase, input, walker, world, look, view, pixel, atmosphere } = this;
+    const third = this.settings.camera === "third";
     this._timer.update();
     const dt = Math.min(this._timer.getDelta(), 0.1);
     const elapsed = this._timer.getElapsed();
@@ -526,7 +585,7 @@ export class Explorer {
     input.update();
 
     // Direction de marche dans le monde : relative à la caméra, ou vers le but de la balade automatique.
-    const azimuth = iso.azimuth;
+    const azimuth = third ? chase.azimuth : iso.azimuth;
     let dirX = Math.cos(azimuth) * input.x - Math.sin(azimuth) * input.y;
     let dirZ = -Math.sin(azimuth) * input.x - Math.cos(azimuth) * input.y;
     let run = input.run;
@@ -555,15 +614,32 @@ export class Explorer {
     const height = walker.position.y + walker.lookHeight;
     look.set(walker.position.x, look.y + (height - look.y) * Math.min(1, dt * 5), walker.position.z);
     iso.follow(look);
-    this._steerCamera(dt, walker.speed > 0.5);
-    iso.update();
-
-    const camera = iso.camera;
-    const elevation = Math.PI / 2 - iso.controls.getPolarAngle();
-    const width = view.width / camera.zoom;
-    const depth = view.height / camera.zoom / Math.max(0.15, Math.sin(elevation));
-    view.area = width * depth;
-    view.radius = Math.hypot(width, depth) / 2;
+    let camera;
+    let reach = null;
+    let shadowCenter = look;
+    if (third) {
+      chase.update(dt, { target: look, heading: walker.heading, speed: walker.speed, turn: input.turn, world, lead: this.strolling });
+      camera = chase.camera;
+      // L'herbe garde toute sa densité : c'est sa portée (THIRD_REACH) qui borne son coût.
+      view.area = 1;
+      view.radius = THIRD_SHADOW_RADIUS;
+      reach = THIRD_REACH;
+      // Ombres là où l'on regarde : un disque devant le promeneur, dans le sens de la vue.
+      shadowCenter = this._shadowCenter.set(
+        look.x - Math.sin(chase.yaw) * THIRD_SHADOW_AHEAD,
+        look.y,
+        look.z - Math.cos(chase.yaw) * THIRD_SHADOW_AHEAD,
+      );
+    } else {
+      this._steerCamera(dt, walker.speed > 0.5);
+      iso.update();
+      camera = iso.camera;
+      const elevation = Math.PI / 2 - iso.controls.getPolarAngle();
+      const width = view.width / camera.zoom;
+      const depth = view.height / camera.zoom / Math.max(0.15, Math.sin(elevation));
+      view.area = width * depth;
+      view.radius = Math.hypot(width, depth) / 2;
+    }
 
     // Heure et météo.
     atmosphere.update(dt);
@@ -576,12 +652,16 @@ export class Explorer {
     this.life.setMood(mood.night, mood.rain);
 
     const shadows = this._frameIndex++ % 2 === 0;
-    world.update({ camera, target: look, dt, viewArea: view.area, viewRadius: view.radius, shadows });
+    world.update({
+      camera, target: look, dt, viewArea: view.area, viewRadius: view.radius, shadows, reach, shadowCenter,
+      shadowReach: third ? THIRD_SHADOW_REACH : Infinity,
+      around: third ? THIRD_FAR : 0, // monde sans bord : tout autour est prêt, la vue peut se retourner
+    });
     pixel.renderer.shadowMap.needsUpdate = shadows;
     this.life.update(dt, elapsed, walker.position, view.radius);
 
     pixel.render(this.scene, camera);
-    this.canvas.style.transform = `translate(${iso.subPixel.x * this._artPixel}px, ${-iso.subPixel.y * this._artPixel}px)`;
+    if (!third) this.canvas.style.transform = `translate(${iso.subPixel.x * this._artPixel}px, ${-iso.subPixel.y * this._artPixel}px)`;
     this._measure(dt);
   }
 

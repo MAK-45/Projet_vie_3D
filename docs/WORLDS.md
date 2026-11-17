@@ -125,8 +125,42 @@ Le personnage (`src/explorer/walker.js`, réglage `character`) se choisit dans l
 Un nouveau personnage = un corps (`create…()` d'un asset) et une conduite dans `STYLES` de `walker.js` ; un
 personnage importé de plus dans `CHARACTERS` de `kit/humanoid.js` apparaît tout seul dans l'explorateur.
 
-Caméra pendant la balade auto : **Fixe** (ne tourne pas), **Pivote** (un cran toutes les 9 secondes), **Suit**
-(se replace derrière le promeneur quand il change de cap).
+Caméra (réglage `camera`) : trois vues isométriques qui ne diffèrent que pendant la balade auto, **Fixe** (ne
+tourne pas), **Pivote** (un cran toutes les 9 secondes), **Suit** (se replace derrière le promeneur quand il change
+de cap), et la **3e personne** (`third`).
+
+### Vue à la 3e personne (`camera: "third"`)
+
+Une vraie caméra perspective (`ChaseCamera`, `src/engine/chase-camera.js`) placée derrière le promeneur et un peu
+au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, sur l'île comme dans la prairie infinie.
+
+- **Gestes** : glisser (souris ou un doigt) pour regarder autour, molette ou deux doigts pour reculer ou approcher
+  (2,2 à 11 m, 5 m au départ), A / E pour tourner la vue. La marche reste relative à l'écran.
+- **Retour dans le dos** : 1,6 s après le dernier geste, la caméra revient d'elle-même derrière le promeneur, mais
+  seulement quand il avance vers le fond de l'image : de côté, il longe l'écran sans que la vue tourne ; vers la
+  caméra, elle recule devant lui. En balade auto, elle le suit toujours.
+- **Obstacles** : jamais sous le sol (elle remonte au-dessus d'une bosse) ; un tronc entre elle et le promeneur
+  raccourcit le recul.
+- **Champ** : 66° à l'horizontale, borné entre 46° et 74° à la verticale (un téléphone en hauteur voit moins large).
+- **Rendu** : le même pipeline pixel art. `PixelRenderer` reconnaît la caméra perspective : il linéarise la
+  profondeur (contours justes), fait grandir le seuil de contour avec la distance, et ajoute une **brume de
+  lointain** de 40 à 82 m (quatre paliers tramés vers la couleur du ciel) : la fin de la vue (85 m) n'est jamais une
+  ligne nette. Pas d'alignement sur la grille de pixels ici : en perspective, chaque pas redessine le décor.
+- **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 32 m (au-delà, une touffe ne fait qu'un pixel), les
+  rochers à 60 m, les arbres jusqu'à la brume. La carte d'ombre est centrée 14 m devant le promeneur, et seules les
+  copies à moins de 58 m de la caméra projettent leur ombre (`shadowReach` : le semis range ses copies de la plus
+  proche à la plus lointaine et réduit `count` le temps de la passe d'ombre, `limitShadowCopies` dans
+  `kit/scatter.js`). Dans la prairie infinie, tous les morceaux dans un rayon de 85 m sont gardés prêts
+  (`around`), quelle que soit la direction de la vue : la caméra peut se retourner d'un geste sans saccade.
+- **Mesures** (navigateur de capture, prairie infinie, à l'arrêt et en marchant) : téléphone en hauteur 412 × 915 :
+  65 à 90 draw calls, 135 000 à 165 000 triangles (ombres comprises), dans le budget ; écran large 1280 × 720 :
+  ≈ 100 draw calls, ≈ 360 000 triangles, surtout des arbres (les bosquets de bouleaux en vue jusqu'à 85 m) :
+  au-dessus du budget téléphone. Une version allégée des arbres pour le lointain serait la prochaine économie.
+  110 à 150 morceaux chargés (≈ 9 Mo) au lieu de 60 à 70 en isométrique.
+
+Les mondes reçoivent dans `update` trois champs de plus, tous facultatifs : `reach` (portée du semis par famille),
+`shadowReach` (portée de l'ombre du semis) et `shadowCenter` (centre de la carte d'ombre), plus `around` pour un
+monde sans bord.
 
 Avec un monde sans bord (`world.endless`), l'explorateur borne la vue (zoom arrière jusqu'à 0,6, inclinaison
 jusqu'à 24° au lieu de 11°), affiche « infinie » dans le résumé, et la balade auto choisit ses buts devant le
@@ -134,6 +168,7 @@ promeneur.
 
 `explorer.html` le montre seul, en plein écran, pour les captures (`size=endless` pour la prairie infinie) :
 `?seed=1&size=small&moment=night&weather=rain&camera=follow&character=superhero-female&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
+Avec `camera=third`, `az` est la direction de la vue, `el` son inclinaison et `zoom` le recul (m).
 
 ## Mesures (carte moyenne, vue de départ, moyenne par image)
 

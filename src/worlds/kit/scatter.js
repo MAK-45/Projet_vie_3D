@@ -15,6 +15,25 @@ const _frustum = new THREE.Frustum();
 const _viewProjection = new THREE.Matrix4();
 const _child = new THREE.Matrix4();
 
+/**
+ * Une couche ne projette son ombre que par ses premières copies (`mesh.userData.shadowCount`, posé par le semis
+ * quand une portée d'ombre est donnée) : le temps de la passe d'ombre, `count` est réduit, puis rétabli.
+ * Les copies sont rangées de la plus proche à la plus lointaine : les arbres au loin, hors de la carte d'ombre,
+ * ne sont pas redessinés pour rien.
+ * @param {THREE.InstancedMesh} mesh
+ */
+export function limitShadowCopies(mesh) {
+  mesh.userData.shadowCount = -1; // -1 : toutes les copies
+  mesh.onBeforeShadow = () => {
+    const limit = mesh.userData.shadowCount;
+    mesh.userData.drawCount = mesh.count;
+    if (limit >= 0 && limit < mesh.count) mesh.count = limit;
+  };
+  mesh.onAfterShadow = () => {
+    mesh.count = mesh.userData.drawCount;
+  };
+}
+
 export class ScatterField {
   /**
    * @param {object} options
@@ -69,6 +88,7 @@ export class ScatterField {
         cellSize, cols, rows, boxes,
         active: [], // cases qui contiennent quelque chose (remplies par build)
         visible: new Int16Array(count), length: 0, previous: new Int16Array(count), previousLength: -1,
+        distance: new Float32Array(count), // distance de chaque case à la caméra, à la dernière image
       };
     }
   }
@@ -154,6 +174,7 @@ export class ScatterField {
         mesh.frustumCulled = false; // le tri se fait par case, ici
         mesh.visible = false;
         mesh.matrixAutoUpdate = false;
+        limitShadowCopies(mesh);
         // Un maillage décalé dans son modèle garde son décalage (rare : les assets fusionnent à l'origine).
         mesh.userData.offset = part.matrixWorld.equals(_child.identity()) ? null : part.matrixWorld.clone();
         if (mesh.userData.offset) mesh.matrix.copy(mesh.userData.offset);
@@ -177,9 +198,14 @@ export class ScatterField {
    *
    * @param {THREE.Camera} camera caméra de la vue (matrices à jour)
    * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
+   * @param {object} [options] pour une caméra perspective (vue à la 3e personne)
+   * @param {Record<string, number>} [options.reach] portée par famille (m) : au-delà de cette distance à la
+   *   caméra, les cases de la famille ne sont pas dessinées (l'herbe lointaine ne fait qu'un pixel)
+   * @param {number} [options.shadowReach] seules les copies à moins de cette distance de la caméra (m) projettent
+   *   leur ombre : les copies sont alors rangées de la plus proche à la plus lointaine
    * @returns {boolean} vrai si les copies ont été recopiées
    */
-  update(camera, fraction = 1) {
+  update(camera, fraction = 1, { reach = null, shadowReach = Infinity } = {}) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
     const step = Math.round(THREE.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
@@ -187,11 +213,17 @@ export class ScatterField {
     this._first = false;
     this.fraction = step;
 
-    for (const cls of Object.values(this.classes)) {
+    for (const [name, cls] of Object.entries(this.classes)) {
+      const limit = reach?.[name] ?? Infinity;
       let length = 0;
       for (let i = 0; i < cls.active.length; i++) {
         const index = cls.active[i];
-        if (_frustum.intersectsBox(cls.boxes[index])) cls.visible[length++] = index;
+        const box = cls.boxes[index];
+        if (!_frustum.intersectsBox(box)) continue;
+        const distance = limit === Infinity && shadowReach === Infinity ? 0 : box.distanceToPoint(camera.position);
+        if (distance >= limit) continue;
+        cls.distance[index] = distance;
+        cls.visible[length++] = index;
       }
       let same = length === cls.previousLength;
       for (let i = 0; same && i < length; i++) same = cls.visible[i] === cls.previous[i];
@@ -202,7 +234,8 @@ export class ScatterField {
         changed = true;
       }
     }
-    if (changed) this._refill(step);
+    if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
+    this._shadowReach = shadowReach;
     return changed;
   }
 
@@ -249,12 +282,22 @@ export class ScatterField {
     return row * cls.cols + col;
   }
 
-  _refill(fraction) {
+  _refill(fraction, shadowReach = Infinity) {
+    const trim = shadowReach !== Infinity;
+    if (trim) {
+      // Du plus proche au plus lointain : les copies qui projettent une ombre viennent en tête.
+      for (const cls of Object.values(this.classes)) {
+        const { distance } = cls;
+        cls.visible.subarray(0, cls.length).sort((a, b) => distance[a] - distance[b]);
+      }
+    }
     for (const layer of this.layers) {
       const cls = this.classes[layer.reach];
       const array = layer.matrices.array;
       let offset = 0;
+      let shadowOffset = trim ? -1 : -16;
       for (let i = 0; i < cls.length; i++) {
+        if (shadowOffset === -1 && cls.distance[cls.visible[i]] > shadowReach) shadowOffset = offset;
         const cell = layer.cells[cls.visible[i]];
         if (!cell) continue;
         const total = cell.length / 16;
@@ -269,9 +312,11 @@ export class ScatterField {
         layer.matrices.addUpdateRange(0, offset);
         layer.matrices.needsUpdate = true;
       }
+      if (shadowOffset === -1) shadowOffset = offset;
       for (const mesh of layer.meshes) {
         mesh.count = offset / 16;
         mesh.visible = offset > 0;
+        mesh.userData.shadowCount = shadowOffset / 16;
       }
     }
   }

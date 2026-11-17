@@ -23,6 +23,10 @@ uniform highp sampler2D tDepth;
 uniform vec2 uTexel;
 uniform float uDepthRange;   // far - near, en unités
 uniform float uDepthThreshold;
+uniform float uPerspective;  // 1 : caméra perspective (profondeur à linéariser, seuil qui grandit avec la distance)
+uniform vec2 uClip;          // near, far de la caméra
+uniform float uTexelPerDepth; // perspective : taille d'un pixel d'art dans le monde, par mètre de profondeur
+uniform vec2 uFog;           // brume de lointain : début, fin (m) ; fin à 0 = pas de brume
 uniform float uOutline;      // 0 ou 1
 uniform float uOutlineDarken;
 uniform vec3 uOutlineTint;
@@ -61,6 +65,20 @@ float bayer4(vec2 p) {
   return (m[index] + 0.5) / 16.0;
 }
 
+// Profondeur en mètres depuis la caméra.
+float linearDepth(float d) {
+  if (uPerspective < 0.5) return d * uDepthRange;
+  return uClip.x * uClip.y / (uClip.y - d * (uClip.y - uClip.x));
+}
+
+// Ciel derrière ce pixel : dégradé vertical en paliers, tramé (Bayer 4×4).
+vec3 skyAt() {
+  float steps = 5.0;
+  float t = vUv.y * steps;
+  float band = floor(t) + step(bayer4(gl_FragCoord.xy), fract(t));
+  return mix(uBgBottom, uBgTop, clamp(band / steps, 0.0, 1.0));
+}
+
 vec3 viewNormal(vec4 aux) {
   vec2 n = aux.xy * 2.0 - 1.0;
   return vec3(n, sqrt(max(0.0, 1.0 - dot(n, n))));
@@ -69,14 +87,10 @@ vec3 viewNormal(vec4 aux) {
 void main() {
   vec4 color = texture(tColor, vUv);
   vec4 aux = texture(tAux, vUv);
-  float depth = texture(tDepth, vUv).r * uDepthRange;
+  float depth = linearDepth(texture(tDepth, vUv).r);
 
   if (color.a < 0.5) {
-    // Fond : dégradé vertical en paliers, tramé (Bayer 4×4).
-    float steps = 5.0;
-    float t = vUv.y * steps;
-    float band = floor(t) + step(bayer4(gl_FragCoord.xy), fract(t));
-    vec3 sky = mix(uBgBottom, uBgTop, clamp(band / steps, 0.0, 1.0));
+    vec3 sky = skyAt();
     gl_FragColor = vec4(mix(sky, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy)), 1.0);
     return;
   }
@@ -97,21 +111,23 @@ void main() {
   for (int i = 0; i < 4; i++) {
     vec2 uv = vUv + offsets[i] * uTexel;
     auxNear[i] = texture(tAux, uv);
-    depthNear[i] = texture(tDepth, uv).r * uDepthRange;
+    depthNear[i] = linearDepth(texture(tDepth, uv).r);
   }
+  // En perspective, un pixel couvre plus de monde au loin : le seuil suit la distance.
+  float depthThreshold = uPerspective > 0.5 ? max(uDepthThreshold, depth * uTexelPerDepth * 3.5) : uDepthThreshold;
   for (int i = 0; i < 4; i++) {
     vec4 auxN = auxNear[i];
     float diff = depthNear[i] - depth;
     float slope = max(depth - depthNear[i ^ 1], 0.0); // pente déjà présente de l'autre côté
     float otherId = step(0.002, abs(auxN.a - aux.a));
     // Entre deux parties du même objet, le matériau peut demander un seuil plus large (feuillage).
-    float threshold = mix(max(uDepthThreshold, max(aux.z, auxN.z) * 4.0), uDepthThreshold, otherId);
+    float threshold = mix(max(depthThreshold, max(aux.z, auxN.z) * 4.0), depthThreshold, otherId);
     // Contour intérieur : on assombrit le pixel de l'objet le plus proche de la caméra.
     edge = max(edge, step(threshold, diff - slope));
-    edge = max(edge, otherId * step(auxN.a, aux.a) * step(-uDepthThreshold, diff));
+    edge = max(edge, otherId * step(auxN.a, aux.a) * step(-depthThreshold, diff));
     // Arête vive d'un même objet : liseré clair du côté tourné vers le haut-gauche.
     vec3 nN = viewNormal(auxN);
-    float sameSurface = (1.0 - otherId) * step(abs(diff - slope), uDepthThreshold);
+    float sameSurface = (1.0 - otherId) * step(abs(diff - slope), depthThreshold);
     float turned = step(0.35, 1.0 - dot(n, nN)) * step(0.0, dot(n - nN, vec3(-0.6, 1.0, 0.6)));
     crease = max(crease, sameSurface * turned * hasCrease);
   }
@@ -125,6 +141,13 @@ void main() {
   vec3 graded = mix(vec3(dot(result, vec3(0.3, 0.55, 0.15))), result, uSaturation) * uGrade;
   // Ce qu'éclaire une lumière de halo garde sa couleur dans le noir, à proportion de son palier.
   result = mix(result, graded, inked * (1.0 - glow));
+  // Brume de lointain (caméra perspective) : le décor se fond dans le ciel en quatre paliers tramés, et la fin de
+  // la vue (far) n'est jamais une ligne nette.
+  if (uFog.y > 0.0) {
+    float haze = smoothstep(uFog.x, uFog.y, depth);
+    haze = clamp(floor(haze * 4.0 + bayer4(gl_FragCoord.xy)) / 4.0, 0.0, 1.0);
+    result = mix(result, skyAt(), haze);
+  }
   result = mix(result, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy));
   gl_FragColor = vec4(result, 1.0);
 }
@@ -160,6 +183,8 @@ export class PixelRenderer {
     this.width = 1; // taille de l'image rendue, en pixels d'art
     this.height = 1;
     this.info = { calls: 0, triangles: 0 };
+    /** Brume de lointain d'une caméra perspective : début et fin (m). Sans effet en orthographique. */
+    this.fog = { near: 0, far: 0 };
 
     this.target = new THREE.WebGLRenderTarget(1, 1, {
       count: 2,
@@ -178,6 +203,10 @@ export class PixelRenderer {
         uResolution: { value: new THREE.Vector2(1, 1) },
         uDepthRange: { value: 100 },
         uDepthThreshold: { value: 0.3 },
+        uPerspective: { value: 0 },
+        uClip: { value: new THREE.Vector2(0.1, 100) },
+        uTexelPerDepth: { value: 0.01 },
+        uFog: { value: new THREE.Vector2(0, 0) },
         uOutline: { value: 1 },
         uOutlineDarken: { value: 0.5 },
         uOutlineTint: { value: rgb("#2a1d3d") },
@@ -267,9 +296,21 @@ export class PixelRenderer {
       renderer.render(scene, camera);
 
       // Le seuil de contour suit la taille d'un pixel dans le monde (surfaces vues en biais).
-      const texelWorld = (camera.top - camera.bottom) / camera.zoom / this.height;
       uniforms.uDepthRange.value = camera.far - camera.near;
-      uniforms.uDepthThreshold.value = Math.max(0.22, texelWorld * 3.5);
+      uniforms.uClip.value.set(camera.near, camera.far);
+      if (camera.isPerspectiveCamera) {
+        // Taille d'un pixel par mètre de profondeur ; seuil plancher plus fin qu'en isométrique : de près, un
+        // pixel ne couvre que quelques millimètres.
+        uniforms.uPerspective.value = 1;
+        uniforms.uTexelPerDepth.value = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) / camera.zoom / this.height;
+        uniforms.uDepthThreshold.value = 0.06;
+        uniforms.uFog.value.set(this.fog.near, this.fog.far);
+      } else {
+        const texelWorld = (camera.top - camera.bottom) / camera.zoom / this.height;
+        uniforms.uPerspective.value = 0;
+        uniforms.uDepthThreshold.value = Math.max(0.22, texelWorld * 3.5);
+        uniforms.uFog.value.set(0, 0);
+      }
       uniforms.uOutline.value = this.outline ? 1 : 0;
 
       this.info.calls = renderer.info.render.calls;

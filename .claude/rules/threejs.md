@@ -12,7 +12,7 @@ paths:
   skill propre à la tâche (shaders, postprocessing, geometry...).
 - Respecter `docs/ART-DIRECTION.md` et les budgets de `docs/PERFORMANCE.md`.
 - Le rendu passe par `src/engine/` : `PixelRenderer` (cible basse résolution + passe de contours, canvas agrandi
-  en CSS), `IsoCamera` (orthographique, orbitale), `createToonMaterial` (rampe de couleurs, sRGB brut).
+  en CSS), `IsoCamera` (orthographique, orbitale), `ChaseCamera` (perspective, 3e personne de l'explorateur), `createToonMaterial` (rampe de couleurs, sRGB brut).
   Tout ce qui est dessiné utilise `createToonMaterial` : les matériaux standard de three.js n'écrivent pas la
   2e sortie (normales + identifiants) que lit la passe de contours.
 - Imports : `import * as THREE from "three"` et addons via `three/addons/...`.

@@ -5,6 +5,7 @@
 
 import * as THREE from "three";
 import { disposeObject } from "../../engine/toon-material.js";
+import { limitShadowCopies } from "./scatter.js";
 
 const _frustum = new THREE.Frustum();
 const _viewProjection = new THREE.Matrix4();
@@ -89,6 +90,7 @@ export class StreamingScatter {
       mesh.frustumCulled = false; // le tri se fait par case, ici
       mesh.visible = false;
       mesh.matrixAutoUpdate = false;
+      limitShadowCopies(mesh);
       if (!part.matrixWorld.equals(_identity)) mesh.matrix.copy(part.matrixWorld);
       layer.meshes.push(mesh);
       this.group.add(mesh);
@@ -146,6 +148,7 @@ export class StreamingScatter {
             return array;
           }),
           dither: cellDither(x, z),
+          distance: 0, // à la caméra, à la dernière image (tri des ombres)
         };
         cls.cells.push(cell);
         chunk.cells.push(cell);
@@ -170,19 +173,30 @@ export class StreamingScatter {
    * du cadrage, jamais de ce qui est dans la vue, sinon l'herbe clignoterait pendant la marche.
    * @param {THREE.Camera} camera
    * @param {number} [fraction] part des copies dessinées dans les couches fines (0..1)
+   * @param {object} [options] pour une caméra perspective (vue à la 3e personne)
+   * @param {Record<string, number>} [options.reach] portée par famille (m) : au-delà de cette distance à la
+   *   caméra, les cases de la famille ne sont pas dessinées (l'herbe lointaine ne fait qu'un pixel)
+   * @param {number} [options.shadowReach] seules les copies à moins de cette distance de la caméra (m) projettent
+   *   leur ombre : les copies sont alors rangées de la plus proche à la plus lointaine
    */
-  update(camera, fraction = 1) {
+  update(camera, fraction = 1, { reach = null, shadowReach = Infinity } = {}) {
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
     const step = Math.round(THREE.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
     let changed = step !== this.fraction || this._dirty;
     this._dirty = false;
     this.fraction = step;
-    for (const cls of Object.values(this.classes)) {
+    for (const [name, cls] of Object.entries(this.classes)) {
       const { cells, visible, previous } = cls;
+      const limit = reach?.[name] ?? Infinity;
       let length = 0;
       for (let i = 0; i < cells.length; i++) {
-        if (_frustum.intersectsBox(cells[i].box)) visible[length++] = cells[i];
+        const cell = cells[i];
+        if (!_frustum.intersectsBox(cell.box)) continue;
+        const distance = limit === Infinity && shadowReach === Infinity ? 0 : cell.box.distanceToPoint(camera.position);
+        if (distance >= limit) continue;
+        cell.distance = distance;
+        visible[length++] = cell;
       }
       visible.length = length;
       let same = length === previous.length;
@@ -193,7 +207,8 @@ export class StreamingScatter {
         changed = true;
       }
     }
-    if (changed) this._refill(step);
+    if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
+    this._shadowReach = shadowReach;
     return changed;
   }
 
@@ -238,7 +253,10 @@ export class StreamingScatter {
     layer.capacity = capacity;
   }
 
-  _refill(fraction) {
+  _refill(fraction, shadowReach = Infinity) {
+    const trim = shadowReach !== Infinity;
+    // Du plus proche au plus lointain : les copies qui projettent une ombre viennent en tête.
+    if (trim) for (const cls of Object.values(this.classes)) cls.visible.sort(byDistance);
     for (const layer of this.layers) {
       const cls = this.classes[layer.reach];
       const visible = cls.visible;
@@ -254,7 +272,9 @@ export class StreamingScatter {
       if (needed > layer.capacity) this._grow(layer, Math.ceil(needed * 1.5));
       const array = layer.matrices.array;
       let offset = 0;
+      let shadowOffset = trim ? -1 : -16;
       for (let i = 0; i < visible.length; i++) {
+        if (shadowOffset === -1 && visible[i].distance > shadowReach) shadowOffset = offset;
         const cell = visible[i].data[layer.index];
         if (!cell) continue;
         const total = cell.length / 16;
@@ -269,13 +289,17 @@ export class StreamingScatter {
         layer.matrices.addUpdateRange(0, offset);
         layer.matrices.needsUpdate = true;
       }
+      if (shadowOffset === -1) shadowOffset = offset;
       for (const mesh of layer.meshes) {
         mesh.count = offset / 16;
         mesh.visible = offset > 0;
+        mesh.userData.shadowCount = shadowOffset / 16;
       }
     }
   }
 }
+
+const byDistance = (a, b) => a.distance - b.distance;
 
 /** Nombre fixe dans [0, 1[ propre à une case (par sa place dans le monde). */
 function cellDither(x, z) {

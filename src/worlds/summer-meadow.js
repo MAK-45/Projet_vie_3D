@@ -432,7 +432,7 @@ function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmou
     /**
      * À appeler à chaque image, caméra à jour, avant le rendu.
      * @param {object} frame
-     * @param {THREE.OrthographicCamera} frame.camera
+     * @param {THREE.Camera} frame.camera orthographique (vue isométrique) ou perspective (3e personne)
      * @param {THREE.Vector3} frame.target point regardé (le personnage)
      * @param {number} frame.dt secondes depuis l'image précédente
      * @param {number} frame.viewArea surface de sol que couvre la vue (m²) : ne dépend que du zoom et de
@@ -440,11 +440,16 @@ function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmou
      * @param {number} frame.viewRadius demi-diagonale de la zone de sol vue (m)
      * @param {boolean} frame.shadows vrai les images où la carte d'ombre est refaite : la lumière ne suit la
      *   vue que ces images-là, sinon les ombres glisseraient sur le sol
+     * @param {Record<string, number>} [frame.reach] portée du semis par famille (m), pour une caméra perspective
+     * @param {number} [frame.shadowReach] distance à la caméra au-delà de laquelle le semis ne projette plus
+     *   d'ombre (m) ; hors de la carte d'ombre, c'est autant de triangles économisés
+     * @param {THREE.Vector3} [frame.shadowCenter] centre de la zone ombrée (défaut : `target`)
+     * @param {number} [frame.around] monde sans bord : rayon autour de `target` gardé prêt même hors champ (m)
      */
-    update({ camera, target, dt, viewArea, viewRadius, shadows }) {
-      scatter.update(camera, FULL_DETAIL_AREA / viewArea);
+    update({ camera, target, dt, viewArea, viewRadius, shadows, reach, shadowReach, shadowCenter }) {
+      scatter.update(camera, FULL_DETAIL_AREA / viewArea, { reach, shadowReach });
       cloudShadows.update(dt);
-      if (shadows) daylight.update(target, viewRadius + 14);
+      if (shadows) daylight.update(shadowCenter ?? target, viewRadius + 14);
     },
 
     /** Ce qui est dessiné à cet instant par le semis, et la part de végétation fine affichée. */
