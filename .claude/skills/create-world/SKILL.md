@@ -57,7 +57,9 @@ Trancher ces points en quelques lignes :
 - **Le sol** : un asset de sol raccordable (comme `nature/terrain/meadow-ground`) donne la couleur et couvre
   tout pour presque rien ; les assets en volume par-dessus donnent le relief et le mouvement. Cette combinaison
   a été comparée aux deux autres (sol seul, tout en volume) et retenue par l'utilisateur.
-- **Les bords** : un monde borné est une île dans une mer de nuages (`kit/cloud-sea.js`).
+- **Les bords** : un monde borné est une île dans une mer de nuages (`kit/cloud-sea.js`). Un monde peut aussi
+  être **sans bord** (taille « Infini » de la Prairie d'été) : voir « Taille infinie » plus bas. Prévoir dès le
+  départ de proposer les deux : petit, moyen, grand, infini.
 - **Les réglages** : graine, taille, et une abondance de 0 à 2 par famille d'éléments.
 - **L'ambiance** : moments et météos utiles à ce lieu (`kit/atmosphere.js`), vie d'ambiance (`src/fx/`).
 
@@ -66,6 +68,11 @@ Trancher ces points en quelques lignes :
 Partir de `assets/world-template.js` : le copier vers `src/worlds/<nom>.js` et le remplir. Il expose
 `create<Nom>(options)` et rend un objet monde : `group`, `bounds`, `spawn`, `counts`, `heightAt`, `collide`,
 `setMood`, `update`, `dispose`.
+
+- **Les règles du lieu dans un module à part** (`src/worlds/<nom>-rules.js`, modèle :
+  `summer-meadow-rules.js`) : les modèles semés (`create<Nom>Layers(addLayer)`, toujours créés dans le même ordre),
+  les champs et les règles (« où pousse quoi ») en fonctions pures de (x, z), et le poseur de copies. L'île et la
+  version infinie les partagent ; seuls les « pilotes » diffèrent (semis d'un bloc, ou par morceau).
 
 - **Tout hasard passe par `createRng(seed)`**, et chaque tirage est fait dans le même ordre quoi qu'il arrive
   (tirer d'abord, tester ensuite). Sinon changer un réglage déplace tout le reste du monde.
@@ -80,6 +87,41 @@ Partir de `assets/world-template.js` : le copier vers `src/worlds/<nom>.js` et l
 - **`diorama`** : l'île seule, toutes copies dessinées, sans lumière ni ciel, pour la fiche et la vignette.
 - Uniquement `createToonMaterial` pour ce qui est cerné. Les nappes sans contour (brume, mer) ont leur shader
   dans le kit ; un nouvel effet de ce genre va dans `src/worlds/kit/` ou `src/fx/`, pas dans le fichier du monde.
+
+## 2 bis. Taille infinie (monde sans bord)
+
+Modèle : `src/worlds/summer-meadow-endless.js`, appelé par `create<Nom>({ size: "endless" })` (le générateur
+de l'île le renvoie dessus ; la taille « Infini » n'existe que dans l'explorateur, l'asset garde ses îles pour
+la fiche et la vignette). Tout est expliqué dans `docs/WORLDS.md`, « La prairie infinie ». À retenir :
+
+- **Morceaux de 16 m** (un morceau de sol), tirés de `(graine, morceau)` avec `createRng(hash(seed, n, cx, cz))`,
+  jamais d'un générateur qui court sur toute la carte : revenir sur ses pas redonne le même lieu.
+- **Ce qui dépend des voisins se décide en ne regardant que les morceaux voisins.** Écart entre arbres :
+  candidats par case de 4 m tirés de `(graine, case)`, chacun avec une priorité ; un candidat cède la place à tout
+  voisin plus prioritaire trop proche (mémoriser candidats et arbres par morceau). Ombre des couronnes : compter
+  les arbres des 8 morceaux voisins. Ce qui gênerait le voisin (rochers) reste à distance du bord.
+- **Densités au mètre carré** : un nombre moyen par morceau devient `Math.floor(moyenne + rng.next())`.
+- **Semis : `StreamingScatter`** (`kit/streaming-scatter.js`), un seul jeu de couches pour tous les morceaux
+  (`beginChunk`, `endChunk`, `removeChunk`). Surtout pas un `ScatterField` par morceau : les draw calls seraient
+  multipliés par le nombre de morceaux vus. Les côtés des cases doivent diviser 16 m (fine 4, low 8, tall 4).
+- **Sol : `buildGroundPatch`** (`kit/terrain.js`) avec le matériau de l'asset de sol, partagé ; sans jupe.
+- **Fabrication** : dans le champ (marge 9 m) → tout de suite ; près du champ (marge 20 m) → d'avance, sous un
+  budget de temps par image ; loin (marge 36 m) → libéré. Jamais de morceau qui surgit au milieu de l'image.
+- **Objet monde** : `endless: true`, `meters: Infinity`, `bounds` infinies (`-Infinity`…`Infinity`),
+  `collide` sans bord (obstacles des morceaux voisins), `stats()` avec `chunks` et `chunkTime`. Pas de mer de
+  nuages ni de tranche ; ombres de nuages qui suivent le promeneur (`cloudShadows.update(dt, target)`).
+- **Explorateur** : il borne déjà la vue quand `world.endless` (zoom ≥ 0,6, inclinaison ≥ 24°) et choisit des
+  buts de balade devant le promeneur ; rien à ajouter tant que le monde respecte l'objet ci-dessus.
+
+Vérifications propres à l'infini (en plus de la partie 4) :
+
+- le même pré à graine égale (deux créations, mêmes `counts`) ; et l'île inchangée si on a factorisé ses règles
+  (empreinte des matrices semées avant et après) ;
+- captures `size=endless` en vue de départ, au zoom arrière le plus large (`zoom=0.6&el=24`), et loin de
+  l'origine (`x=4000&z=-3000`) : aucun bord, aucune couture entre morceaux, aucun ciel au bas de l'image ;
+- balade de 40 s (`stroll=1`) : `fraction` constante, draw calls et triangles au niveau de l'île moyenne, nombre
+  de morceaux stable ; `chunkTime` de l'ordre de 1 à 2 ms sur ordinateur (sinon profiler : le sol, puis le bruit) ;
+- passer d'une île à l'infini et retour dans le panneau : aucune erreur, la vue se reborne.
 
 ## 3. Le ranger comme asset et l'ouvrir dans l'explorateur
 

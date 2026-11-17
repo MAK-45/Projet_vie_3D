@@ -128,7 +128,11 @@ personnage importé de plus dans `CHARACTERS` de `kit/humanoid.js` apparaît tou
 Caméra pendant la balade auto : **Fixe** (ne tourne pas), **Pivote** (un cran toutes les 9 secondes), **Suit**
 (se replace derrière le promeneur quand il change de cap).
 
-`explorer.html` le montre seul, en plein écran, pour les captures :
+Avec un monde sans bord (`world.endless`), l'explorateur borne la vue (zoom arrière jusqu'à 0,6, inclinaison
+jusqu'à 24° au lieu de 11°), affiche « infinie » dans le résumé, et la balade auto choisit ses buts devant le
+promeneur.
+
+`explorer.html` le montre seul, en plein écran, pour les captures (`size=endless` pour la prairie infinie) :
 `?seed=1&size=small&moment=night&weather=rain&camera=follow&character=superhero-female&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
 
 ## Mesures (carte moyenne, vue de départ, moyenne par image)
@@ -160,6 +164,11 @@ exactement le même pré, et deux promenades avec la même graine traversent le 
   jamais plus loin que la fenêtre, et le nombre de morceaux reste petit. Les ombres de nuages dérivent dans un
   carré qui accompagne le promeneur.
 - **Balade auto** : un but à 15–45 m, dans une direction proche de la précédente, pour que la promenade avance.
+- **Objet monde** : le même contrat que l'île, avec `endless: true`, `meters: Infinity`, des `bounds` infinies
+  (la vie d'ambiance et le promeneur ne sont plus bornés), `collide` qui ne regarde que les obstacles des morceaux
+  voisins, et `stats()` qui donne aussi `chunks` (morceaux chargés) et `chunkTime` (ms par morceau).
+
+Pour donner une taille infinie à un autre monde : voir le skill `create-world`, « Taille infinie ».
 
 Mesures (navigateur de capture, téléphone 412 × 915, vue de départ, en marchant) : 65 à 73 draw calls, 160 000
 à 190 000 triangles, comme l'île moyenne ; 60 à 70 morceaux chargés (≈ 5 Mo) ; 1 à 2 ms pour fabriquer un
