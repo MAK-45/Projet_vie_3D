@@ -23,8 +23,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-17
-- **Étape actuelle** : lot 2 (lumière et réseaux) fait, à valider dans l'Atelier (et `dev/complex-corner.html?night=1`).
-- **Prochaine action** : validation du lot 2 ; puis lot 3 (mobilier du Sas : banc, casier, pupitre à leviers, grille
+- **Étape actuelle** : lot 2 validé ; prochain : lot 3 (mobilier du Sas).
+- **Prochaine action** : lot 3 (mobilier du Sas : banc, casier, pupitre à leviers, grille
   d'aération, plaque d'inscription), à discuter d'abord.
 
 ## Les lots
@@ -34,7 +34,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | — | Bible adaptée au pixel art, plan, suivi | — | ✅ validé | 2026-11-17 | docs/complexe/ |
 | 0 | Préparation | — | ✅ validé | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
 | 1 | Ossature du Sas | 5 | ✅ validé | 2026-11-17 | dalle, mur, colonne, voûte, portes ; scène d'essai `dev/complex-corner.html` |
-| 2 | Lumière et réseaux | 5 | 👀 à valider | 2026-11-17 | lampe, lustre, tuyau, valve, câbles ; ajoutés au coin du Sas (jour et nuit) |
+| 2 | Lumière et réseaux | 5 | ✅ validé | 2026-11-17 | lampe, lustre, tuyau, valve, câbles ; ajoutés au coin du Sas (jour et nuit) |
 | 3 | Mobilier du Sas | 5 | ⬜ à faire | | |
 | 4 | La Porte-Iris et le balisage | 4 | ⬜ à faire | | |
 | 5 | Monde : le Sas | — | ⬜ à faire | | |
@@ -73,11 +73,11 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 1 | `buildings/structure/glyph-column` | SAS-03, ARC-09, GAL-11, ORA-06 (+ pilastres de E6, E7) | ✅ | carré, cannelé, engagé, pilastre ; 3–14 m ; 8–24 cannelures ; fibre cyan. La graine change peu (bagues, tons, écaillures) |
 | 1 | `buildings/structure/coffered-vault` | SAS-04 (+ plafond de E6) | ✅ | au plafond ou retournée ; crochet de lampe (`userData.hookPoint`) |
 | 1 | `buildings/structure/complex-door` | Porte standard, GAL-02, GAL-13, ORA-07, issue de secours de E7 | ✅ | standard, étude, double, liaison, secours ; fermée, ouverte, en boucle ; `userData.door` (open, close, setOpen, blocking) |
-| 2 | `furniture/lighting/filament-lamp` | SAS-05, GAL-05 | 👀 | suspendue ou applique ; allumée, en veille, éteinte ; scintillement par paliers ; option halo |
-| 2 | `furniture/lighting/filament-chandelier` | ARC-16, GAL-12, ORA-13 | 👀 | lanterne (6), grand lustre (24), anneau de voûte (12) ; ampoules faibles ou mortes selon la graine ; option halo |
-| 2 | `props/machines/copper-pipe` | SAS-09, COE-07 | 👀 | droit, coude, T, bout bouché ; mural (colliers) ou géant (brides) ; contre un mur ou sur berceaux |
-| 2 | `props/machines/wheel-valve` | SAS-10, COE-08 | 👀 | murale ou géante ; `turn`, boucle, `userData.valve` (setTurn, turnTo) ; l'aiguille suit |
-| 2 | `props/machines/braided-cable` | SAS-11, ETU-07, COE-14, ORA-11 | 👀 | fin, d'étude, ombilical, principal ; pendu, au sol, faisceau avec boucle ; `createRoute(points)` |
+| 2 | `furniture/lighting/filament-lamp` | SAS-05, GAL-05 | ✅ | suspendue ou applique ; allumée, en veille, éteinte ; scintillement par paliers ; option halo |
+| 2 | `furniture/lighting/filament-chandelier` | ARC-16, GAL-12, ORA-13 | ✅ | lanterne (6), grand lustre (24), anneau de voûte (12) ; ampoules faibles ou mortes selon la graine ; option halo |
+| 2 | `props/machines/copper-pipe` | SAS-09, COE-07 | ✅ | droit, coude, T, bout bouché ; mural (colliers) ou géant (brides) ; contre un mur ou sur berceaux |
+| 2 | `props/machines/wheel-valve` | SAS-10, COE-08 | ✅ | murale ou géante ; `turn`, boucle, `userData.valve` (setTurn, turnTo) ; l'aiguille suit |
+| 2 | `props/machines/braided-cable` | SAS-11, ETU-07, COE-14, ORA-11 | ✅ | fin, d'étude, ombilical, principal ; pendu, au sol, faisceau avec boucle ; `createRoute(points)` |
 | 3 | `furniture/seating/stone-bench` | SAS-06, GAL-07, ORA-10, E5-02 | ⬜ | |
 | 3 | `furniture/storage/equipment-locker` | SAS-07, COE-10 | ⬜ | |
 | 3 | `props/machines/lever-desk` | SAS-08, GAL-09, E2-01 | ⬜ | |
@@ -186,6 +186,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Lot 1 validé sur proposition : dalle (intacte, fissurée, usée, trappe, tachée ; rainure sombre ou ambre), mur (plein, niche, conduit ; hauteur 4–14 m, courbure, doublage cuivre), colonne (carrée chanfreinée, cannelée, engagée, pilastre ; fibre cyan), voûte à caissons (crochet), porte (standard, d'étude, double, de liaison, de secours ; état et séquence d'ouverture pilotable). | validé |
 | 2026-11-17 | Matières du Complexe à part des matières existantes : `STONES.blackBasalt` (le `basalt` des rochers et du portail ne change pas), `smoked`, métaux, verres, tissus, lueurs `GLOWS` ; rochers et pupitre du portail limités à leurs anciennes matières. | validé |
 | 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | validé |
+| 2026-11-17 | Lot 2 validé tel quel : origine au sol pour les luminaires suspendus (`height` = hauteur de l'ampoule, `chain` jusqu'au plafond), halo désactivé par défaut (le monde attribue les 4 lumières de halo), valve géante à roue couchée. | validé |
 | 2026-11-17 | Lot 1 validé tel quel : portes pivotantes vers l'arrière livrées avec leur morceau de mur, chambranle dans la pierre du mur (un ton plus clair), dalles posées à y = −0,20. | validé |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
@@ -195,6 +196,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 |---|---|---|
 | 2026-11-17 | Lecture de la bible HD (document Claude Docs), adaptation au pixel art dans `docs/complexe/` (README, PIECES, SALLES), plan en 28 lots (PLAN), ce suivi. | Validation de la bible et du plan, puis lots 0 et 1. |
 | 2026-11-17 | Ajout à la bible et au plan : les personnages se déplacent dans le Complexe (README « Les personnages dans le Complexe », PLAN lot 5 et étapes Monde). | Validation de la bible et du plan, puis lots 0 et 1. |
+| 2026-11-17 | Lot 2 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 3 : propositions à discuter. |
 | 2026-11-17 | Lot 1 validé. Lot 2 : lampe, lustre, tuyau, valve, câbles (kit : scintillement, pièces orientées, seuils de métal réglables), vérifiés en planches et dans le coin du Sas de jour et de nuit (halos), Atelier publié (v28). | Validation du lot 2, puis lot 3. |
 | 2026-11-17 | Lot 0 validé. Lot 1 : les 5 modules (kit étendu : maçonnerie, cintrage, fût cannelé, lueurs mêlées), vérifiés à l'image (planches, coin du Sas avec le mannequin, jour et nuit, mobile et bureau), Atelier publié (v27). | Validation du lot 1, puis lot 2. |
 | 2026-11-17 | Bible, plan et propositions du lot 1 validés. Lot 0 : palettes, briques `kit/complex-parts.js`, option `tone`, sous-catégories `props/machines`, `props/artifacts`, `worlds/interiors`, axes `metal` et `glow`, nuancier capturé de jour et dans le noir. | Validation du lot 0, puis lot 1. |
