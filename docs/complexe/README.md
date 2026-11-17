@@ -188,6 +188,32 @@ pièce, au fil des lots. Ce que le pixel art et la caméra isométrique imposent
 - **Grandes salles** : la salle de la Porte (26 m = 416 px) dépasse l'écran au zoom 1 ; on y recule (zoom 0,5) et ses
   assets doivent rester lisibles à 8 px/m (silhouettes fortes, détails émissifs).
 
+### Les personnages dans le Complexe
+
+On peut **mettre ses personnages dans le Complexe et les faire se déplacer dans toute la carte**, comme dans la
+prairie : le blob (`creatures/spirits/couveuse-blob`), le mannequin, le mannequin magique, l'héroïne, le héros, la
+barre de 1,80 m, et tout personnage ajouté plus tard. C'est l'explorateur du projet (`src/explorer/`, réglage
+« Personnage ») qui les promène ; le Complexe doit donc être **praticable** de bout en bout :
+
+- **Sol et étages** : le monde donne la hauteur du sol (`heightAt`) en tenant compte de l'étage où se trouve le
+  personnage, car l'intérieur superpose des niveaux (mezzanine des Archives à 3,4 m, galerie d'observation de l'Éveil,
+  balcons et passerelles des salles rondes, cabine de la Porte, fond de la fosse du Cœur).
+- **Escaliers et rampes** : escaliers à vis, escaliers droits, rampe de la Porte et marches des socles se montent en
+  marchant (marches de 0,18 m) ; chaque module d'escalier ou de passerelle fournit sa surface de marche.
+- **Obstacles** : murs, piliers, meubles, machines et artefacts posés au sol bloquent le passage (`collide`) ; chaque
+  asset posé donne son emprise au sol (`meta.footprint`, ou une emprise plus fine pour les longs meubles).
+- **Portes** : les portes (standard, grandes portes, Porte-Iris) s'ouvrent quand un personnage approche et le laissent
+  passer, puis se referment ; la Porte-Iris joue sa séquence d'ouverture. Fermées, elles bloquent.
+- **Garde-corps et vides** : on ne tombe pas de la mezzanine ni dans la fosse du Cœur ; les garde-corps sont des
+  obstacles, les ouvertures dans le sol (trappes fermées, caillebotis) se marchent.
+- **Gabarits** : le blob lévite à 1 m et mesure 0,90 m, les personnages font 1,77 à 1,81 m : tous passent les portes
+  de 2,80 m et les couloirs de 2,40 m. Le blob et le mannequin magique éclairent le décor dans le noir : dans le
+  Complexe, ils prennent une des lumières de halo, ce qui en fait les meilleures « lampes portatives » du lieu.
+- **Caméra** : la vue en coupe suit le personnage (les murs entre lui et la caméra s'abaissent, la pièce où il entre
+  apparaît), et la caméra « cadrée » permet de le suivre de près dans les salles d'étude.
+- **Plus tard** : quand le moteur de scénario (`src/script/`) existera, ces mêmes personnages joueront le fil narratif
+  (aller chercher les clés, les insérer, traverser la Porte).
+
 ### Plan d'ensemble
 
 | N° | Pièce | Dimensions (L × l × H) | Rôle | Accès |

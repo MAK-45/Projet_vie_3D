@@ -87,7 +87,12 @@ Légende : ★ artefact ou asset héros (budget élargi, `README.md`). Une étap
   halo aux sources proches (le moteur en a 4 : étendre à 8 si les pièces le demandent, en mesurant le coût), vue en
   coupe (plafonds masqués, murs côté caméra abaissés selon l'angle), brouillard tramé, poussière près des lampes.
 - Explorateur : pas de ciel ni de mer de nuages en intérieur, caméra bornée à la pièce.
-- Test d'échelle : mannequin de 1,80 m, porte de 2,80 m, commandes à 1,10–1,30 m. Captures mobile et bureau.
+- **Personnages** : le Complexe s'ouvre dans l'explorateur avec le réglage « Personnage » (barre, blob, mannequin,
+  mannequin magique, héroïne, héros) ; on s'y promène comme dans la prairie. Le monde fournit `heightAt` avec étages
+  (le niveau dépend de la hauteur actuelle du personnage), `collide` (murs, piliers, meubles), et les portes qui
+  s'ouvrent à l'approche (la Porte-Iris joue sa séquence). Le blob et le mannequin magique y gardent leur halo.
+- Test d'échelle : mannequin de 1,80 m, porte de 2,80 m, commandes à 1,10–1,30 m ; chaque personnage traverse le Sas
+  de la Porte-Iris à la porte nord. Captures mobile et bureau.
 
 ### Lot 6 — Archives : rangement
 
@@ -289,7 +294,17 @@ Monde : couloir Atelier → Galerie (48 m, 12 travées) → Rotonde ; portes des
   s'éveille, la Porte s'ouvre (quand le moteur de scénario `src/script/` existera ; sinon séquences pilotées à la main).
 - Mise à jour de la bible si des choix ont changé en route, publication finale.
 
+**À chaque étape « Monde »** (lots 5, 8, 11, 12, 15 à 19, 21, 23, 24, 26) : la nouvelle pièce est praticable par
+tous les personnages (sol, étages, escaliers, obstacles, portes), raccordée aux pièces déjà faites, et vérifiée en
+faisant marcher au moins le mannequin et le blob d'un bout à l'autre (capture).
+
 ## Points techniques à trancher en route
+
+- **Marche à plusieurs étages** (lot 5, puis lot 8 pour la mezzanine) : l'explorateur suppose aujourd'hui un seul sol
+  par point (`heightAt(x, z)`) ; l'intérieur demande un sol choisi selon la hauteur du personnage (surfaces de marche
+  fournies par les escaliers, passerelles et socles), sans casser la prairie.
+- **Obstacles du mobilier** : chaque asset posé au sol déclare son emprise de collision (cercle ou rectangle) ; le
+  monde les rassemble pour `collide`.
 
 - **Lumières de halo** (lot 5) : 4 emplacements aujourd'hui ; attribution dynamique aux sources proches, ou extension.
 - **Vue en coupe** (lot 5) : quels murs abaisser selon l'azimut, à quelle hauteur ; comportement en plan cadré.

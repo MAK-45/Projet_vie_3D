@@ -183,9 +183,11 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Le Complexe est un seul monde intérieur, vu en coupe (plafonds masqués, murs côté caméra abaissés), une pièce à la fois. | proposé |
 | 2026-11-17 | Chaque salle d'étude est faite avec son artefact (au lieu de tous les artefacts à la fin) pour finir chaque salle complète. | proposé |
 | 2026-11-17 | L'arche hexagonale de la salle 10 est un nouvel asset ; la Porte des étoiles existante (anneau) reste à part. | proposé |
+| 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
 | 2026-11-17 | Lecture de la bible HD (document Claude Docs), adaptation au pixel art dans `docs/complexe/` (README, PIECES, SALLES), plan en 28 lots (PLAN), ce suivi. | Validation de la bible et du plan, puis lots 0 et 1. |
+| 2026-11-17 | Ajout à la bible et au plan : les personnages se déplacent dans le Complexe (README « Les personnages dans le Complexe », PLAN lot 5 et étapes Monde). | Validation de la bible et du plan, puis lots 0 et 1. |
