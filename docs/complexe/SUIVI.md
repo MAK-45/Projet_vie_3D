@@ -23,7 +23,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-17
-- **Étape actuelle** : bible et plan validés ; lot 0 (préparation) fait, à valider (nuancier `dev/complex-swatch.html`).
+- **Étape actuelle** : lot 0 validé ; lot 1 (ossature du Sas) en cours.
 - **Prochaine action** : lot 1 (ossature du Sas : dalle, mur, colonne, voûte, portes), propositions déjà validées
   par l'utilisateur (voir « Décisions »).
 
@@ -32,8 +32,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | Lot | Contenu | Assets | État | Date | Commits / remarques |
 |---|---|---|---|---|---|
 | — | Bible adaptée au pixel art, plan, suivi | — | ✅ validé | 2026-11-17 | docs/complexe/ |
-| 0 | Préparation | — | 👀 à valider | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
-| 1 | Ossature du Sas | 5 | ⬜ à faire | | |
+| 0 | Préparation | — | ✅ validé | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
+| 1 | Ossature du Sas | 5 | 🔄 en cours | 2026-11-17 | |
 | 2 | Lumière et réseaux | 5 | ⬜ à faire | | |
 | 3 | Mobilier du Sas | 5 | ⬜ à faire | | |
 | 4 | La Porte-Iris et le balisage | 4 | ⬜ à faire | | |
@@ -184,8 +184,8 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Chaque salle d'étude est faite avec son artefact (au lieu de tous les artefacts à la fin) pour finir chaque salle complète. | validé |
 | 2026-11-17 | L'arche hexagonale de la salle 10 est un nouvel asset ; la Porte des étoiles existante (anneau) reste à part. | validé |
 | 2026-11-17 | Lot 1 validé sur proposition : dalle (intacte, fissurée, usée, trappe, tachée ; rainure sombre ou ambre), mur (plein, niche, conduit ; hauteur 4–14 m, courbure, doublage cuivre), colonne (carrée chanfreinée, cannelée, engagée, pilastre ; fibre cyan), voûte à caissons (crochet), porte (standard, d'étude, double, de liaison, de secours ; état et séquence d'ouverture pilotable). | validé |
-| 2026-11-17 | Matières du Complexe à part des matières existantes : `STONES.blackBasalt` (le `basalt` des rochers et du portail ne change pas), `smoked`, métaux, verres, tissus, lueurs `GLOWS` ; rochers et pupitre du portail limités à leurs anciennes matières. | à confirmer |
-| 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | à confirmer |
+| 2026-11-17 | Matières du Complexe à part des matières existantes : `STONES.blackBasalt` (le `basalt` des rochers et du portail ne change pas), `smoked`, métaux, verres, tissus, lueurs `GLOWS` ; rochers et pupitre du portail limités à leurs anciennes matières. | validé |
+| 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | validé |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
