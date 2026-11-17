@@ -31,15 +31,17 @@ export const meta = {
   description:
     "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des " +
     "assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les " +
-    "bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène.",
+    "bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène. " +
+    "Dans l'explorateur, la taille « Infini » retire le bord : la prairie se fabrique autour du promeneur au fil " +
+    "de la marche, avec au loin des collines et des montagnes de roche.",
   tags: [
     "monde", "carte", "île", "prairie", "plaine", "été", "pré", "bosquets", "mer de nuages", "assemblage", "à explorer",
     "extérieur",
     "world", "map", "island", "meadow", "plain", "summer", "groves", "sea of clouds", "composition", "explorable",
-    "outdoor", "procedural",
+    "outdoor", "procedural", "infini", "sans bord", "montagnes", "collines", "endless", "infinite", "mountains", "hills",
   ],
   biomes: ["meadow", "forest"],
-  version: 2,
+  version: 3,
   added: "2026-11-16",
   units:
     "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de " +

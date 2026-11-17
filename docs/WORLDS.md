@@ -8,6 +8,8 @@ Un monde vit à trois endroits :
 | Fichier | Rôle |
 |---|---|
 | `src/worlds/summer-meadow.js` | le générateur : `createSummerMeadow(options)` |
+| `src/worlds/summer-meadow-endless.js` | la même prairie sans bord (`size: "infinite"`), fabriquée autour du promeneur |
+| `src/worlds/summer-meadow-models.js` | les assets semés et leurs réglages, communs aux deux |
 | `src/assets/worlds/islands/summer-meadow.js` | l'**asset** : le monde rangé dans la bibliothèque (catégorie « Mondes »), `create()` rend l'île en maquette |
 | `src/explorer/explorer.js` | l'**explorateur** : l'interface qui règle le monde et permet de s'y promener |
 
@@ -32,7 +34,7 @@ world.dispose();
 | Réglage | Valeurs |
 |---|---|
 | `seed` | 0 à 9999 : relief, bosquets, affleurements, nappes de fleurs |
-| `size` | `small` 48 m, `medium` 96 m, `large` 144 m de côté |
+| `size` | `small` 48 m, `medium` 96 m, `large` 144 m de côté, ou `infinite` : sans bord (voir plus bas) |
 | `relief` | hauteur des ondulations, 0,6 à 3 m |
 | `trees`, `rocks`, `grass`, `flowers` | abondance de 0 à 2 (1 = prairie à bosquets) |
 | `diorama` | l'île seule, toutes copies dessinées, sans lumière ni ciel (fiche et vignette de l'asset) |
@@ -53,6 +55,9 @@ troncs ; les taupinières vont par colonies en plein pré.
 
 ## Outils (`src/worlds/kit/`)
 
+- **`scatter-stream.js` — `ScatterStream`** : le même semis pour un monde sans bord. Les couches sont les mêmes
+  (`addLayer`), mais les copies arrivent et repartent par morceaux (`beginChunk`, `commitChunk`, `removeChunk`) ;
+  les tampons de matrices grandissent par doublement, jamais à chaque image.
 - **`scatter.js` — `ScatterField`** : pose des milliers de copies d'assets. Un asset modèle = une couche = un
   `InstancedMesh` par maillage du modèle, donc autant de draw calls que l'asset seul. Le monde est découpé en
   cases ; seules les copies des cases vues par la caméra sont envoyées au GPU, et la liste n'est refaite que
@@ -69,7 +74,9 @@ troncs ; les taupinières vont par colonies en plein pré.
 - **`atmosphere.js`** : moment (jour, crépuscule, nuit, cycle) et météo (beau, pluie, variable). Ne dessine rien :
   tient à jour la position de l'astre, la teinte de l'image, les couleurs du ciel et des nuages, la pluie, le
   vent, toujours en fondu.
-- **`terrain.js`** : tranche de l'île (terre puis roche), normale du sol.
+- **`terrain.js`** : tranche de l'île (terre puis roche), normale du sol ; `buildGroundPatch` /
+  `buildGroundPatchSteps` : le sol d'un monde sans bord, une grille raccordable partagée entre le pré et la roche
+  nue (deux matériaux, un maillage), fabriquée par rangées pour s'étaler sur plusieurs images.
 
 Dans le moteur, `PixelRenderer.setMood({ grade, saturation, rain, time })` teinte toute l'image dans la passe
 finale (les rampes de couleurs des assets ne changent pas) et dessine la pluie à l'écran, sans géométrie.
@@ -133,11 +140,51 @@ comptés une fois et demie avec leur ombre). L'herbe en volume fait dépasser le
 triangles) réservée au semis de masse ramènerait le tout dans le budget. La mer de nuages, la brume, la teinte
 de l'heure et la pluie ne coûtent que des pixels de l'image basse résolution : 1 draw call et aucune géométrie.
 
-## Un monde sans bord ?
+## La prairie sans bord (`size: "infinite"`)
 
-Possible sans toucher aux performances, parce que tout est déjà calculé en coordonnées du monde : le sol de
-prairie se raccorde sans couture d'un morceau au suivant, et le semis est rangé par cases. Il suffirait de tirer
-le contenu de chaque case de `(graine, case)` au lieu de tout semer d'avance, de fabriquer les cases un peu avant
-qu'elles entrent dans la vue (une ou deux par image, pour ne pas faire sauter le rythme) et de libérer celles qui
-en sortent. Le coût par image reste celui de ce qui est à l'écran. À trancher avant : un monde sans bord n'est
-plus une île dans les nuages.
+Même prairie, mêmes assets, mêmes règles de pousse, mais pas d'île : le monde se fabrique autour du promeneur
+au fil de la marche (`src/worlds/summer-meadow-endless.js`).
+
+- **Morceaux de 32 × 32 m.** Tout ce qu'un morceau contient se tire de (graine, position) : revenir sur ses pas
+  redonne exactement les mêmes arbres. Les arbres se décident par cases de 4 m indépendantes (une candidate par
+  case, qui cède sa place à une voisine trop proche et prioritaire) ; rochers, herbes et fleurs par morceau.
+- **Lesquels ?** Ceux que la vue touche, avec 24 m de marge, plus les 3 × 3 autour du promeneur. Les plus
+  proches d'abord. 40 morceaux finis restent en réserve hors de la vue ; au-delà, les plus anciens sont oubliés.
+- **Étalé sur plusieurs images.** Un morceau se fabrique en une trentaine de petites étapes (sol par rangées,
+  plans des voisins, grille de pousse, pelouses, touffes en 8 tranches, fleurs, mousse) et n'apparaît qu'une fois
+  fini : 4 ms par image, 12 ms si un morceau de la vue manque encore. Après un saut (départ, téléportation),
+  ce qui est dans la vue se fabrique d'un coup, derrière l'écran « Génération… ».
+- **Sol** : un maillage par morceau, un sommet tous les 0,5 m jusqu'à 60 m du promeneur, tous les mètres au-delà
+  (76 m pour repasser au fin) ; les bords des morceaux fins sont calés sur la grille d'un mètre, sans fente.
+- **Relief** : les ondulations du sol de prairie, des **collines** larges (jusqu'à 13 m) et, par régions, des
+  **montagnes** en crêtes (jusqu'à 90 m), tenues à l'écart du départ (rien avant 60 m, pleine hauteur à
+  160 m). La roche nue (pentes fortes, sommets) remplace le pré triangle par triangle, cernée d'un contour ; les
+  arbres se raréfient et rapetissent en montant, l'herbe et les fleurs aussi ; les affleurements sont plus
+  nombreux en montagne. **Pas de brume** : ce qu'on voit au loin est le vrai terrain, où l'on peut aller.
+- **Départ** en plein pré, sans arbre entre le promeneur et la caméra de départ. **Balade auto** : un but à
+  14 à 36 m, à peu près droit devant, par le chemin le plus doux (elle contourne les montagnes).
+- Les ombres de nuages suivent le promeneur ; ni mer de nuages ni dessous d'île.
+- La caméra orthographique garde son plan proche derrière elle (`near = -260`) : une montagne entre elle et le
+  promeneur le cache, au lieu d'être coupée.
+
+**Ce qu'on voit « au loin ».** La vue est orthographique : rien ne rapetisse avec la distance, et il n'y a pas
+d'horizon. L'écran montre au plus 50 m devant le promeneur en vue de départ, 100 à 180 m en vue rasante (11°) et
+dézoomée. Les collines se lisent par leurs crêtes, que la passe de contours trace en vue rasante ; une montagne
+se voit en s'en approchant.
+
+**Mesures** (téléphone 412 × 915, moyenne par image) :
+
+| Vue | Draw calls | Triangles |
+|---|---|---|
+| Départ, prairie infinie | 63 | 243 000 (carte moyenne : 72 et 212 000) |
+| Montagne | 69 | 237 000 |
+| Dézoom 0,5, vue rasante 14° | 97 | 1 090 000 (grande île : 101 et 406 000) |
+
+Fabrication : environ 11 ms par morceau sur un ordinateur, en étapes de moins de 1,3 ms (95 %) ; sur une marche
+simulée de 600 m, même avec un processeur 4 fois plus lent et en vue rasante, aucune image n'a montré un
+morceau manquant. Mémoire : 60 à 110 morceaux, environ 200 Ko chacun.
+
+**Limite** : la vue rasante dézoomée voit beaucoup plus de terrain qu'une île bornée, donc beaucoup plus
+d'arbres (4 000 à 5 000 triangles chacun). Le remède est un arbre allégé pour le lointain (quelques centaines de
+triangles), à créer dans la bibliothèque ; le feuillage minimal des arbres actuels n'ôte qu'un quart des
+triangles.

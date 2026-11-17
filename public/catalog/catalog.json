@@ -886,7 +886,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 47777
+        "standalone": 47974
       }
     },
     {
@@ -1089,7 +1089,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 48839
+        "standalone": 49036
       }
     },
     {
@@ -1223,7 +1223,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 37078
+        "standalone": 37275
       }
     },
     {
@@ -1386,7 +1386,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 36984
+        "standalone": 37181
       }
     },
     {
@@ -1543,7 +1543,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 39230
+        "standalone": 39427
       }
     },
     {
@@ -1925,7 +1925,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 46679
+        "standalone": 46876
       }
     },
     {
@@ -2164,7 +2164,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 40163
+        "standalone": 40360
       }
     },
     {
@@ -3462,7 +3462,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 61067
+        "standalone": 61264
       }
     },
     {
@@ -9163,7 +9163,7 @@
       "nameEn": "Summer meadow",
       "category": "worlds",
       "subcategory": "islands",
-      "description": "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène.",
+      "description": "Un monde entier : une île de prairie vallonnée qui flotte dans une mer de nuages, assemblée à partir des assets de la bibliothèque (sol de prairie, arbres, rochers, herbes, fleurs). La graine change le relief, les bosquets et les nappes de fleurs ; on règle sa taille et l'abondance de chaque élément, puis on s'y promène. Dans l'explorateur, la taille « Infini » retire le bord : la prairie se fabrique autour du promeneur au fil de la marche, avec au loin des collines et des montagnes de roche.",
       "tags": [
         "monde",
         "carte",
@@ -9188,13 +9188,21 @@
         "composition",
         "explorable",
         "outdoor",
-        "procedural"
+        "procedural",
+        "infini",
+        "sans bord",
+        "montagnes",
+        "collines",
+        "endless",
+        "infinite",
+        "mountains",
+        "hills"
       ],
       "biomes": [
         "meadow",
         "forest"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-16",
       "units": "1 unité = 1 mètre ; origine au centre de l'île (taille « petit »), au niveau le plus bas du pré. La tranche de l'île descend sous l'origine : dans le monde vivant, elle plonge dans la mer de nuages.",
       "footprint": {
@@ -9312,6 +9320,13 @@
         "src/assets/kit/geometry.js",
         "src/assets/kit/params.js",
         "src/assets/kit/variation.js",
+        "src/assets/nature/terrain/meadow-ground.js",
+        "src/worlds/kit/scatter.js",
+        "src/worlds/kit/cloud-sea.js",
+        "src/assets/nature/sky/cloud.js",
+        "src/worlds/kit/sky.js",
+        "src/worlds/kit/terrain.js",
+        "src/worlds/kit/scatter-stream.js",
         "src/assets/nature/plants/flower-clump.js",
         "src/assets/nature/plants/grass-tuft.js",
         "src/assets/kit/ground-cover.js",
@@ -9319,17 +9334,13 @@
         "src/assets/nature/rocks/buried-rock.js",
         "src/assets/nature/terrain/dirt-mound.js",
         "src/assets/nature/terrain/lawn.js",
-        "src/assets/nature/terrain/meadow-ground.js",
         "src/assets/nature/terrain/moss-patch.js",
         "src/assets/nature/trees/birch.js",
         "src/assets/kit/foliage.js",
         "src/assets/nature/trees/linden.js",
         "src/assets/nature/trees/oak.js",
-        "src/worlds/kit/scatter.js",
-        "src/worlds/kit/cloud-sea.js",
-        "src/assets/nature/sky/cloud.js",
-        "src/worlds/kit/sky.js",
-        "src/worlds/kit/terrain.js",
+        "src/worlds/summer-meadow-models.js",
+        "src/worlds/summer-meadow-endless.js",
         "src/worlds/summer-meadow.js"
       ],
       "stats": {
@@ -9355,8 +9366,8 @@
         }
       },
       "bytes": {
-        "source": 4077,
-        "standalone": 192348
+        "source": 4365,
+        "standalone": 238213
       }
     }
   ]

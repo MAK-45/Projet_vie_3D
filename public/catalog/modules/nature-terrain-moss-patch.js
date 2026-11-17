@@ -808,17 +808,17 @@ function createNoise3(seed) {
     h = Math.imul(h ^ h >>> 12, 695872825);
     return ((h ^ h >>> 15) >>> 0) / 4294967296;
   };
-  const fade = (t) => t * t * (3 - 2 * t);
-  const lerp = (a, b, t) => a + (b - a) * t;
   return (x, y, z) => {
     const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
-    const u = fade(x - xi), v = fade(y - yi), w = fade(z - zi);
-    const corner = (dx, dy, dz) => hash(xi + dx, yi + dy, zi + dz);
-    return lerp(
-      lerp(lerp(corner(0, 0, 0), corner(1, 0, 0), u), lerp(corner(0, 1, 0), corner(1, 1, 0), u), v),
-      lerp(lerp(corner(0, 0, 1), corner(1, 0, 1), u), lerp(corner(0, 1, 1), corner(1, 1, 1), u), v),
-      w
-    );
+    const fx = x - xi, fy = y - yi, fz = z - zi;
+    const u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy), w = fz * fz * (3 - 2 * fz);
+    const c000 = hash(xi, yi, zi), c100 = hash(xi + 1, yi, zi), c010 = hash(xi, yi + 1, zi), c110 = hash(xi + 1, yi + 1, zi);
+    const c001 = hash(xi, yi, zi + 1), c101 = hash(xi + 1, yi, zi + 1), c011 = hash(xi, yi + 1, zi + 1), c111 = hash(xi + 1, yi + 1, zi + 1);
+    const a0 = c000 + (c100 - c000) * u, a1 = c010 + (c110 - c010) * u;
+    const b0 = c001 + (c101 - c001) * u, b1 = c011 + (c111 - c011) * u;
+    const a = a0 + (a1 - a0) * v;
+    const b = b0 + (b1 - b0) * v;
+    return a + (b - a) * w;
   };
 }
 

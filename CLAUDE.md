@@ -44,8 +44,10 @@ src/
   engine/     toon-material (matériau à palette + vent), pixel-renderer (basse réso + contours), iso-camera
   assets/     les dessins 3D en JS : index (registre), taxonomy (catégories), kit/ (outils), un fichier par asset
   gallery/    « Atelier Vie 3D » : galerie web des assets (visionneuse, catalogue par catégorie, code, fiche)
-  worlds/     un fichier par monde/biome : génération procédurale + données (summer-meadow : la prairie d'été) ;
-              kit/ : semis instancié trié par cases (scatter), lumière et ombres de nuages (sky), mer de nuages
+  worlds/     un fichier par monde/biome : génération procédurale + données (summer-meadow : la prairie d'été,
+              en île ou sans bord avec summer-meadow-endless : fabriquée autour du promeneur au fil de la marche) ;
+              kit/ : semis instancié trié par cases (scatter, et scatter-stream pour un monde sans bord),
+              lumière et ombres de nuages (sky), mer de nuages
               et brume (cloud-sea), heure et météo (atmosphere), tranche d'île (terrain).
               Chaque monde est aussi rangé comme asset dans assets/worlds/ (catégorie « Mondes »).
   explorer/   l'explorateur d'un monde (classe Explorer) : réglages, promeneur de 1,80 m, caméras, heure, météo ;

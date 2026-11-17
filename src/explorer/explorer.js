@@ -8,7 +8,7 @@ import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
 import { setDarkness, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
-import { createSummerMeadow, MEADOW_SIZES } from "../worlds/summer-meadow.js";
+import { createSummerMeadow, WORLD_SIZES } from "../worlds/summer-meadow.js";
 import { WalkInput } from "./input.js";
 import { CHARACTERS, Walker } from "./walker.js";
 
@@ -61,7 +61,7 @@ const TEMPLATE = `
         <label class="x-field"><span>Graine</span>
           <input type="number" min="0" max="9999" step="1" inputmode="numeric" data-ref="seed" /></label>
         <button type="button" class="x-button" data-ref="reroll">Au hasard</button>
-        ${choice("size", "Taille de la carte", MEADOW_SIZES)}
+        ${choice("size", "Taille de la carte", WORLD_SIZES)}
       </div>
       <div class="x-sliders">
         ${AMOUNTS.map(([name, label, min, max, step]) => `
@@ -166,7 +166,7 @@ export class Explorer {
     this.strolling = false;
     this._stroll = { x: 0, z: 0, stuck: 0, pause: 0 };
     this._turn = { active: false, from: 0, delta: 0, time: 0, wait: 6, held: 0 };
-    this._meter = { time: 0, frames: 0, calls: 0, triangles: 0 };
+    this._meter = { time: 0, frames: 0, calls: 0, triangles: 0, notes: 0 };
     this._artPixel = 0;
     this._frameIndex = 0;
     this._visible = true;
@@ -340,7 +340,7 @@ export class Explorer {
     const s = this.settings;
     const clamp = THREE.MathUtils.clamp;
     s.seed = clamp(Math.round(Number(s.seed)) || 0, 0, 9999);
-    if (!(s.size in MEADOW_SIZES)) s.size = DEFAULT_SETTINGS.size;
+    if (!(s.size in WORLD_SIZES)) s.size = DEFAULT_SETTINGS.size;
     if (!(s.moment in MOMENTS)) s.moment = DEFAULT_SETTINGS.moment;
     if (!(s.weather in WEATHERS)) s.weather = DEFAULT_SETTINGS.weather;
     if (!(s.camera in CAMERAS)) s.camera = DEFAULT_SETTINGS.camera;
@@ -368,6 +368,14 @@ export class Explorer {
   _describe() {
     const { world, settings, ui } = this;
     const c = world.counts;
+    if (world.endless) {
+      ui.summary.textContent = `graine ${settings.seed} · sans bord`;
+      ui.note.textContent =
+        `Sans bord : le monde se fabrique autour du promeneur, par morceaux de 32 × 32 m, et au loin s'élèvent ` +
+        `collines et montagnes. En mémoire : ${c.chunks} morceaux, ${numberFormat.format(c.trees)} arbres, ` +
+        `${numberFormat.format(c.tufts)} touffes d'herbe, ${numberFormat.format(c.flowers)} massifs de fleurs.`;
+      return;
+    }
     ui.summary.textContent = `graine ${settings.seed} · ${world.meters} m`;
     ui.note.textContent =
       `${world.meters} × ${world.meters} m · ${c.trees} arbres · ${c.rocks} rochers · ${numberFormat.format(c.tufts)} touffes d'herbe · ` +
@@ -386,6 +394,11 @@ export class Explorer {
     }
     this.world = createSummerMeadow(this.settings);
     this.scene.add(this.world.group);
+    // Vue orthographique : rien ne rapetisse au loin, la caméra peut reculer sans rien changer à l'image. Dans un
+    // monde sans bord, une montagne peut se dresser entre elle et le promeneur : le plan proche passe derrière
+    // la caméra pour ne pas couper la montagne (elle cache alors le promeneur, comme elle le ferait).
+    this.iso.camera.near = this.world.endless ? -260 : 1;
+    this.iso.camera.updateProjectionMatrix();
     walker.placeAt(this.world, place?.x ?? this.world.spawn.x, place?.z ?? this.world.spawn.z);
     look.set(walker.position.x, walker.position.y + walker.lookHeight, walker.position.z);
     this.iso.follow(look);
@@ -399,6 +412,13 @@ export class Explorer {
   }
 
   _pickStrollTarget() {
+    if (this.world.pickStrollTarget) {
+      const target = this.world.pickStrollTarget(this.walker.position, this.walker.heading);
+      this._stroll.x = target.x;
+      this._stroll.z = target.z;
+      this._stroll.stuck = 0;
+      return;
+    }
     const { bounds } = this.world;
     const margin = 9; // la balade reste hors de la brume du bord
     this._stroll.x = THREE.MathUtils.lerp(bounds.minX + margin, bounds.maxX - margin, Math.random());
@@ -562,5 +582,6 @@ export class Explorer {
     meter.time = meter.frames = meter.calls = meter.triangles = 0;
     this.ui.stats.textContent =
       `${this.stats.fps} i/s · ${this.stats.calls} draw calls · ${numberFormat.format(Math.round(this.stats.triangles / 1000))} k tri.`;
+    if (this.world.endless && ++meter.notes % 4 === 0) this._describe(); // le monde grandit en marchant
   }
 }

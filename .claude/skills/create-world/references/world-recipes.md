@@ -15,6 +15,7 @@ défaut que l'utilisateur a vu ou d'une mesure. **Après chaque monde, ajouter i
 8. Bords du monde
 9. Caméra et explorateur
 10. Poids mesurés
+11. Monde sans bord
 
 ## 1. Rendre un lieu crédible
 
@@ -140,3 +141,32 @@ Deux défauts signalés par l'utilisateur, et leur cause :
 
 L'utilisateur tient 60 images par seconde sur un vieux téléphone à ce niveau : c'est la référence à ne pas
 dépasser.
+
+## 11. Monde sans bord (Prairie d'été, taille « Infini »)
+
+- **Tout se tire de la position, jamais d'un tirage en série.** Une île tire ses arbres dans l'ordre de la carte ;
+  un monde sans bord doit redonner les mêmes arbres quel que soit le chemin. Une graine par case
+  (`cellRng(seed, i, j, sel)`) ; l'espacement entre arbres se règle par une priorité tirée dans la case : une
+  candidate cède à une voisine trop proche et prioritaire. Une case appartient au morceau qui contient son
+  origine, même si sa copie déborde un peu.
+- **Rien ne doit apparaître sous les yeux** : un morceau ne se montre qu'une fois fini (sol et semis ensemble),
+  et se prépare avant d'entrer dans la vue (marge de 24 m autour du cadre, boîtes bornées à la hauteur réelle).
+- **Étaler la fabrication** : générateurs JavaScript (`function*`, `yield` entre deux étapes, `yield*` pour le
+  sol), budget en millisecondes par image. Mesurer chaque étape : une seule étape de 10 ms fait sauter une image
+  sur téléphone, quelle que soit la moyenne. Ce qui coûtait : la grille du sol d'un bloc, les plans des voisins,
+  les fleurs (cinq champs de bruit par case), les boîtes des cases (9 hauteurs par case : lire une grille déjà
+  calculée).
+- **Le bruit était l'essentiel du temps** : `createNoise3` créait une fonction à chaque appel ; réécrit sans (mêmes
+  valeurs au bit près), la hauteur coûte deux fois moins. Une grille de sol n'évalue la hauteur qu'une fois par
+  sommet (normales par les voisins), pas cinq.
+- **Clés de cache numériques**, pas de chaînes créées dans les règles appelées des milliers de fois.
+- **Sol** : un maillage par morceau de 32 m (16 m faisait passer la montagne à 116 draw calls) ; deux finesses,
+  bords calés sur la grille la plus grossière. Pas d'ombre portée du relief : invisible à l'œil, des draw calls
+  en plus.
+- **Montagne** : une crête de bruit lisse fait une pyramide en plastique. Ajouter des ressauts (bruits de 21, 8,5
+  et 3,4 m) seulement là où ça monte, et décaler les crans de lumière de la roche vers les tons moyens.
+- **Vue orthographique** : pas d'horizon, rien ne rapetisse. Les montagnes « au loin » ne se voient qu'à moins de
+  100 à 180 m ; les rapprocher du départ (dès 60 m). Un arbre de 11 m cache ce qui est jusqu'à 16 m derrière lui,
+  côté caméra : le départ se choisit sans arbre dans cette direction.
+- **Coût des vues larges** : sans bord pour la limiter, la vue rasante dézoomée voit 2 à 3 fois plus d'arbres
+  qu'une grande île. Il manque à la bibliothèque un arbre allégé pour le lointain.
