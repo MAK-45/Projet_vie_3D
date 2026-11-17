@@ -140,3 +140,19 @@ Deux défauts signalés par l'utilisateur, et leur cause :
 
 L'utilisateur tient 60 images par seconde sur un vieux téléphone à ce niveau : c'est la référence à ne pas
 dépasser.
+
+## 11. Monde sans bord (prairie infinie)
+
+- **Les règles du lieu dans un module à part** (`summer-meadow-rules.js`) : l'île et la version infinie partagent
+  modèles et règles, seuls les « pilotes » diffèrent (semis d'un bloc, ou par morceau). La factorisation a été
+  vérifiée par une empreinte des matrices semées : îles identiques au bit près avant et après.
+- **Tirer chaque morceau de `(graine, morceau)`**, jamais d'un générateur qui court sur toute la carte. Ce qui
+  dépend des voisins (écart entre arbres, ombre des couronnes) se décide en ne regardant que les morceaux voisins,
+  sinon un morceau ne se fabrique pas seul.
+- **Un seul jeu de couches instanciées** pour tous les morceaux (`StreamingScatter`) : un `InstancedMesh` par
+  morceau multiplierait les draw calls par le nombre de morceaux vus.
+- **Ce qui est dans le champ se fabrique tout de suite** (un à-coup vaut mieux qu'un bosquet qui surgit au milieu
+  de l'image) ; le reste d'avance, sous un budget de temps par image.
+- **Borner la caméra** (zoom arrière, vue rasante) plutôt que fabriquer jusqu'à l'horizon.
+- Le sol en morceaux coûtait 3 ms par morceau (cinq lectures de la hauteur par sommet) : une grille de hauteurs
+  lue une fois (`buildGroundPatch`) le ramène à 0,7 ms.

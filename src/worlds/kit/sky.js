@@ -125,14 +125,29 @@ export function createCloudShadows(rng, { bounds, count = 6, altitude = [26, 36]
 
   return {
     group,
-    /** @param {number} dt secondes écoulées depuis l'image précédente */
-    update(dt) {
+    /**
+     * @param {number} dt secondes écoulées depuis l'image précédente
+     * @param {THREE.Vector3} [center] monde sans bord : les nuages dérivent dans l'emprise donnée, recentrée sur ce
+     *   point (le promeneur) ; un nuage qui sort d'un côté revient de l'autre
+     */
+    update(dt, center) {
       const wind = sharedUniforms.uWindDir.value;
       const strength = sharedUniforms.uWindStrength.value;
       for (const cloud of clouds) {
         const position = cloud.mesh.position;
         position.x += wind.x * cloud.speed * strength * dt;
         position.z += wind.y * cloud.speed * strength * dt;
+        if (center) {
+          const width = span.maxX - span.minX;
+          const depth = span.maxZ - span.minZ;
+          const x = position.x - center.x;
+          const z = position.z - center.z;
+          if (x > span.maxX) position.x -= width * Math.ceil((x - span.maxX) / width);
+          else if (x < span.minX) position.x += width * Math.ceil((span.minX - x) / width);
+          if (z > span.maxZ) position.z -= depth * Math.ceil((z - span.maxZ) / depth);
+          else if (z < span.minZ) position.z += depth * Math.ceil((span.minZ - z) / depth);
+          continue;
+        }
         if (position.x > span.maxX) position.x = span.minX;
         else if (position.x < span.minX) position.x = span.maxX;
         if (position.z > span.maxZ) position.z = span.minZ;

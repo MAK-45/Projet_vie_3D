@@ -10,22 +10,16 @@
 import * as THREE from "three";
 import { createToonMaterial, disposeObject } from "../engine/toon-material.js";
 import { GROUNDS, STONES } from "../assets/kit/palettes.js";
-import { createNoise3, createRng } from "../assets/kit/rng.js";
-import * as flowerClump from "../assets/nature/plants/flower-clump.js";
-import * as grassTuft from "../assets/nature/plants/grass-tuft.js";
-import * as boulder from "../assets/nature/rocks/boulder.js";
-import * as buriedRock from "../assets/nature/rocks/buried-rock.js";
-import * as dirtMound from "../assets/nature/terrain/dirt-mound.js";
-import * as lawn from "../assets/nature/terrain/lawn.js";
+import { createRng } from "../assets/kit/rng.js";
 import * as meadowGround from "../assets/nature/terrain/meadow-ground.js";
-import * as mossPatch from "../assets/nature/terrain/moss-patch.js";
-import * as birch from "../assets/nature/trees/birch.js";
-import * as linden from "../assets/nature/trees/linden.js";
-import * as oak from "../assets/nature/trees/oak.js";
 import { ScatterField } from "./kit/scatter.js";
 import { createCloudSea } from "./kit/cloud-sea.js";
 import { createCloudShadows, createDaylight } from "./kit/sky.js";
-import { buildIslandBand, buildIslandUnderside, groundNormal } from "./kit/terrain.js";
+import { buildIslandBand, buildIslandUnderside } from "./kit/terrain.js";
+import { createEndlessMeadow } from "./summer-meadow-endless.js";
+import { CELLS, createMeadowLayers, createPlacer, FULL_DETAIL_AREA, GROUND_GRAIN, meadowRules, SEASON, TAU, TILE } from "./summer-meadow-rules.js";
+
+export { TILE } from "./summer-meadow-rules.js";
 
 export const MEADOW_SIZES = {
   small: { label: "Petit", meters: 48 },
@@ -33,33 +27,20 @@ export const MEADOW_SIZES = {
   large: { label: "Grand", meters: 144 },
 };
 
-const TILE = 16; // côté d'un morceau de sol (m)
-const SEASON = "summer";
-const GROUND_ID = 11; // identifiant de contour du sol (celui de l'asset « Sol de prairie »)
-/**
- * Grain du sol peint, en cases par mètre. L'asset en met 16 (un pixel d'art au zoom 1) ; en vue inclinée une case
- * fait alors moins d'un pixel de haut, et les points colorés (fleurs, grain) s'allument et s'éteignent dès que
- * la caméra tourne. À 10, chaque case couvre toujours plus d'un pixel.
- */
-const GROUND_GRAIN = 10;
-/** Surface de pré vue (m²) jusqu'à laquelle toutes les herbes et fleurs sont dessinées ; au-delà, elles s'éclaircissent. */
-const FULL_DETAIL_AREA = 380;
+/** Tailles proposées par l'explorateur : les trois îles, et la prairie infinie (`summer-meadow-endless.js`). */
+export const MEADOW_EXTENTS = {
+  ...MEADOW_SIZES,
+  endless: { label: "Infini", meters: Infinity },
+};
 
-const TAU = Math.PI * 2;
-const UP = new THREE.Vector3(0, 1, 0);
 const smoothstep = THREE.MathUtils.smoothstep;
-const _position = new THREE.Vector3();
-const _scale = new THREE.Vector3();
-const _yaw = new THREE.Quaternion();
-const _tilt = new THREE.Quaternion();
-const _normal = new THREE.Vector3();
-const _matrix = new THREE.Matrix4();
 
 /**
  * Crée une prairie d'été.
  * @param {object} [options]
  * @param {number} [options.seed] 0 à 9999 : relief, bosquets, affleurements, nappes de fleurs
- * @param {"small"|"medium"|"large"} [options.size] 48, 96 ou 144 m de côté
+ * @param {"small"|"medium"|"large"|"endless"} [options.size] 48, 96 ou 144 m de côté, ou infinie : la prairie se
+ *   génère par morceaux autour du promeneur (summer-meadow-endless.js ; pas de diorama)
  * @param {number} [options.relief] hauteur des ondulations (m), 0,6 à 3
  * @param {number} [options.trees] abondance des arbres, 0 (aucun) à 2 (boisé) ; 1 = prairie à bosquets
  * @param {number} [options.rocks] abondance des rochers, 0 à 2
@@ -68,8 +49,13 @@ const _matrix = new THREE.Matrix4();
  * @param {boolean} [options.diorama] vrai : l'île seule, toutes ses copies dessinées, sans lumière, ni ombres de
  *   nuages, ni mer de nuages (fiche et vignette de l'asset) ; `update` devient inutile
  */
-export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1, diorama = false } = {}) {
-  const RELIEF = THREE.MathUtils.clamp(relief, 0.2, 3);
+export function createSummerMeadow(options = {}) {
+  if (options.size === "endless" && !options.diorama) return createEndlessMeadow(options);
+  return createIsland(options);
+}
+
+/** L'île : la prairie semée d'un bloc sur une carte bornée, qui flotte dans la mer de nuages. */
+function createIsland({ seed = 1, size = "medium", relief = 1.8, trees: treeAmount = 1, rocks: rockAmount = 1, grass = 1, flowers: flowerAmount = 1, diorama = false } = {}) {
   seed = THREE.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
   const meters = (MEADOW_SIZES[size] ?? MEADOW_SIZES.medium).meters;
   const tiles = meters / TILE;
@@ -80,11 +66,8 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
   const center = new THREE.Vector3(min + meters / 2, 0, min + meters / 2);
   const area = meters * meters;
 
-  const heightAt = meadowGround.groundHeight(seed, RELIEF);
-  const noise = createNoise3(seed * 17 + 3);
-  /** Champ lisse 0..1 de longueur d'onde donnée ; `slot` distingue des champs indépendants. */
-  const field = (x, z, wavelength, slot) => noise(x / wavelength + slot * 19.7, slot * 3.1 + 0.5, z / wavelength - slot * 7.3);
-  const fbm = (x, z, wavelength, slot) => field(x, z, wavelength, slot) * 0.65 + field(x, z, wavelength / 2.7, slot + 50) * 0.35;
+  const rules = meadowRules({ seed, relief, trees: treeAmount, flowers: flowerAmount });
+  const { RELIEF, heightAt, field } = rules;
 
   const group = new THREE.Group();
   group.name = "Prairie d'été";
@@ -150,46 +133,16 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
 
   // --- Semis ---------------------------------------------------------------------------------------------------
   const scatter = new ScatterField({ bounds, heightAt });
-  /**
-   * Couche de végétation fine posée sur le sol : ses matériaux prennent l'identifiant de contour du sol, sinon
-   * chaque touffe et chaque tige serait cernée de sombre, et un pré de milliers de touffes deviendrait une
-   * résille noire. `outlined` : noms des maillages qui gardent leur contour (pétales).
-   */
-  const addGroundCover = (prototype, { outlined = [], ...options } = {}) => {
-    prototype.traverse((child) => {
-      if (child.isMesh && !outlined.includes(child.name)) child.material.uniforms.uId.value = GROUND_ID;
-    });
-    return scatter.addLayer(prototype, { reach: "fine", thin: true, castShadow: false, ...options });
-  };
   const rng = createRng(seed * 9973 + 11);
-
-  /** Ajoute une copie posée sur le sol. `tilt` : couchée sur la pente (plaques au sol) ; `sink` : enfoncée (m). */
-  const place = (layer, x, z, { yaw = 0, scale = 1, tilt = false, sink = 0 } = {}) => {
-    _position.set(x, heightAt(x, z) - sink, z);
-    _yaw.setFromAxisAngle(UP, yaw);
-    if (tilt) _tilt.setFromUnitVectors(UP, groundNormal(heightAt, x, z, _normal)).multiply(_yaw);
-    else _tilt.copy(_yaw);
-    layer.add(_matrix.compose(_position, _tilt, _scale.setScalar(scale)));
-  };
+  const place = createPlacer(heightAt);
   const inside = (x, z, margin) =>
     x > bounds.minX + margin && x < bounds.maxX - margin && z > bounds.minZ + margin && z < bounds.maxZ - margin;
-
-  // Arbres : quelques modèles par essence, chaque copie tournée et à une taille différente.
-  const species = {
-    oak: { module: oak, seeds: [3, 8], height: 11, scale: [0.82, 1.18], spacing: 7.5, crown: 5.6, trunk: 0.5 },
-    linden: { module: linden, seeds: [2, 5], height: 12.5, scale: [0.8, 1.18], spacing: 6.5, crown: 4.4, trunk: 0.42 },
-    birch: { module: birch, seeds: [1, 4], height: 9, scale: [0.8, 1.2], spacing: 3.4, crown: 3.2, trunk: 0.24 },
-  };
-  for (const kind of Object.values(species)) {
-    kind.layers = kind.seeds.map((treeSeed) =>
-      scatter.addLayer(kind.module.create({ seed: treeSeed, season: SEASON, height: kind.height, fullness: 0.75 }), { reach: "tall" }),
-    );
-  }
+  const { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill } = createMeadowLayers((prototype, options) => scatter.addLayer(prototype, options));
 
   /** Obstacles ronds { x, z, radius } : ce qu'on ne traverse pas (troncs, gros rochers). */
   const colliders = [];
   const trees = [];
-  const TREE_CELL = 4;
+  const TREE_CELL = CELLS.tree;
   const treeCells = Math.ceil(meters / TREE_CELL);
   for (let j = 0; j < treeCells; j++) {
     for (let i = 0; i < treeCells; i++) {
@@ -201,14 +154,9 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
       const size = rng.next();
       const yaw = rng.range(0, TAU);
       if (!inside(x, z, 3.5)) continue;
-      // Bosquets : les arbres se serrent là où le champ est haut, et laissent de grandes clairières ailleurs.
-      // Plus d'arbres : des bosquets plus étendus, pas seulement plus serrés.
-      const grove = smoothstep(fbm(x, z, 44, 1) + (treeAmount - 1) * 0.12, 0.5, 0.68);
+      const grove = rules.grove(x, z);
       if (roll > (0.015 + grove * 0.55) * treeAmount) continue;
-      const essence = field(x, z, 75, 2);
-      const name = grove > 0.2
-        ? (essence < 0.4 ? "birch" : essence < 0.68 ? "oak" : "linden")
-        : (pick < 0.55 ? "oak" : pick < 0.85 ? "linden" : "birch"); // arbres isolés : surtout de grands chênes
+      const name = rules.treeKind(x, z, grove, pick);
       const kind = species[name];
       if (trees.some((tree) => Math.hypot(tree.x - x, tree.z - z) < (tree.kind.spacing + kind.spacing) / 2)) continue;
       const scale = THREE.MathUtils.lerp(kind.scale[0], kind.scale[1], size);
@@ -220,16 +168,6 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
   counts.trees = trees.length;
 
   // Rochers : des affleurements (un gros bloc et sa suite) et des roches enterrées isolées.
-  const boulders = [
-    { seed: 1, size: 1.3 },
-    { seed: 4, size: 1.0, cover: "moss" },
-    { seed: 7, size: 0.6, roughness: 0.5 },
-  ].map((given) => ({ ...given, layer: scatter.addLayer(boulder.create({ stone: "granite", ...given }), { reach: "low" }) }));
-  const slabs = [
-    { seed: 2, size: 2.2 },
-    { seed: 5, size: 1.4, cover: "moss" },
-  ].map((given) => ({ ...given, layer: scatter.addLayer(buriedRock.create({ stone: "granite", ...given }), { reach: "low" }) }));
-
   const rocks = [];
   const addRock = (x, z, big) => {
     if (!inside(x, z, 2)) return;
@@ -306,15 +244,10 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
     const onRock = (x, z, margin = 0) =>
       (buckets.get(bucketKey(x, z))?.rocks ?? []).some((rock) => Math.hypot(rock.x - x, rock.z - z) < rock.radius + margin);
     /** Creux humides (1) et bosses sèches (0). */
-    const moisture = (x, z) => (1 - heightAt(x, z) / RELIEF) * 0.55 + field(x, z, 32, 6) * 0.45;
+    const { moisture } = rules;
 
     // Pelouses : plaques d'herbe drue dans les creux humides, posées sur la pente.
-    const lawns = [
-      { cut: "wild", seed: 1, size: 2.8 },
-      { cut: "wild", seed: 2, size: 2.2 },
-      { cut: "long", seed: 3, size: 2.4 },
-    ].map((given) => addGroundCover(lawn.create({ season: SEASON, shape: "patch", fullness: 0.5, ...given }), { skip: ["sod"] }));
-    const LAWN_CELL = 3;
+    const LAWN_CELL = CELLS.lawn;
     const lawnCells = Math.ceil(meters / LAWN_CELL);
     for (let j = 0; j < lawnCells; j++) {
       for (let i = 0; i < lawnCells; i++) {
@@ -332,13 +265,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
     }
 
     // Touffes d'herbe partout, plus ou moins serrées ; hautes herbes à épis en nappes dans les zones ouvertes.
-    const tufts = [1, 2, 3].map((tuftSeed) =>
-      addGroundCover(grassTuft.create({ seed: tuftSeed, season: SEASON, kind: "meadow", height: 0.5, fullness: 0.6 })),
-    );
-    const tallTufts = [4, 5].map((tuftSeed) =>
-      addGroundCover(grassTuft.create({ seed: tuftSeed, season: SEASON, kind: "tall", height: 0.42, fullness: 0.6 })),
-    );
-    const TUFT_CELL = 1;
+    const TUFT_CELL = CELLS.tuft;
     const tuftCells = Math.ceil(meters / TUFT_CELL);
     for (let j = 0; j < tuftCells; j++) {
       for (let i = 0; i < tuftCells; i++) {
@@ -352,12 +279,8 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
         if (!inside(x, z, 0.5) || onRock(x, z, 0.15)) continue;
         const open = openness(x, z);
         if (open < 0.14) continue; // terre battue au pied des troncs
-        const vigor = fbm(x, z, 11, 3) * 0.7 + field(x, z, 48, 4) * 0.3;
-        let chance = 0.22 + smoothstep(vigor, 0.36, 0.62);
-        if (open < 1) chance *= 0.5; // à l'ombre des couronnes, l'herbe est plus rare et plus rase
-        if (roll > chance * grass) continue;
-        const tallZone = fbm(x, z, 27, 5);
-        if (open >= 1.1 && tallRoll < smoothstep(tallZone, 0.56, 0.7) * 0.75) {
+        if (roll > rules.tuftChance(x, z, open) * grass) continue;
+        if (open >= 1.1 && tallRoll < smoothstep(rules.tallZone(x, z), 0.56, 0.7) * 0.75) {
           place(tallTufts[Math.floor(model * tallTufts.length)], x, z, { yaw, scale });
         } else {
           place(tufts[Math.floor(model * tufts.length)], x, z, { yaw, scale: scale * (open < 1 ? 0.8 : 1) });
@@ -366,20 +289,8 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
       }
     }
 
-    // Fleurs : chaque espèce a ses nappes. Coquelicots et bleuets sur le sec, boutons d'or dans les creux,
-    // marguerites partout, lavande en coussins sur les bosses pierreuses.
-    const flowers = {
-      daisy: { count: 5, bias: () => 0, threshold: 0.68, slot: 10, wavelength: 21 },
-      poppy: { count: 5, bias: (wet) => (0.5 - wet) * 0.3, threshold: 0.69, slot: 11, wavelength: 25 },
-      cornflower: { count: 5, bias: (wet) => (0.5 - wet) * 0.2, threshold: 0.7, slot: 12, wavelength: 19 },
-      buttercup: { count: 6, bias: (wet) => (wet - 0.5) * 0.4, threshold: 0.7, slot: 13, wavelength: 17 },
-      lavender: { count: 3, bias: (wet) => (0.5 - wet) * 0.45, threshold: 0.82, slot: 14, wavelength: 15 },
-    };
-    for (const [name, kind] of Object.entries(flowers)) {
-      kind.layer = addGroundCover(flowerClump.create({ seed: kind.slot, species: name, season: SEASON, count: kind.count }), { outlined: ["petals", "hearts"] });
-    }
-    const FLOWER_CELL = 1.3;
-    const flowerSpread = (flowerAmount - 1) * 0.05; // plus de fleurs : des nappes plus larges, pas seulement plus serrées
+    // Fleurs : chaque espèce a ses nappes (summer-meadow-rules.js).
+    const FLOWER_CELL = CELLS.flower;
     const flowerCells = Math.ceil(meters / FLOWER_CELL);
     for (let j = 0; j < flowerCells; j++) {
       for (let i = 0; i < flowerCells; i++) {
@@ -392,16 +303,7 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
         if (!inside(x, z, 0.6) || onRock(x, z, 0.2)) continue;
         const open = openness(x, z);
         if (open < 0.75) continue; // les fleurs des champs veulent le soleil
-        const wet = moisture(x, z);
-        let best = null;
-        let bestValue = 0;
-        for (const kind of Object.values(flowers)) {
-          const value = fbm(x, z, kind.wavelength, kind.slot) + kind.bias(wet) - kind.threshold + flowerSpread;
-          if (value > bestValue) {
-            best = kind;
-            bestValue = value;
-          }
-        }
+        const { best, bestValue } = rules.flowerAt(x, z, moisture(x, z), flowers);
         if (best && roll < (0.15 + smoothstep(bestValue, 0, 0.1) * 0.5) * Math.min(1.6, flowerAmount)) {
           place(best.layer, x, z, { yaw, scale });
           counts.flowers += 1;
@@ -414,7 +316,6 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
     }
 
     // Mousse : au pied des arbres, du côté à l'ombre, et contre les rochers.
-    const moss = scatter.addLayer(mossPatch.create({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "low", castShadow: false });
     for (const tree of trees) {
       if (!detail.chance(0.6)) continue;
       const angle = Math.PI + detail.range(-0.9, 0.9); // vers -z : à l'opposé du soleil
@@ -438,7 +339,6 @@ export function createSummerMeadow({ seed = 1, size = "medium", relief = 1.8, tr
     }
 
     // Taupinières : de petites buttes de terre fraîche, par groupes, en plein pré.
-    const molehill = scatter.addLayer(dirtMound.create({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "low", castShadow: false });
     const colonies = Math.max(1, Math.round(area / 1500));
     for (let n = 0; n < colonies; n++) {
       const cx = detail.range(bounds.minX + 5, bounds.maxX - 5);

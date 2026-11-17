@@ -8,12 +8,18 @@ import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
 import { setDarkness, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
-import { createSummerMeadow, MEADOW_SIZES } from "../worlds/summer-meadow.js";
+import { createSummerMeadow, MEADOW_EXTENTS } from "../worlds/summer-meadow.js";
 import { WalkInput } from "./input.js";
 import { CHARACTERS, Walker } from "./walker.js";
 
 const STORAGE_KEY = "pv3d-meadow";
 const MIN_ELEVATION = THREE.MathUtils.degToRad(11);
+/**
+ * Prairie infinie : la vue ne recule ni ne se couche autant que sur une île, pour que la caméra ne voie jamais
+ * plus loin que les morceaux fabriqués autour du promeneur (et que leur nombre reste petit).
+ */
+const ENDLESS_MIN_ELEVATION = THREE.MathUtils.degToRad(24);
+const ENDLESS_MIN_ZOOM = 0.6;
 const MAX_ELEVATION = THREE.MathUtils.degToRad(68);
 const STEP = Math.PI / 4; // la caméra ne tourne d'elle-même que par huitièmes de tour
 const numberFormat = new Intl.NumberFormat("fr-FR");
@@ -61,7 +67,7 @@ const TEMPLATE = `
         <label class="x-field"><span>Graine</span>
           <input type="number" min="0" max="9999" step="1" inputmode="numeric" data-ref="seed" /></label>
         <button type="button" class="x-button" data-ref="reroll">Au hasard</button>
-        ${choice("size", "Taille de la carte", MEADOW_SIZES)}
+        ${choice("size", "Taille de la carte", MEADOW_EXTENTS)}
       </div>
       <div class="x-sliders">
         ${AMOUNTS.map(([name, label, min, max, step]) => `
@@ -340,7 +346,7 @@ export class Explorer {
     const s = this.settings;
     const clamp = THREE.MathUtils.clamp;
     s.seed = clamp(Math.round(Number(s.seed)) || 0, 0, 9999);
-    if (!(s.size in MEADOW_SIZES)) s.size = DEFAULT_SETTINGS.size;
+    if (!(s.size in MEADOW_EXTENTS)) s.size = DEFAULT_SETTINGS.size;
     if (!(s.moment in MOMENTS)) s.moment = DEFAULT_SETTINGS.moment;
     if (!(s.weather in WEATHERS)) s.weather = DEFAULT_SETTINGS.weather;
     if (!(s.camera in CAMERAS)) s.camera = DEFAULT_SETTINGS.camera;
@@ -368,6 +374,12 @@ export class Explorer {
   _describe() {
     const { world, settings, ui } = this;
     const c = world.counts;
+    if (world.endless) {
+      ui.summary.textContent = `graine ${settings.seed} · infinie`;
+      ui.note.textContent =
+        "Prairie sans bord : elle se fabrique au fil de la marche, et redonne le même pré quand on revient sur ses pas.";
+      return;
+    }
     ui.summary.textContent = `graine ${settings.seed} · ${world.meters} m`;
     ui.note.textContent =
       `${world.meters} × ${world.meters} m · ${c.trees} arbres · ${c.rocks} rochers · ${numberFormat.format(c.tufts)} touffes d'herbe · ` +
@@ -386,6 +398,7 @@ export class Explorer {
     }
     this.world = createSummerMeadow(this.settings);
     this.scene.add(this.world.group);
+    this._limitView();
     walker.placeAt(this.world, place?.x ?? this.world.spawn.x, place?.z ?? this.world.spawn.z);
     look.set(walker.position.x, walker.position.y + walker.lookHeight, walker.position.z);
     this.iso.follow(look);
@@ -398,8 +411,34 @@ export class Explorer {
     this._save();
   }
 
+  /** Bornes du zoom et de l'inclinaison selon le monde (une prairie infinie ne se regarde pas de si loin). */
+  _limitView() {
+    const controls = this.iso.controls;
+    const endless = Boolean(this.world.endless);
+    controls.minZoom = endless ? ENDLESS_MIN_ZOOM : 0.5;
+    controls.maxPolarAngle = Math.PI / 2 - (endless ? ENDLESS_MIN_ELEVATION : MIN_ELEVATION);
+    const camera = this.iso.camera;
+    if (camera.zoom < controls.minZoom) {
+      camera.zoom = controls.minZoom;
+      camera.updateProjectionMatrix();
+    }
+    controls.update();
+  }
+
   _pickStrollTarget() {
     const { bounds } = this.world;
+    if (this.world.endless) {
+      // Sans bord : un but à quelques dizaines de mètres, dans une direction proche de la précédente, pour que la
+      // balade avance au lieu de tourner en rond.
+      const walker = this.walker.position;
+      const heading = (this._stroll.heading ?? Math.random() * Math.PI * 2) + (Math.random() - 0.5) * 1.6;
+      const distance = 15 + Math.random() * 30;
+      this._stroll.heading = heading;
+      this._stroll.x = walker.x + Math.cos(heading) * distance;
+      this._stroll.z = walker.z + Math.sin(heading) * distance;
+      this._stroll.stuck = 0;
+      return;
+    }
     const margin = 9; // la balade reste hors de la brume du bord
     this._stroll.x = THREE.MathUtils.lerp(bounds.minX + margin, bounds.maxX - margin, Math.random());
     this._stroll.z = THREE.MathUtils.lerp(bounds.minZ + margin, bounds.maxZ - margin, Math.random());

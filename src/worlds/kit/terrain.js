@@ -135,3 +135,70 @@ export function buildIslandUnderside({ bounds, top, depth, noise, spacing = 2, r
   geometry.computeVertexNormals();
   return geometry;
 }
+
+/**
+ * Morceau de sol carré pour un monde sans bord : même maillage que `buildTerrainChunk` (kit/geometry.js, dessus
+ * seulement : position, normale, `aGround` en coordonnées du monde), mais la hauteur n'est lue qu'une fois par
+ * point de grille, et les normales viennent des points voisins. Cinq fois moins de calcul, sans couture : un point
+ * partagé par deux morceaux voit les mêmes voisins.
+ *
+ * @param {object} options
+ * @param {number} options.size côté (m)
+ * @param {number} [options.spacing] écart entre deux sommets (m)
+ * @param {number[]} options.origin centre du morceau dans le monde [x, z]
+ * @param {(x: number, z: number) => number} options.height hauteur du sol en coordonnées du monde
+ */
+export function buildGroundPatch({ size, spacing = 0.5, origin, height }) {
+  const n = Math.max(1, Math.round(size / spacing));
+  const step = size / n;
+  const half = size / 2;
+  const [ox, oz] = origin;
+  // Hauteurs avec une rangée de plus de chaque côté, pour les normales du bord.
+  const side = n + 3;
+  const heights = new Float32Array(side * side);
+  for (let i = 0; i < side; i++) {
+    for (let j = 0; j < side; j++) heights[i * side + j] = height(ox - half + (j - 1) * step, oz - half + (i - 1) * step);
+  }
+  const count = (n + 1) * (n + 1);
+  const positions = new Float32Array(count * 3);
+  const normals = new Float32Array(count * 3);
+  const ground = new Float32Array(count * 2);
+  for (let i = 0; i <= n; i++) {
+    for (let j = 0; j <= n; j++) {
+      const v = i * (n + 1) + j;
+      const g = (i + 1) * side + (j + 1);
+      const x = -half + j * step;
+      const z = -half + i * step;
+      positions[v * 3] = x;
+      positions[v * 3 + 1] = heights[g];
+      positions[v * 3 + 2] = z;
+      const dx = (heights[g + 1] - heights[g - 1]) / (2 * step);
+      const dz = (heights[g + side] - heights[g - side]) / (2 * step);
+      const len = Math.hypot(dx, 1, dz);
+      normals[v * 3] = -dx / len;
+      normals[v * 3 + 1] = 1 / len;
+      normals[v * 3 + 2] = -dz / len;
+      ground[v * 2] = ox + x;
+      ground[v * 2 + 1] = oz + z;
+    }
+  }
+  const index = new Uint16Array(n * n * 6);
+  const at = (i, j) => i * (n + 1) + j;
+  let k = 0;
+  for (let i = 0; i < n; i++) {
+    for (let j = 0; j < n; j++) {
+      // Diagonale alternée, comme `buildTerrainChunk`.
+      const quad = (i + j) % 2 === 0
+        ? [at(i, j), at(i + 1, j), at(i, j + 1), at(i, j + 1), at(i + 1, j), at(i + 1, j + 1)]
+        : [at(i, j), at(i + 1, j + 1), at(i, j + 1), at(i, j), at(i + 1, j), at(i + 1, j + 1)];
+      index.set(quad, k);
+      k += 6;
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+  geometry.setAttribute("aGround", new THREE.BufferAttribute(ground, 2));
+  geometry.setIndex(new THREE.BufferAttribute(index, 1));
+  return geometry;
+}

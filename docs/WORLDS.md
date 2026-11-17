@@ -7,7 +7,9 @@ Un monde vit à trois endroits :
 
 | Fichier | Rôle |
 |---|---|
-| `src/worlds/summer-meadow.js` | le générateur : `createSummerMeadow(options)` |
+| `src/worlds/summer-meadow.js` | le générateur : `createSummerMeadow(options)` (l'île) |
+| `src/worlds/summer-meadow-endless.js` | la prairie **infinie** (`size: "endless"`), fabriquée par morceaux autour du promeneur |
+| `src/worlds/summer-meadow-rules.js` | ce que les deux partagent : modèles semés, où pousse quoi (bosquets, herbe, fleurs) |
 | `src/assets/worlds/islands/summer-meadow.js` | l'**asset** : le monde rangé dans la bibliothèque (catégorie « Mondes »), `create()` rend l'île en maquette |
 | `src/explorer/explorer.js` | l'**explorateur** : l'interface qui règle le monde et permet de s'y promener |
 
@@ -32,7 +34,7 @@ world.dispose();
 | Réglage | Valeurs |
 |---|---|
 | `seed` | 0 à 9999 : relief, bosquets, affleurements, nappes de fleurs |
-| `size` | `small` 48 m, `medium` 96 m, `large` 144 m de côté |
+| `size` | `small` 48 m, `medium` 96 m, `large` 144 m de côté ; `endless` : sans bord (explorateur seulement) |
 | `relief` | hauteur des ondulations, 0,6 à 3 m |
 | `trees`, `rocks`, `grass`, `flowers` | abondance de 0 à 2 (1 = prairie à bosquets) |
 | `diorama` | l'île seule, toutes copies dessinées, sans lumière ni ciel (fiche et vignette de l'asset) |
@@ -53,6 +55,9 @@ troncs ; les taupinières vont par colonies en plein pré.
 
 ## Outils (`src/worlds/kit/`)
 
+- **`streaming-scatter.js` — `StreamingScatter`** : le même semis pour un monde sans bord. Mêmes couches (donc
+  mêmes draw calls), mais les cases arrivent et partent par morceaux (`beginChunk`, `endChunk`, `removeChunk`) ;
+  le tampon de matrices d'une couche grandit au besoin.
 - **`scatter.js` — `ScatterField`** : pose des milliers de copies d'assets. Un asset modèle = une couche = un
   `InstancedMesh` par maillage du modèle, donc autant de draw calls que l'asset seul. Le monde est découpé en
   cases ; seules les copies des cases vues par la caméra sont envoyées au GPU, et la liste n'est refaite que
@@ -69,7 +74,8 @@ troncs ; les taupinières vont par colonies en plein pré.
 - **`atmosphere.js`** : moment (jour, crépuscule, nuit, cycle) et météo (beau, pluie, variable). Ne dessine rien :
   tient à jour la position de l'astre, la teinte de l'image, les couleurs du ciel et des nuages, la pluie, le
   vent, toujours en fondu.
-- **`terrain.js`** : tranche de l'île (terre puis roche), normale du sol.
+- **`terrain.js`** : tranche de l'île (terre puis roche), normale du sol, et `buildGroundPatch` : le maillage du
+  sol de prairie (comme l'asset) qui ne lit la hauteur qu'une fois par point, pour les morceaux d'un monde sans bord.
 
 Dans le moteur, `PixelRenderer.setMood({ grade, saturation, rain, time })` teinte toute l'image dans la passe
 finale (les rampes de couleurs des assets ne changent pas) et dessine la pluie à l'écran, sans géométrie.
@@ -133,11 +139,29 @@ comptés une fois et demie avec leur ombre). L'herbe en volume fait dépasser le
 triangles) réservée au semis de masse ramènerait le tout dans le budget. La mer de nuages, la brume, la teinte
 de l'heure et la pluie ne coûtent que des pixels de l'image basse résolution : 1 draw call et aucune géométrie.
 
-## Un monde sans bord ?
+## La prairie infinie (`size: "endless"`)
 
-Possible sans toucher aux performances, parce que tout est déjà calculé en coordonnées du monde : le sol de
-prairie se raccorde sans couture d'un morceau au suivant, et le semis est rangé par cases. Il suffirait de tirer
-le contenu de chaque case de `(graine, case)` au lieu de tout semer d'avance, de fabriquer les cases un peu avant
-qu'elles entrent dans la vue (une ou deux par image, pour ne pas faire sauter le rythme) et de libérer celles qui
-en sortent. Le coût par image reste celui de ce qui est à l'écran. À trancher avant : un monde sans bord n'est
-plus une île dans les nuages.
+Les mêmes assets et les mêmes règles que l'île, sans bord ni mer de nuages. Le monde est découpé en **morceaux de
+16 m** (un morceau de sol). Tout ce qu'il contient est tiré de `(graine, morceau)` : revenir sur ses pas redonne
+exactement le même pré, et deux promenades avec la même graine traversent le même paysage.
+
+- **Arbres** : tirés par case de 4 m d'après `(graine, case)`. Sur l'île, un arbre trop proche d'un arbre déjà
+  posé est écarté dans l'ordre de la carte ; sans bord il n'y a pas d'ordre, donc chaque candidat tire une
+  priorité et cède la place à tout voisin plus prioritaire. La décision ne regarde que les morceaux voisins.
+- **Rochers** gardés à 3 m du bord de leur morceau (ils ne gênent pas l'herbe du voisin) ; l'ombre des couronnes
+  sur l'herbe tient compte des arbres des morceaux voisins. Affleurements, roches, colonies de taupinières : la
+  même densité au mètre carré que l'île, en moyenne.
+- **Fabrication** : à chaque image, on cherche dans une fenêtre de ±7 morceaux ceux que voit la caméra. Un morceau
+  dans le champ (marge de 9 m pour les couronnes et les ombres portées) est fabriqué tout de suite, sinon il
+  apparaîtrait au milieu de l'image ; ceux qui vont y entrer (marge de 20 m) sont préparés d'avance, le plus
+  proche d'abord, un par image et un deuxième seulement s'il tient dans 4 ms. Les morceaux à plus de 36 m du
+  champ sont libérés (matrices, maillage du sol), une image sur trente.
+- **Vue** : zoom arrière limité à 0,6 et inclinaison à 24° au plus bas (11° sur l'île) : la caméra ne voit
+  jamais plus loin que la fenêtre, et le nombre de morceaux reste petit. Les ombres de nuages dérivent dans un
+  carré qui accompagne le promeneur.
+- **Balade auto** : un but à 15–45 m, dans une direction proche de la précédente, pour que la promenade avance.
+
+Mesures (navigateur de capture, téléphone 412 × 915, vue de départ, en marchant) : 65 à 73 draw calls, 160 000
+à 190 000 triangles, comme l'île moyenne ; 60 à 70 morceaux chargés (≈ 5 Mo) ; 1 à 2 ms pour fabriquer un
+morceau (le sol pèse le plus : `buildGroundPatch` le ramène de 3 à 0,7 ms). La part d'herbe dessinée reste fixe
+pendant la marche. Coordonnées testées jusqu'à 5 km de l'origine sans défaut.
