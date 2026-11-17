@@ -5,7 +5,8 @@
 // côté de la page de la galerie. Un asset importé construit son `THREE.Group` tout de suite, vide, et le remplit
 // quand le fichier est chargé : `group.userData.ready` est la promesse de cette fin de chargement.
 //
-// - Navigateur : les fichiers sont lus par `fetch`, relativement à la page (`models/...`) ; une page rangée
+// - Page autonome (Artifact) : les fichiers sont embarqués dans la page, en base64 (scripts/build-artifact.mjs).
+// - Navigateur : sinon les fichiers sont lus par `fetch`, relativement à la page (`models/...`) ; une page rangée
 //   ailleurs (dev/test.html) donne la bonne base avec `setModelSource({ base: "/models/" })`.
 // - Node (catalogue, vérifications) : `setModelSource({ read })` fournit les octets ; les textures, qui demandent
 //   un décodeur d'images, sont ignorées (la forme seule est mesurée).
@@ -31,16 +32,28 @@ export function setModelSource({ base, read } = {}) {
 
 const hasDom = () => typeof document !== "undefined";
 
-// Page publiée comme Artifact : les .glb y sont servis en glTF texte (scripts/build-artifact.mjs).
-const textFormat = () => hasDom() && document.querySelector('meta[name="pv3d-model-format"]')?.content === "gltf-json";
+/** Fichier embarqué dans la page (Artifact : `<script type="text/plain" data-pv3d-model="chemin">base64</script>`). */
+function embedded(path) {
+  if (!hasDom()) return null;
+  for (const script of document.querySelectorAll("script[data-pv3d-model]")) {
+    if (script.dataset.pv3dModel === path) return script.textContent.trim();
+  }
+  return null;
+}
 
 function urlOf(path) {
-  if (textFormat()) path = path.replace(/\.glb$/, ".gltf.json");
   const base = source.base ?? (hasDom() ? new URL("models/", document.baseURI).href : "models/");
   return hasDom() ? new URL(path, new URL(base, document.baseURI)).href : base + path;
 }
 
 async function readBytes(path) {
+  const inline = embedded(path);
+  if (inline) {
+    const binary = atob(inline);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
   if (source.read) {
     const data = await source.read(path);
     return data instanceof ArrayBuffer ? data : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
@@ -73,7 +86,9 @@ export function loadGltf(path) {
 export function loadModelTexture(path) {
   if (!hasDom()) return Promise.resolve(null);
   if (!textureCache.has(path)) {
-    const promise = new THREE.TextureLoader().loadAsync(urlOf(path)).then((texture) => {
+    const inline = embedded(path);
+    const url = inline ? `data:image/png;base64,${inline}` : urlOf(path);
+    const promise = new THREE.TextureLoader().loadAsync(url).then((texture) => {
       texture.colorSpace = THREE.NoColorSpace;
       texture.flipY = false;
       texture.magFilter = THREE.NearestFilter;

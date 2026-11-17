@@ -565,13 +565,25 @@ var gltfCache = /* @__PURE__ */ new Map();
 var textureCache = /* @__PURE__ */ new Map();
 var loader = null;
 var hasDom = () => typeof document !== "undefined";
-var textFormat = () => hasDom() && document.querySelector('meta[name="pv3d-model-format"]')?.content === "gltf-json";
+function embedded(path) {
+  if (!hasDom()) return null;
+  for (const script of document.querySelectorAll("script[data-pv3d-model]")) {
+    if (script.dataset.pv3dModel === path) return script.textContent.trim();
+  }
+  return null;
+}
 function urlOf(path) {
-  if (textFormat()) path = path.replace(/\.glb$/, ".gltf.json");
   const base = source.base ?? (hasDom() ? new URL("models/", document.baseURI).href : "models/");
   return hasDom() ? new URL(path, new URL(base, document.baseURI)).href : base + path;
 }
 async function readBytes(path) {
+  const inline = embedded(path);
+  if (inline) {
+    const binary = atob(inline);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    return bytes.buffer;
+  }
   if (source.read) {
     const data = await source.read(path);
     return data instanceof ArrayBuffer ? data : data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
@@ -592,7 +604,9 @@ function loadGltf(path) {
 function loadModelTexture(path) {
   if (!hasDom()) return Promise.resolve(null);
   if (!textureCache.has(path)) {
-    const promise = new THREE2.TextureLoader().loadAsync(urlOf(path)).then((texture) => {
+    const inline = embedded(path);
+    const url = inline ? `data:image/png;base64,${inline}` : urlOf(path);
+    const promise = new THREE2.TextureLoader().loadAsync(url).then((texture) => {
       texture.colorSpace = THREE2.NoColorSpace;
       texture.flipY = false;
       texture.magFilter = THREE2.NearestFilter;

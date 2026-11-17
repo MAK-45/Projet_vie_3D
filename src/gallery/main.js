@@ -172,7 +172,11 @@ async function renderThumbnails() {
   thumbViewer.resize(144, 168, 1);
   for (const entry of pending) {
     thumbViewer.setAsset(getAsset(entry.id), {});
-    await thumbViewer.ready; // personnages : attendre le modèle
+    try {
+      await thumbViewer.ready; // personnages : attendre le modèle
+    } catch (error) {
+      console.error(`vignette ${entry.id} : ${error.message}`); // une vignette ratée n'arrête pas les autres
+    }
     thumbViewer.resetView();
     thumbViewer.renderOnce(0);
     thumbnails.set(entry.id, thumbViewer.canvas.toDataURL("image/png"));

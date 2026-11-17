@@ -147,10 +147,9 @@ public/models/
 - Rendu : `createToonMaterial({ map, ramp })` — la rampe devient un filtre de lumière (ombre froide → couleur
   peinte) posé sur la texture ; le skinning est géré par le matériau toon.
 - Fichiers : chargés par `fetch` relativement à la page (`models/...`, réglable par `setModelSource` de
-  `kit/model.js`) ; dans Node (catalogue, `check`), lus sur le disque. L'Artifact publie `dist-artifact/models/`
-  à côté de la page (liste prête dans `dist-artifact/models.json`, à passer en `files`) ; comme il ne sert pas le
-  type `.glb`, `npm run artifact` y convertit chaque modèle en glTF texte `.gltf.json` (+33 %), et la page le sait
-  par `<meta name="pv3d-model-format" content="gltf-json">`.
+  `kit/model.js`) ; dans Node (catalogue, `check`), lus sur le disque. Dans l'Artifact, `npm run artifact` les
+  embarque dans la page en base64 (`<script type="text/plain" data-pv3d-model="chemin">`) : rien à publier à côté
+  (les fichiers servis à côté d'un Artifact ne se chargeaient pas).
 
 ## Vérifier un asset
 

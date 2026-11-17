@@ -34,8 +34,8 @@ fichiers) en anglais.
    le même, « Atelier Vie 3D » : https://claude.ai/artifact/C8NQjFucdBRX4bo9eT4Jim — `npm run artifact`, puis
    publier `dist-artifact/atelier-vie-3d.html` en passant ce lien comme `url` (sinon un nouvel Artifact est créé).
    Les mondes y sont aussi : un monde est un asset (catégorie « Mondes ») dont la fiche ouvre l'explorateur.
-   Un seul Artifact pour tout le projet. Publier aussi les modèles importés : `files` = contenu de
-   `dist-artifact/models.json` (sinon personnages et animations restent vides).
+   Un seul Artifact pour tout le projet. Les modèles importés (personnages, animations) sont embarqués
+   dans la page : rien d'autre à publier.
 
 ## Organisation
 
