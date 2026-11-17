@@ -272,7 +272,9 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 
 #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   attribute float aRadius;
+  attribute float aFar; // 1 : sommet gard\xE9 dans la version lointaine (kit/far-tree.js), 0 sinon ou absent
   varying float vRadius;
+  varying float vDrop;
   varying vec2 vUv;
 #endif
 
@@ -398,6 +400,8 @@ void main() {
   #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     vRadius = aRadius;
     vUv = uv;
+    // Passage \xE0 la version lointaine (uLod) : le bois qu'elle n'a pas s'efface par trame entre x et y m\xE8tres.
+    vDrop = uLod.y > 0.0 ? (1.0 - aFar) * smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition)) : 0.0;
   #endif
 
   #ifndef DEPTH_ONLY
@@ -453,6 +457,7 @@ varying vec3 vObjPos;
 
 #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
   varying float vRadius;
+  varying float vDrop;
   varying vec2 vUv;
 #endif
 
@@ -529,6 +534,14 @@ vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
 #endif
 
 void main() {
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+    // Effacement tram\xE9 (matrice de Bayer 4 \xD7 4, par pixel d'art) des branches absentes de la version lointaine.
+    if (vDrop > 0.0) {
+      const float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cell = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vDrop > (bayer[cell.x + cell.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
   vec3 N = normalize(vNormal);
   #if defined(DOUBLE_SIDED) && !defined(FOLIAGE)
     if (!gl_FrontFacing) N = -N;

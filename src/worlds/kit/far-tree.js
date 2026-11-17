@@ -12,7 +12,7 @@ import * as THREE from "three";
  * @param {number} [options.wood] rayon minimal d'une branche gardée, en part du rayon du tronc (0..1)
  * @returns {THREE.Group} modèle allégé, aux mêmes noms de maillages et aux mêmes matériaux
  */
-export function createFarVersion(prototype, { keep = 0.14, wood = 0.35 } = {}) {
+export function createFarVersion(prototype, { keep = 0.14, wood = 0.2 } = {}) {
   const far = new THREE.Group();
   far.name = `${prototype.name} (loin)`;
   /** Agrandissement des feuilles gardées, appliqué par le shader (uniform `uLod`) : le modèle complet s'y fond
@@ -88,21 +88,27 @@ function thinLeaves(source, keep) {
   return geometry;
 }
 
-/** Bois (indexé ou non) : seuls les triangles des branches assez épaisses (`aRadius`) restent. */
+/**
+ * Bois : seuls les triangles des branches assez épaisses (`aRadius`, tous leurs sommets) restent. Le modèle complet
+ * apprend quels sommets survivent (`aFar`) : le reste s'efface par trame avant le passage (shader, `uLod`).
+ */
 function keepBranches(source, share) {
   const radius = source.attributes.aRadius.array;
   let max = 0;
   for (const r of radius) max = Math.max(max, r);
   const limit = max * share;
+  const farFlag = new Float32Array(radius.length);
+  for (let i = 0; i < radius.length; i++) farFlag[i] = radius[i] >= limit ? 1 : 0;
+  if (!source.index) farFlag.fill(1); // bois non indexé : gardé en entier
+  source.setAttribute("aFar", new THREE.BufferAttribute(farFlag, 1));
   const geometry = source.clone();
   if (source.index) {
     const index = source.index.array;
     const kept = [];
     for (let i = 0; i < index.length; i += 3) {
-      if ((radius[index[i]] + radius[index[i + 1]] + radius[index[i + 2]]) / 3 >= limit) kept.push(index[i], index[i + 1], index[i + 2]);
+      if (farFlag[index[i]] && farFlag[index[i + 1]] && farFlag[index[i + 2]]) kept.push(index[i], index[i + 1], index[i + 2]);
     }
     geometry.setIndex(kept);
-    return geometry;
   }
   return geometry;
 }

@@ -168,10 +168,11 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   n'est pas courbée.
 - **Arbres lointains** : au-delà de 50 m (`lod`), chaque arbre est dessiné en version allégée
   (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur sept environ (plutôt celles du bord),
-  agrandie (× 1,8 au plus), et seulement le tronc et les maîtresses branches : ≈ 600 triangles au lieu de ≈ 4 000.
-  **Sans saut** : de 30 à 50 m, le modèle complet se fond dans sa version lointaine dans le shader (`uLod` : les
-  feuilles absentes de la version lointaine, `aFar` 0, rapetissent jusqu'à rien, les autres grandissent) ; au
-  passage, les deux sont identiques. Seules les fines branches disparaissent d'un coup (un pixel à 50 m).
+  agrandie (× 1,8 au plus), et le bois dont tous les sommets font au moins 20 % du rayon du tronc (le tronc
+  entier et les maîtresses branches) : ≈ 650 à 800 triangles au lieu de ≈ 4 000.
+  **Sans saut** : de 30 à 50 m, le modèle complet se fond dans sa version lointaine dans le shader (`uLod`) : les
+  feuilles absentes de la version lointaine (`aFar` 0) rapetissent jusqu'à rien, les autres grandissent, et le
+  bois absent s'efface par trame (matrice de Bayer 4 × 4, par pixel d'art) ; au passage, les deux sont identiques.
 - **Apparition en douceur** : sur le dernier quart de sa portée, une copie du semis rentre dans le sol (`uFade`,
   réglé par `StreamingScatter` selon `reach`) : l'herbe, les fleurs, la mousse et les rochers sortent du sol en
   approchant au lieu d'apparaître d'un coup. Une
