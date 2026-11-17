@@ -104,12 +104,26 @@ finale (les rampes de couleurs des assets ne changent pas) et dessine la pluie �
 
 ## L'explorateur (`src/explorer/`)
 
-`new Explorer(container, { settings })` monte tout dans un bloc : la scène, le panneau de réglages (graine,
-taille, abondances, relief, moment, météo), les actions (balade auto, caméra, vue de départ, masquer
-l'interface, plein écran, **personnage**). Flèches ou ZQSD (WASD), Maj pour courir, A / E pour tourner la vue d'un
-cran ; au doigt, une manette ronde.
+`new Explorer(container, { settings })` monte tout dans un bloc. L'écran reste dégagé :
+- **en haut à gauche**, le compteur d'images par seconde, en direct (toucher : draw calls et triangles en plus) ;
+  il reste affiché quand l'interface est masquée ;
+- **en haut à droite**, une barre d'icônes : **Paysage**, **Plein écran**, **Masquer l'interface**, **Réglages** ;
+- **en bas à gauche**, au doigt, la manette ronde. Au clavier : flèches ou ZQSD (WASD), Maj pour courir, A / E pour
+  tourner la vue d'un cran.
 
-Le personnage (`src/explorer/walker.js`, réglage `character`) se choisit dans le panneau d'actions :
+**Réglages** ouvre un panneau à onglets (à droite ; en feuille au bas de l'écran sur un téléphone tenu droit) :
+**Monde** (graine, taille, abondances, relief), **Ciel** (moment, météo), **Personnage**, **Actions** (balade
+auto), **Caméra** (vue, vue de départ, aide des commandes). Les pages sont décrites dans le tableau `PAGES` de
+`explorer.js`, en groupes titrés : une nouvelle catégorie (interactions avec le décor, scénario) est une entrée de
+plus ; les futures actions du personnage (s'asseoir, cueillir, lancer un sort...) vont dans « Actions ».
+
+**Paysage** (`setLandscape`) : plein écran puis verrou de l'écran à l'horizontale (API Screen Orientation). Là où
+le verrou est refusé (navigateur intégré d'une application, iPhone, page dans un cadre), l'explorateur se tourne
+d'un quart de tour en CSS tant que l'écran est en hauteur (haut de l'image à droite : on tourne le téléphone vers
+la gauche). Les gestes sont alors ramenés dans le repère tourné (`_toLocal`, capture des `pointer*` sur la fenêtre)
+avant d'atteindre les caméras et la manette.
+
+Le personnage (`src/explorer/walker.js`, réglage `character`) se choisit dans l'onglet Personnage :
 - **Barre 1,80 m** : barre rouge pour juger des proportions, sans inertie, collée au sol.
 - **Blob** : la Couveuse (`creatures/spirits/couveuse-blob`) en lévitation. Il prend son élan et freine en glissant,
   survole le relief avec un ressort amorti (il lit le sol 0,45 s devant lui pour ne pas buter dans les montées), se

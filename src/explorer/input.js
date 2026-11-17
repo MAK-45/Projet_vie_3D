@@ -4,8 +4,12 @@
 export class WalkInput {
   /**
    * @param {HTMLElement} joystick socle de la manette tactile ; son premier enfant est le bouton qui suit le doigt
+   * @param {object} [options]
+   * @param {(x: number, y: number) => number[]} [options.mapPoint] point de l'écran dans le repère de l'explorateur
+   *   (vue tournée d'un quart de tour en paysage forcé) ; les gestes reçus y sont déjà ramenés
    */
-  constructor(joystick) {
+  constructor(joystick, { mapPoint = (x, y) => [x, y] } = {}) {
+    this._mapPoint = mapPoint;
     /** Déplacement voulu, relatif à l'écran : x vers la droite, y vers le fond. Longueur 0..1. */
     this.x = 0;
     this.y = 0;
@@ -98,8 +102,9 @@ export class WalkInput {
   _moveStick(event) {
     const rect = this._joystick.getBoundingClientRect();
     const radius = rect.width / 2;
-    let x = (event.clientX - rect.left - radius) / (radius * 0.62);
-    let y = (event.clientY - rect.top - radius) / (radius * 0.62);
+    const [centerX, centerY] = this._mapPoint(rect.left + radius, rect.top + radius);
+    let x = (event.clientX - centerX) / (radius * 0.62);
+    let y = (event.clientY - centerY) / (radius * 0.62);
     const length = Math.hypot(x, y);
     if (length > 1) {
       x /= length;

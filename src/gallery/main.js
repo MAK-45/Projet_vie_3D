@@ -274,7 +274,7 @@ function renderWorldSheet(entry, category, subcategory) {
       h(
         "div",
         { class: "stage-foot" },
-        h("span", {}, "Réglez le monde dans le panneau, puis « Plein écran » pour vous y promener ; « Masquer l'interface » pour ne garder que le paysage."),
+        h("span", {}, "« Réglages » (en haut à droite) : monde, ciel, personnage, actions, caméra. Icônes : paysage forcé, plein écran, masquer l'interface."),
       ),
     ),
     h("section", { class: "tabs", id: "tabs" }),

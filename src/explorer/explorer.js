@@ -24,6 +24,7 @@ const ENDLESS_MIN_ZOOM = 0.6;
 const MAX_ELEVATION = THREE.MathUtils.degToRad(68);
 const STEP = Math.PI / 4; // la caméra ne tourne d'elle-même que par huitièmes de tour
 const numberFormat = new Intl.NumberFormat("fr-FR");
+const POINTER_EVENTS = ["pointerdown", "pointermove", "pointerup", "pointercancel"];
 
 /**
  * Vue à la 3e personne : portée de la vue (m), début de la brume qui y mène, et portée du semis par famille.
@@ -79,55 +80,109 @@ const choice = (name, label, options) => `
     ${Object.entries(options).map(([value, option]) => `<button type="button" role="radio" data-value="${value}">${option.label}</button>`).join("")}
   </div>`;
 
+/** Petites icônes en pixels (grille de 16), dessinées en traits pleins comme un sprite. */
+const ICONS = {
+  menu: '<path d="M2 3h12v2H2zM2 7h12v2H2zM2 11h12v2H2z"/>',
+  close: '<path d="M3 3h2v2H3zM5 5h2v2H5zM7 7h2v2H7zM9 5h2v2H9zM11 3h2v2h-2zM5 9h2v2H5zM3 11h2v2H3zM9 9h2v2H9zM11 11h2v2h-2z"/>',
+  landscape: '<path d="M1 4h14v8H1zm2 2v4h10V6z"/><path d="M11 7h1v2h-1z"/>',
+  fullscreen: '<path d="M1 1h5v2H3v3H1zM10 1h5v5h-2V3h-3zM1 10h2v3h3v2H1zM13 10h2v5h-5v-2h3z"/>',
+  hide: '<path d="M5 4h6v2H5zM3 6h2v2H3zM11 6h2v2h-2zM1 8h2v2H1zM13 8h2v2h-2zM3 10h2v2H3zM11 10h2v2h-2zM5 12h6v2H5zM7 8h2v2H7z"/>',
+};
+const icon = (name) => `<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" shape-rendering="crispEdges" fill="currentColor">${ICONS[name]}</svg>`;
+
+/** Un groupe titré dans une page de réglages. */
+const group = (title, body) => `<section class="x-group"><h3 class="x-group-title">${title}</h3>${body}</section>`;
+
+/**
+ * Pages du panneau de réglages, dans l'ordre des onglets. Pour une nouvelle catégorie (interactions avec le décor,
+ * scénario...), ajouter une entrée ici ; pour un nouveau réglage, un groupe dans la page qui lui revient.
+ * Les actions du personnage (s'asseoir, cueillir, lancer un sort...) iront dans « Actions ».
+ */
+const PAGES = [
+  {
+    id: "world",
+    label: "Monde",
+    html: () => `
+      ${group("Carte", `
+        <div class="x-row">
+          <label class="x-field"><span>Graine</span>
+            <input type="number" min="0" max="9999" step="1" inputmode="numeric" data-ref="seed" /></label>
+          <button type="button" class="x-button" data-ref="reroll">Au hasard</button>
+        </div>
+        ${choice("size", "Taille de la carte", MEADOW_EXTENTS)}
+        <p class="x-note" data-ref="note"></p>`)}
+      ${group("Décor", `
+        <div class="x-sliders">
+          ${AMOUNTS.map(([name, label, min, max, step]) => `
+            <label class="x-slider"><span>${label}</span>
+              <input type="range" min="${min}" max="${max}" step="${step}" data-amount="${name}" />
+              <output data-output="${name}"></output></label>`).join("")}
+        </div>`)}`,
+  },
+  {
+    id: "sky",
+    label: "Ciel",
+    html: () => `
+      ${group("Moment", choice("moment", "Moment de la journée", MOMENTS))}
+      ${group("Météo", choice("weather", "Météo", WEATHERS))}`,
+  },
+  {
+    id: "character",
+    label: "Personnage",
+    html: () => `
+      ${group("Qui se promène", `${choice("character", "Personnage", CHARACTERS)}<p class="x-note" data-ref="sizeNote"></p>`)}`,
+  },
+  {
+    id: "actions",
+    label: "Actions",
+    html: () => `
+      ${group("Se déplacer", `
+        <div class="x-row"><button type="button" class="x-button" data-ref="stroll" aria-pressed="false">Balade auto</button></div>
+        <p class="x-note">Le personnage choisit seul où aller ; toucher la manette reprend la main.</p>`)}`,
+  },
+  {
+    id: "camera",
+    label: "Caméra",
+    html: () => `
+      ${group("Vue", `
+        ${choice("camera", "Caméra", CAMERAS)}
+        <div class="x-row"><button type="button" class="x-button" data-ref="recenter">Vue de départ</button></div>`)}
+      ${group("Commandes", `
+        <p class="x-note x-keys x-iso-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner d'un cran · souris : tourner, incliner · molette : zoom</p>
+        <p class="x-note x-touch x-iso-only">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</p>
+        <p class="x-note x-keys x-third-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner la vue · souris : regarder autour · molette : reculer, approcher</p>
+        <p class="x-note x-touch x-third-only">Rond rouge : marcher (à fond : courir) · un doigt : regarder autour · deux doigts : reculer, approcher</p>`)}`,
+  },
+];
+
 const TEMPLATE = `
   <div class="x-stage" data-ref="stage" aria-label="Vue de la prairie"></div>
 
-  <details class="x-panel x-settings" data-ref="settings">
-    <summary><span class="x-brand">Prairie d'été</span> <span class="x-summary" data-ref="summary"></span></summary>
-    <div class="x-fields">
-      <div class="x-row">
-        <label class="x-field"><span>Graine</span>
-          <input type="number" min="0" max="9999" step="1" inputmode="numeric" data-ref="seed" /></label>
-        <button type="button" class="x-button" data-ref="reroll">Au hasard</button>
-        ${choice("size", "Taille de la carte", MEADOW_EXTENTS)}
-      </div>
-      <div class="x-sliders">
-        ${AMOUNTS.map(([name, label, min, max, step]) => `
-          <label class="x-slider"><span>${label}</span>
-            <input type="range" min="${min}" max="${max}" step="${step}" data-amount="${name}" />
-            <output data-output="${name}"></output></label>`).join("")}
-      </div>
-      <div class="x-row"><span class="x-label">Moment</span>${choice("moment", "Moment de la journée", MOMENTS)}</div>
-      <div class="x-row"><span class="x-label">Météo</span>${choice("weather", "Météo", WEATHERS)}</div>
-      <p class="x-note" data-ref="note"></p>
+  <button type="button" class="x-fps" data-ref="fps" aria-label="Images par seconde (toucher pour le détail)">– i/s</button>
+
+  <div class="x-toolbar" role="toolbar" aria-label="Affichage">
+    <button type="button" class="x-icon" data-ref="landscape" aria-pressed="false" aria-label="Paysage" title="Paysage">${icon("landscape")}</button>
+    <button type="button" class="x-icon" data-ref="immersive" aria-pressed="false" aria-label="Plein écran" title="Plein écran">${icon("fullscreen")}</button>
+    <button type="button" class="x-icon" data-ref="hide" aria-label="Masquer l'interface" title="Masquer l'interface">${icon("hide")}</button>
+    <button type="button" class="x-icon x-menu" data-ref="menu" aria-expanded="false" aria-controls="x-drawer" title="Réglages">${icon("menu")}<span>Réglages</span></button>
+  </div>
+
+  <section class="x-panel x-drawer" data-ref="drawer" hidden aria-label="Réglages">
+    <header class="x-drawer-head">
+      <span class="x-brand">Prairie d'été</span> <span class="x-summary" data-ref="summary"></span>
+      <button type="button" class="x-icon x-close" data-ref="close" aria-label="Fermer les réglages">${icon("close")}</button>
+    </header>
+    <nav class="x-tabs" role="tablist">
+      ${PAGES.map((page) => `<button type="button" role="tab" data-tab="${page.id}">${page.label}</button>`).join("")}
+    </nav>
+    <div class="x-pages">
+      ${PAGES.map((page) => `<div class="x-page" role="tabpanel" data-page="${page.id}">${page.html()}</div>`).join("")}
     </div>
-  </details>
+  </section>
 
   <div class="x-joystick" data-ref="joystick" aria-hidden="true"><span class="x-knob"></span></div>
 
-  <div class="x-panel x-actions">
-    <div class="x-row"><span class="x-label">Personnage</span>${choice("character", "Personnage", CHARACTERS)}</div>
-    <div class="x-row">
-      <button type="button" class="x-button" data-ref="stroll" aria-pressed="false">Balade auto</button>
-      <span class="x-label">Caméra</span>${choice("camera", "Caméra", CAMERAS)}
-    </div>
-    <div class="x-row">
-      <button type="button" class="x-button" data-ref="recenter">Vue de départ</button>
-      <button type="button" class="x-button" data-ref="hide">Masquer l'interface</button>
-      <button type="button" class="x-button x-primary" data-ref="immersive">Plein écran</button>
-    </div>
-    <p class="x-stats" data-ref="stats"></p>
-  </div>
-
-  <p class="x-hint">
-    <span class="x-hint-keys x-iso-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner d'un cran · souris : tourner, incliner · molette : zoom</span>
-    <span class="x-hint-touch x-iso-only">Rond rouge : marcher (à fond : courir) · un doigt : tourner, incliner · deux doigts : zoom</span>
-    <span class="x-hint-keys x-third-only">Flèches ou ZQSD : marcher · Maj : courir · A / E : tourner la vue · souris : regarder autour · molette : reculer, approcher</span>
-    <span class="x-hint-touch x-third-only">Rond rouge : marcher (à fond : courir) · un doigt : regarder autour · deux doigts : reculer, approcher</span>
-    <span data-ref="sizeNote"></span>
-  </p>
-
-  <button type="button" class="x-reveal" data-ref="reveal" aria-label="Afficher l'interface">Interface</button>
+  <button type="button" class="x-reveal x-icon" data-ref="reveal" aria-label="Afficher l'interface" title="Afficher l'interface">${icon("menu")}</button>
   <div class="x-loading" data-ref="loading">Génération de la prairie…</div>
 `;
 
@@ -161,7 +216,7 @@ export class Explorer {
 
     const ref = (name) => this.root.querySelector(`[data-ref="${name}"]`);
     this.ui = Object.fromEntries(
-      ["stage", "settings", "summary", "seed", "reroll", "note", "joystick", "stroll", "recenter", "hide", "immersive", "stats", "reveal", "loading", "sizeNote"].map((name) => [name, ref(name)]),
+      ["stage", "drawer", "menu", "close", "summary", "seed", "reroll", "note", "joystick", "stroll", "recenter", "hide", "immersive", "landscape", "fps", "reveal", "loading", "sizeNote"].map((name) => [name, ref(name)]),
     );
 
     // --- Rendu
@@ -189,7 +244,7 @@ export class Explorer {
     this.walker = new Walker(this.settings.character);
     this.ui.sizeNote.textContent = SIZE_NOTES[this.walker.kind];
     this.scene.add(this.walker.object);
-    this.input = new WalkInput(this.ui.joystick);
+    this.input = new WalkInput(this.ui.joystick, { mapPoint: (x, y) => this._toLocal(x, y) });
     this.life = createAmbientLife();
     this.scene.add(this.life.group);
     this.atmosphere = createAtmosphere();
@@ -218,8 +273,9 @@ export class Explorer {
     });
     this._intersectionObserver.observe(this.root);
 
-    // Réglages dépliés d'office là où il y a la place.
-    this.ui.settings.open = container.clientWidth > 720;
+    this.landscape = false;
+    this._rotated = false;
+    this._showTab("world");
     this._resize();
     this._rebuild();
     this._applyView();
@@ -233,14 +289,75 @@ export class Explorer {
     this.immersive = value;
     this.root.classList.toggle("is-immersive", value);
     document.documentElement.classList.toggle("pv3d-immersive", value);
-    this.ui.immersive.textContent = value ? "Quitter" : "Plein écran";
-    if (!value) this.setClean(false);
+    this.ui.immersive.setAttribute("aria-pressed", String(value));
+    this.ui.immersive.setAttribute("aria-label", value ? "Quitter le plein écran" : "Plein écran");
+    this.ui.immersive.title = this.ui.immersive.getAttribute("aria-label");
+    if (!value) {
+      this.setClean(false);
+      this.setLandscape(false);
+    }
     this.onImmersive?.(value);
   }
 
-  /** Masque ou montre toute l'interface, pour regarder le paysage. */
+  /** Masque ou montre toute l'interface, pour regarder le paysage (le compteur d'images reste). */
   setClean(value) {
     this.root.classList.toggle("is-clean", value);
+  }
+
+  /** Ouvre ou ferme le panneau de réglages. */
+  setMenu(open) {
+    this.ui.drawer.hidden = !open;
+    this.ui.menu.setAttribute("aria-expanded", String(open));
+    this.root.classList.toggle("is-menu-open", open);
+  }
+
+  /**
+   * Paysage : sur un téléphone tenu droit, l'explorateur passe en plein écran et l'écran se verrouille à
+   * l'horizontale (API Screen Orientation). Là où le verrou est refusé (navigateur intégré, iPhone, page dans un
+   * cadre), la vue est tournée d'un quart de tour en CSS : on tourne le téléphone et l'image est à l'endroit.
+   */
+  async setLandscape(value) {
+    if (value === this.landscape) return;
+    this.landscape = value;
+    this.ui.landscape.setAttribute("aria-pressed", String(value));
+    if (value) {
+      this.setImmersive(true);
+      this._locked = false;
+      try {
+        if (!document.fullscreenElement) await this.root.requestFullscreen?.({ navigationUI: "hide" });
+        await screen.orientation.lock("landscape");
+        this._locked = true;
+      } catch {
+        // Verrou refusé : la rotation CSS prend le relais.
+      }
+    } else {
+      if (this._locked) screen.orientation.unlock?.();
+      this._locked = false;
+      if (document.fullscreenElement) document.exitFullscreen?.().catch(() => {});
+    }
+    this._applyRotation();
+  }
+
+  /** Tourne la vue d'un quart de tour quand le paysage est demandé, que l'écran est en hauteur et pas verrouillé. */
+  _applyRotation() {
+    const rotate = this.landscape && !this._locked && window.innerHeight > window.innerWidth;
+    this._rotated = rotate;
+    this.root.classList.toggle("is-rotated", rotate);
+    const style = this.root.style;
+    if (rotate) {
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      style.width = `${height}px`;
+      style.height = `${width}px`;
+      style.transform = `translateX(${width}px) rotate(90deg)`; // haut de l'image à droite : téléphone tourné vers la gauche
+    } else {
+      style.width = style.height = style.transform = "";
+    }
+  }
+
+  /** Point de l'écran (clientX, clientY) dans le repère de l'explorateur, tourné ou non. */
+  _toLocal(x, y) {
+    return this._rotated ? [y, window.innerWidth - x] : [x, y];
   }
 
   setStrolling(value) {
@@ -297,6 +414,9 @@ export class Explorer {
     this._resizeObserver.disconnect();
     this._intersectionObserver.disconnect();
     window.removeEventListener("keydown", this._onKey);
+    window.removeEventListener("resize", this._onViewport);
+    document.removeEventListener("fullscreenchange", this._onFullscreen);
+    for (const type of POINTER_EVENTS) window.removeEventListener(type, this._onPointer, true);
     this._timer.dispose();
     this.input.dispose();
     this.world?.dispose();
@@ -380,15 +500,51 @@ export class Explorer {
     ui.hide.addEventListener("click", () => this.setClean(true));
     ui.reveal.addEventListener("click", () => this.setClean(false));
     ui.immersive.addEventListener("click", () => this.setImmersive(!this.immersive));
+    ui.landscape.addEventListener("click", () => this.setLandscape(!this.landscape));
+    ui.menu.addEventListener("click", () => this.setMenu(ui.drawer.hidden));
+    ui.close.addEventListener("click", () => this.setMenu(false));
+    ui.fps.addEventListener("click", () => this.root.classList.toggle("is-fps-detail"));
+    for (const tab of this.root.querySelectorAll("[data-tab]")) tab.addEventListener("click", () => this._showTab(tab.dataset.tab));
+
+    // Vue tournée en CSS : les gestes sont ramenés dans le repère de l'explorateur avant d'atteindre caméras et
+    // manette (capture sur la fenêtre, donc avant tout autre écouteur).
+    this._onPointer = (event) => {
+      if (!this._rotated || event.__local) return;
+      const [x, y] = this._toLocal(event.clientX, event.clientY);
+      for (const [name, value] of [["clientX", x], ["clientY", y], ["pageX", x], ["pageY", y]]) {
+        Object.defineProperty(event, name, { value, configurable: true });
+      }
+      event.__local = true;
+    };
+    for (const type of POINTER_EVENTS) window.addEventListener(type, this._onPointer, true);
+    this._onViewport = () => this._applyRotation();
+    window.addEventListener("resize", this._onViewport);
+    this._onFullscreen = () => {
+      // Sortie du plein écran par le geste retour : le verrou d'orientation tombe avec lui.
+      if (!document.fullscreenElement && this._locked) {
+        this._locked = false;
+        this.landscape = false;
+        this.ui.landscape.setAttribute("aria-pressed", "false");
+        this._applyRotation();
+      }
+    };
+    document.addEventListener("fullscreenchange", this._onFullscreen);
     this.input.onAction = () => {
       if (this.strolling) this.setStrolling(false);
     };
     this._onKey = (event) => {
       if (event.key !== "Escape") return;
-      if (this.root.classList.contains("is-clean")) this.setClean(false);
+      if (!ui.drawer.hidden) this.setMenu(false);
+      else if (this.root.classList.contains("is-clean")) this.setClean(false);
       else if (this.immersive) this.setImmersive(false);
     };
     window.addEventListener("keydown", this._onKey);
+  }
+
+  /** Affiche une page du panneau de réglages. */
+  _showTab(id) {
+    for (const tab of this.root.querySelectorAll("[data-tab]")) tab.setAttribute("aria-selected", String(tab.dataset.tab === id));
+    for (const page of this.root.querySelectorAll("[data-page]")) page.hidden = page.dataset.page !== id;
   }
 
   _sanitize() {
@@ -682,7 +838,9 @@ export class Explorer {
       triangles: Math.round(meter.triangles / meter.frames),
     };
     meter.time = meter.frames = meter.calls = meter.triangles = 0;
-    this.ui.stats.textContent =
-      `${this.stats.fps} i/s · ${this.stats.calls} draw calls · ${numberFormat.format(Math.round(this.stats.triangles / 1000))} k tri.`;
+    // En haut à gauche, en direct ; le détail (draw calls, triangles) au toucher.
+    this.ui.fps.textContent = this.root.classList.contains("is-fps-detail")
+      ? `${this.stats.fps} i/s · ${this.stats.calls} dc · ${numberFormat.format(Math.round(this.stats.triangles / 1000))} k tri.`
+      : `${this.stats.fps} i/s`;
   }
 }
