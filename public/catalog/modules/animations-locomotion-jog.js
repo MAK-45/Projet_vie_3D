@@ -22,6 +22,21 @@ var MOSSES = {
 };
 GROUNDS.clay = { label: "Argile", ramp: ["#4a2724", "#7a3e2c", "#a65b39", "#c98552"], ink: "#2a1517" };
 GROUNDS.mud = { label: "Boue", ramp: ["#2a2026", "#3e2f2f", "#574236", "#735a44"], ink: "#18121a" };
+var MAGIC_PALETTES = {
+  ice: { label: "Glace", colors: ["#081026", "#102654", "#1a4a90", "#2c7ccc", "#58b6ee", "#9fe0ff", "#dcf8ff", "#ffffff"] },
+  arcane: { label: "Arcane", colors: ["#140a26", "#2b1252", "#481c88", "#6b2cc0", "#9a48ec", "#c684ff", "#ecc8ff", "#ffffff"] },
+  ember: { label: "Braise", colors: ["#1f0b10", "#4a1118", "#8c1d1c", "#cc3a1a", "#f2701f", "#ffae35", "#ffe27a", "#fff8d6"] },
+  sap: { label: "S\xE8ve", colors: ["#08201a", "#0f3f2c", "#17663e", "#24924e", "#3ec466", "#7ee88a", "#c8ffc4", "#ffffff"] },
+  dawn: { label: "Aurore", colors: ["#2a1c08", "#5a3e10", "#9a6c18", "#d8a428", "#ffd84a", "#fff09a", "#fffbe6", "#ffffff"] },
+  neon: { label: "N\xE9on", colors: ["#1a0516", "#3d0a33", "#701560", "#b0228f", "#f53cd1", "#ff86e6", "#ffd2f6", "#ffffff"] },
+  abyss: { label: "Abysse", colors: ["#050308", "#0f0a18", "#1c1230", "#2c1a4a", "#432468", "#5e3290", "#8048b8", "#a970e0"] },
+  lagoon: { label: "Lagon", colors: ["#041418", "#08303a", "#0c5260", "#108088", "#18b4b0", "#4ce8d8", "#b4fff0", "#ffffff"] },
+  blood: { label: "Sang", colors: ["#14040a", "#3a0a14", "#6a101c", "#a01824", "#d42a30", "#ff5a50", "#ff9a8a"] }
+};
+function fitRamp(colors, n) {
+  if (colors.length === n) return colors.slice();
+  return Array.from({ length: n }, (_, i) => colors[Math.round(i * (colors.length - 1) / Math.max(1, n - 1))]);
+}
 
 // src/assets/kit/variation.js
 function seedParam(description) {
@@ -41,7 +56,7 @@ function variantsOf(name, spec) {
 }
 
 // src/assets/kit/humanoid.js
-import * as THREE3 from "three";
+import * as THREE4 from "three";
 import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
 
 // src/engine/toon-material.js
@@ -57,6 +72,27 @@ var sharedUniforms = {
   uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
   uDarkness: { value: 0 }
 };
+var glowSlots = [false, false, false, false];
+function createGlowLight() {
+  const slot = glowSlots.indexOf(false);
+  if (slot < 0) return { set() {
+  }, release() {
+  } };
+  glowSlots[slot] = true;
+  const light = sharedUniforms.uGlowLights.value[slot];
+  const color = sharedUniforms.uGlowColors.value[slot];
+  return {
+    set(position, rgbColor, radius, strength = 1) {
+      light.set(position.x, position.y, position.z, radius);
+      color.set(rgbColor.x, rgbColor.y, rgbColor.z, strength);
+    },
+    release() {
+      light.set(0, 0, 0, 0);
+      color.set(0, 0, 0, 0);
+      glowSlots[slot] = false;
+    }
+  };
+}
 function tick(seconds, fps = 12) {
   sharedUniforms.uTime.value = fps > 0 ? Math.floor(seconds * fps) / fps : seconds;
 }
@@ -227,6 +263,11 @@ varying vec3 vObjPos;
   varying vec2 vMapUv;
 #endif
 
+#ifdef CURRENTS
+  uniform float uTime;
+  uniform vec2 uCurrents; // x : force des courants (d\xE9rive des normales), y : fr\xE9quence (1/unit\xE9)
+#endif
+
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
@@ -238,6 +279,19 @@ float hash13(vec3 p3) {
   p3 += dot(p3, p3.zyx + 31.32);
   return fract((p3.x + p3.y) * p3.z);
 }
+
+#ifdef CURRENTS
+float valueNoise3(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(hash13(i), hash13(i + vec3(1.0, 0.0, 0.0)), f.x);
+  float b = mix(hash13(i + vec3(0.0, 1.0, 0.0)), hash13(i + vec3(1.0, 1.0, 0.0)), f.x);
+  float c = mix(hash13(i + vec3(0.0, 0.0, 1.0)), hash13(i + vec3(1.0, 0.0, 1.0)), f.x);
+  float d = mix(hash13(i + vec3(0.0, 1.0, 1.0)), hash13(i + vec3(1.0, 1.0, 1.0)), f.x);
+  return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
+}
+#endif
 
 #ifdef PATTERN_GROUND
 float valueNoise(vec2 p) {
@@ -278,6 +332,14 @@ void main() {
     vec3 L = directionalLights[0].direction;
   #else
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
+  #endif
+
+  #ifdef CURRENTS
+    // Courants de lumi\xE8re (mati\xE8res magiques) : un bruit qui d\xE9rive dans le temps fait glisser les normales, donc
+    // les paliers de lumi\xE8re et le liser\xE9 ; la cadence du temps partag\xE9 (12 images/s) les fait avancer par \xE0-coups.
+    vec3 cq = vObjPos * uCurrents.y + vec3(cos(uTime * 0.7), sin(uTime * 0.7), uTime * 0.25) * 1.4;
+    vec3 drift = vec3(valueNoise3(cq), valueNoise3(cq + vec3(31.0, 0.0, 0.0)), valueNoise3(cq + vec3(0.0, 57.0, 0.0))) - 0.5;
+    N = normalize(N + drift * uCurrents.x);
   #endif
 
   #ifdef UNLIT
@@ -481,7 +543,8 @@ function createToonMaterial(options) {
     rim = [0, 0],
     glow = true,
     ground,
-    map = null
+    map = null,
+    currents = null
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -491,6 +554,7 @@ function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
+  if (currents) defines.CURRENTS = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
   const groundUniforms = {};
@@ -539,6 +603,7 @@ function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uCurrents: { value: new THREE.Vector2(...currents ?? [0, 1]) },
       ...groundUniforms
     },
     vertexShader: VERTEX,
@@ -559,8 +624,100 @@ function createToonMaterial(options) {
   return material;
 }
 
-// src/assets/kit/model.js
+// src/assets/kit/geometry.js
 import * as THREE2 from "three";
+var _tangent = new THREE2.Vector3();
+var _normal = new THREE2.Vector3();
+var _binormal = new THREE2.Vector3();
+var _previousTangent = new THREE2.Vector3();
+var _axis = new THREE2.Vector3();
+var _point = new THREE2.Vector3();
+function buildFanGeometry(fans) {
+  const positions = [];
+  const normals = [];
+  const corners = [];
+  const data = [];
+  const index = [];
+  for (const fan of fans) {
+    const cos = Math.cos(fan.rotation ?? 0);
+    const sin = Math.sin(fan.rotation ?? 0);
+    const [sx, sy] = fan.stretch ?? [1, 1];
+    const occlusion = fan.occlusion ?? 1;
+    const lift = fan.lift ?? 0;
+    const [ox, oy] = fan.offset ?? [0, 0];
+    const first = positions.length / 3;
+    const vertex = (x, y) => {
+      positions.push(fan.position.x, fan.position.y, fan.position.z);
+      normals.push(fan.normal.x, fan.normal.y, fan.normal.z);
+      const cx = x * sx * fan.size;
+      const cy = y * sy * fan.size;
+      corners.push(cx * cos - cy * sin + ox, cx * sin + cy * cos + oy, lift);
+      data.push(fan.phase, occlusion, fan.variation, fan.flex);
+    };
+    vertex(0, 0);
+    for (const [x, y] of fan.outline) vertex(x, y);
+    const n = fan.outline.length;
+    for (let i = 0; i < n; i++) index.push(first, first + 1 + i, first + 1 + (i + 1) % n);
+  }
+  return foliageGeometry(positions, normals, corners, data, index);
+}
+function starOutline(points, inner = 1) {
+  const outline = [];
+  const steps = inner === 1 ? points : points * 2;
+  for (let i = 0; i < steps; i++) {
+    const angle = i / steps * Math.PI * 2 + Math.PI / 2;
+    const r = inner === 1 || i % 2 === 0 ? 1 : inner;
+    outline.push([Math.cos(angle) * r, Math.sin(angle) * r]);
+  }
+  return outline;
+}
+var SPRITE_NORMAL = new THREE2.Vector3(0, 1, 0);
+function ellipseOutline(sides, rx = 1, ry = rx) {
+  const outline = [];
+  for (let i = 0; i < sides; i++) {
+    const angle = i / sides * Math.PI * 2;
+    outline.push([Math.cos(angle) * rx, Math.sin(angle) * ry]);
+  }
+  return outline;
+}
+function foliageGeometry(positions, normals, corners, data, index) {
+  const geometry = new THREE2.BufferGeometry();
+  geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE2.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setAttribute("aCorner", new THREE2.BufferAttribute(new Float32Array(corners), 3));
+  geometry.setAttribute("aLeaf", new THREE2.BufferAttribute(new Float32Array(data), 4));
+  geometry.setIndex(index);
+  return geometry;
+}
+var _rockPoint = new THREE2.Vector3();
+var _rockEuler = new THREE2.Euler();
+
+// src/assets/kit/rng.js
+function createRng(seed) {
+  let state = (Math.floor(seed) ^ 2654435769) >>> 0;
+  const next = () => {
+    state = state + 1831565813 >>> 0;
+    let t = state;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+  return {
+    /** nombre dans [0, 1[ */
+    next,
+    /** nombre dans [min, max[ */
+    range: (min, max) => min + (max - min) * next(),
+    /** entier dans [min, max] */
+    int: (min, max) => Math.floor(min + (max - min + 1) * next()),
+    /** vrai avec la probabilité donnée */
+    chance: (probability) => next() < probability,
+    /** élément au hasard */
+    pick: (items) => items[Math.floor(next() * items.length)]
+  };
+}
+
+// src/assets/kit/model.js
+import * as THREE3 from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MeshoptDecoder } from "three/addons/libs/meshopt_decoder.module.js";
 var source = { base: null, read: null };
@@ -609,11 +766,11 @@ function loadModelTexture(path) {
   if (!textureCache.has(path)) {
     const inline = embedded(path);
     const url = inline ? `data:image/png;base64,${inline}` : urlOf(path);
-    const promise = new THREE2.TextureLoader().loadAsync(url).then((texture) => {
-      texture.colorSpace = THREE2.NoColorSpace;
+    const promise = new THREE3.TextureLoader().loadAsync(url).then((texture) => {
+      texture.colorSpace = THREE3.NoColorSpace;
       texture.flipY = false;
-      texture.magFilter = THREE2.NearestFilter;
-      texture.minFilter = THREE2.NearestMipmapNearestFilter;
+      texture.magFilter = THREE3.NearestFilter;
+      texture.minFilter = THREE3.NearestMipmapNearestFilter;
       texture.name = path;
       return texture;
     });
@@ -660,8 +817,30 @@ var CHARACTERS = {
       M_Main: { ramp: ["#6b3546", "#b0573f", "#de8e3c", "#f2c262"], steps: SKIN_STEPS },
       M_Joints: { ramp: ["#2f2559", "#5a3a8e", "#8a58c4", "#b585e4"], steps: SKIN_STEPS }
     }
+  },
+  // La version humaine du blob : le corps du mannequin dans la matière de lumière de la Couveuse. Ses matières
+  // dépendent de la palette choisie (`magicParts`) ; il éclaire le décor et porte les yeux du blob.
+  "magic-mannequin": {
+    label: "Mannequin magique",
+    labelEn: "Magic mannequin",
+    file: "characters/mannequin.glb",
+    height: 1.8,
+    magic: true,
+    parts: null
   }
 };
+var MAGIC_LOOK = { palette: "ice", glow: 3, glowStrength: 1.4, currents: 1, eyes: "dark", sparks: 3, motes: 14 };
+var WHITE = "#ffffff";
+function magicParts(look) {
+  const C = fitRamp((MAGIC_PALETTES[look.palette] ?? MAGIC_PALETTES.ice).colors, 8);
+  const currents = look.currents > 0 ? [0.32 * look.currents, 3.2] : null;
+  const light = { rim: [0.3, 0.5], outline: false, shadowLit: 0.55, glow: false, currents };
+  return {
+    colors: C,
+    M_Main: { ramp: [C[2], C[3], C[4], C[5], C[6], WHITE], steps: [0.2, 0.45, 0.75, 0.96, 1.1], ...light },
+    M_Joints: { ramp: [C[4], C[5], C[6], WHITE], steps: [0.25, 0.55, 0.85], ...light }
+  };
+}
 function characterParam(description, defaultValue = "superhero-female") {
   return choiceParam("Personnage", Object.fromEntries(Object.entries(CHARACTERS).map(([id, c]) => [id, c.label])), description, defaultValue);
 }
@@ -675,8 +854,7 @@ function cadenceParam() {
 function speedParam() {
   return numberParam("Vitesse", 1, 0.25, 2, "Vitesse de lecture de l'animation.", { step: 0.05, unit: "\xD7" });
 }
-function partStyle(character, mesh) {
-  const parts = CHARACTERS[character].parts;
+function partStyle(parts, mesh) {
   return parts[mesh.material?.name] ?? parts[mesh.name] ?? parts[mesh.parent?.name] ?? Object.values(parts)[0];
 }
 async function loadCharacter(character) {
@@ -684,7 +862,7 @@ async function loadCharacter(character) {
   const gltf = await loadGltf(spec.file);
   const textures = {};
   await Promise.all(
-    Object.values(spec.parts).filter((part) => part.texture).map(async (part) => textures[part.texture] = await loadModelTexture(part.texture))
+    Object.values(spec.parts ?? {}).filter((part) => part.texture).map(async (part) => textures[part.texture] = await loadModelTexture(part.texture))
   );
   return { gltf, textures };
 }
@@ -721,17 +899,21 @@ async function clipFor(name, character, inPlace) {
   }
   return clipCache.get(key);
 }
-function buildBody(character, { gltf, textures }) {
+function buildBody(parts, { gltf, textures }) {
   const body = cloneSkinned(gltf.scene);
   body.traverse((child) => {
     if (!child.isMesh) return;
-    const style = partStyle(character, child);
+    const style = partStyle(parts, child);
     child.material = createToonMaterial({
       ramp: style.ramp,
       steps: style.steps,
       map: style.texture ? textures[style.texture] ?? null : null,
       id: CHARACTER_ID,
-      shadowLit: 0.4
+      shadowLit: style.shadowLit ?? 0.4,
+      rim: style.rim,
+      outline: style.outline,
+      glow: style.glow,
+      currents: style.currents
     });
     child.castShadow = true;
     child.receiveShadow = true;
@@ -739,9 +921,9 @@ function buildBody(character, { gltf, textures }) {
   });
   return body;
 }
-function createHumanoid({ id, params, character = "superhero-female", steps = [{ clip: "Idle_Loop" }], inPlace = true, speed = 1, cadence = "sprite", offset = 0 }) {
+function createHumanoid({ id, params, character = "superhero-female", steps = [{ clip: "Idle_Loop" }], inPlace = true, speed = 1, cadence = "sprite", offset = 0, look = {}, seed = 0 }) {
   if (!(character in CHARACTERS)) character = "superhero-female";
-  const group = new THREE3.Group();
+  const group = new THREE4.Group();
   group.name = id;
   group.userData.asset = { id, params };
   let mixer = null;
@@ -781,15 +963,18 @@ function createHumanoid({ id, params, character = "superhero-female", steps = [{
   };
   group.userData.ready = (async () => {
     const [loaded, clips] = await Promise.all([loadCharacter(character), Promise.all(steps.map((step) => clipFor(step.clip, character, inPlace)))]);
-    const body = buildBody(character, loaded);
+    const spec = CHARACTERS[character];
+    const magic = spec.magic ? magicParts({ ...MAGIC_LOOK, ...look }) : null;
+    const body = buildBody(magic ?? spec.parts, loaded);
     group.add(body);
-    mixer = new THREE3.AnimationMixer(body);
+    if (magic) addMagic(group, body, { ...MAGIC_LOOK, ...look }, magic.colors, seed);
+    mixer = new THREE4.AnimationMixer(body);
     const single = steps.length === 1 && !steps[0].hold;
     actions = steps.map((step, i) => {
       const action = mixer.clipAction(clips[i]);
-      if (single) action.setLoop(THREE3.LoopRepeat, Infinity);
+      if (single) action.setLoop(THREE4.LoopRepeat, Infinity);
       else {
-        action.setLoop(THREE3.LoopRepeat, step.repeat ?? 1);
+        action.setLoop(THREE4.LoopRepeat, step.repeat ?? 1);
         action.clampWhenFinished = true;
       }
       return action;
@@ -800,12 +985,188 @@ function createHumanoid({ id, params, character = "superhero-female", steps = [{
       else play((index + 1) % actions.length);
     });
     play(0);
-    mixer.update(THREE3.MathUtils.clamp(offset, 0, 0.999) * clips[0].duration);
+    mixer.update(THREE4.MathUtils.clamp(offset, 0, 0.999) * clips[0].duration);
     group.userData.mixer = mixer;
     return group;
   })();
   group.userData.ready.catch((error) => console.error(`${id} : ${error.message}`));
   return group;
+}
+function addMagic(group, body, look, C, seed) {
+  body.updateMatrixWorld(true);
+  const meshes = [];
+  body.traverse((child) => child.isSkinnedMesh && meshes.push(child));
+  const chest = body.getObjectByName("spine_03") ?? body;
+  const head = body.getObjectByName("Head");
+  const rng = createRng(Number(seed) * 15485863 + 5);
+  const ORIGIN = new THREE4.Vector3();
+  const UP = new THREE4.Vector3(0, 1, 0);
+  const fans = [];
+  const shapes = [];
+  const add = (owner, outline, size, stretch, occlusion, lift, offset) => {
+    const first2 = fans.reduce((n, f) => n + f.outline.length + 1, 0);
+    fans.push({ position: ORIGIN, outline, size, stretch, normal: UP, phase: 0, variation: 0.5, flex: 0, occlusion, lift, offset });
+    shapes.push({ owner, first: first2, count: outline.length + 1 });
+  };
+  const occ = { eye: 0.1, mid: 0.4, light: 0.6, white: 0.9 };
+  const eyes = [];
+  let forward = null;
+  if (head && look.eyes !== "none") {
+    const points = [];
+    const v = new THREE4.Vector3();
+    for (const mesh of meshes) {
+      const bone = mesh.skeleton.bones.indexOf(head);
+      if (bone < 0) continue;
+      const skinIndex = mesh.geometry.attributes.skinIndex;
+      const skinWeight = mesh.geometry.attributes.skinWeight;
+      for (let i = 0; i < skinIndex.count; i++) {
+        for (let k = 0; k < 4; k++) {
+          if (skinIndex.getComponent(i, k) === bone && skinWeight.getComponent(i, k) > 0.5) {
+            mesh.getVertexPosition(i, v);
+            points.push(head.worldToLocal(mesh.localToWorld(v.clone())));
+          }
+        }
+      }
+    }
+    if (points.length) {
+      const inverse = head.getWorldQuaternion(new THREE4.Quaternion()).invert();
+      forward = new THREE4.Vector3(0, 0, 1).applyQuaternion(inverse);
+      const up = new THREE4.Vector3(0, 1, 0).applyQuaternion(inverse);
+      const side = new THREE4.Vector3().crossVectors(up, forward);
+      let upMin = Infinity, upMax = -Infinity, sideMin = Infinity, sideMax = -Infinity;
+      for (const q of points) {
+        upMin = Math.min(upMin, q.dot(up));
+        upMax = Math.max(upMax, q.dot(up));
+        sideMin = Math.min(sideMin, q.dot(side));
+        sideMax = Math.max(sideMax, q.dot(side));
+      }
+      const height = upMax - upMin, width = sideMax - sideMin;
+      const eyeUp = upMin + height * 0.52;
+      const radius = width * 0.15;
+      for (const k of [-1, 1]) {
+        const eyeSide = (sideMin + sideMax) / 2 + k * width * 0.22;
+        let front = -Infinity;
+        for (const q of points) {
+          if (Math.abs(q.dot(up) - eyeUp) < height * 0.2 && Math.abs(q.dot(side) - eyeSide) < width * 0.2) front = Math.max(front, q.dot(forward));
+        }
+        if (!Number.isFinite(front)) front = Math.max(...points.map((q) => q.dot(forward)));
+        const eye = { at: new THREE4.Vector3().addScaledVector(up, eyeUp).addScaledVector(side, eyeSide).addScaledVector(forward, front + 4e-3) };
+        eyes.push(eye);
+        if (look.eyes === "bright") {
+          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
+          add(eye, ellipseOutline(12), radius * 0.62, [1, 1.3], occ.white, 4e-3);
+        } else {
+          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
+          add(eye, starOutline(4), radius * 0.4, [1, 1], occ.white, 4e-3, [-radius * 0.35, radius * 0.45]);
+        }
+      }
+    }
+  }
+  for (let i = 0; i < look.sparks; i++) {
+    const spark = {
+      kind: "spark",
+      angle: i / look.sparks * Math.PI * 2 + rng.range(-0.4, 0.4),
+      radius: rng.range(0.38, 0.5),
+      height: rng.range(-0.35, 0.25),
+      speed: rng.range(0.6, 1) * (rng.chance(0.5) ? 1 : -1),
+      bob: rng.range(0, 6.3)
+    };
+    add(spark, starOutline(4), 0.05, [1, 1], occ.light, 0);
+    add(spark, starOutline(4), 0.032, [1, 1], occ.white, 0.01);
+  }
+  for (let i = 0; i < look.motes; i++) {
+    const mote = {
+      kind: "mote",
+      born: rng.next() * 4,
+      life: rng.range(1.5, 3),
+      angle: rng.range(0, Math.PI * 2),
+      radius: rng.range(0.3, 0.6),
+      height: rng.range(0.1, 1.2),
+      rise: rng.range(0.15, 0.35),
+      wobble: rng.range(1, 2)
+    };
+    add(mote, starOutline(4), 0.035, [1, 1], i % 4 === 0 ? occ.white : i % 2 ? occ.light : occ.mid, 0);
+  }
+  let fx = null;
+  if (fans.length) {
+    fx = new THREE4.Mesh(
+      buildFanGeometry(fans),
+      createToonMaterial({ ramp: ["#0a1430", C[5], C[6], WHITE], steps: [0.25, 0.5, 0.75], foliage: true, unlit: true, leafShade: [0, 1], outline: false, glow: false, id: 42 })
+    );
+    fx.name = "magic";
+    fx.frustumCulled = false;
+    group.add(fx);
+  }
+  const position = fx?.geometry.attributes.position;
+  const corner = fx?.geometry.attributes.aCorner;
+  const cornerBase = corner ? Float32Array.from(corner.array) : null;
+  const blinkRng = createRng(Number(seed) * 104729 + 71);
+  const blinks = [];
+  for (let i = 0; i < 2; i++) {
+    const c = (i + blinkRng.range(0.2, 0.8)) / 2;
+    blinks.push(c);
+    if (blinkRng.chance(0.3)) blinks.push(c + 0.05);
+  }
+  const toCamera = new THREE4.Vector3(0, 0.6, 0.8);
+  if (fx) fx.onBeforeRender = (renderer, scene, camera) => camera.getWorldDirection(toCamera).negate();
+  const light = look.glow > 0 ? createGlowLight() : null;
+  const lightColor = rgb(C[5]);
+  const chestWorld = new THREE4.Vector3();
+  const chestLocal = new THREE4.Vector3();
+  const headQuaternion = new THREE4.Quaternion();
+  const worldForward = new THREE4.Vector3();
+  function place(shape, x, y, z, scale) {
+    const a = position.array, c = corner.array;
+    for (let k = 0; k < shape.count; k++) {
+      const i = (shape.first + k) * 3;
+      a[i] = x;
+      a[i + 1] = y;
+      a[i + 2] = z;
+      c[i] = cornerBase[i] * scale;
+      c[i + 1] = cornerBase[i + 1] * scale;
+    }
+  }
+  function update() {
+    const t = sharedUniforms.uTime.value;
+    chest.getWorldPosition(chestWorld);
+    group.worldToLocal(chestLocal.copy(chestWorld));
+    let eyeScale = 0;
+    if (eyes.length) {
+      worldForward.copy(forward).applyQuaternion(head.getWorldQuaternion(headQuaternion));
+      const facing = worldForward.dot(toCamera);
+      const u = (t / 4 % 1 + 1) % 1;
+      const shut = blinks.some((c) => Math.abs(u - c - Math.round(u - c)) < 0.015);
+      eyeScale = shut || facing < 0.25 ? 0 : Math.min(1, facing * 1.15);
+      for (const eye of eyes) group.worldToLocal(head.localToWorld((eye.local ??= new THREE4.Vector3()).copy(eye.at)));
+    }
+    for (const shape of shapes) {
+      const q = shape.owner;
+      if (q.kind === "spark") {
+        const angle = q.angle + t * q.speed * 1.6;
+        place(shape, chestLocal.x + Math.cos(angle) * q.radius, chestLocal.y + q.height + Math.sin(t * 2.1 + q.bob) * 0.06, chestLocal.z + Math.sin(angle) * q.radius, 1);
+      } else if (q.kind === "mote") {
+        const age = ((t - q.born) % 4 + 4) % 4;
+        const wob = Math.sin(age * q.wobble * 2) * 0.05;
+        if (age >= q.life) place(shape, chestLocal.x, chestLocal.y, chestLocal.z, 0);
+        else place(shape, chestLocal.x + Math.cos(q.angle) * q.radius + wob, q.height + age * q.rise, chestLocal.z + Math.sin(q.angle) * q.radius - wob, 1);
+      } else {
+        place(shape, q.local.x, q.local.y, q.local.z, eyeScale);
+      }
+    }
+    position.needsUpdate = true;
+    corner.needsUpdate = true;
+  }
+  const baseUpdate = group.updateMatrixWorld.bind(group);
+  group.updateMatrixWorld = (force) => {
+    baseUpdate(force);
+    if (fx) update();
+    if (light) light.set(chestWorld.setFromMatrixPosition(chest.matrixWorld), lightColor, look.glow, look.glowStrength);
+  };
+  const release = [];
+  if (light) release.push(() => light.release());
+  if (fx) release.push(() => fx.geometry.dispose());
+  const first = meshes[0]?.material;
+  if (first) first.addEventListener("dispose", () => release.forEach((fn) => fn()));
 }
 function disposeHumanoid(group) {
   group.userData.mixer?.stopAllAction();
@@ -860,7 +1221,7 @@ function animationAsset({ id, name, nameEn, description, tags, biomes, phases, m
     animated: ["skeleton"],
     ...pedestal ? {} : { pedestal: false },
     clips,
-    files: ["animations/ual-standard.glb", ...Object.values(CHARACTERS).map((c) => c.file)],
+    files: [.../* @__PURE__ */ new Set(["animations/ual-standard.glb", ...Object.values(CHARACTERS).map((c) => c.file)])],
     params,
     variants: variantsOf("character", params.character)
   };
@@ -875,7 +1236,8 @@ function animationAsset({ id, name, nameEn, description, tags, biomes, phases, m
       inPlace: p.path !== "forward",
       speed: Number(p.speed),
       cadence: p.cadence,
-      offset: offsetOf(p.seed)
+      offset: offsetOf(p.seed),
+      seed: p.seed
     });
   }
   return { meta: meta2, create: create2, dispose: disposeHumanoid };

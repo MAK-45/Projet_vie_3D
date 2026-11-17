@@ -242,6 +242,11 @@ varying vec3 vObjPos;
   varying vec2 vMapUv;
 #endif
 
+#ifdef CURRENTS
+  uniform float uTime;
+  uniform vec2 uCurrents; // x : force des courants (dérive des normales), y : fréquence (1/unité)
+#endif
+
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
@@ -253,6 +258,19 @@ float hash13(vec3 p3) {
   p3 += dot(p3, p3.zyx + 31.32);
   return fract((p3.x + p3.y) * p3.z);
 }
+
+#ifdef CURRENTS
+float valueNoise3(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(hash13(i), hash13(i + vec3(1.0, 0.0, 0.0)), f.x);
+  float b = mix(hash13(i + vec3(0.0, 1.0, 0.0)), hash13(i + vec3(1.0, 1.0, 0.0)), f.x);
+  float c = mix(hash13(i + vec3(0.0, 0.0, 1.0)), hash13(i + vec3(1.0, 0.0, 1.0)), f.x);
+  float d = mix(hash13(i + vec3(0.0, 1.0, 1.0)), hash13(i + vec3(1.0, 1.0, 1.0)), f.x);
+  return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
+}
+#endif
 
 #ifdef PATTERN_GROUND
 float valueNoise(vec2 p) {
@@ -293,6 +311,14 @@ void main() {
     vec3 L = directionalLights[0].direction;
   #else
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
+  #endif
+
+  #ifdef CURRENTS
+    // Courants de lumière (matières magiques) : un bruit qui dérive dans le temps fait glisser les normales, donc
+    // les paliers de lumière et le liseré ; la cadence du temps partagé (12 images/s) les fait avancer par à-coups.
+    vec3 cq = vObjPos * uCurrents.y + vec3(cos(uTime * 0.7), sin(uTime * 0.7), uTime * 0.25) * 1.4;
+    vec3 drift = vec3(valueNoise3(cq), valueNoise3(cq + vec3(31.0, 0.0, 0.0)), valueNoise3(cq + vec3(0.0, 57.0, 0.0))) - 0.5;
+    N = normalize(N + drift * uCurrents.x);
   #endif
 
   #ifdef UNLIT
@@ -502,6 +528,8 @@ function defaultSteps(count) {
  * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
  *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
+ * @param {number[]} [options.currents] [force, fréquence (1/unité)] : courants de lumière qui passent dans la matière
+ *   (dérive animée des normales ; matières magiques : le mannequin magique). Le blob, lui, les calcule sur le CPU.
  * @param {THREE.Texture} [options.map] texture de couleur (sRGB brut : `colorSpace = NoColorSpace`) : la rampe
  *   devient un filtre multiplié à la couleur peinte (blanc = couleur de la texture). Pour les modèles importés.
  * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
@@ -538,6 +566,7 @@ export function createToonMaterial(options) {
     glow = true,
     ground,
     map = null,
+    currents = null,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -549,6 +578,7 @@ export function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
+  if (currents) defines.CURRENTS = "";
 
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
@@ -600,6 +630,7 @@ export function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uCurrents: { value: new THREE.Vector2(...(currents ?? [0, 1])) },
       ...groundUniforms,
     },
     vertexShader: VERTEX,

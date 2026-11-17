@@ -6,7 +6,7 @@
 // seul. Les fichiers de chaque asset ne contiennent que la fiche et la liste des animations jouées.
 
 import { choiceParam, seedParam, variantsOf } from "./variation.js";
-import { CHARACTERS, cadenceParam, characterParam, createHumanoid, disposeHumanoid, speedParam } from "./humanoid.js";
+import { CHARACTERS, cadenceParam, characterParam, createHumanoid, disposeHumanoid, magicParams, speedParam } from "./humanoid.js";
 
 const GOLDEN = 0.6180339887;
 const ADDED = "2026-11-17";
@@ -74,7 +74,7 @@ export function animationAsset({ id, name, nameEn, description, tags, biomes, ph
     animated: ["skeleton"],
     ...(pedestal ? {} : { pedestal: false }),
     clips,
-    files: ["animations/ual-standard.glb", ...Object.values(CHARACTERS).map((c) => c.file)],
+    files: [...new Set(["animations/ual-standard.glb", ...Object.values(CHARACTERS).map((c) => c.file)])],
     params,
     variants: variantsOf("character", params.character),
   };
@@ -91,6 +91,7 @@ export function animationAsset({ id, name, nameEn, description, tags, biomes, ph
       speed: Number(p.speed),
       cadence: p.cadence,
       offset: offsetOf(p.seed),
+      seed: p.seed,
     });
   }
 
@@ -111,8 +112,9 @@ const SHOWCASE = {
  * Asset de personnage : le corps seul, qui joue une animation de démonstration.
  * @param {object} definition fiche (id, name, nameEn, description, tags) et `character` (clé de CHARACTERS)
  */
-export function characterAsset({ id, name, nameEn, description, tags, character, version = 1 }) {
+export function characterAsset({ id, name, nameEn, description, tags, character, version = 1, variantsBy = "animation" }) {
   const [category, subcategory] = id.split("/");
+  const magic = Boolean(CHARACTERS[character].magic);
   const params = {
     seed: seedParam("Moment du cycle où l'animation commence."),
     animation: choiceParam(
@@ -120,6 +122,7 @@ export function characterAsset({ id, name, nameEn, description, tags, character,
       Object.fromEntries(Object.entries(SHOWCASE).map(([key, value]) => [key, value.label])),
       "Le mouvement joué dans la fiche. Les 43 animations sont dans la catégorie « Animations », avec ce personnage au choix.",
     ),
+    ...(magic ? magicParams() : {}),
     cadence: cadenceParam(),
   };
   const meta = {
@@ -130,16 +133,16 @@ export function characterAsset({ id, name, nameEn, description, tags, character,
     subcategory,
     description,
     tags,
-    biomes: ["meadow", "forest", "village", "interior", "beach"],
+    biomes: magic ? ["meadow", "forest", "village", "interior", "beach", "cave", "snow", "swamp"] : ["meadow", "forest", "village", "interior", "beach"],
     version,
     added: ADDED,
     imported: true,
     units: `mètres ; ${String(CHARACTERS[character].height).replace(".", ",")} m, origine entre les pieds, regard vers +Z`,
     footprint: { radius: 0.5, height: Math.ceil(CHARACTERS[character].height * 10) / 10 },
-    animated: ["skeleton"],
+    animated: magic ? ["skeleton", "glow"] : ["skeleton"],
     files: [CHARACTERS[character].file, "animations/ual-standard.glb"],
     params,
-    variants: variantsOf("animation", params.animation),
+    variants: variantsOf(variantsBy, params[variantsBy]),
   };
 
   function create(options = {}) {
@@ -151,6 +154,8 @@ export function characterAsset({ id, name, nameEn, description, tags, character,
       steps: [{ clip: (SHOWCASE[p.animation] ?? SHOWCASE.idle).clip }],
       cadence: p.cadence,
       offset: offsetOf(p.seed),
+      seed: p.seed,
+      look: magic ? { palette: p.palette, currents: Number(p.currents), glow: Number(p.glow), glowStrength: Number(p.glowStrength), eyes: p.eyes, sparks: Number(p.sparks), motes: Number(p.motes) } : undefined,
     });
   }
 

@@ -180,7 +180,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 27733
+      "bytes": 29301
     }
   ],
   "assets": [
@@ -344,7 +344,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 40810
+        "standalone": 42154
       }
     },
     {
@@ -513,7 +513,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 41707
+        "standalone": 43051
       }
     },
     {
@@ -685,7 +685,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 43220
+        "standalone": 44564
       }
     },
     {
@@ -886,7 +886,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 44189
+        "standalone": 45533
       }
     },
     {
@@ -1089,7 +1089,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 45251
+        "standalone": 46595
       }
     },
     {
@@ -1223,7 +1223,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 33490
+        "standalone": 34834
       }
     },
     {
@@ -1386,7 +1386,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 33396
+        "standalone": 34740
       }
     },
     {
@@ -1543,7 +1543,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 35642
+        "standalone": 36986
       }
     },
     {
@@ -1726,7 +1726,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 36791
+        "standalone": 38135
       }
     },
     {
@@ -1925,7 +1925,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 43091
+        "standalone": 44435
       }
     },
     {
@@ -2164,7 +2164,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 36575
+        "standalone": 37919
       }
     },
     {
@@ -2370,7 +2370,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 41370
+        "standalone": 42714
       }
     },
     {
@@ -2518,7 +2518,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 33706
+        "standalone": 35050
       }
     },
     {
@@ -2678,7 +2678,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 34716
+        "standalone": 36060
       }
     },
     {
@@ -2821,7 +2821,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 31558
+        "standalone": 32902
       }
     },
     {
@@ -2984,7 +2984,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 32436
+        "standalone": 33780
       }
     },
     {
@@ -3403,9 +3403,9 @@
       "dependencies": [
         "src/engine/toon-material.js",
         "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
         "src/assets/kit/params.js",
         "src/assets/kit/rng.js",
-        "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js"
       ],
       "stats": {
@@ -3461,8 +3461,8 @@
         }
       },
       "bytes": {
-        "source": 31200,
-        "standalone": 57442
+        "source": 30141,
+        "standalone": 58823
       }
     },
     {
@@ -3607,6 +3607,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -3650,7 +3652,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 34502
+        "standalone": 52253
       }
     },
     {
@@ -3795,6 +3797,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -3838,7 +3842,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 34448
+        "standalone": 52199
       }
     },
     {
@@ -3981,6 +3985,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4024,7 +4030,335 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 34462
+        "standalone": 52213
+      }
+    },
+    {
+      "id": "creatures/humanoid/magic-mannequin",
+      "name": "Mannequin magique",
+      "nameEn": "Magic mannequin",
+      "category": "creatures",
+      "subcategory": "humanoid",
+      "description": "La version humaine du blob Couveuse : le corps du mannequin fait de lumière de glace, liseré de clair, traversé de courants, aux articulations plus vives, avec les yeux du blob qui clignent. Il éclaire le décor la nuit. Les neuf palettes du blob ; joue n'importe quelle animation de la catégorie « Animations ».",
+      "tags": [
+        "mannequin magique",
+        "mannequin",
+        "couveuse",
+        "blob",
+        "esprit",
+        "lumière",
+        "glace",
+        "magie",
+        "personnage",
+        "humanoïde",
+        "yeux",
+        "clignement",
+        "lumineux",
+        "magic mannequin",
+        "spirit",
+        "light",
+        "ice",
+        "magic",
+        "glowing",
+        "character",
+        "humanoid",
+        "rigged",
+        "animé",
+        "animated"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "interior",
+        "beach",
+        "cave",
+        "snow",
+        "swamp"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; 1,8 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.5,
+        "height": 1.8
+      },
+      "animated": [
+        "skeleton",
+        "glow"
+      ],
+      "files": [
+        "characters/mannequin.glb",
+        "animations/ual-standard.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence."
+        },
+        "animation": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "walk",
+            "talk",
+            "dance",
+            "sit",
+            "spell"
+          ],
+          "labels": {
+            "idle": "Attente",
+            "walk": "Marche",
+            "talk": "Parle",
+            "dance": "Danse",
+            "sit": "Assis",
+            "spell": "Sort"
+          },
+          "label": "Animation",
+          "description": "Le mouvement joué dans la fiche. Les 43 animations sont dans la catégorie « Animations », avec ce personnage au choix."
+        },
+        "palette": {
+          "type": "enum",
+          "default": "ice",
+          "values": [
+            "ice",
+            "arcane",
+            "ember",
+            "sap",
+            "dawn",
+            "neon",
+            "abyss",
+            "lagoon",
+            "blood"
+          ],
+          "labels": {
+            "ice": "Glace",
+            "arcane": "Arcane",
+            "ember": "Braise",
+            "sap": "Sève",
+            "dawn": "Aurore",
+            "neon": "Néon",
+            "abyss": "Abysse",
+            "lagoon": "Lagon",
+            "blood": "Sang"
+          },
+          "label": "Couleurs",
+          "description": "Les palettes du blob : Glace (sa couleur de naissance), Arcane, Braise, Sève, Aurore, Néon, Abysse, Lagon, Sang."
+        },
+        "currents": {
+          "type": "number",
+          "default": 1,
+          "min": 0,
+          "max": 2,
+          "step": 0.05,
+          "label": "Courants",
+          "description": "Courants de lumière qui passent dans le corps."
+        },
+        "glow": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "max": 6,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Lumière",
+          "description": "Portée de la lumière qu'il répand dans le noir, dans la couleur de son corps (0 : aucune)."
+        },
+        "glowStrength": {
+          "type": "number",
+          "default": 1.4,
+          "min": 0.3,
+          "max": 2.5,
+          "step": 0.05,
+          "label": "Éclat",
+          "description": "Force de cette lumière."
+        },
+        "eyes": {
+          "type": "enum",
+          "default": "dark",
+          "values": [
+            "dark",
+            "bright",
+            "none"
+          ],
+          "labels": {
+            "dark": "Sombres",
+            "bright": "Lumineux",
+            "none": "Aucun"
+          },
+          "label": "Yeux",
+          "description": "Les yeux du blob sur son visage : sombres, lumineux (blancs) ou aucun (le mannequin lisse)."
+        },
+        "sparks": {
+          "type": "int",
+          "default": 3,
+          "min": 0,
+          "max": 8,
+          "label": "Étincelles",
+          "description": "Étincelles qui tournent autour de son torse."
+        },
+        "motes": {
+          "type": "int",
+          "default": 14,
+          "min": 0,
+          "max": 30,
+          "label": "Poussières",
+          "description": "Poussières de lumière qui montent autour de lui."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "ice",
+          "name": "Glace",
+          "params": {
+            "palette": "ice"
+          }
+        },
+        {
+          "id": "arcane",
+          "name": "Arcane",
+          "params": {
+            "palette": "arcane"
+          }
+        },
+        {
+          "id": "ember",
+          "name": "Braise",
+          "params": {
+            "palette": "ember"
+          }
+        },
+        {
+          "id": "sap",
+          "name": "Sève",
+          "params": {
+            "palette": "sap"
+          }
+        },
+        {
+          "id": "dawn",
+          "name": "Aurore",
+          "params": {
+            "palette": "dawn"
+          }
+        },
+        {
+          "id": "neon",
+          "name": "Néon",
+          "params": {
+            "palette": "neon"
+          }
+        },
+        {
+          "id": "abyss",
+          "name": "Abysse",
+          "params": {
+            "palette": "abyss"
+          }
+        },
+        {
+          "id": "lagoon",
+          "name": "Lagon",
+          "params": {
+            "palette": "lagoon"
+          }
+        },
+        {
+          "id": "blood",
+          "name": "Sang",
+          "params": {
+            "palette": "blood"
+          }
+        }
+      ],
+      "slug": "creatures-humanoid-magic-mannequin",
+      "path": "src/assets/creatures/humanoid/magic-mannequin.js",
+      "module": "public/catalog/modules/creatures-humanoid-magic-mannequin.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "ice": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "arcane": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "ember": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "sap": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "dawn": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "neon": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "abyss": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "lagoon": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        },
+        "blood": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 1370,
+        "standalone": 52672
       }
     },
     {
@@ -4090,12 +4424,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -4160,6 +4496,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-walk",
@@ -4169,6 +4512,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4193,11 +4538,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 775,
-        "standalone": 35433
+        "standalone": 51357
       }
     },
     {
@@ -4262,12 +4612,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -4332,6 +4684,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-walk-formal",
@@ -4341,6 +4700,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4365,11 +4726,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 839,
-        "standalone": 35521
+        "standalone": 51445
       }
     },
     {
@@ -4434,12 +4800,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -4504,6 +4872,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-jog",
@@ -4513,6 +4888,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4537,11 +4914,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 817,
-        "standalone": 35481
+        "standalone": 51405
       }
     },
     {
@@ -4606,12 +4988,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -4676,6 +5060,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-sprint",
@@ -4685,6 +5076,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4709,11 +5102,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 784,
-        "standalone": 35450
+        "standalone": 51374
       }
     },
     {
@@ -4780,12 +5178,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -4850,6 +5250,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-crouch-walk",
@@ -4859,6 +5266,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -4883,11 +5292,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 852,
-        "standalone": 35532
+        "standalone": 51456
       }
     },
     {
@@ -4954,12 +5368,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5028,6 +5444,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-jump",
@@ -5037,6 +5460,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5061,11 +5486,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1088,
-        "standalone": 35756
+        "standalone": 51680
       }
     },
     {
@@ -5130,12 +5560,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5200,6 +5632,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-roll",
@@ -5209,6 +5648,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5233,11 +5674,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 785,
-        "standalone": 35441
+        "standalone": 51365
       }
     },
     {
@@ -5302,12 +5748,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5372,6 +5820,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-push",
@@ -5381,6 +5836,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5405,11 +5862,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 767,
-        "standalone": 35427
+        "standalone": 51351
       }
     },
     {
@@ -5472,12 +5934,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5542,6 +6006,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-locomotion-swim",
@@ -5551,6 +6022,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5575,11 +6048,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 818,
-        "standalone": 35478
+        "standalone": 51402
       }
     },
     {
@@ -5644,12 +6122,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5700,6 +6180,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-idle",
@@ -5709,6 +6196,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5733,11 +6222,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 767,
-        "standalone": 35413
+        "standalone": 51337
       }
     },
     {
@@ -5802,12 +6296,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -5858,6 +6354,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-talk",
@@ -5867,6 +6370,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -5891,11 +6396,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 753,
-        "standalone": 35397
+        "standalone": 51321
       }
     },
     {
@@ -5959,12 +6469,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6015,6 +6527,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-torch",
@@ -6024,6 +6543,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6048,11 +6569,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 785,
-        "standalone": 35437
+        "standalone": 51361
       }
     },
     {
@@ -6118,12 +6644,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6174,6 +6702,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-crouch",
@@ -6183,6 +6718,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6207,11 +6744,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 801,
-        "standalone": 35449
+        "standalone": 51373
       }
     },
     {
@@ -6279,12 +6821,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6355,6 +6899,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-sit",
@@ -6364,6 +6915,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6388,11 +6941,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1313,
-        "standalone": 35961
+        "standalone": 51885
       }
     },
     {
@@ -6454,12 +7012,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6510,6 +7070,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-drive",
@@ -6519,6 +7086,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6543,11 +7112,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 728,
-        "standalone": 35374
+        "standalone": 51298
       }
     },
     {
@@ -6610,12 +7184,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6666,6 +7242,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-swim-idle",
@@ -6675,6 +7258,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6699,11 +7284,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 870,
-        "standalone": 35528
+        "standalone": 51452
       }
     },
     {
@@ -6768,12 +7358,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6824,6 +7416,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-idle-dance",
@@ -6833,6 +7432,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -6857,11 +7458,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 717,
-        "standalone": 35365
+        "standalone": 51289
       }
     },
     {
@@ -6926,12 +7532,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -6982,6 +7590,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-actions-interact",
@@ -6991,6 +7606,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7015,11 +7632,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 813,
-        "standalone": 35471
+        "standalone": 51395
       }
     },
     {
@@ -7084,12 +7706,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7140,6 +7764,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-actions-pick-up",
@@ -7149,6 +7780,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7173,11 +7806,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 806,
-        "standalone": 35464
+        "standalone": 51388
       }
     },
     {
@@ -7243,12 +7881,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7299,6 +7939,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-actions-repair",
@@ -7308,6 +7955,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7332,11 +7981,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 815,
-        "standalone": 35481
+        "standalone": 51405
       }
     },
     {
@@ -7402,12 +8056,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7472,6 +8128,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-actions-hit",
@@ -7481,6 +8144,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7505,11 +8170,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 882,
-        "standalone": 35548
+        "standalone": 51472
       }
     },
     {
@@ -7574,12 +8244,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7630,6 +8302,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-actions-death",
@@ -7639,6 +8318,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7663,11 +8344,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 813,
-        "standalone": 35471
+        "standalone": 51395
       }
     },
     {
@@ -7733,12 +8419,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7805,6 +8493,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-combat-punch",
@@ -7814,6 +8509,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -7838,11 +8535,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 923,
-        "standalone": 35577
+        "standalone": 51501
       }
     },
     {
@@ -7908,12 +8610,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -7994,6 +8698,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-combat-sword",
@@ -8003,6 +8714,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -8027,11 +8740,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 959,
-        "standalone": 35623
+        "standalone": 51547
       }
     },
     {
@@ -8101,12 +8819,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -8181,6 +8901,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-combat-pistol",
@@ -8190,6 +8917,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -8214,11 +8943,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1429,
-        "standalone": 36083
+        "standalone": 52007
       }
     },
     {
@@ -8286,12 +9020,14 @@
           "values": [
             "superhero-female",
             "superhero-male",
-            "mannequin"
+            "mannequin",
+            "magic-mannequin"
           ],
           "labels": {
             "superhero-female": "Héroïne",
             "superhero-male": "Héros",
-            "mannequin": "Mannequin"
+            "mannequin": "Mannequin",
+            "magic-mannequin": "Mannequin magique"
           },
           "label": "Personnage",
           "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
@@ -8362,6 +9098,13 @@
           "params": {
             "character": "mannequin"
           }
+        },
+        {
+          "id": "magic-mannequin",
+          "name": "Mannequin magique",
+          "params": {
+            "character": "magic-mannequin"
+          }
         }
       ],
       "slug": "animations-magic-spell",
@@ -8371,6 +9114,8 @@
         "src/assets/kit/palettes.js",
         "src/assets/kit/variation.js",
         "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/rng.js",
         "src/assets/kit/model.js",
         "src/assets/kit/humanoid.js",
         "src/assets/kit/animation-asset.js"
@@ -8395,11 +9140,16 @@
           "triangles": 4978,
           "vertices": 3180,
           "drawCalls": 2
+        },
+        "magic-mannequin": {
+          "triangles": 5090,
+          "vertices": 3316,
+          "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1352,
-        "standalone": 36010
+        "standalone": 51934
       }
     },
     {
@@ -8601,7 +9351,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 188760
+        "standalone": 190104
       }
     }
   ]

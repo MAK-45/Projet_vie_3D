@@ -188,6 +188,11 @@ varying vec3 vObjPos;
   varying vec2 vMapUv;
 #endif
 
+#ifdef CURRENTS
+  uniform float uTime;
+  uniform vec2 uCurrents; // x : force des courants (d\xE9rive des normales), y : fr\xE9quence (1/unit\xE9)
+#endif
+
 float hash12(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * 0.1031);
   p3 += dot(p3, p3.yzx + 33.33);
@@ -199,6 +204,19 @@ float hash13(vec3 p3) {
   p3 += dot(p3, p3.zyx + 31.32);
   return fract((p3.x + p3.y) * p3.z);
 }
+
+#ifdef CURRENTS
+float valueNoise3(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(hash13(i), hash13(i + vec3(1.0, 0.0, 0.0)), f.x);
+  float b = mix(hash13(i + vec3(0.0, 1.0, 0.0)), hash13(i + vec3(1.0, 1.0, 0.0)), f.x);
+  float c = mix(hash13(i + vec3(0.0, 0.0, 1.0)), hash13(i + vec3(1.0, 0.0, 1.0)), f.x);
+  float d = mix(hash13(i + vec3(0.0, 1.0, 1.0)), hash13(i + vec3(1.0, 1.0, 1.0)), f.x);
+  return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
+}
+#endif
 
 #ifdef PATTERN_GROUND
 float valueNoise(vec2 p) {
@@ -239,6 +257,14 @@ void main() {
     vec3 L = directionalLights[0].direction;
   #else
     vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
+  #endif
+
+  #ifdef CURRENTS
+    // Courants de lumi\xE8re (mati\xE8res magiques) : un bruit qui d\xE9rive dans le temps fait glisser les normales, donc
+    // les paliers de lumi\xE8re et le liser\xE9 ; la cadence du temps partag\xE9 (12 images/s) les fait avancer par \xE0-coups.
+    vec3 cq = vObjPos * uCurrents.y + vec3(cos(uTime * 0.7), sin(uTime * 0.7), uTime * 0.25) * 1.4;
+    vec3 drift = vec3(valueNoise3(cq), valueNoise3(cq + vec3(31.0, 0.0, 0.0)), valueNoise3(cq + vec3(0.0, 57.0, 0.0))) - 0.5;
+    N = normalize(N + drift * uCurrents.x);
   #endif
 
   #ifdef UNLIT
@@ -442,7 +468,8 @@ function createToonMaterial(options) {
     rim = [0, 0],
     glow = true,
     ground,
-    map = null
+    map = null,
+    currents = null
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -452,6 +479,7 @@ function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
+  if (currents) defines.CURRENTS = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
   const groundUniforms = {};
@@ -500,6 +528,7 @@ function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uCurrents: { value: new THREE.Vector2(...currents ?? [0, 1]) },
       ...groundUniforms
     },
     vertexShader: VERTEX,

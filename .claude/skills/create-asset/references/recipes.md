@@ -288,3 +288,14 @@ c'est ce fichier qui fait progresser les assets suivants.
   sourcils se simplifient fort (~250 triangles chacun).
 - Vue iso de face : une pose assise ressemble à un buste penché ; juger un mouvement en vue de côté.
 - Retargeting : ne copier que les rotations ; les translations des os du mannequin déformeraient un autre corps.
+- **Variante de matière d'un personnage importé** (éprouvé sur `creatures/humanoid/magic-mannequin`, la version
+  humaine du blob) : pas de nouveau fichier de modèle, une entrée de `CHARACTERS` qui réutilise `mannequin.glb` avec
+  `magic: true` ; ses matières viennent de la palette choisie (`MAGIC_PALETTES` de `kit/palettes.js`). Il apparaît
+  tout seul dans le choix de personnage des 26 animations.
+- Matière de lumière sur un corps skinné : on ne peut pas retoucher ses normales sur le CPU comme le blob ; les
+  courants sont faits dans le shader (`currents: [force, fréquence]` de `createToonMaterial`, bruit 3D sur la
+  position objet). Liseré `rim`, `outline: false`, `shadowLit` 0,55 : il se lit sans contour sombre.
+- Yeux, étincelles, poussières : un seul maillage de formes face caméra posé dans le groupe, repositionné à chaque
+  `updateMatrixWorld` depuis les os (`Head`, `spine_03`) — un draw call au lieu de deux. Le visage se trouve dans la
+  pose de repos par les sommets portés à plus de 50 % par l'os de la tête. Une particule éteinte se réduit à un point
+  au cœur du torse (pas sous le sol : `check` le signale).

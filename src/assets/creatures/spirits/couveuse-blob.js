@@ -13,24 +13,15 @@ import * as THREE from "three";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { createGlowLight, createToonMaterial, rgb, sharedUniforms } from "../../../engine/toon-material.js";
 import { buildFanGeometry, buildSpriteGeometry, ellipseOutline, mergeGeometries, starOutline } from "../../kit/geometry.js";
+import { MAGIC_PALETTES } from "../../kit/palettes.js";
 import { resolveParams } from "../../kit/params.js";
 import { createNoise3, createRng } from "../../kit/rng.js";
 import { choiceParam, numberParam, seedParam, variantsOf } from "../../kit/variation.js";
 
 export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-material.js";
 
-// Les palettes du blob 2D, de l'ombre du corps au reflet (8 couleurs ; celles de 7 sont étirées à 8).
-export const BLOB_PALETTES = {
-  ice: { label: "Glace", colors: ["#081026", "#102654", "#1a4a90", "#2c7ccc", "#58b6ee", "#9fe0ff", "#dcf8ff", "#ffffff"] },
-  arcane: { label: "Arcane", colors: ["#140a26", "#2b1252", "#481c88", "#6b2cc0", "#9a48ec", "#c684ff", "#ecc8ff", "#ffffff"] },
-  ember: { label: "Braise", colors: ["#1f0b10", "#4a1118", "#8c1d1c", "#cc3a1a", "#f2701f", "#ffae35", "#ffe27a", "#fff8d6"] },
-  sap: { label: "Sève", colors: ["#08201a", "#0f3f2c", "#17663e", "#24924e", "#3ec466", "#7ee88a", "#c8ffc4", "#ffffff"] },
-  dawn: { label: "Aurore", colors: ["#2a1c08", "#5a3e10", "#9a6c18", "#d8a428", "#ffd84a", "#fff09a", "#fffbe6", "#ffffff"] },
-  neon: { label: "Néon", colors: ["#1a0516", "#3d0a33", "#701560", "#b0228f", "#f53cd1", "#ff86e6", "#ffd2f6", "#ffffff"] },
-  abyss: { label: "Abysse", colors: ["#050308", "#0f0a18", "#1c1230", "#2c1a4a", "#432468", "#5e3290", "#8048b8", "#a970e0"] },
-  lagoon: { label: "Lagon", colors: ["#041418", "#08303a", "#0c5260", "#108088", "#18b4b0", "#4ce8d8", "#b4fff0", "#ffffff"] },
-  blood: { label: "Sang", colors: ["#14040a", "#3a0a14", "#6a101c", "#a01824", "#d42a30", "#ff5a50", "#ff9a8a"] },
-};
+// Les palettes du blob 2D (8 couleurs, de l'ombre du corps au reflet) : partagées avec le mannequin magique.
+export const BLOB_PALETTES = MAGIC_PALETTES;
 const EYE_COLOR = "#0a1430";
 const PUPIL_COLOR = "#081026";
 const WHITE = "#ffffff";

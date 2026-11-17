@@ -22,6 +22,7 @@ import * as couveuseBlob from "./creatures/spirits/couveuse-blob.js";
 import * as heroine from "./creatures/humanoid/superhero-female.js";
 import * as hero from "./creatures/humanoid/superhero-male.js";
 import * as mannequin from "./creatures/humanoid/mannequin.js";
+import * as magicMannequin from "./creatures/humanoid/magic-mannequin.js";
 import * as animLocomotionWalk from "./animations/locomotion/walk.js";
 import * as animLocomotionWalkFormal from "./animations/locomotion/walk-formal.js";
 import * as animLocomotionJog from "./animations/locomotion/jog.js";
@@ -53,7 +54,7 @@ import * as summerMeadow from "./worlds/islands/summer-meadow.js";
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin,
+export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin, magicMannequin,
   animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
   summerMeadow,
 ];
