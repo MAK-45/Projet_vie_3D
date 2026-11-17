@@ -34,7 +34,7 @@ const params = {
   state: choiceParam("État", STATES, "En boucle (synchronisée avec la porte), endormie, ou figée porte ouverte."),
   locks: { type: "int", default: 7, min: 5, max: 9, label: "Verrous", description: "Le nombre de verrous de la porte qu'elle commande : autant de tablettes pressées." },
   energy: choiceParam("Énergie", PORTAL_ENERGIES, "Couleur des cristaux allumés (la même que la porte)."),
-  metal: choiceParam("Métal", METALS, "Garnitures, tablettes et petit anneau : bronze, or ou fer."),
+  metal: choiceParam("Métal", { bronze: METALS.bronze, gold: METALS.gold, iron: METALS.iron }, "Garnitures, tablettes et petit anneau : bronze, or ou fer."),
   stone: stoneParam("Pierre de l'autel.", { only: ["granite", "slate", "basalt", "sandstone"] }),
 };
 

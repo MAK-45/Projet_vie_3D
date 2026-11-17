@@ -23,16 +23,16 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-17
-- **Étape actuelle** : bible adaptée au pixel art et plan établis, en attente de validation.
-- **Prochaine action** : l'utilisateur valide la bible et le plan ; puis lot 0 (préparation) et lot 1 (ossature du
-  Sas) dans la même session.
+- **Étape actuelle** : bible et plan validés ; lot 0 (préparation) fait, à valider (nuancier `dev/complex-swatch.html`).
+- **Prochaine action** : lot 1 (ossature du Sas : dalle, mur, colonne, voûte, portes), propositions déjà validées
+  par l'utilisateur (voir « Décisions »).
 
 ## Les lots
 
 | Lot | Contenu | Assets | État | Date | Commits / remarques |
 |---|---|---|---|---|---|
-| — | Bible adaptée au pixel art, plan, suivi | — | 👀 à valider | 2026-11-17 | docs/complexe/ |
-| 0 | Préparation | — | ⬜ à faire | | |
+| — | Bible adaptée au pixel art, plan, suivi | — | ✅ validé | 2026-11-17 | docs/complexe/ |
+| 0 | Préparation | — | 👀 à valider | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
 | 1 | Ossature du Sas | 5 | ⬜ à faire | | |
 | 2 | Lumière et réseaux | 5 | ⬜ à faire | | |
 | 3 | Mobilier du Sas | 5 | ⬜ à faire | | |
@@ -177,12 +177,15 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Décision | Statut |
 |---|---|---|
-| 2026-11-17 | La bible HD est gardée en entier dans l'idée ; seule la façon de dessiner change (traduction pixel art de `README.md`). | proposé |
-| 2026-11-17 | Les fiches voisines partagent un module avec réglages : 170 fiches → 100 modules. | proposé |
-| 2026-11-17 | Budgets : asset normal < 5 000 triangles, ≤ 3 draw calls ; héros et artefacts ≤ 8 000 triangles, ≤ 4 à 6 draw calls ; aucune texture. | proposé |
-| 2026-11-17 | Le Complexe est un seul monde intérieur, vu en coupe (plafonds masqués, murs côté caméra abaissés), une pièce à la fois. | proposé |
-| 2026-11-17 | Chaque salle d'étude est faite avec son artefact (au lieu de tous les artefacts à la fin) pour finir chaque salle complète. | proposé |
-| 2026-11-17 | L'arche hexagonale de la salle 10 est un nouvel asset ; la Porte des étoiles existante (anneau) reste à part. | proposé |
+| 2026-11-17 | La bible HD est gardée en entier dans l'idée ; seule la façon de dessiner change (traduction pixel art de `README.md`). | validé |
+| 2026-11-17 | Les fiches voisines partagent un module avec réglages : 170 fiches → 100 modules. | validé |
+| 2026-11-17 | Budgets : asset normal < 5 000 triangles, ≤ 3 draw calls ; héros et artefacts ≤ 8 000 triangles, ≤ 4 à 6 draw calls ; aucune texture. | validé |
+| 2026-11-17 | Le Complexe est un seul monde intérieur, vu en coupe (plafonds masqués, murs côté caméra abaissés), une pièce à la fois. | validé |
+| 2026-11-17 | Chaque salle d'étude est faite avec son artefact (au lieu de tous les artefacts à la fin) pour finir chaque salle complète. | validé |
+| 2026-11-17 | L'arche hexagonale de la salle 10 est un nouvel asset ; la Porte des étoiles existante (anneau) reste à part. | validé |
+| 2026-11-17 | Lot 1 validé sur proposition : dalle (intacte, fissurée, usée, trappe, tachée ; rainure sombre ou ambre), mur (plein, niche, conduit ; hauteur 4–14 m, courbure, doublage cuivre), colonne (carrée chanfreinée, cannelée, engagée, pilastre ; fibre cyan), voûte à caissons (crochet), porte (standard, d'étude, double, de liaison, de secours ; état et séquence d'ouverture pilotable). | validé |
+| 2026-11-17 | Matières du Complexe à part des matières existantes : `STONES.blackBasalt` (le `basalt` des rochers et du portail ne change pas), `smoked`, métaux, verres, tissus, lueurs `GLOWS` ; rochers et pupitre du portail limités à leurs anciennes matières. | à confirmer |
+| 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | à confirmer |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
@@ -191,3 +194,4 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 |---|---|---|
 | 2026-11-17 | Lecture de la bible HD (document Claude Docs), adaptation au pixel art dans `docs/complexe/` (README, PIECES, SALLES), plan en 28 lots (PLAN), ce suivi. | Validation de la bible et du plan, puis lots 0 et 1. |
 | 2026-11-17 | Ajout à la bible et au plan : les personnages se déplacent dans le Complexe (README « Les personnages dans le Complexe », PLAN lot 5 et étapes Monde). | Validation de la bible et du plan, puis lots 0 et 1. |
+| 2026-11-17 | Bible, plan et propositions du lot 1 validés. Lot 0 : palettes, briques `kit/complex-parts.js`, option `tone`, sous-catégories `props/machines`, `props/artifacts`, `worlds/interiors`, axes `metal` et `glow`, nuancier capturé de jour et dans le noir. | Validation du lot 0, puis lot 1. |

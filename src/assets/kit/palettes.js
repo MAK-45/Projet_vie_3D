@@ -10,6 +10,9 @@ export const STONES = {
   limestone: { label: "Calcaire", ramp: ["#746a6e", "#a59a8f", "#d3c8b0", "#f1e8cf"], ink: "#4a4148" },
   basalt: { label: "Basalte", ramp: ["#23222f", "#383846", "#55566a", "#7b7e90"], ink: "#15141d" },
   slate: { label: "Ardoise", ramp: ["#2c3a48", "#44586a", "#66808f", "#96adb5"], ink: "#1a232e" },
+  // Le Complexe (docs/complexe/README.md) : basalte noir-bleu des murs et des sols, pierre fumée des voûtes et piliers.
+  blackBasalt: { label: "Basalte noir-bleu", ramp: ["#13161d", "#1e2228", "#2f353e", "#4c5560"], ink: "#0a0c11" },
+  smoked: { label: "Pierre fumée", ramp: ["#211d1b", "#3a3631", "#575049", "#7d7467"], ink: "#13100f" },
 };
 
 /** Bois (planches, poutres, meubles). */
@@ -18,6 +21,7 @@ export const WOODS = {
   pine: { label: "Pin", ramp: ["#6b4630", "#a0713f", "#cf9f58", "#efc98a"], ink: "#43291f" },
   walnut: { label: "Noyer", ramp: ["#2e1c22", "#4a2d2a", "#6d4433", "#946144"], ink: "#1b1015" },
   birch: { label: "Bouleau", ramp: ["#8a6f5e", "#b89a7a", "#dcc49c", "#f3e6c4"], ink: "#5a4439" },
+  blackenedOak: { label: "Chêne noirci", ramp: ["#1c1312", "#2e1f1a", "#463024", "#664633"], ink: "#100a0a" },
 };
 
 /** Métaux (garnitures, mécanismes d'une technologie ancienne). */
@@ -25,6 +29,39 @@ export const METALS = {
   bronze: { label: "Bronze", ramp: ["#3a2622", "#6b4527", "#a5702f", "#dcae58"], ink: "#22140f" },
   gold: { label: "Or", ramp: ["#5a3418", "#9a6320", "#d39a2c", "#f6d878"], ink: "#341c0e" },
   iron: { label: "Fer", ramp: ["#262833", "#40434f", "#666a74", "#9a9ca2"], ink: "#16171e" },
+  // Le Complexe : métaux vieillis. Le bronze patiné verdit dans l'ombre (vert-de-gris) ; le dernier ton des rampes
+  // à 5 couleurs est l'arête polie ou le reflet d'un pixel (seuil haut dans `steps`).
+  patinatedBronze: { label: "Bronze patiné", ramp: ["#263732", "#4a7366", "#8a6a3b", "#b48a4c", "#e2c47e"], ink: "#16130f" },
+  blackenedBrass: { label: "Laiton noirci", ramp: ["#221b11", "#3b2f1a", "#5e4a26", "#857036", "#d6c27c"], ink: "#120e08" },
+  oxidizedCopper: { label: "Cuivre oxydé", ramp: ["#1c3532", "#2c5a51", "#3f7f6e", "#68a58b", "#c98b6b"], ink: "#0f1d1c" },
+  castIron: { label: "Fonte", ramp: ["#16171c", "#25272e", "#3a3d45", "#5c6069"], ink: "#0b0c0f" },
+};
+
+/**
+ * Verres (le Complexe) : ampoules éteintes, cuves, hublots, cristaux. Rampe claire et froide ; ce qui luit prend
+ * plutôt une rampe de GLOWS.
+ */
+export const GLASSES = {
+  amber: { label: "Verre ambre", ramp: ["#4a2410", "#8a4a1c", "#c97a2e", "#f2b764"], ink: "#2a1408" },
+  cyan: { label: "Verre cyan", ramp: ["#0e2f38", "#1d6672", "#3fa9b8", "#a6e6ee"], ink: "#071a20" },
+  smoky: { label: "Verre fumé", ramp: ["#1a2026", "#2b363e", "#4a5a64", "#8fa3ac"], ink: "#0d1115" },
+};
+
+/** Cuirs et tissus (le Complexe) : gaines de câbles, sangles, courroies, panneaux et rideaux des chambres noires. */
+export const FABRICS = {
+  tarredLeather: { label: "Cuir goudronné", ramp: ["#17110c", "#2b2118", "#43342a", "#5f4b3c"], ink: "#0c0806" },
+  felt: { label: "Feutre noir", ramp: ["#0e0d11", "#16141a", "#1f1c24", "#2a2630"], ink: "#08070a" },
+};
+
+/**
+ * Lueurs (le Complexe) : couleurs des matières qui émettent leur propre lumière, de l'éteint (0) au plus vif (3).
+ * Ambre : filaments (≈ 2000 K) et glyphes de la pierre, l'éclairage ancien et humain. Cyan : artefacts et zones
+ * d'énergie, là où l'œil doit aller. Rouge : alerte, rare. `light` : couleur des lumières de halo qu'elles portent.
+ */
+export const GLOWS = {
+  amber: { label: "Ambre", ramp: ["#5a2a12", "#b8581c", "#ff9a3c", "#ffd796"], light: "#ff9a3c" },
+  cyan: { label: "Cyan", ramp: ["#12505e", "#2a9bb0", "#5fd4e6", "#d6fbff"], light: "#5fd4e6" },
+  alarm: { label: "Rouge d'alerte", ramp: ["#3a0d0c", "#6e1815", "#a3261f", "#e0574a"], light: "#c8302a" },
 };
 
 /** Couvertures posées sur une surface (dessus d'un rocher, d'un mur, d'un toit). Clés du paramètre `cover`. */

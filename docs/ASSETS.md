@@ -12,7 +12,9 @@ src/assets/
   taxonomy.js         catégories et sous-catégories autorisées, biomes
   kit/                outils partagés : rng (graine, bruit 3D), geometry (tubes, feuilles, rochers, buttes,
                       drapés, fusion), params, variation (axes partagés : graine, saison, pierre, bois,
-                      couverture), palettes (matières), ground-cover (neige, mousse, terre au sol ou drapées)
+                      couverture, métal, lueur), palettes (matières), ground-cover (neige, mousse, terre au sol
+                      ou drapées), complex-parts (briques du Complexe : glyphes, rivets, bagues, ampoules,
+                      cadrans, leviers, chaînes, câbles, tons par sommet, matériaux pierre / métal / lueur)
   <catégorie>/<sous-catégorie>/<nom>.js     un fichier par asset
 src/engine/           toon-material (matériau à palette), pixel-renderer (basse réso + contours), iso-camera
 src/gallery/          la galerie web (visionneuse, catalogue, fiche, code)
@@ -115,7 +117,8 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 |---|---|
 | Végétation, terrain | `season` : spring, summer, autumn, winter ; fleurs : `species` (daisy, poppy, cornflower, buttercup, lavender) |
 | Roches, bâti en pierre | `stone` : granite, sandstone, limestone, basalt, slate ; `cover` : bare, moss, snow |
-| Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch |
+| Bâti en bois, mobilier | `wood` : oak, pine, walnut, birch, blackenedOak |
+| Le Complexe (ancien-tech) | `stone` : blackBasalt, smoked ; `metal` : patinatedBronze, blackenedBrass, oxidizedCopper, castIron ; `glow` : amber, cyan, alarm (voir `docs/complexe/README.md`) |
 | Ciel | soleil `time`, lune `phase`, nuage `kind`, étoile `shape` + `tint` |
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
 

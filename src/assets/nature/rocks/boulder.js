@@ -15,7 +15,7 @@ export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-ma
 
 const params = {
   seed: seedParam("Change la silhouette : rond, haut ou trapu, facettes, inclinaison, cailloux au pied."),
-  stone: stoneParam("Type de pierre : couleurs et grain."),
+  stone: stoneParam("Type de pierre : couleurs et grain.", { only: ["granite", "sandstone", "limestone", "basalt", "slate"] }),
   cover: coverParam("Mousse ou neige drapées sur le dessus du rocher, et posées au sol autour."),
   size: numberParam("Hauteur", 1.1, 0.4, 2.5, "Hauteur du rocher ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
   roughness: numberParam("Taille de la pierre", 1, 0, 1.5, "0 = galet arrondi, 1,5 = bloc très taillé."),

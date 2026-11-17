@@ -98,6 +98,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vGround;
 #endif
 
+#ifdef TONE
+  attribute float aTone; // d\xE9calage de lumi\xE8re par sommet (suie, tons d'un bloc de pierre), en crans de la rampe
+  varying float vTone;
+#endif
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpol\xE9 puis d\xE9coup\xE9 en paliers
 #endif
@@ -137,6 +141,9 @@ void main() {
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
   #endif
   vObjPos = transformed;
+  #ifdef TONE
+    vTone = aTone;
+  #endif
   #ifdef SHADE
     vShade = aShade;
   #endif
@@ -224,6 +231,9 @@ uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
   varying float vShade;
+#endif
+#ifdef TONE
+  varying float vTone;
 #endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
@@ -392,6 +402,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
+  #ifdef TONE
+    lit += vTone;
+  #endif
+
   #ifndef UNLIT
     float shadow = getShadowMask();
     lit = mix(min(lit, uShadowLit), lit, shadow);
@@ -543,6 +557,7 @@ function createToonMaterial(options) {
     currents = null,
     wobble = null,
     shade = false,
+    tone = false,
     emissive = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
@@ -553,6 +568,7 @@ function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
+  if (tone) defines.TONE = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";
@@ -840,12 +856,21 @@ var STONES = {
   sandstone: { label: "Gr\xE8s", ramp: ["#6b4438", "#9a6a48", "#c59760", "#e8c88a"], ink: "#43272a" },
   limestone: { label: "Calcaire", ramp: ["#746a6e", "#a59a8f", "#d3c8b0", "#f1e8cf"], ink: "#4a4148" },
   basalt: { label: "Basalte", ramp: ["#23222f", "#383846", "#55566a", "#7b7e90"], ink: "#15141d" },
-  slate: { label: "Ardoise", ramp: ["#2c3a48", "#44586a", "#66808f", "#96adb5"], ink: "#1a232e" }
+  slate: { label: "Ardoise", ramp: ["#2c3a48", "#44586a", "#66808f", "#96adb5"], ink: "#1a232e" },
+  // Le Complexe (docs/complexe/README.md) : basalte noir-bleu des murs et des sols, pierre fumée des voûtes et piliers.
+  blackBasalt: { label: "Basalte noir-bleu", ramp: ["#13161d", "#1e2228", "#2f353e", "#4c5560"], ink: "#0a0c11" },
+  smoked: { label: "Pierre fum\xE9e", ramp: ["#211d1b", "#3a3631", "#575049", "#7d7467"], ink: "#13100f" }
 };
 var METALS = {
   bronze: { label: "Bronze", ramp: ["#3a2622", "#6b4527", "#a5702f", "#dcae58"], ink: "#22140f" },
   gold: { label: "Or", ramp: ["#5a3418", "#9a6320", "#d39a2c", "#f6d878"], ink: "#341c0e" },
-  iron: { label: "Fer", ramp: ["#262833", "#40434f", "#666a74", "#9a9ca2"], ink: "#16171e" }
+  iron: { label: "Fer", ramp: ["#262833", "#40434f", "#666a74", "#9a9ca2"], ink: "#16171e" },
+  // Le Complexe : métaux vieillis. Le bronze patiné verdit dans l'ombre (vert-de-gris) ; le dernier ton des rampes
+  // à 5 couleurs est l'arête polie ou le reflet d'un pixel (seuil haut dans `steps`).
+  patinatedBronze: { label: "Bronze patin\xE9", ramp: ["#263732", "#4a7366", "#8a6a3b", "#b48a4c", "#e2c47e"], ink: "#16130f" },
+  blackenedBrass: { label: "Laiton noirci", ramp: ["#221b11", "#3b2f1a", "#5e4a26", "#857036", "#d6c27c"], ink: "#120e08" },
+  oxidizedCopper: { label: "Cuivre oxyd\xE9", ramp: ["#1c3532", "#2c5a51", "#3f7f6e", "#68a58b", "#c98b6b"], ink: "#0f1d1c" },
+  castIron: { label: "Fonte", ramp: ["#16171c", "#25272e", "#3a3d45", "#5c6069"], ink: "#0b0c0f" }
 };
 var COVERS = {
   moss: { label: "Mousse", ramp: ["#22473c", "#33663e", "#4f8a3f", "#86b44a"], ink: "#142a26" },
@@ -1109,7 +1134,7 @@ var params2 = {
   state: choiceParam("\xC9tat", STATES2, "En boucle (synchronis\xE9e avec la porte), endormie, ou fig\xE9e porte ouverte."),
   locks: { type: "int", default: 7, min: 5, max: 9, label: "Verrous", description: "Le nombre de verrous de la porte qu'elle commande : autant de tablettes press\xE9es." },
   energy: choiceParam("\xC9nergie", PORTAL_ENERGIES, "Couleur des cristaux allum\xE9s (la m\xEAme que la porte)."),
-  metal: choiceParam("M\xE9tal", METALS, "Garnitures, tablettes et petit anneau : bronze, or ou fer."),
+  metal: choiceParam("M\xE9tal", { bronze: METALS.bronze, gold: METALS.gold, iron: METALS.iron }, "Garnitures, tablettes et petit anneau : bronze, or ou fer."),
   stone: stoneParam("Pierre de l'autel.", { only: ["granite", "slate", "basalt", "sandstone"] })
 };
 var meta2 = {

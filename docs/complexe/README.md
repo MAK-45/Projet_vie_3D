@@ -80,19 +80,24 @@ de ces rampes.
 
 | Matériau | Usage | Ton moyen | En pixel art |
 |---|---|---|---|
-| Basalte noir-bleu (`basalt` existant, à ajuster) | Murs, sols, socles | #1E2228 | Rampe noir-bleu à 4 tons, `speckle` fin ; les glyphes gravés sont des traits émissifs d'1 px |
-| Pierre fumée, calcaire sombre (`smoked`) | Voûtes, piliers, bas-reliefs | #3A3631 | Rampe brun-gris chaude ; suie = haut des volumes plus sombre ; arêtes écaillées = ton clair irrégulier |
-| Bronze patiné (`patinated-bronze`) | Cadres, charnières, rouages, cages | #8A6A3B | L'ombre de la rampe tire vers le **vert-de-gris #4F8A7B** : les creux verdissent tout seuls ; arête polie = ton le plus clair |
-| Laiton noirci (`blackened-brass`) | Cadrans, leviers, plaques | #5E4A26 | Rampe sombre et sourde, reflet d'1 px jaune pâle |
-| Cuivre oxydé (`oxidized-copper`) | Câbles, bobines, tuyaux | #3F7F6E | Rampe qui va du vert-bleu (oxyde) au cuivre rosé (frottements) ; coulures = bandes verticales d'un ton |
-| Fonte (`cast-iron`) | Volants, bancs de machines, roues | — | Rampe gris-noir froide (proche du `iron` existant) |
-| Verre soufflé, quartz fumé (`amber-glass`, `cyan-glass`) | Ampoules, cuves, cristaux | ambre ou cyan translucide | Rampe claire + `emissive` ; « bulles » = 1 à 2 points clairs |
-| Cuir et tissu goudronné (`tarred-leather`) | Gaines de câbles, sangles, courroies | #2B2118 | Rampe brun-noir, `furrow` léger pour les plis |
-| Feutre noir (`felt`) | Panneaux et rideaux des chambres noires | — | Rampe presque noire, mate, sans reflet |
-| Bois noirci (`blackened-oak`) | Établis, malles, râteliers | — | Variante sombre du `oak` existant |
+| Basalte noir-bleu (`STONES.blackBasalt`) | Murs, sols, socles | #1E2228 | Rampe noir-bleu à 4 tons, `speckle` fin ; les glyphes gravés sont des traits émissifs d'1 px |
+| Pierre fumée, calcaire sombre (`STONES.smoked`) | Voûtes, piliers, bas-reliefs | #3A3631 | Rampe brun-gris chaude ; suie = haut des volumes plus sombre ; arêtes écaillées = ton clair irrégulier |
+| Bronze patiné (`METALS.patinatedBronze`) | Cadres, charnières, rouages, cages | #8A6A3B | L'ombre de la rampe tire vers le **vert-de-gris #4F8A7B** : les creux verdissent tout seuls ; arête polie = ton le plus clair |
+| Laiton noirci (`METALS.blackenedBrass`) | Cadrans, leviers, plaques | #5E4A26 | Rampe sombre et sourde, reflet d'1 px jaune pâle |
+| Cuivre oxydé (`METALS.oxidizedCopper`) | Câbles, bobines, tuyaux | #3F7F6E | Rampe qui va du vert-bleu (oxyde) au cuivre rosé (frottements) ; coulures = bandes verticales d'un ton |
+| Fonte (`METALS.castIron`) | Volants, bancs de machines, roues | — | Rampe gris-noir froide (proche du `iron` existant) |
+| Verre soufflé, quartz fumé (`GLASSES.amber`, `GLASSES.cyan`, `GLASSES.smoky`) | Ampoules, cuves, cristaux | ambre ou cyan translucide | Rampe claire + `emissive` ; « bulles » = 1 à 2 points clairs |
+| Cuir et tissu goudronné (`FABRICS.tarredLeather`) | Gaines de câbles, sangles, courroies | #2B2118 | Rampe brun-noir, `furrow` léger pour les plis |
+| Feutre noir (`FABRICS.felt`) | Panneaux et rideaux des chambres noires | — | Rampe presque noire, mate, sans reflet |
+| Bois noirci (`WOODS.blackenedOak`) | Établis, malles, râteliers | — | Variante sombre du `oak` existant |
 
-Lumières (rampes émissives, `src/assets/kit/palettes.js`) : **ambre** (`amber-glow`, filament ≈ 2000 K, #FF9A3C au
-cœur), **cyan** (`cyan-glow`, #5FD4E6), **rouge** (`alarm-glow`, #A3261F).
+Le basalte du Complexe est une matière à part (`blackBasalt`) : le `basalt` d'origine reste celui des rochers et
+de la Porte des étoiles. Les briques communes (glyphes, rivets, bagues, ampoules, cadrans, leviers, chaînes, câbles,
+tons par sommet pour la suie et l'usure, matériaux `stoneMaterial` / `metalMaterial` / `glowMaterial`) sont dans
+`src/assets/kit/complex-parts.js` ; le nuancier `dev/complex-swatch.html` (option `night=1`) les montre toutes.
+
+Lumières (rampes émissives, `src/assets/kit/palettes.js`) : **ambre** (`GLOWS.amber`, filament ≈ 2000 K, #FF9A3C au
+cœur), **cyan** (`GLOWS.cyan`, #5FD4E6), **rouge** (`GLOWS.alarm`, #A3261F).
 
 ### Lumière
 

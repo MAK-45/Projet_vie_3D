@@ -152,6 +152,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vGround;
 #endif
 
+#ifdef TONE
+  attribute float aTone; // d\xE9calage de lumi\xE8re par sommet (suie, tons d'un bloc de pierre), en crans de la rampe
+  varying float vTone;
+#endif
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpol\xE9 puis d\xE9coup\xE9 en paliers
 #endif
@@ -191,6 +195,9 @@ void main() {
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
   #endif
   vObjPos = transformed;
+  #ifdef TONE
+    vTone = aTone;
+  #endif
   #ifdef SHADE
     vShade = aShade;
   #endif
@@ -278,6 +285,9 @@ uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
   varying float vShade;
+#endif
+#ifdef TONE
+  varying float vTone;
 #endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
@@ -446,6 +456,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
+  #ifdef TONE
+    lit += vTone;
+  #endif
+
   #ifndef UNLIT
     float shadow = getShadowMask();
     lit = mix(min(lit, uShadowLit), lit, shadow);
@@ -597,6 +611,7 @@ function createToonMaterial(options) {
     currents = null,
     wobble = null,
     shade = false,
+    tone = false,
     emissive = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
@@ -607,6 +622,7 @@ function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
+  if (tone) defines.TONE = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

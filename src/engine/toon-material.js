@@ -133,6 +133,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vGround;
 #endif
 
+#ifdef TONE
+  attribute float aTone; // décalage de lumière par sommet (suie, tons d'un bloc de pierre), en crans de la rampe
+  varying float vTone;
+#endif
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpolé puis découpé en paliers
 #endif
@@ -172,6 +176,9 @@ void main() {
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
   #endif
   vObjPos = transformed;
+  #ifdef TONE
+    vTone = aTone;
+  #endif
   #ifdef SHADE
     vShade = aShade;
   #endif
@@ -257,6 +264,9 @@ uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
   varying float vShade;
+#endif
+#ifdef TONE
+  varying float vTone;
 #endif
 uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
@@ -425,6 +435,10 @@ void main() {
     lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
   #endif
 
+  #ifdef TONE
+    lit += vTone;
+  #endif
+
   #ifndef UNLIT
     float shadow = getShadowMask();
     lit = mix(min(lit, uShadowLit), lit, shadow);
@@ -580,6 +594,9 @@ function defaultSteps(count) {
  * @param {boolean} [options.shade] avec `unlit` : la géométrie porte un attribut `aShade` (0..1) qui choisit la couleur
  *   dans la rampe à chaque sommet ; interpolé puis découpé en paliers nets. Pour des surfaces lumineuses animées depuis
  *   le CPU (vortex d'un portail, cristaux qui s'allument).
+ * @param {boolean} [options.tone] la géométrie porte un attribut `aTone` : décalage de lumière ajouté à chaque sommet
+ *   (−0,3 = un cran plus sombre environ), interpolé puis découpé par les paliers. Pour les tons propres à chaque bloc
+ *   d'un mur, la suie en haut des volumes, l'usure au centre d'une dalle (le Complexe) ; voir `kit/complex-parts.js`.
  * @param {number} [options.emissive] seuil de lumière (0..1, 0 = désactivé) au-dessus duquel la matière garde son éclat
  *   la nuit (vortex, cristaux allumés) : la passe finale ne lui applique pas la teinte de l'heure.
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
@@ -627,6 +644,7 @@ export function createToonMaterial(options) {
     currents = null,
     wobble = null,
     shade = false,
+    tone = false,
     emissive = 0,
   } = options;
 
@@ -639,6 +657,7 @@ export function createToonMaterial(options) {
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
+  if (tone) defines.TONE = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

@@ -41,6 +41,11 @@ export const taxonomy = {
       tools: { label: "Outils", description: "Outils de construction, de jardin, de cuisine." },
       magic: { label: "Magie", description: "Baguettes, cristaux, chaudrons, portails." },
       decor: { label: "Décoration", description: "Vases, tapis, cadres, pots." },
+      machines: {
+        label: "Machines et instruments",
+        description: "Consoles, cadrans, tuyaux, câbles, capteurs : la technologie ancienne du Complexe.",
+      },
+      artifacts: { label: "Artefacts", description: "Objets uniques venus d'autres mondes, étudiés dans le Complexe." },
     },
   },
   worlds: {
@@ -48,6 +53,7 @@ export const taxonomy = {
     description: "Cartes entières assemblées à partir des autres assets, à configurer puis à visiter.",
     subcategories: {
       islands: { label: "Îles", description: "Mondes bornés qui flottent dans une mer de nuages." },
+      interiors: { label: "Intérieurs", description: "Lieux clos vus en coupe : plafonds masqués, murs côté caméra abaissés." },
     },
   },
   animations: {

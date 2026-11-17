@@ -15,7 +15,7 @@ export { disposeObject as dispose, setWind, tick } from "../../../engine/toon-ma
 
 const params = {
   seed: seedParam("Change la silhouette : dalle plate ou bosse, inclinaison, part qui dépasse, talus de terre."),
-  stone: stoneParam("Type de pierre : couleurs et grain."),
+  stone: stoneParam("Type de pierre : couleurs et grain.", { only: ["granite", "sandstone", "limestone", "basalt", "slate"] }),
   cover: coverParam("Mousse ou neige drapées sur le dessus de la roche et sur le talus."),
   size: numberParam("Largeur", 1.6, 0.5, 3.5, "Largeur de la partie visible ; tout garde ses proportions.", { step: 0.1, unit: "m" }),
   emergence: numberParam("Affleurement", 0.5, 0.2, 0.8, "Part de la roche qui sort du sol (0,2 = à peine visible)."),
