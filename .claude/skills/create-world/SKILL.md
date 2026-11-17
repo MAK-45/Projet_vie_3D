@@ -9,7 +9,8 @@ description: >-
   l'image et publication. À utiliser dès que l'utilisateur demande de créer, générer, assembler ou retoucher un
   monde, une carte, une île, un biome, un terrain ou un décor à explorer : « crée une forêt enneigée », « fais-moi
   une carte de désert », « génère un monde de plage », « ajoute un village sur une île », « rends la prairie plus
-  boisée », « un nouveau biome avec des marais ». Ne pas utiliser pour dessiner un asset isolé (arbre, rocher,
+  boisée », « un nouveau biome avec des marais », « une version infinie de la forêt ». Monde fini (île) ou
+  infini (généré par morceaux au fil de la marche). Ne pas utiliser pour dessiner un asset isolé (arbre, rocher,
   maison : skill create-asset), ni pour le moteur de rendu ou le scénario.
 ---
 
