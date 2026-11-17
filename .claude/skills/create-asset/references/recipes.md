@@ -295,7 +295,15 @@ c'est ce fichier qui fait progresser les assets suivants.
 - Matière de lumière sur un corps skinné : on ne peut pas retoucher ses normales sur le CPU comme le blob ; les
   courants sont faits dans le shader (`currents: [force, fréquence]` de `createToonMaterial`, bruit 3D sur la
   position objet). Liseré `rim`, `outline: false`, `shadowLit` 0,55 : il se lit sans contour sombre.
-- Yeux, étincelles, poussières : un seul maillage de formes face caméra posé dans le groupe, repositionné à chaque
-  `updateMatrixWorld` depuis les os (`Head`, `spine_03`) — un draw call au lieu de deux. Le visage se trouve dans la
-  pose de repos par les sommets portés à plus de 50 % par l'os de la tête. Une particule éteinte se réduit à un point
-  au cœur du torse (pas sous le sol : `check` le signale).
+- Ondulation d'un corps skinné, comme le blob mais qui reste humain : `wobble: [amplitude, fréquence, vitesse]` de
+  `createToonMaterial` déplace chaque sommet le long de sa normale *après* le squelette (toutes les animations
+  restent justes), avec un bruit lu sur la pose de repos (les vagues restent attachées à leur partie du corps).
+  Raté : un bruit centré pince les parties fines (chevilles, poignets) jusqu'à casser la jambe dès 5 cm ; le
+  biaiser vers l'extérieur (`wave * 0,6 + 0,4`) : les parties gonflent et dégonflent sans se creuser. 4,5 cm se
+  voit au zoom de la galerie ; 8 cm fait gelée sans ouvrir de couture. La passe d'ombre reçoit le même déplacement
+  (`customDepthMaterial`).
+- Raté : les yeux du blob posés sur le visage du mannequin (formes face caméra accrochées à l'os de la tête) —
+  jugés moches par l'utilisateur, retirés. Le mannequin magique reste sans visage.
+- Étincelles, poussières : un seul maillage de formes face caméra posé dans le groupe, repositionné à chaque
+  `updateMatrixWorld` depuis l'os `spine_03`. Une particule éteinte se réduit à un point au cœur du torse (pas sous
+  le sol : `check` le signale).

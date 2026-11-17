@@ -180,7 +180,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 29301
+      "bytes": 31913
     }
   ],
   "assets": [
@@ -344,7 +344,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 42154
+        "standalone": 44398
       }
     },
     {
@@ -513,7 +513,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 43051
+        "standalone": 45295
       }
     },
     {
@@ -685,7 +685,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 44564
+        "standalone": 46808
       }
     },
     {
@@ -886,7 +886,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 45533
+        "standalone": 47777
       }
     },
     {
@@ -1089,7 +1089,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 46595
+        "standalone": 48839
       }
     },
     {
@@ -1223,7 +1223,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 34834
+        "standalone": 37078
       }
     },
     {
@@ -1386,7 +1386,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 34740
+        "standalone": 36984
       }
     },
     {
@@ -1543,7 +1543,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 36986
+        "standalone": 39230
       }
     },
     {
@@ -1726,7 +1726,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 38135
+        "standalone": 40379
       }
     },
     {
@@ -1925,7 +1925,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 44435
+        "standalone": 46679
       }
     },
     {
@@ -2164,7 +2164,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 37919
+        "standalone": 40163
       }
     },
     {
@@ -2370,7 +2370,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 42714
+        "standalone": 44958
       }
     },
     {
@@ -2518,7 +2518,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 35050
+        "standalone": 37294
       }
     },
     {
@@ -2678,7 +2678,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 36060
+        "standalone": 38304
       }
     },
     {
@@ -2821,7 +2821,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 32902
+        "standalone": 35146
       }
     },
     {
@@ -2984,7 +2984,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 33780
+        "standalone": 36024
       }
     },
     {
@@ -3462,7 +3462,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 58823
+        "standalone": 61067
       }
     },
     {
@@ -3652,7 +3652,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 52253
+        "standalone": 51159
       }
     },
     {
@@ -3842,7 +3842,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 52199
+        "standalone": 51105
       }
     },
     {
@@ -4030,7 +4030,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 52213
+        "standalone": 51119
       }
     },
     {
@@ -4039,7 +4039,7 @@
       "nameEn": "Magic mannequin",
       "category": "creatures",
       "subcategory": "humanoid",
-      "description": "La version humaine du blob Couveuse : le corps du mannequin fait de lumière de glace, liseré de clair, traversé de courants, aux articulations plus vives, avec les yeux du blob qui clignent. Il éclaire le décor la nuit. Les neuf palettes du blob ; joue n'importe quelle animation de la catégorie « Animations ».",
+      "description": "La version humaine du blob Couveuse : le corps lisse du mannequin fait de lumière de glace, liseré de clair, traversé de courants, dont chaque partie ondule comme le blob tout en gardant sa forme humaine. Étincelles et poussières de lumière autour de lui ; il éclaire le décor la nuit. Les neuf palettes du blob ; joue n'importe quelle animation de la catégorie « Animations ».",
       "tags": [
         "mannequin magique",
         "mannequin",
@@ -4051,8 +4051,8 @@
         "magie",
         "personnage",
         "humanoïde",
-        "yeux",
-        "clignement",
+        "ondulation",
+        "gelée",
         "lumineux",
         "magic mannequin",
         "spirit",
@@ -4060,6 +4060,8 @@
         "ice",
         "magic",
         "glowing",
+        "wobbly",
+        "jelly",
         "character",
         "humanoid",
         "rigged",
@@ -4076,7 +4078,7 @@
         "snow",
         "swamp"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-17",
       "imported": true,
       "units": "mètres ; 1,8 m, origine entre les pieds, regard vers +Z",
@@ -4151,6 +4153,25 @@
           "label": "Couleurs",
           "description": "Les palettes du blob : Glace (sa couleur de naissance), Arcane, Braise, Sève, Aurore, Néon, Abysse, Lagon, Sang."
         },
+        "wobble": {
+          "type": "number",
+          "default": 0.045,
+          "min": 0,
+          "max": 0.08,
+          "step": 0.005,
+          "unit": "m",
+          "label": "Ondulation",
+          "description": "Amplitude des vagues qui font onduler chaque partie du corps, comme le blob (0 : corps lisse et immobile)."
+        },
+        "detail": {
+          "type": "number",
+          "default": 1,
+          "min": 0.4,
+          "max": 2.5,
+          "step": 0.05,
+          "label": "Finesse des vagues",
+          "description": "Peu de grands lobes (bas) ou beaucoup de petites vagues (haut)."
+        },
         "currents": {
           "type": "number",
           "default": 1,
@@ -4178,22 +4199,6 @@
           "step": 0.05,
           "label": "Éclat",
           "description": "Force de cette lumière."
-        },
-        "eyes": {
-          "type": "enum",
-          "default": "dark",
-          "values": [
-            "dark",
-            "bright",
-            "none"
-          ],
-          "labels": {
-            "dark": "Sombres",
-            "bright": "Lumineux",
-            "none": "Aucun"
-          },
-          "label": "Yeux",
-          "description": "Les yeux du blob sur son visage : sombres, lumineux (blancs) ou aucun (le mannequin lisse)."
         },
         "sparks": {
           "type": "int",
@@ -4306,59 +4311,59 @@
       ],
       "stats": {
         "default": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "ice": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "arcane": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "ember": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "sap": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "dawn": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "neon": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "abyss": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "lagoon": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         },
         "blood": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
-        "source": 1370,
-        "standalone": 52672
+        "source": 1533,
+        "standalone": 51698
       }
     },
     {
@@ -4540,14 +4545,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 775,
-        "standalone": 51357
+        "standalone": 50073
       }
     },
     {
@@ -4728,14 +4733,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 839,
-        "standalone": 51445
+        "standalone": 50161
       }
     },
     {
@@ -4916,14 +4921,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 817,
-        "standalone": 51405
+        "standalone": 50121
       }
     },
     {
@@ -5104,14 +5109,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 784,
-        "standalone": 51374
+        "standalone": 50090
       }
     },
     {
@@ -5294,14 +5299,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 852,
-        "standalone": 51456
+        "standalone": 50172
       }
     },
     {
@@ -5488,14 +5493,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1088,
-        "standalone": 51680
+        "standalone": 50396
       }
     },
     {
@@ -5676,14 +5681,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 785,
-        "standalone": 51365
+        "standalone": 50081
       }
     },
     {
@@ -5864,14 +5869,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 767,
-        "standalone": 51351
+        "standalone": 50067
       }
     },
     {
@@ -6050,14 +6055,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 818,
-        "standalone": 51402
+        "standalone": 50118
       }
     },
     {
@@ -6224,14 +6229,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 767,
-        "standalone": 51337
+        "standalone": 50053
       }
     },
     {
@@ -6398,14 +6403,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 753,
-        "standalone": 51321
+        "standalone": 50037
       }
     },
     {
@@ -6571,14 +6576,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 785,
-        "standalone": 51361
+        "standalone": 50077
       }
     },
     {
@@ -6746,14 +6751,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 801,
-        "standalone": 51373
+        "standalone": 50089
       }
     },
     {
@@ -6943,14 +6948,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1313,
-        "standalone": 51885
+        "standalone": 50601
       }
     },
     {
@@ -7114,14 +7119,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 728,
-        "standalone": 51298
+        "standalone": 50014
       }
     },
     {
@@ -7286,14 +7291,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 870,
-        "standalone": 51452
+        "standalone": 50168
       }
     },
     {
@@ -7460,14 +7465,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 717,
-        "standalone": 51289
+        "standalone": 50005
       }
     },
     {
@@ -7634,14 +7639,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 813,
-        "standalone": 51395
+        "standalone": 50111
       }
     },
     {
@@ -7808,14 +7813,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 806,
-        "standalone": 51388
+        "standalone": 50104
       }
     },
     {
@@ -7983,14 +7988,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 815,
-        "standalone": 51405
+        "standalone": 50121
       }
     },
     {
@@ -8172,14 +8177,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 882,
-        "standalone": 51472
+        "standalone": 50188
       }
     },
     {
@@ -8346,14 +8351,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 813,
-        "standalone": 51395
+        "standalone": 50111
       }
     },
     {
@@ -8537,14 +8542,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 923,
-        "standalone": 51501
+        "standalone": 50217
       }
     },
     {
@@ -8742,14 +8747,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 959,
-        "standalone": 51547
+        "standalone": 50263
       }
     },
     {
@@ -8945,14 +8950,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1429,
-        "standalone": 52007
+        "standalone": 50723
       }
     },
     {
@@ -9142,14 +9147,14 @@
           "drawCalls": 2
         },
         "magic-mannequin": {
-          "triangles": 5090,
-          "vertices": 3316,
+          "triangles": 5058,
+          "vertices": 3280,
           "drawCalls": 3
         }
       },
       "bytes": {
         "source": 1352,
-        "standalone": 51934
+        "standalone": 50650
       }
     },
     {
@@ -9351,7 +9356,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 190104
+        "standalone": 192348
       }
     }
   ]

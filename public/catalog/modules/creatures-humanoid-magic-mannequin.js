@@ -1,4 +1,4 @@
-// Projet Vie 3D — Mannequin magique (creatures/humanoid/magic-mannequin), version 1
+// Projet Vie 3D — Mannequin magique (creatures/humanoid/magic-mannequin), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -116,6 +116,25 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
+#ifdef WOBBLE
+  uniform vec3 uWobble; // x : amplitude (unit\xE9s), y : fr\xE9quence des vagues (1/unit\xE9), z : vitesse
+  float wobbleHash(vec3 p3) {
+    p3 = fract(p3 * 0.1031);
+    p3 += dot(p3, p3.zyx + 31.32);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+  float wobbleNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = mix(wobbleHash(i), wobbleHash(i + vec3(1.0, 0.0, 0.0)), f.x);
+    float b = mix(wobbleHash(i + vec3(0.0, 1.0, 0.0)), wobbleHash(i + vec3(1.0, 1.0, 0.0)), f.x);
+    float c = mix(wobbleHash(i + vec3(0.0, 0.0, 1.0)), wobbleHash(i + vec3(1.0, 0.0, 1.0)), f.x);
+    float d = mix(wobbleHash(i + vec3(0.0, 1.0, 1.0)), wobbleHash(i + vec3(1.0, 1.0, 1.0)), f.x);
+    return mix(mix(a, b, f.y), mix(c, d, f.y), f.z) * 2.0 - 1.0;
+  }
+#endif
+
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
@@ -153,6 +172,18 @@ void main() {
 
   #include <begin_vertex>
   #include <skinning_vertex>
+  #ifdef WOBBLE
+    // Ondulation (mati\xE8res vivantes : le mannequin magique) : chaque sommet glisse le long de sa normale, pouss\xE9 par
+    // deux bruits lus sur la pose de repos (les vagues restent attach\xE9es \xE0 leur partie du corps quand elle bouge) et
+    // qui d\xE9rivent dans le temps, comme le corps du blob. Apr\xE8s le squelette : toutes les animations restent justes.
+    vec3 wq = position * uWobble.y;
+    float wt = uTime * uWobble.z;
+    float wave = wobbleNoise(wq + vec3(cos(wt), sin(wt), wt * 0.5) * 1.3) * 0.75
+      + wobbleNoise(wq * 2.3 + vec3(40.0 + sin(wt * 2.0), cos(wt * 2.0), 11.0) * 1.3) * 0.35;
+    // Surtout vers l'ext\xE9rieur : les parties gonflent et d\xE9gonflent sans jamais se creuser (une cheville ou un poignet
+    // fin se pincerait jusqu'\xE0 dispara\xEEtre).
+    transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
   vObjPos = transformed;
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -544,7 +575,8 @@ function createToonMaterial(options) {
     glow = true,
     ground,
     map = null,
-    currents = null
+    currents = null,
+    wobble = null
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -555,6 +587,8 @@ function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
+  if (wobble) defines.WOBBLE = "";
+  const wobbleUniform = { value: new THREE.Vector3(...wobble ?? [0, 1, 1]) };
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
   const groundUniforms = {};
@@ -603,12 +637,23 @@ function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uWobble: wobbleUniform,
       uCurrents: { value: new THREE.Vector2(...currents ?? [0, 1]) },
       ...groundUniforms
     },
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT
   });
+  if (wobble && !foliage) {
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonWobbleDepth",
+      defines: { WOBBLE: "", DEPTH_ONLY: "" },
+      side,
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform, uWobble: wobbleUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT
+    });
+  }
   if (foliage) {
     const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
     if (unlit) depthDefines.UNLIT = "";
@@ -672,14 +717,6 @@ function starOutline(points, inner = 1) {
   return outline;
 }
 var SPRITE_NORMAL = new THREE2.Vector3(0, 1, 0);
-function ellipseOutline(sides, rx = 1, ry = rx) {
-  const outline = [];
-  for (let i = 0; i < sides; i++) {
-    const angle = i / sides * Math.PI * 2;
-    outline.push([Math.cos(angle) * rx, Math.sin(angle) * ry]);
-  }
-  return outline;
-}
 function foliageGeometry(positions, normals, corners, data, index) {
   const geometry = new THREE2.BufferGeometry();
   geometry.setAttribute("position", new THREE2.BufferAttribute(new Float32Array(positions), 3));
@@ -819,7 +856,7 @@ var CHARACTERS = {
     }
   },
   // La version humaine du blob : le corps du mannequin dans la matière de lumière de la Couveuse. Ses matières
-  // dépendent de la palette choisie (`magicParts`) ; il éclaire le décor et porte les yeux du blob.
+  // dépendent de la palette choisie (`magicParts`) ; son corps ondule, il éclaire le décor, des étincelles tournent autour de lui.
   "magic-mannequin": {
     label: "Mannequin magique",
     labelEn: "Magic mannequin",
@@ -829,16 +866,16 @@ var CHARACTERS = {
     parts: null
   }
 };
-var MAGIC_LOOK = { palette: "ice", glow: 3, glowStrength: 1.4, currents: 1, eyes: "dark", sparks: 3, motes: 14 };
-var MAGIC_EYES = { dark: "Sombres", bright: "Lumineux", none: "Aucun" };
+var MAGIC_LOOK = { palette: "ice", wobble: 0.045, detail: 1, currents: 1, glow: 3, glowStrength: 1.4, sparks: 3, motes: 14 };
 var WHITE = "#ffffff";
 function magicParams() {
   return {
     palette: choiceParam("Couleurs", MAGIC_PALETTES, "Les palettes du blob : Glace (sa couleur de naissance), Arcane, Braise, S\xE8ve, Aurore, N\xE9on, Abysse, Lagon, Sang."),
+    wobble: numberParam("Ondulation", MAGIC_LOOK.wobble, 0, 0.08, "Amplitude des vagues qui font onduler chaque partie du corps, comme le blob (0 : corps lisse et immobile).", { step: 5e-3, unit: "m" }),
+    detail: numberParam("Finesse des vagues", MAGIC_LOOK.detail, 0.4, 2.5, "Peu de grands lobes (bas) ou beaucoup de petites vagues (haut).", { step: 0.05 }),
     currents: numberParam("Courants", MAGIC_LOOK.currents, 0, 2, "Courants de lumi\xE8re qui passent dans le corps.", { step: 0.05 }),
     glow: numberParam("Lumi\xE8re", MAGIC_LOOK.glow, 0, 6, "Port\xE9e de la lumi\xE8re qu'il r\xE9pand dans le noir, dans la couleur de son corps (0 : aucune).", { step: 0.25, unit: "m" }),
     glowStrength: numberParam("\xC9clat", MAGIC_LOOK.glowStrength, 0.3, 2.5, "Force de cette lumi\xE8re.", { step: 0.05 }),
-    eyes: choiceParam("Yeux", MAGIC_EYES, "Les yeux du blob sur son visage : sombres, lumineux (blancs) ou aucun (le mannequin lisse)."),
     sparks: { type: "int", default: MAGIC_LOOK.sparks, min: 0, max: 8, label: "\xC9tincelles", description: "\xC9tincelles qui tournent autour de son torse." },
     motes: { type: "int", default: MAGIC_LOOK.motes, min: 0, max: 30, label: "Poussi\xE8res", description: "Poussi\xE8res de lumi\xE8re qui montent autour de lui." }
   };
@@ -846,7 +883,8 @@ function magicParams() {
 function magicParts(look) {
   const C = fitRamp((MAGIC_PALETTES[look.palette] ?? MAGIC_PALETTES.ice).colors, 8);
   const currents = look.currents > 0 ? [0.32 * look.currents, 3.2] : null;
-  const light = { rim: [0.3, 0.5], outline: false, shadowLit: 0.55, glow: false, currents };
+  const wobble = look.wobble > 0 ? [look.wobble, 4 * look.detail, 1.5] : null;
+  const light = { rim: [0.3, 0.5], outline: false, shadowLit: 0.55, glow: false, currents, wobble };
   return {
     colors: C,
     M_Main: { ramp: [C[2], C[3], C[4], C[5], C[6], WHITE], steps: [0.2, 0.45, 0.75, 0.96, 1.1], ...light },
@@ -919,8 +957,10 @@ function buildBody(parts, { gltf, textures }) {
       rim: style.rim,
       outline: style.outline,
       glow: style.glow,
-      currents: style.currents
+      currents: style.currents,
+      wobble: style.wobble
     });
+    if (child.material.userData.depthMaterial) child.customDepthMaterial = child.material.userData.depthMaterial;
     child.castShadow = true;
     child.receiveShadow = true;
     child.frustumCulled = false;
@@ -1003,7 +1043,6 @@ function addMagic(group, body, look, C, seed) {
   const meshes = [];
   body.traverse((child) => child.isSkinnedMesh && meshes.push(child));
   const chest = body.getObjectByName("spine_03") ?? body;
-  const head = body.getObjectByName("Head");
   const rng = createRng(Number(seed) * 15485863 + 5);
   const ORIGIN = new THREE4.Vector3();
   const UP = new THREE4.Vector3(0, 1, 0);
@@ -1014,60 +1053,7 @@ function addMagic(group, body, look, C, seed) {
     fans.push({ position: ORIGIN, outline, size, stretch, normal: UP, phase: 0, variation: 0.5, flex: 0, occlusion, lift, offset });
     shapes.push({ owner, first: first2, count: outline.length + 1 });
   };
-  const occ = { eye: 0.1, mid: 0.4, light: 0.6, white: 0.9 };
-  const eyes = [];
-  let forward = null;
-  if (head && look.eyes !== "none") {
-    const points = [];
-    const v = new THREE4.Vector3();
-    for (const mesh of meshes) {
-      const bone = mesh.skeleton.bones.indexOf(head);
-      if (bone < 0) continue;
-      const skinIndex = mesh.geometry.attributes.skinIndex;
-      const skinWeight = mesh.geometry.attributes.skinWeight;
-      for (let i = 0; i < skinIndex.count; i++) {
-        for (let k = 0; k < 4; k++) {
-          if (skinIndex.getComponent(i, k) === bone && skinWeight.getComponent(i, k) > 0.5) {
-            mesh.getVertexPosition(i, v);
-            points.push(head.worldToLocal(mesh.localToWorld(v.clone())));
-          }
-        }
-      }
-    }
-    if (points.length) {
-      const inverse = head.getWorldQuaternion(new THREE4.Quaternion()).invert();
-      forward = new THREE4.Vector3(0, 0, 1).applyQuaternion(inverse);
-      const up = new THREE4.Vector3(0, 1, 0).applyQuaternion(inverse);
-      const side = new THREE4.Vector3().crossVectors(up, forward);
-      let upMin = Infinity, upMax = -Infinity, sideMin = Infinity, sideMax = -Infinity;
-      for (const q of points) {
-        upMin = Math.min(upMin, q.dot(up));
-        upMax = Math.max(upMax, q.dot(up));
-        sideMin = Math.min(sideMin, q.dot(side));
-        sideMax = Math.max(sideMax, q.dot(side));
-      }
-      const height = upMax - upMin, width = sideMax - sideMin;
-      const eyeUp = upMin + height * 0.52;
-      const radius = width * 0.15;
-      for (const k of [-1, 1]) {
-        const eyeSide = (sideMin + sideMax) / 2 + k * width * 0.22;
-        let front = -Infinity;
-        for (const q of points) {
-          if (Math.abs(q.dot(up) - eyeUp) < height * 0.2 && Math.abs(q.dot(side) - eyeSide) < width * 0.2) front = Math.max(front, q.dot(forward));
-        }
-        if (!Number.isFinite(front)) front = Math.max(...points.map((q) => q.dot(forward)));
-        const eye = { at: new THREE4.Vector3().addScaledVector(up, eyeUp).addScaledVector(side, eyeSide).addScaledVector(forward, front + 4e-3) };
-        eyes.push(eye);
-        if (look.eyes === "bright") {
-          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
-          add(eye, ellipseOutline(12), radius * 0.62, [1, 1.3], occ.white, 4e-3);
-        } else {
-          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
-          add(eye, starOutline(4), radius * 0.4, [1, 1], occ.white, 4e-3, [-radius * 0.35, radius * 0.45]);
-        }
-      }
-    }
-  }
+  const occ = { mid: 0.1, light: 0.4, white: 0.9 };
   for (let i = 0; i < look.sparks; i++) {
     const spark = {
       kind: "spark",
@@ -1097,7 +1083,7 @@ function addMagic(group, body, look, C, seed) {
   if (fans.length) {
     fx = new THREE4.Mesh(
       buildFanGeometry(fans),
-      createToonMaterial({ ramp: ["#0a1430", C[5], C[6], WHITE], steps: [0.25, 0.5, 0.75], foliage: true, unlit: true, leafShade: [0, 1], outline: false, glow: false, id: 42 })
+      createToonMaterial({ ramp: [C[5], C[6], WHITE], steps: [0.25, 0.6], foliage: true, unlit: true, leafShade: [0, 1], outline: false, glow: false, id: 42 })
     );
     fx.name = "magic";
     fx.frustumCulled = false;
@@ -1106,21 +1092,10 @@ function addMagic(group, body, look, C, seed) {
   const position = fx?.geometry.attributes.position;
   const corner = fx?.geometry.attributes.aCorner;
   const cornerBase = corner ? Float32Array.from(corner.array) : null;
-  const blinkRng = createRng(Number(seed) * 104729 + 71);
-  const blinks = [];
-  for (let i = 0; i < 2; i++) {
-    const c = (i + blinkRng.range(0.2, 0.8)) / 2;
-    blinks.push(c);
-    if (blinkRng.chance(0.3)) blinks.push(c + 0.05);
-  }
-  const toCamera = new THREE4.Vector3(0, 0.6, 0.8);
-  if (fx) fx.onBeforeRender = (renderer, scene, camera) => camera.getWorldDirection(toCamera).negate();
   const light = look.glow > 0 ? createGlowLight() : null;
   const lightColor = rgb(C[5]);
   const chestWorld = new THREE4.Vector3();
   const chestLocal = new THREE4.Vector3();
-  const headQuaternion = new THREE4.Quaternion();
-  const worldForward = new THREE4.Vector3();
   function place(shape, x, y, z, scale) {
     const a = position.array, c = corner.array;
     for (let k = 0; k < shape.count; k++) {
@@ -1136,15 +1111,6 @@ function addMagic(group, body, look, C, seed) {
     const t = sharedUniforms.uTime.value;
     chest.getWorldPosition(chestWorld);
     group.worldToLocal(chestLocal.copy(chestWorld));
-    let eyeScale = 0;
-    if (eyes.length) {
-      worldForward.copy(forward).applyQuaternion(head.getWorldQuaternion(headQuaternion));
-      const facing = worldForward.dot(toCamera);
-      const u = (t / 4 % 1 + 1) % 1;
-      const shut = blinks.some((c) => Math.abs(u - c - Math.round(u - c)) < 0.015);
-      eyeScale = shut || facing < 0.25 ? 0 : Math.min(1, facing * 1.15);
-      for (const eye of eyes) group.worldToLocal(head.localToWorld((eye.local ??= new THREE4.Vector3()).copy(eye.at)));
-    }
     for (const shape of shapes) {
       const q = shape.owner;
       if (q.kind === "spark") {
@@ -1155,8 +1121,6 @@ function addMagic(group, body, look, C, seed) {
         const wob = Math.sin(age * q.wobble * 2) * 0.05;
         if (age >= q.life) place(shape, chestLocal.x, chestLocal.y, chestLocal.z, 0);
         else place(shape, chestLocal.x + Math.cos(q.angle) * q.radius + wob, q.height + age * q.rise, chestLocal.z + Math.sin(q.angle) * q.radius - wob, 1);
-      } else {
-        place(shape, q.local.x, q.local.y, q.local.z, eyeScale);
       }
     }
     position.needsUpdate = true;
@@ -1177,7 +1141,9 @@ function addMagic(group, body, look, C, seed) {
 function disposeHumanoid(group) {
   group.userData.mixer?.stopAllAction();
   group.traverse((child) => {
-    if (child.isMesh) child.material.dispose();
+    if (!child.isMesh) return;
+    child.material.userData.depthMaterial?.dispose();
+    child.material.dispose();
   });
 }
 
@@ -1236,7 +1202,7 @@ function characterAsset({ id, name, nameEn, description, tags, character, versio
       cadence: p.cadence,
       offset: offsetOf(p.seed),
       seed: p.seed,
-      look: magic ? { palette: p.palette, currents: Number(p.currents), glow: Number(p.glow), glowStrength: Number(p.glowStrength), eyes: p.eyes, sparks: Number(p.sparks), motes: Number(p.motes) } : void 0
+      look: magic ? { palette: p.palette, wobble: Number(p.wobble), detail: Number(p.detail), currents: Number(p.currents), glow: Number(p.glow), glowStrength: Number(p.glowStrength), sparks: Number(p.sparks), motes: Number(p.motes) } : void 0
     });
   }
   return { meta: meta2, create: create2, dispose: disposeHumanoid };
@@ -1247,7 +1213,7 @@ var { meta, create, dispose } = characterAsset({
   id: "creatures/humanoid/magic-mannequin",
   name: "Mannequin magique",
   nameEn: "Magic mannequin",
-  description: "La version humaine du blob Couveuse : le corps du mannequin fait de lumi\xE8re de glace, liser\xE9 de clair, travers\xE9 de courants, aux articulations plus vives, avec les yeux du blob qui clignent. Il \xE9claire le d\xE9cor la nuit. Les neuf palettes du blob ; joue n'importe quelle animation de la cat\xE9gorie \xAB Animations \xBB.",
+  description: "La version humaine du blob Couveuse : le corps lisse du mannequin fait de lumi\xE8re de glace, liser\xE9 de clair, travers\xE9 de courants, dont chaque partie ondule comme le blob tout en gardant sa forme humaine. \xC9tincelles et poussi\xE8res de lumi\xE8re autour de lui ; il \xE9claire le d\xE9cor la nuit. Les neuf palettes du blob ; joue n'importe quelle animation de la cat\xE9gorie \xAB Animations \xBB.",
   tags: [
     "mannequin magique",
     "mannequin",
@@ -1259,8 +1225,8 @@ var { meta, create, dispose } = characterAsset({
     "magie",
     "personnage",
     "humano\xEFde",
-    "yeux",
-    "clignement",
+    "ondulation",
+    "gel\xE9e",
     "lumineux",
     "magic mannequin",
     "spirit",
@@ -1268,6 +1234,8 @@ var { meta, create, dispose } = characterAsset({
     "ice",
     "magic",
     "glowing",
+    "wobbly",
+    "jelly",
     "character",
     "humanoid",
     "rigged",
@@ -1275,7 +1243,8 @@ var { meta, create, dispose } = characterAsset({
     "animated"
   ],
   character: "magic-mannequin",
-  variantsBy: "palette"
+  variantsBy: "palette",
+  version: 2
 });
 export {
   create,

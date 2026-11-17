@@ -97,6 +97,25 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (× souplesse de chaque sommet)
 
+#ifdef WOBBLE
+  uniform vec3 uWobble; // x : amplitude (unités), y : fréquence des vagues (1/unité), z : vitesse
+  float wobbleHash(vec3 p3) {
+    p3 = fract(p3 * 0.1031);
+    p3 += dot(p3, p3.zyx + 31.32);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+  float wobbleNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = mix(wobbleHash(i), wobbleHash(i + vec3(1.0, 0.0, 0.0)), f.x);
+    float b = mix(wobbleHash(i + vec3(0.0, 1.0, 0.0)), wobbleHash(i + vec3(1.0, 1.0, 0.0)), f.x);
+    float c = mix(wobbleHash(i + vec3(0.0, 0.0, 1.0)), wobbleHash(i + vec3(1.0, 0.0, 1.0)), f.x);
+    float d = mix(wobbleHash(i + vec3(0.0, 1.0, 1.0)), wobbleHash(i + vec3(1.0, 1.0, 1.0)), f.x);
+    return mix(mix(a, b, f.y), mix(c, d, f.y), f.z) * 2.0 - 1.0;
+  }
+#endif
+
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'écran ; z : avancée vers la caméra (unités monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 cœur, 1 extérieur), z : variation, w : souplesse au vent
@@ -134,6 +153,18 @@ void main() {
 
   #include <begin_vertex>
   #include <skinning_vertex>
+  #ifdef WOBBLE
+    // Ondulation (matières vivantes : le mannequin magique) : chaque sommet glisse le long de sa normale, poussé par
+    // deux bruits lus sur la pose de repos (les vagues restent attachées à leur partie du corps quand elle bouge) et
+    // qui dérivent dans le temps, comme le corps du blob. Après le squelette : toutes les animations restent justes.
+    vec3 wq = position * uWobble.y;
+    float wt = uTime * uWobble.z;
+    float wave = wobbleNoise(wq + vec3(cos(wt), sin(wt), wt * 0.5) * 1.3) * 0.75
+      + wobbleNoise(wq * 2.3 + vec3(40.0 + sin(wt * 2.0), cos(wt * 2.0), 11.0) * 1.3) * 0.35;
+    // Surtout vers l'extérieur : les parties gonflent et dégonflent sans jamais se creuser (une cheville ou un poignet
+    // fin se pincerait jusqu'à disparaître).
+    transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
   vObjPos = transformed;
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -530,6 +561,9 @@ function defaultSteps(count) {
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
  * @param {number[]} [options.currents] [force, fréquence (1/unité)] : courants de lumière qui passent dans la matière
  *   (dérive animée des normales ; matières magiques : le mannequin magique). Le blob, lui, les calcule sur le CPU.
+ * @param {number[]} [options.wobble] [amplitude (unités), fréquence (1/unité), vitesse] : la surface ondule le long
+ *   de ses normales, après le squelette (corps vivants : le mannequin magique). Ombre portée comprise
+ *   (`userData.depthMaterial` à poser en `customDepthMaterial`).
  * @param {THREE.Texture} [options.map] texture de couleur (sRGB brut : `colorSpace = NoColorSpace`) : la rampe
  *   devient un filtre multiplié à la couleur peinte (blanc = couleur de la texture). Pour les modèles importés.
  * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
@@ -567,6 +601,7 @@ export function createToonMaterial(options) {
     ground,
     map = null,
     currents = null,
+    wobble = null,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -579,6 +614,8 @@ export function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
+  if (wobble) defines.WOBBLE = "";
+  const wobbleUniform = { value: new THREE.Vector3(...(wobble ?? [0, 1, 1])) };
 
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
@@ -630,12 +667,25 @@ export function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uWobble: wobbleUniform,
       uCurrents: { value: new THREE.Vector2(...(currents ?? [0, 1])) },
       ...groundUniforms,
     },
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT,
   });
+
+  if (wobble && !foliage) {
+    // La surface ondule dans le vertex shader : la passe d'ombre a besoin du même déplacement.
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonWobbleDepth",
+      defines: { WOBBLE: "", DEPTH_ONLY: "" },
+      side,
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform, uWobble: wobbleUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT,
+    });
+  }
 
   if (foliage) {
     // Les feuilles sont déplacées dans le vertex shader : la passe d'ombre a besoin du même déplacement.

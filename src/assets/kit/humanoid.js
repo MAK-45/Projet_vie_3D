@@ -12,7 +12,7 @@
 import * as THREE from "three";
 import { clone as cloneSkinned } from "three/addons/utils/SkeletonUtils.js";
 import { createGlowLight, createToonMaterial, rgb, sharedUniforms } from "../../engine/toon-material.js";
-import { buildFanGeometry, ellipseOutline, starOutline } from "./geometry.js";
+import { buildFanGeometry, starOutline } from "./geometry.js";
 import { MAGIC_PALETTES, fitRamp } from "./palettes.js";
 import { createRng } from "./rng.js";
 import { choiceParam, numberParam } from "./variation.js";
@@ -63,7 +63,7 @@ export const CHARACTERS = {
     },
   },
   // La version humaine du blob : le corps du mannequin dans la matière de lumière de la Couveuse. Ses matières
-  // dépendent de la palette choisie (`magicParts`) ; il éclaire le décor et porte les yeux du blob.
+  // dépendent de la palette choisie (`magicParts`) ; son corps ondule, il éclaire le décor, des étincelles tournent autour de lui.
   "magic-mannequin": {
     label: "Mannequin magique",
     labelEn: "Magic mannequin",
@@ -74,22 +74,21 @@ export const CHARACTERS = {
   },
 };
 
-// --- Le mannequin magique : matière, lumière et yeux du blob Couveuse.
+// --- Le mannequin magique : matière, ondulation et lumière du blob Couveuse.
 
 /** Réglages par défaut de l'apparence magique (paramètres `magicParams`). */
-export const MAGIC_LOOK = { palette: "ice", glow: 3, glowStrength: 1.4, currents: 1, eyes: "dark", sparks: 3, motes: 14 };
-const MAGIC_EYES = { dark: "Sombres", bright: "Lumineux", none: "Aucun" };
-const EYE_COLOR = "#0a1430";
+export const MAGIC_LOOK = { palette: "ice", wobble: 0.045, detail: 1, currents: 1, glow: 3, glowStrength: 1.4, sparks: 3, motes: 14 };
 const WHITE = "#ffffff";
 
 /** Paramètres de l'apparence magique, pour la fiche du personnage. */
 export function magicParams() {
   return {
     palette: choiceParam("Couleurs", MAGIC_PALETTES, "Les palettes du blob : Glace (sa couleur de naissance), Arcane, Braise, Sève, Aurore, Néon, Abysse, Lagon, Sang."),
+    wobble: numberParam("Ondulation", MAGIC_LOOK.wobble, 0, 0.08, "Amplitude des vagues qui font onduler chaque partie du corps, comme le blob (0 : corps lisse et immobile).", { step: 0.005, unit: "m" }),
+    detail: numberParam("Finesse des vagues", MAGIC_LOOK.detail, 0.4, 2.5, "Peu de grands lobes (bas) ou beaucoup de petites vagues (haut).", { step: 0.05 }),
     currents: numberParam("Courants", MAGIC_LOOK.currents, 0, 2, "Courants de lumière qui passent dans le corps.", { step: 0.05 }),
     glow: numberParam("Lumière", MAGIC_LOOK.glow, 0, 6, "Portée de la lumière qu'il répand dans le noir, dans la couleur de son corps (0 : aucune).", { step: 0.25, unit: "m" }),
     glowStrength: numberParam("Éclat", MAGIC_LOOK.glowStrength, 0.3, 2.5, "Force de cette lumière.", { step: 0.05 }),
-    eyes: choiceParam("Yeux", MAGIC_EYES, "Les yeux du blob sur son visage : sombres, lumineux (blancs) ou aucun (le mannequin lisse)."),
     sparks: { type: "int", default: MAGIC_LOOK.sparks, min: 0, max: 8, label: "Étincelles", description: "Étincelles qui tournent autour de son torse." },
     motes: { type: "int", default: MAGIC_LOOK.motes, min: 0, max: 30, label: "Poussières", description: "Poussières de lumière qui montent autour de lui." },
   };
@@ -102,7 +101,8 @@ export function magicParams() {
 function magicParts(look) {
   const C = fitRamp((MAGIC_PALETTES[look.palette] ?? MAGIC_PALETTES.ice).colors, 8);
   const currents = look.currents > 0 ? [0.32 * look.currents, 3.2] : null;
-  const light = { rim: [0.3, 0.5], outline: false, shadowLit: 0.55, glow: false, currents };
+  const wobble = look.wobble > 0 ? [look.wobble, 4 * look.detail, 1.5] : null;
+  const light = { rim: [0.3, 0.5], outline: false, shadowLit: 0.55, glow: false, currents, wobble };
   return {
     colors: C,
     M_Main: { ramp: [C[2], C[3], C[4], C[5], C[6], WHITE], steps: [0.2, 0.45, 0.75, 0.96, 1.1], ...light },
@@ -209,7 +209,9 @@ function buildBody(parts, { gltf, textures }) {
       outline: style.outline,
       glow: style.glow,
       currents: style.currents,
+      wobble: style.wobble,
     });
+    if (child.material.userData.depthMaterial) child.customDepthMaterial = child.material.userData.depthMaterial;
     child.castShadow = true;
     child.receiveShadow = true;
     // Le corps sort de sa boîte de repos dès qu'il bouge : pas d'élimination hors champ.
@@ -233,7 +235,7 @@ function buildBody(parts, { gltf, textures }) {
  * @param {number} [options.speed] vitesse de lecture
  * @param {"sprite"|"smooth"} [options.cadence] 12 images/s ou fluide
  * @param {number} [options.offset] décalage de départ, en fraction de la première étape (0..1)
- * @param {object} [options.look] personnage magique : palette, currents, glow, glowStrength, eyes (voir MAGIC_LOOK)
+ * @param {object} [options.look] personnage magique : palette, wobble, detail, currents, glow, glowStrength, sparks, motes (voir MAGIC_LOOK)
  * @param {number} [options.seed] graine (clignements du personnage magique)
  */
 export function createHumanoid({ id, params, character = "superhero-female", steps = [{ clip: "Idle_Loop" }], inPlace = true, speed = 1, cadence = "sprite", offset = 0, look = {}, seed = 0 }) {
@@ -314,18 +316,15 @@ export function createHumanoid({ id, params, character = "superhero-female", ste
 }
 
 /**
- * Ce que le mannequin magique a de plus que son corps, en un seul maillage de formes face caméra (un draw call) :
- * - les yeux du blob sur le visage, accrochés à l'os de la tête : ils suivent chaque mouvement, rapetissent de
- *   profil, disparaissent de dos et clignent ;
- * - des étincelles qui tournent autour du torse et des poussières de lumière qui montent autour de lui.
- * Et une lumière de halo au cœur du torse, qui éclaire le décor dans le noir.
+ * Ce que le mannequin magique a de plus que son corps : des étincelles qui tournent autour du torse et des
+ * poussières de lumière qui montent autour de lui (un seul maillage de formes face caméra, un draw call), et une
+ * lumière de halo au cœur du torse, qui éclaire le décor dans le noir.
  */
 function addMagic(group, body, look, C, seed) {
   body.updateMatrixWorld(true);
   const meshes = [];
   body.traverse((child) => child.isSkinnedMesh && meshes.push(child));
   const chest = body.getObjectByName("spine_03") ?? body;
-  const head = body.getObjectByName("Head");
   const rng = createRng(Number(seed) * 15485863 + 5);
   const ORIGIN = new THREE.Vector3();
   const UP = new THREE.Vector3(0, 1, 0);
@@ -337,65 +336,8 @@ function addMagic(group, body, look, C, seed) {
     fans.push({ position: ORIGIN, outline, size, stretch, normal: UP, phase: 0, variation: 0.5, flex: 0, occlusion, lift, offset });
     shapes.push({ owner, first, count: outline.length + 1 });
   };
-  // Occlusion → couleur de la rampe [œil, corps clair, reflet, blanc].
-  const occ = { eye: 0.1, mid: 0.4, light: 0.6, white: 0.9 };
-
-  // --- Les yeux : le visage est trouvé dans la pose de repos, à partir des sommets portés par l'os de la tête.
-  const eyes = [];
-  let forward = null;
-  if (head && look.eyes !== "none") {
-    const points = [];
-    const v = new THREE.Vector3();
-    for (const mesh of meshes) {
-      const bone = mesh.skeleton.bones.indexOf(head);
-      if (bone < 0) continue;
-      const skinIndex = mesh.geometry.attributes.skinIndex;
-      const skinWeight = mesh.geometry.attributes.skinWeight;
-      for (let i = 0; i < skinIndex.count; i++) {
-        for (let k = 0; k < 4; k++) {
-          if (skinIndex.getComponent(i, k) === bone && skinWeight.getComponent(i, k) > 0.5) {
-            mesh.getVertexPosition(i, v);
-            points.push(head.worldToLocal(mesh.localToWorld(v.clone())));
-          }
-        }
-      }
-    }
-    if (points.length) {
-      // Repère du visage dans l'os de la tête : devant = +Z du personnage, haut = +Y.
-      const inverse = head.getWorldQuaternion(new THREE.Quaternion()).invert();
-      forward = new THREE.Vector3(0, 0, 1).applyQuaternion(inverse);
-      const up = new THREE.Vector3(0, 1, 0).applyQuaternion(inverse);
-      const side = new THREE.Vector3().crossVectors(up, forward);
-      let upMin = Infinity, upMax = -Infinity, sideMin = Infinity, sideMax = -Infinity;
-      for (const q of points) {
-        upMin = Math.min(upMin, q.dot(up));
-        upMax = Math.max(upMax, q.dot(up));
-        sideMin = Math.min(sideMin, q.dot(side));
-        sideMax = Math.max(sideMax, q.dot(side));
-      }
-      const height = upMax - upMin, width = sideMax - sideMin;
-      const eyeUp = upMin + height * 0.52;
-      const radius = width * 0.15;
-      for (const k of [-1, 1]) {
-        const eyeSide = (sideMin + sideMax) / 2 + k * width * 0.22;
-        // Le devant du visage à cet endroit : le sommet le plus avancé autour du point.
-        let front = -Infinity;
-        for (const q of points) {
-          if (Math.abs(q.dot(up) - eyeUp) < height * 0.2 && Math.abs(q.dot(side) - eyeSide) < width * 0.2) front = Math.max(front, q.dot(forward));
-        }
-        if (!Number.isFinite(front)) front = Math.max(...points.map((q) => q.dot(forward)));
-        const eye = { at: new THREE.Vector3().addScaledVector(up, eyeUp).addScaledVector(side, eyeSide).addScaledVector(forward, front + 0.004) };
-        eyes.push(eye);
-        if (look.eyes === "bright") {
-          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
-          add(eye, ellipseOutline(12), radius * 0.62, [1, 1.3], occ.white, 0.004);
-        } else {
-          add(eye, ellipseOutline(12), radius, [1, 1.3], occ.eye, 0);
-          add(eye, starOutline(4), radius * 0.4, [1, 1], occ.white, 0.004, [-radius * 0.35, radius * 0.45]);
-        }
-      }
-    }
-  }
+  // Occlusion → couleur de la rampe (du corps au blanc).
+  const occ = { mid: 0.1, light: 0.4, white: 0.9 };
 
   // --- Étincelles (tournent autour du torse et le suivent) et poussières (montent du sol autour de lui).
   for (let i = 0; i < look.sparks; i++) {
@@ -418,7 +360,7 @@ function addMagic(group, body, look, C, seed) {
   if (fans.length) {
     fx = new THREE.Mesh(
       buildFanGeometry(fans),
-      createToonMaterial({ ramp: ["#0a1430", C[5], C[6], WHITE], steps: [0.25, 0.5, 0.75], foliage: true, unlit: true, leafShade: [0, 1], outline: false, glow: false, id: 42 }),
+      createToonMaterial({ ramp: [C[5], C[6], WHITE], steps: [0.25, 0.6], foliage: true, unlit: true, leafShade: [0, 1], outline: false, glow: false, id: 42 }),
     );
     fx.name = "magic";
     fx.frustumCulled = false;
@@ -428,25 +370,10 @@ function addMagic(group, body, look, C, seed) {
   const corner = fx?.geometry.attributes.aCorner;
   const cornerBase = corner ? Float32Array.from(corner.array) : null;
 
-  // Clignements : deux par boucle de 4 s, à des instants tirés de la graine, parfois doublés.
-  const blinkRng = createRng(Number(seed) * 104729 + 71);
-  const blinks = [];
-  for (let i = 0; i < 2; i++) {
-    const c = (i + blinkRng.range(0.2, 0.8)) / 2;
-    blinks.push(c);
-    if (blinkRng.chance(0.3)) blinks.push(c + 0.05);
-  }
-
-  // La caméra n'est connue qu'au rendu : on note sa direction pour l'image suivante (yeux de profil, de dos).
-  const toCamera = new THREE.Vector3(0, 0.6, 0.8);
-  if (fx) fx.onBeforeRender = (renderer, scene, camera) => camera.getWorldDirection(toCamera).negate();
-
   const light = look.glow > 0 ? createGlowLight() : null;
   const lightColor = rgb(C[5]);
   const chestWorld = new THREE.Vector3();
   const chestLocal = new THREE.Vector3();
-  const headQuaternion = new THREE.Quaternion();
-  const worldForward = new THREE.Vector3();
 
   function place(shape, x, y, z, scale) {
     const a = position.array, c = corner.array;
@@ -464,16 +391,6 @@ function addMagic(group, body, look, C, seed) {
     const t = sharedUniforms.uTime.value;
     chest.getWorldPosition(chestWorld);
     group.worldToLocal(chestLocal.copy(chestWorld));
-    // Yeux : entiers de face, plus petits de profil, absents de dos ou paupières closes.
-    let eyeScale = 0;
-    if (eyes.length) {
-      worldForward.copy(forward).applyQuaternion(head.getWorldQuaternion(headQuaternion));
-      const facing = worldForward.dot(toCamera);
-      const u = ((t / 4) % 1 + 1) % 1;
-      const shut = blinks.some((c) => Math.abs(u - c - Math.round(u - c)) < 0.015);
-      eyeScale = shut || facing < 0.25 ? 0 : Math.min(1, facing * 1.15);
-      for (const eye of eyes) group.worldToLocal(head.localToWorld((eye.local ??= new THREE.Vector3()).copy(eye.at)));
-    }
     for (const shape of shapes) {
       const q = shape.owner;
       if (q.kind === "spark") {
@@ -485,16 +402,14 @@ function addMagic(group, body, look, C, seed) {
         // Éteinte : réduite à un point au cœur du torse, caché par le corps.
         if (age >= q.life) place(shape, chestLocal.x, chestLocal.y, chestLocal.z, 0);
         else place(shape, chestLocal.x + Math.cos(q.angle) * q.radius + wob, q.height + age * q.rise, chestLocal.z + Math.sin(q.angle) * q.radius - wob, 1);
-      } else {
-        place(shape, q.local.x, q.local.y, q.local.z, eyeScale);
       }
     }
     position.needsUpdate = true;
     corner.needsUpdate = true;
   }
 
-  // Le moteur appelle updateMatrixWorld avant chaque rendu : la lumière suit le torse, yeux et particules suivent
-  // le corps (à chaque image : les os bougent aussi en cadence fluide).
+  // Le moteur appelle updateMatrixWorld avant chaque rendu : la lumière suit le torse, les particules suivent le
+  // corps (à chaque image : les os bougent aussi en cadence fluide).
   const baseUpdate = group.updateMatrixWorld.bind(group);
   group.updateMatrixWorld = (force) => {
     baseUpdate(force);
@@ -513,6 +428,8 @@ function addMagic(group, body, look, C, seed) {
 export function disposeHumanoid(group) {
   group.userData.mixer?.stopAllAction();
   group.traverse((child) => {
-    if (child.isMesh) child.material.dispose();
+    if (!child.isMesh) return;
+    child.material.userData.depthMaterial?.dispose();
+    child.material.dispose();
   });
 }

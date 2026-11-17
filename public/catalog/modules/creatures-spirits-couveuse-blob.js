@@ -63,6 +63,25 @@ uniform float uWindStrength;
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
+#ifdef WOBBLE
+  uniform vec3 uWobble; // x : amplitude (unit\xE9s), y : fr\xE9quence des vagues (1/unit\xE9), z : vitesse
+  float wobbleHash(vec3 p3) {
+    p3 = fract(p3 * 0.1031);
+    p3 += dot(p3, p3.zyx + 31.32);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+  float wobbleNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = mix(wobbleHash(i), wobbleHash(i + vec3(1.0, 0.0, 0.0)), f.x);
+    float b = mix(wobbleHash(i + vec3(0.0, 1.0, 0.0)), wobbleHash(i + vec3(1.0, 1.0, 0.0)), f.x);
+    float c = mix(wobbleHash(i + vec3(0.0, 0.0, 1.0)), wobbleHash(i + vec3(1.0, 0.0, 1.0)), f.x);
+    float d = mix(wobbleHash(i + vec3(0.0, 1.0, 1.0)), wobbleHash(i + vec3(1.0, 1.0, 1.0)), f.x);
+    return mix(mix(a, b, f.y), mix(c, d, f.y), f.z) * 2.0 - 1.0;
+  }
+#endif
+
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
@@ -100,6 +119,18 @@ void main() {
 
   #include <begin_vertex>
   #include <skinning_vertex>
+  #ifdef WOBBLE
+    // Ondulation (mati\xE8res vivantes : le mannequin magique) : chaque sommet glisse le long de sa normale, pouss\xE9 par
+    // deux bruits lus sur la pose de repos (les vagues restent attach\xE9es \xE0 leur partie du corps quand elle bouge) et
+    // qui d\xE9rivent dans le temps, comme le corps du blob. Apr\xE8s le squelette : toutes les animations restent justes.
+    vec3 wq = position * uWobble.y;
+    float wt = uTime * uWobble.z;
+    float wave = wobbleNoise(wq + vec3(cos(wt), sin(wt), wt * 0.5) * 1.3) * 0.75
+      + wobbleNoise(wq * 2.3 + vec3(40.0 + sin(wt * 2.0), cos(wt * 2.0), 11.0) * 1.3) * 0.35;
+    // Surtout vers l'ext\xE9rieur : les parties gonflent et d\xE9gonflent sans jamais se creuser (une cheville ou un poignet
+    // fin se pincerait jusqu'\xE0 dispara\xEEtre).
+    transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
   vObjPos = transformed;
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -491,7 +522,8 @@ function createToonMaterial(options) {
     glow = true,
     ground,
     map = null,
-    currents = null
+    currents = null,
+    wobble = null
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -502,6 +534,8 @@ function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
+  if (wobble) defines.WOBBLE = "";
+  const wobbleUniform = { value: new THREE.Vector3(...wobble ?? [0, 1, 1]) };
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
   const groundUniforms = {};
@@ -550,12 +584,23 @@ function createToonMaterial(options) {
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
+      uWobble: wobbleUniform,
       uCurrents: { value: new THREE.Vector2(...currents ?? [0, 1]) },
       ...groundUniforms
     },
     vertexShader: VERTEX,
     fragmentShader: FRAGMENT
   });
+  if (wobble && !foliage) {
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonWobbleDepth",
+      defines: { WOBBLE: "", DEPTH_ONLY: "" },
+      side,
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform, uWobble: wobbleUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT
+    });
+  }
   if (foliage) {
     const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
     if (unlit) depthDefines.UNLIT = "";

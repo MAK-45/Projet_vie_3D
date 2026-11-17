@@ -155,7 +155,7 @@ export function characterAsset({ id, name, nameEn, description, tags, character,
       cadence: p.cadence,
       offset: offsetOf(p.seed),
       seed: p.seed,
-      look: magic ? { palette: p.palette, currents: Number(p.currents), glow: Number(p.glow), glowStrength: Number(p.glowStrength), eyes: p.eyes, sparks: Number(p.sparks), motes: Number(p.motes) } : undefined,
+      look: magic ? { palette: p.palette, wobble: Number(p.wobble), detail: Number(p.detail), currents: Number(p.currents), glow: Number(p.glow), glowStrength: Number(p.glowStrength), sparks: Number(p.sparks), motes: Number(p.motes) } : undefined,
     });
   }
 
