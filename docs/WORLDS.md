@@ -109,13 +109,21 @@ Le personnage (`src/explorer/walker.js`, réglage `character`) se choisit dans l
   survole le relief avec un ressort amorti (il lit le sol 0,45 s devant lui pour ne pas buter dans les montées), se
   penche en avant en accélérant et s'incline dans les virages ; il éclaire le décor la nuit.
 
-Un nouveau personnage = un corps (`create…()` d'un asset) et une conduite dans `STYLES` de `walker.js`.
+- **Héroïne, Héros, Mannequin, Mannequin magique** : les personnages importés (`creatures/humanoid`), pieds au
+  sol, avec un peu d'élan pour démarrer et s'arrêter. Ils jouent la **marche** (`Walk_Loop`) quand ils avancent et
+  l'**attente** (`Idle_Loop`) à l'arrêt, en fondu de l'une à l'autre (`createWalkingHumanoid` dans
+  `src/assets/kit/humanoid.js`). La marche est jouée sur place, accélérée ou ralentie pour que les pieds suivent
+  le sol (environ 1 m/s naturel, 1,3 m/s en marche, 1,8 m/s en pressant le pas avec Maj : pas encore de course).
+  Le mannequin magique éclaire le décor la nuit.
+
+Un nouveau personnage = un corps (`create…()` d'un asset) et une conduite dans `STYLES` de `walker.js` ; un
+personnage importé de plus dans `CHARACTERS` de `kit/humanoid.js` apparaît tout seul dans l'explorateur.
 
 Caméra pendant la balade auto : **Fixe** (ne tourne pas), **Pivote** (un cran toutes les 9 secondes), **Suit**
 (se replace derrière le promeneur quand il change de cap).
 
 `explorer.html` le montre seul, en plein écran, pour les captures :
-`?seed=1&size=small&moment=night&weather=rain&camera=follow&character=blob&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
+`?seed=1&size=small&moment=night&weather=rain&camera=follow&character=superhero-female&trees=2&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1`.
 
 ## Mesures (carte moyenne, vue de départ, moyenne par image)
 

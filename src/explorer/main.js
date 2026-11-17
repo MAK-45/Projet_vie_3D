@@ -1,7 +1,7 @@
 // Page de développement de l'explorateur (explorer.html) : la prairie d'été en plein écran. Dans l'Atelier,
 // l'explorateur est monté par la fiche de l'asset « Prairie d'été » (src/gallery/main.js).
 // L'URL accepte ?seed=1&size=small|medium|large&moment=day|dusk|night|cycle&weather=clear|rain|variable
-// &camera=fixed|orbit|follow&character=bar|blob&trees=1&rocks=1&grass=1&flowers=1&relief=1.8&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1
+// &camera=fixed|orbit|follow&character=bar|blob|superhero-female|superhero-male|mannequin|magic-mannequin&trees=1&rocks=1&grass=1&flowers=1&relief=1.8&az=45&el=35&zoom=1.5&x=0&z=0&stroll=1&clean=1
 
 import { DEFAULT_SETTINGS, Explorer } from "./explorer.js";
 

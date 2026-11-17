@@ -1,12 +1,16 @@
-// Le promeneur : le personnage qu'on promène dans un monde. Deux corps au choix, chacun avec sa façon d'avancer :
+// Le promeneur : le personnage qu'on promène dans un monde. Plusieurs corps au choix, chacun avec sa façon d'avancer :
 // - la barre rouge de 1,80 m, pour juger des proportions : elle glisse sur le sol, sans inertie ;
 // - le blob (la Couveuse) : il lévite. Il prend son élan et freine en douceur, survole le relief en lissant les
-//   bosses (il anticipe les montées), se penche en avant quand il accélère et s'incline dans les virages.
+//   bosses (il anticipe les montées), se penche en avant quand il accélère et s'incline dans les virages ;
+// - les personnages importés (héroïne, héros, mannequins) : ils marchent, pieds au sol, et prennent la pose
+//   d'attente à l'arrêt (kit/humanoid.js, createWalkingHumanoid). Pas de course pour l'instant : Maj fait
+//   seulement presser le pas.
 // Le déplacement (collisions, cap) est commun ; seul le corps et sa conduite changent.
 
 import * as THREE from "three";
 import { createToonMaterial, disposeObject } from "../engine/toon-material.js";
 import { create as createBlob } from "../assets/creatures/spirits/couveuse-blob.js";
+import { CHARACTERS as HUMANOIDS, createWalkingHumanoid } from "../assets/kit/humanoid.js";
 
 export const WALKER_HEIGHT = 1.8;
 
@@ -14,6 +18,15 @@ export const WALKER_HEIGHT = 1.8;
 export const CHARACTERS = {
   bar: { label: "Barre 1,80 m" },
   blob: { label: "Blob" },
+  ...Object.fromEntries(Object.entries(HUMANOIDS).map(([id, c]) => [id, { label: c.label, humanoid: true, height: c.height }])),
+};
+
+/** Conduite des personnages qui marchent : un peu d'élan pour démarrer et s'arrêter, pieds collés au sol. */
+const STRIDE = {
+  walk: 1.3, run: 1.8, radius: 0.3, glide: false, stride: true,
+  accelerate: 7, // réactivité au démarrage (1/s)
+  brake: 9, // et à l'arrêt : il ne glisse pas
+  turn: 9, // vitesse à laquelle il se tourne vers sa marche (1/s)
 };
 
 const BLOB_CENTER = 1; // hauteur du centre du blob au-dessus de son origine (paramètre « Vol » par défaut)
@@ -72,14 +85,15 @@ export class Walker {
     if (kind === this.kind) return;
     if (this.body) {
       this.lean.remove(this.body);
-      disposeObject(this.body);
+      this._disposeBody();
     }
     this.kind = kind;
-    this.style = STYLES[kind];
+    const spec = CHARACTERS[kind];
+    this.style = spec.humanoid ? { ...STRIDE, look: spec.height * 0.55 } : STYLES[kind];
     this.radius = this.style.radius;
     this.lookHeight = this.style.look;
     // Le blob regarde vers +Z comme le cap ; son « turn » à 0 pour que le groupe l'oriente.
-    this.body = kind === "blob" ? createBlob({ turn: 0 }) : createBar();
+    this.body = spec.humanoid ? createWalkingHumanoid({ character: kind, seed: 1 }) : kind === "blob" ? createBlob({ turn: 0 }) : createBar();
     // Le penché tourne autour du centre du corps, pas de ses pieds.
     this.lean.position.y = this.style.look;
     this.body.position.y = -this.style.look;
@@ -108,8 +122,14 @@ export class Walker {
    */
   update(dt, dirX, dirZ, run, world) {
     if (this.style.glide) this._glide(dt, dirX, dirZ, run, world);
+    else if (this.style.stride) this._stride(dt, dirX, dirZ, run, world);
     else this._walk(dt, dirX, dirZ, run, world);
     this.object.rotation.y = this.heading;
+    const body = this.body.userData;
+    if (body.setGait) {
+      body.setGait(this.speed);
+      body.update(dt);
+    }
   }
 
   /** La barre : avance droit à la vitesse voulue, collée au sol. */
@@ -129,6 +149,33 @@ export class Walker {
     world.collide(this.position, this.radius);
     this.position.y = world.heightAt(this.position.x, this.position.z);
     this.speed = dt > 0 ? Math.hypot(this.position.x - fromX, this.position.z - fromZ) / dt : 0;
+  }
+
+  /** Les personnages qui marchent : la vitesse rattrape la vitesse voulue en un instant, collés au sol. */
+  _stride(dt, dirX, dirZ, run, world) {
+    if (dt <= 0) return;
+    const style = this.style;
+    const velocity = this.velocity;
+    const amount = Math.min(1, Math.hypot(dirX, dirZ));
+    const speed = (run ? style.run : style.walk) * amount;
+    const length = Math.hypot(dirX, dirZ) || 1;
+    const wantX = (dirX / length) * speed;
+    const wantZ = (dirZ / length) * speed;
+    const k = damp(speed > velocity.length() ? style.accelerate : style.brake, dt);
+    velocity.x += (wantX - velocity.x) * k;
+    velocity.y += (wantZ - velocity.y) * k;
+    if (speed === 0 && velocity.length() < 0.05) velocity.set(0, 0);
+
+    const fromX = this.position.x;
+    const fromZ = this.position.z;
+    this.position.x += velocity.x * dt;
+    this.position.z += velocity.y * dt;
+    world.collide(this.position, this.radius);
+    velocity.set((this.position.x - fromX) / dt, (this.position.z - fromZ) / dt);
+    this.speed = velocity.length();
+    this.position.y = world.heightAt(this.position.x, this.position.z);
+    // Il se tourne vers où il veut aller, même bloqué contre un tronc.
+    if (amount > 0.01) this.heading += wrapAngle(Math.atan2(dirX, dirZ) - this.heading) * damp(style.turn, dt);
   }
 
   /** Le blob : lévite avec élan, survole le relief, se penche et s'incline. */
@@ -196,7 +243,13 @@ export class Walker {
     lean.z += (roll - lean.z) * kl;
   }
 
+  /** Les personnages importés partagent géométries et textures (cache) : seuls leurs matériaux sont libérés. */
+  _disposeBody() {
+    if (this.body.userData.dispose) this.body.userData.dispose();
+    else disposeObject(this.body);
+  }
+
   dispose() {
-    if (this.body) disposeObject(this.body);
+    if (this.body) this._disposeBody();
   }
 }

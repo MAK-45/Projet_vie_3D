@@ -315,6 +315,101 @@ export function createHumanoid({ id, params, character = "superhero-female", ste
   return group;
 }
 
+/** Vitesse d'avance (m/s) d'une animation qui déplace la racine, à l'échelle du personnage. */
+async function strideSpeed(name, character) {
+  const clip = await clipFor(name, character, false);
+  const track = clip.tracks.find((t) => t.name === "root.position");
+  if (!track || clip.duration <= 0) return 0;
+  const v = track.values;
+  const n = v.length;
+  return Math.hypot(v[n - 3] - v[0], v[n - 1] - v[2]) / clip.duration;
+}
+
+/**
+ * Personnage promené dans un monde : il joue l'attente à l'arrêt et la marche quand il avance, en fondu de l'une
+ * à l'autre. La marche est jouée sur place (c'est le promeneur qui avance) et accélérée ou ralentie pour que les
+ * pieds suivent le sol. À chaque image : `group.userData.setGait(vitesse en m/s)` puis
+ * `group.userData.update(secondes)`. `group.userData.walkSpeed` : vitesse naturelle de la marche (m/s), connue
+ * une fois chargé.
+ *
+ * @param {object} options
+ * @param {keyof CHARACTERS} [options.character]
+ * @param {object} [options.look] apparence du personnage magique (voir MAGIC_LOOK)
+ * @param {"sprite"|"smooth"} [options.cadence] 12 images/s (défaut, comme le décor) ou fluide
+ * @param {number} [options.seed]
+ * @param {string} [options.idle] animation à l'arrêt
+ * @param {string} [options.walk] animation de marche
+ */
+export function createWalkingHumanoid({ character = "superhero-female", look = {}, cadence = "sprite", seed = 0, idle = "Idle_Loop", walk = "Walk_Loop" } = {}) {
+  if (!(character in CHARACTERS)) character = "superhero-female";
+  const group = new THREE.Group();
+  group.name = `walker-${character}`;
+  group.userData.walkSpeed = 1;
+
+  let mixer = null;
+  let idleAction = null;
+  let walkAction = null;
+  let disposed = false;
+  let gait = 0; // vitesse demandée (m/s)
+  let blend = 0; // part de la marche dans la pose, 0..1
+  let pending = 0;
+  const fps = cadence === "smooth" ? 0 : 12;
+
+  group.userData.setGait = (speed) => (gait = Math.max(0, speed));
+
+  group.userData.update = (delta) => {
+    if (!mixer) return;
+    // Le fondu suit le temps réel ; la pose, elle, ne change qu'aux crans de la cadence.
+    const moving = gait > 0.15 ? 1 : 0;
+    blend += (moving - blend) * (1 - Math.exp(-delta * 7));
+    if (Math.abs(blend - moving) < 0.01) blend = moving;
+    idleAction.setEffectiveWeight(1 - blend);
+    walkAction.setEffectiveWeight(blend);
+    // Les pas suivent le sol ; jamais au ralenti au point de flotter quand il s'arrête.
+    walkAction.setEffectiveTimeScale(THREE.MathUtils.clamp(gait / group.userData.walkSpeed, 0.6, 2));
+    if (!fps) return mixer.update(delta);
+    pending += delta;
+    const frames = Math.floor(pending * fps);
+    if (frames > 0) {
+      pending -= frames / fps;
+      mixer.update(frames / fps);
+    }
+  };
+
+  group.userData.ready = (async () => {
+    const [loaded, idleClip, walkClip, speed] = await Promise.all([
+      loadCharacter(character),
+      clipFor(idle, character, true),
+      clipFor(walk, character, true),
+      strideSpeed(walk, character),
+    ]);
+    if (disposed) return group;
+    const spec = CHARACTERS[character];
+    const magic = spec.magic ? magicParts({ ...MAGIC_LOOK, ...look }) : null;
+    const body = buildBody(magic ?? spec.parts, loaded);
+    group.add(body);
+    if (magic) addMagic(group, body, { ...MAGIC_LOOK, ...look }, magic.colors, seed);
+    if (speed > 0) group.userData.walkSpeed = speed;
+    mixer = new THREE.AnimationMixer(body);
+    idleAction = mixer.clipAction(idleClip);
+    walkAction = mixer.clipAction(walkClip);
+    for (const action of [idleAction, walkAction]) {
+      action.setLoop(THREE.LoopRepeat, Infinity);
+      action.play();
+    }
+    idleAction.time = (((Number(seed) || 0) * 0.618) % 1) * idleClip.duration;
+    group.userData.mixer = mixer;
+    group.userData.update(0);
+    return group;
+  })();
+  group.userData.ready.catch((error) => console.error(`${group.name} : ${error.message}`));
+  group.userData.dispose = () => {
+    disposed = true;
+    disposeHumanoid(group);
+  };
+  return group;
+}
+
 /**
  * Ce que le mannequin magique a de plus que son corps : des étincelles qui tournent autour du torse et des
  * poussières de lumière qui montent autour de lui (un seul maillage de formes face caméra, un draw call), et une

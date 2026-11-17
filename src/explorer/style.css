@@ -222,6 +222,19 @@ html.pv3d-immersive body {
 .x-choice button:not([aria-checked="true"]):hover {
   background: var(--x-soft);
 }
+/* Le choix du personnage : six boutons, rangés en grille de trois colonnes */
+.x-choice[data-choice="character"] {
+  display: inline-grid;
+  grid-template-columns: repeat(3, auto);
+  border-width: 2px 0 0 2px;
+}
+.x-choice[data-choice="character"] button {
+  border-right: 2px solid var(--x-ink);
+  border-bottom: 2px solid var(--x-ink);
+}
+.x-choice[data-choice="character"] button + button {
+  border-left: 0;
+}
 .x-button {
   min-height: 32px;
   padding: 0 10px;

@@ -1,4 +1,4 @@
-// Explorateur de monde : on configure la prairie d'été puis on s'y promène avec le personnage choisi (barre rouge de 1,80 m ou blob en lévitation), la
+// Explorateur de monde : on configure la prairie d'été puis on s'y promène avec le personnage choisi (barre rouge de 1,80 m, blob en lévitation ou personnage qui marche), la
 // caméra isométrique suit. Un seul objet, montable dans n'importe quel bloc : il vit dans la fiche de l'asset
 // « Prairie d'été » de l'Atelier, et passe en plein écran pour la balade.
 
@@ -40,6 +40,10 @@ export const DEFAULT_SETTINGS = {
 const SIZE_NOTES = {
   bar: "La barre rouge mesure 1,80 m.",
   blob: "Le blob lévite à 1 m du sol (0,90 m de diamètre).",
+  "superhero-female": "L'héroïne mesure 1,77 m. Elle marche, et attend quand on la laisse.",
+  "superhero-male": "Le héros mesure 1,81 m. Il marche, et attend quand on le laisse.",
+  mannequin: "Le mannequin mesure 1,80 m. Il marche, et attend quand on le laisse.",
+  "magic-mannequin": "Le mannequin magique mesure 1,80 m et éclaire le décor la nuit. Il marche, et attend quand on le laisse.",
 };
 
 const choice = (name, label, options) => `
