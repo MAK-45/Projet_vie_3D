@@ -23,8 +23,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-17
-- **Étape actuelle** : lot 1 (ossature du Sas) fait, à valider dans l'Atelier (et `dev/complex-corner.html`).
-- **Prochaine action** : validation du lot 1 ; puis lot 2 (lumière et réseaux : lampe à filament, lustre, tuyau de
+- **Étape actuelle** : lot 1 validé ; lot 2 (lumière et réseaux) en discussion.
+- **Prochaine action** : lot 2 (lumière et réseaux : lampe à filament, lustre, tuyau de
   cuivre, valve à volant, câbles tressés), à discuter d'abord.
 
 ## Les lots
@@ -33,8 +33,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 |---|---|---|---|---|---|
 | — | Bible adaptée au pixel art, plan, suivi | — | ✅ validé | 2026-11-17 | docs/complexe/ |
 | 0 | Préparation | — | ✅ validé | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
-| 1 | Ossature du Sas | 5 | 👀 à valider | 2026-11-17 | dalle, mur, colonne, voûte, portes ; scène d'essai `dev/complex-corner.html` |
-| 2 | Lumière et réseaux | 5 | ⬜ à faire | | |
+| 1 | Ossature du Sas | 5 | ✅ validé | 2026-11-17 | dalle, mur, colonne, voûte, portes ; scène d'essai `dev/complex-corner.html` |
+| 2 | Lumière et réseaux | 5 | 🔄 en cours | 2026-11-17 | propositions en discussion |
 | 3 | Mobilier du Sas | 5 | ⬜ à faire | | |
 | 4 | La Porte-Iris et le balisage | 4 | ⬜ à faire | | |
 | 5 | Monde : le Sas | — | ⬜ à faire | | |
@@ -68,11 +68,11 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 
 | Lot | Module | Fiches | État | Remarques |
 |---|---|---|---|---|
-| 1 | `buildings/structure/glyph-floor-slab` | SAS-01 (+ sols de l'Atelier, de E4, de E10) | 👀 | intacte, fissurée, usée, à trappe, tachée ; rainure sombre ou ambre ; dessus à 0,20 m |
-| 1 | `buildings/structure/glyph-wall` | SAS-02 (+ tous les murs : courbes pour les salles rondes, doublage cuivre de E2) | 👀 | plein, niche, conduit ; 4–14 m ; largeur 1–4 m ; cintrage ; doublage cuivre ; glyphes allumés, en veille, éteints |
-| 1 | `buildings/structure/glyph-column` | SAS-03, ARC-09, GAL-11, ORA-06 (+ pilastres de E6, E7) | 👀 | carré, cannelé, engagé, pilastre ; 3–14 m ; 8–24 cannelures ; fibre cyan. La graine change peu (bagues, tons, écaillures) |
-| 1 | `buildings/structure/coffered-vault` | SAS-04 (+ plafond de E6) | 👀 | au plafond ou retournée ; crochet de lampe (`userData.hookPoint`) |
-| 1 | `buildings/structure/complex-door` | Porte standard, GAL-02, GAL-13, ORA-07, issue de secours de E7 | 👀 | standard, étude, double, liaison, secours ; fermée, ouverte, en boucle ; `userData.door` (open, close, setOpen, blocking) |
+| 1 | `buildings/structure/glyph-floor-slab` | SAS-01 (+ sols de l'Atelier, de E4, de E10) | ✅ | intacte, fissurée, usée, à trappe, tachée ; rainure sombre ou ambre ; dessus à 0,20 m |
+| 1 | `buildings/structure/glyph-wall` | SAS-02 (+ tous les murs : courbes pour les salles rondes, doublage cuivre de E2) | ✅ | plein, niche, conduit ; 4–14 m ; largeur 1–4 m ; cintrage ; doublage cuivre ; glyphes allumés, en veille, éteints |
+| 1 | `buildings/structure/glyph-column` | SAS-03, ARC-09, GAL-11, ORA-06 (+ pilastres de E6, E7) | ✅ | carré, cannelé, engagé, pilastre ; 3–14 m ; 8–24 cannelures ; fibre cyan. La graine change peu (bagues, tons, écaillures) |
+| 1 | `buildings/structure/coffered-vault` | SAS-04 (+ plafond de E6) | ✅ | au plafond ou retournée ; crochet de lampe (`userData.hookPoint`) |
+| 1 | `buildings/structure/complex-door` | Porte standard, GAL-02, GAL-13, ORA-07, issue de secours de E7 | ✅ | standard, étude, double, liaison, secours ; fermée, ouverte, en boucle ; `userData.door` (open, close, setOpen, blocking) |
 | 2 | `furniture/lighting/filament-lamp` | SAS-05, GAL-05 | ⬜ | |
 | 2 | `furniture/lighting/filament-chandelier` | ARC-16, GAL-12, ORA-13 | ⬜ | |
 | 2 | `props/machines/copper-pipe` | SAS-09, COE-07 | ⬜ | |
@@ -186,6 +186,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Lot 1 validé sur proposition : dalle (intacte, fissurée, usée, trappe, tachée ; rainure sombre ou ambre), mur (plein, niche, conduit ; hauteur 4–14 m, courbure, doublage cuivre), colonne (carrée chanfreinée, cannelée, engagée, pilastre ; fibre cyan), voûte à caissons (crochet), porte (standard, d'étude, double, de liaison, de secours ; état et séquence d'ouverture pilotable). | validé |
 | 2026-11-17 | Matières du Complexe à part des matières existantes : `STONES.blackBasalt` (le `basalt` des rochers et du portail ne change pas), `smoked`, métaux, verres, tissus, lueurs `GLOWS` ; rochers et pupitre du portail limités à leurs anciennes matières. | validé |
 | 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | validé |
+| 2026-11-17 | Lot 1 validé tel quel : portes pivotantes vers l'arrière livrées avec leur morceau de mur, chambranle dans la pierre du mur (un ton plus clair), dalles posées à y = −0,20. | validé |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
