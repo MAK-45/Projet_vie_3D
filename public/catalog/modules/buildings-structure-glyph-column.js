@@ -238,6 +238,9 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec4 uCurve;
+uniform vec2 uFade; // apparition en douceur : de x \xE0 y m\xE8tres de la cam\xE9ra, la copie rentre dans le sol (0, 0 : rien)
+uniform vec3 uLod;  // FOLIAGE, passage \xE0 la version lointaine : de x \xE0 y m\xE8tres, les feuilles absentes de cette
+                    // version (aFar 0) rapetissent jusqu'\xE0 rien, les autres grandissent de z (y \xE0 0 : rien)
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
@@ -263,6 +266,7 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
+  attribute float aFar;   // 1 : feuille gard\xE9e dans la version lointaine (kit/far-tree.js), 0 sinon ou absent
   varying vec3 vLeaf;
 #endif
 
@@ -336,6 +340,14 @@ void main() {
   #endif
   vec3 origin = toWorld[3].xyz;
 
+  // Semis \xE0 port\xE9e limit\xE9e (vue \xE0 la 3e personne) : pr\xE8s de la limite, la copie rentre dans le sol au lieu de
+  // dispara\xEEtre d'un coup ; \xE0 l'approche, elle en sort.
+  float fade = 1.0;
+  if (uFade.y > 0.0) {
+    fade = 1.0 - smoothstep(uFade.x, uFade.y, distance(origin.xz, cameraPosition.xz));
+    transformed *= fade;
+  }
+
   // Balancement de l'ensemble (tronc, branches, feuilles) : nul au sol, maximal en haut.
   float phase = origin.x * 0.37 + origin.z * 0.23;
   float gust = sin(uTime * 1.1 + phase) * 0.6 + sin(uTime * 2.3 + phase * 1.7) * 0.4;
@@ -368,7 +380,13 @@ void main() {
   #endif
 
   #ifdef FOLIAGE
-    float cornerScale = length(toWorld[0].xyz);
+    float cornerScale = length(toWorld[0].xyz) * fade;
+    #ifndef UNLIT
+      if (uLod.y > 0.0) {
+        float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
+        cornerScale *= mix(1.0, aFar * uLod.z, lod);
+      }
+    #endif
     #ifdef UNLIT
       // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'\xE9toile).
       cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
@@ -795,6 +813,8 @@ function createToonMaterial(options) {
       ...sharedUniforms,
       uSway: swayUniform,
       uTwinkle: twinkleUniform,
+      uFade: { value: new THREE2.Vector2(0, 0) },
+      uLod: { value: new THREE2.Vector3(0, 0, 1) },
       uRamp: { value: ramp.map(rgb) },
       uSteps: { value: steps.slice() },
       uInk: { value: rgb(ink) },

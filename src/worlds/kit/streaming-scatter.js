@@ -84,7 +84,7 @@ export class StreamingScatter {
       },
     };
     if (farPrototype) {
-      layer.far = { meshes: [], matrices: null, capacity: 0, triangles: 0 };
+      layer.far = { meshes: [], matrices: null, capacity: 0, triangles: 0, grow: farPrototype.userData.grow ?? 1 };
       farPrototype.updateMatrixWorld(true);
       farPrototype.traverse((part) => {
         if (!part.isMesh) return;
@@ -120,6 +120,7 @@ export class StreamingScatter {
       layer.meshes.push(mesh);
       this.group.add(mesh);
     }
+    layer.materials = [...new Set(layer.meshes.map((mesh) => mesh.material))].filter((material) => material.uniforms?.uFade);
     this._grow(layer, 256);
     this.layers.push(layer);
     return layer;
@@ -207,6 +208,7 @@ export class StreamingScatter {
    *   une version lointaine (`farVersion`) la dessinent à la place du modèle complet
    */
   update(camera, fraction = 1, { reach = null, shadowReach = Infinity, lod = null } = {}) {
+    this._setTransitions(reach, lod);
     _viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum.setFromProjectionMatrix(_viewProjection);
     const step = Math.round(THREE.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
@@ -243,6 +245,25 @@ export class StreamingScatter {
     if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
     this._shadowReach = shadowReach;
     return changed;
+  }
+
+  /**
+   * Transitions en douceur dans les matériaux des couches (vue à la 3e personne) : sur le dernier quart de sa
+   * portée, une copie rentre dans le sol (`uFade`) ; un arbre se fond dans sa version lointaine sur les 40 % qui
+   * précèdent la distance de passage (`uLod`). Sans portée (isométrique), rien.
+   */
+  _setTransitions(reach, lod) {
+    const key = `${JSON.stringify(reach)}|${JSON.stringify(lod)}`;
+    if (key === this._transitions) return;
+    this._transitions = key;
+    for (const layer of this.layers) {
+      const end = reach?.[layer.reach] ?? 0;
+      const swap = layer.far ? (lod?.[layer.reach] ?? 0) : 0;
+      for (const material of layer.materials) {
+        material.uniforms.uFade.value.set(end * 0.75, end);
+        material.uniforms.uLod.value.set(swap * 0.6, swap, layer.far?.grow ?? 1);
+      }
+    }
   }
 
   /** Copies et triangles dessinés à cet instant (hors passe d'ombre). */

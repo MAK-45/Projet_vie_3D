@@ -46,6 +46,9 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec4 uCurve;
+uniform vec2 uFade; // apparition en douceur : de x \xE0 y m\xE8tres de la cam\xE9ra, la copie rentre dans le sol (0, 0 : rien)
+uniform vec3 uLod;  // FOLIAGE, passage \xE0 la version lointaine : de x \xE0 y m\xE8tres, les feuilles absentes de cette
+                    // version (aFar 0) rapetissent jusqu'\xE0 rien, les autres grandissent de z (y \xE0 0 : rien)
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
@@ -71,6 +74,7 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 #ifdef FOLIAGE
   attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'\xE9cran ; z : avanc\xE9e vers la cam\xE9ra (unit\xE9s monde, 0 si absent)
   attribute vec4 aLeaf;   // x : phase, y : occlusion (0 c\u0153ur, 1 ext\xE9rieur), z : variation, w : souplesse au vent
+  attribute float aFar;   // 1 : feuille gard\xE9e dans la version lointaine (kit/far-tree.js), 0 sinon ou absent
   varying vec3 vLeaf;
 #endif
 
@@ -144,6 +148,14 @@ void main() {
   #endif
   vec3 origin = toWorld[3].xyz;
 
+  // Semis \xE0 port\xE9e limit\xE9e (vue \xE0 la 3e personne) : pr\xE8s de la limite, la copie rentre dans le sol au lieu de
+  // dispara\xEEtre d'un coup ; \xE0 l'approche, elle en sort.
+  float fade = 1.0;
+  if (uFade.y > 0.0) {
+    fade = 1.0 - smoothstep(uFade.x, uFade.y, distance(origin.xz, cameraPosition.xz));
+    transformed *= fade;
+  }
+
   // Balancement de l'ensemble (tronc, branches, feuilles) : nul au sol, maximal en haut.
   float phase = origin.x * 0.37 + origin.z * 0.23;
   float gust = sin(uTime * 1.1 + phase) * 0.6 + sin(uTime * 2.3 + phase * 1.7) * 0.4;
@@ -176,7 +188,13 @@ void main() {
   #endif
 
   #ifdef FOLIAGE
-    float cornerScale = length(toWorld[0].xyz);
+    float cornerScale = length(toWorld[0].xyz) * fade;
+    #ifndef UNLIT
+      if (uLod.y > 0.0) {
+        float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
+        cornerScale *= mix(1.0, aFar * uLod.z, lod);
+      }
+    #endif
     #ifdef UNLIT
       // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'\xE9toile).
       cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
@@ -603,6 +621,8 @@ function createToonMaterial(options) {
       ...sharedUniforms,
       uSway: swayUniform,
       uTwinkle: twinkleUniform,
+      uFade: { value: new THREE.Vector2(0, 0) },
+      uLod: { value: new THREE.Vector3(0, 0, 1) },
       uRamp: { value: ramp.map(rgb) },
       uSteps: { value: steps.slice() },
       uInk: { value: rgb(ink) },
@@ -2531,7 +2551,7 @@ var StreamingScatter = class {
       }
     };
     if (farPrototype) {
-      layer.far = { meshes: [], matrices: null, capacity: 0, triangles: 0 };
+      layer.far = { meshes: [], matrices: null, capacity: 0, triangles: 0, grow: farPrototype.userData.grow ?? 1 };
       farPrototype.updateMatrixWorld(true);
       farPrototype.traverse((part) => {
         if (!part.isMesh) return;
@@ -2567,6 +2587,7 @@ var StreamingScatter = class {
       layer.meshes.push(mesh);
       this.group.add(mesh);
     }
+    layer.materials = [...new Set(layer.meshes.map((mesh) => mesh.material))].filter((material) => material.uniforms?.uFade);
     this._grow(layer, 256);
     this.layers.push(layer);
     return layer;
@@ -2651,6 +2672,7 @@ var StreamingScatter = class {
    *   une version lointaine (`farVersion`) la dessinent à la place du modèle complet
    */
   update(camera, fraction = 1, { reach = null, shadowReach = Infinity, lod = null } = {}) {
+    this._setTransitions(reach, lod);
     _viewProjection2.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     _frustum2.setFromProjectionMatrix(_viewProjection2);
     const step = Math.round(THREE9.MathUtils.clamp(fraction, 0.1, 1) * 20) / 20;
@@ -2687,6 +2709,24 @@ var StreamingScatter = class {
     if (changed || shadowReach !== this._shadowReach) this._refill(step, shadowReach);
     this._shadowReach = shadowReach;
     return changed;
+  }
+  /**
+   * Transitions en douceur dans les matériaux des couches (vue à la 3e personne) : sur le dernier quart de sa
+   * portée, une copie rentre dans le sol (`uFade`) ; un arbre se fond dans sa version lointaine sur les 40 % qui
+   * précèdent la distance de passage (`uLod`). Sans portée (isométrique), rien.
+   */
+  _setTransitions(reach, lod) {
+    const key = `${JSON.stringify(reach)}|${JSON.stringify(lod)}`;
+    if (key === this._transitions) return;
+    this._transitions = key;
+    for (const layer of this.layers) {
+      const end = reach?.[layer.reach] ?? 0;
+      const swap = layer.far ? lod?.[layer.reach] ?? 0 : 0;
+      for (const material of layer.materials) {
+        material.uniforms.uFade.value.set(end * 0.75, end);
+        material.uniforms.uLod.value.set(swap * 0.6, swap, layer.far?.grow ?? 1);
+      }
+    }
   }
   /** Copies et triangles dessinés à cet instant (hors passe d'ombre). */
   stats() {
@@ -2819,9 +2859,10 @@ import * as THREE22 from "three";
 
 // src/worlds/kit/far-tree.js
 import * as THREE10 from "three";
-function createFarVersion(prototype, { keep = 0.1, wood = 0.35 } = {}) {
+function createFarVersion(prototype, { keep = 0.14, wood = 0.35 } = {}) {
   const far = new THREE10.Group();
   far.name = `${prototype.name} (loin)`;
+  far.userData.grow = Math.min(1.8, 0.7 / Math.sqrt(keep));
   prototype.updateMatrixWorld(true);
   prototype.traverse((child) => {
     if (!child.isMesh) return;
@@ -2851,15 +2892,19 @@ function thinLeaves(source, keep) {
   const leaf = source.attributes.aLeaf.array;
   const count = source.attributes.position.count;
   const kept = [];
+  const farFlag = new Float32Array(count);
   let leafIndex = 0;
   for (let start = 0; start < count; ) {
     let end = start + 3;
     while (end < count && position[end * 3] === position[start * 3] && position[end * 3 + 1] === position[start * 3 + 1] && position[end * 3 + 2] === position[start * 3 + 2]) end += 3;
     const outer = leaf[start * 4 + 1];
-    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) kept.push(start, end);
+    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) {
+      kept.push(start, end);
+      farFlag.fill(1, start, end);
+    }
     start = end;
   }
-  const grow = Math.min(2.6, 0.85 / Math.sqrt(keep));
+  source.setAttribute("aFar", new THREE10.BufferAttribute(farFlag, 1));
   const geometry = new THREE10.BufferGeometry();
   for (const [name, attribute] of Object.entries(source.attributes)) {
     const size = attribute.itemSize;
@@ -2872,7 +2917,6 @@ function thinLeaves(source, keep) {
       array.set(part, offset);
       offset += part.length;
     }
-    if (name === "aCorner") for (let i = 0; i < array.length; i++) array[i] *= grow;
     geometry.setAttribute(name, new THREE10.BufferAttribute(array, size));
   }
   geometry.boundingSphere = source.boundingSphere?.clone() ?? null;

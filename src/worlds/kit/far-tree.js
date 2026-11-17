@@ -12,9 +12,12 @@ import * as THREE from "three";
  * @param {number} [options.wood] rayon minimal d'une branche gardée, en part du rayon du tronc (0..1)
  * @returns {THREE.Group} modèle allégé, aux mêmes noms de maillages et aux mêmes matériaux
  */
-export function createFarVersion(prototype, { keep = 0.1, wood = 0.35 } = {}) {
+export function createFarVersion(prototype, { keep = 0.14, wood = 0.35 } = {}) {
   const far = new THREE.Group();
   far.name = `${prototype.name} (loin)`;
+  /** Agrandissement des feuilles gardées, appliqué par le shader (uniform `uLod`) : le modèle complet s'y fond
+   * progressivement en approchant de la distance de passage, puis la version lointaine prend le relais. */
+  far.userData.grow = Math.min(1.8, 0.7 / Math.sqrt(keep));
   prototype.updateMatrixWorld(true);
   prototype.traverse((child) => {
     if (!child.isMesh) return;
@@ -52,15 +55,21 @@ function thinLeaves(source, keep) {
   const leaf = source.attributes.aLeaf.array;
   const count = source.attributes.position.count;
   const kept = [];
+  // Le modèle complet apprend quelles feuilles survivent au loin (`aFar`), pour s'effacer en douceur vers sa
+  // version lointaine.
+  const farFlag = new Float32Array(count);
   let leafIndex = 0;
   for (let start = 0; start < count; ) {
     let end = start + 3;
     while (end < count && position[end * 3] === position[start * 3] && position[end * 3 + 1] === position[start * 3 + 1] && position[end * 3 + 2] === position[start * 3 + 2]) end += 3;
     const outer = leaf[start * 4 + 1];
-    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) kept.push(start, end);
+    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) {
+      kept.push(start, end);
+      farFlag.fill(1, start, end);
+    }
     start = end;
   }
-  const grow = Math.min(2.6, 0.85 / Math.sqrt(keep));
+  source.setAttribute("aFar", new THREE.BufferAttribute(farFlag, 1));
   const geometry = new THREE.BufferGeometry();
   for (const [name, attribute] of Object.entries(source.attributes)) {
     const size = attribute.itemSize;
@@ -73,7 +82,6 @@ function thinLeaves(source, keep) {
       array.set(part, offset);
       offset += part.length;
     }
-    if (name === "aCorner") for (let i = 0; i < array.length; i++) array[i] *= grow;
     geometry.setAttribute(name, new THREE.BufferAttribute(array, size));
   }
   geometry.boundingSphere = source.boundingSphere?.clone() ?? null;

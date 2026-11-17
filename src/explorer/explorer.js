@@ -40,7 +40,7 @@ const THIRD_FAR = 185;
 const THIRD_CURVE_RADIUS = 400;
 const THIRD_CURVE_START = 20;
 const THIRD_REACH = { fine: 34, flat: 75, low: 100 };
-const THIRD_LOD = { tall: 40 };
+const THIRD_LOD = { tall: 50 };
 const THIRD_GROUND_REACH = 100;
 const THIRD_FOG_NEAR = 100; // île seulement
 /** Monde sans bord : rayon (m) où tout est gardé prêt quelle que soit la direction de la vue ; au-delà, seuls les

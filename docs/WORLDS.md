@@ -166,9 +166,15 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   à 180 m ; la vue s'arrête à 185 m, sans qu'on la voie finir. Les ombres et les motifs restent calculés sur le monde plat (la passe d'ombre ne
   courbe rien, `DEPTH_ONLY`). Sur une île, la vue garde une brume de lointain (100 à 180 m) : la mer de nuages
   n'est pas courbée.
-- **Arbres lointains** : au-delà de 40 m (`lod`), chaque arbre est dessiné en version allégée
-  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur neuf environ (plutôt celles du bord),
-  agrandie d'autant, et seulement le tronc et les maîtresses branches : ≈ 450 triangles au lieu de ≈ 4 000. Une
+- **Arbres lointains** : au-delà de 50 m (`lod`), chaque arbre est dessiné en version allégée
+  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur sept environ (plutôt celles du bord),
+  agrandie (× 1,8 au plus), et seulement le tronc et les maîtresses branches : ≈ 600 triangles au lieu de ≈ 4 000.
+  **Sans saut** : de 30 à 50 m, le modèle complet se fond dans sa version lointaine dans le shader (`uLod` : les
+  feuilles absentes de la version lointaine, `aFar` 0, rapetissent jusqu'à rien, les autres grandissent) ; au
+  passage, les deux sont identiques. Seules les fines branches disparaissent d'un coup (un pixel à 50 m).
+- **Apparition en douceur** : sur le dernier quart de sa portée, une copie du semis rentre dans le sol (`uFade`,
+  réglé par `StreamingScatter` selon `reach`) : l'herbe, les fleurs, la mousse et les rochers sortent du sol en
+  approchant au lieu d'apparaître d'un coup. Une
   couche la déclare par `farVersion` dans `addLayer` (semis par morceaux) ; le semis d'île l'ignore.
 - **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 34 m (au-delà, une touffe ne fait qu'un pixel), la
   mousse et la terre remuée (famille `flat`, ras du sol) à 75 m, les rochers à 100 m, le sol à 100 m
