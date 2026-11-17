@@ -1,0 +1,76 @@
+<!doctype html>
+<!-- Coin du Sas : les modules de l'ossature du Complexe assemblés sur la grille de 2 m, avec le mannequin de 1,80 m
+     pour l'échelle. Options : night=1, zoom, view, px, door (standard, study, double...), open=1.
+     /dev/complex-corner.html?night=1 -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coin du Sas</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #15111e; }
+      #viewer { position: relative; overflow: hidden; width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <script type="module">
+      import * as THREE from "three";
+      import { Viewer } from "/src/gallery/viewer.js";
+      import { disposeObject } from "/src/engine/toon-material.js";
+      import { getAsset } from "/src/assets/index.js";
+      import { setModelSource } from "/src/assets/kit/model.js";
+
+      setModelSource({ base: "/models/" });
+      const query = new URLSearchParams(location.search);
+      const make = (id, params, x, z, rotY = 0, y = 0) => {
+        const object = getAsset(id).create(params);
+        object.position.set(x, y, z);
+        object.rotation.y = rotY;
+        return object;
+      };
+
+      function create() {
+        const group = new THREE.Group();
+        // Sol : 3 × 2 dalles (6 × 4 m), posées à y = −0,20 (dessus au niveau 0).
+        const variants = ["intact", "worn", "intact", "cracked", "trapdoor", "intact"];
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 2; j++) {
+            group.add(make("buildings/structure/glyph-floor-slab", { seed: i * 7 + j, variant: variants[i * 2 + j] }, -2 + i * 2, -1 + j * 2, 0, -0.2));
+          }
+        }
+        // Mur du fond (z = −2,3) : mur, porte, mur ; mur de gauche (x = −3,3) : plein, niche.
+        group.add(make("buildings/structure/glyph-wall", { seed: 1 }, -2, -2.3));
+        group.add(make("buildings/structure/complex-door", { seed: 2, model: query.get("door") ?? "study", state: query.get("open") === "1" ? "open" : "closed" }, 0, -2.3));
+        group.add(make("buildings/structure/glyph-wall", { seed: 3, variant: "conduit" }, 2, -2.3));
+        group.add(make("buildings/structure/glyph-wall", { seed: 4 }, -3.3, -1, Math.PI / 2));
+        group.add(make("buildings/structure/glyph-wall", { seed: 5, variant: "niche" }, -3.3, 1, Math.PI / 2));
+        // Pilier d'angle et voûte retournée posée à côté (pour la voir).
+        group.add(make("buildings/structure/glyph-column", { seed: 6, shape: "square" }, -2.6, -1.6));
+        group.add(make("buildings/structure/glyph-column", { seed: 7, shape: "fluted", height: 5 }, 2.2, 1.2));
+        // Le mannequin de 1,80 m devant la porte.
+        const mannequin = getAsset("creatures/humanoid/mannequin").create({});
+        mannequin.position.set(-0.6, 0, 0.2);
+        group.add(mannequin);
+        group.userData.ready = mannequin.userData.ready;
+        return group;
+      }
+
+      const module = { meta: { footprint: { radius: 4.5, height: 5 } }, create, dispose: disposeObject };
+      const viewer = new Viewer(document.getElementById("viewer"));
+      for (const name of ["pixelArt", "outline", "ground", "night"]) {
+        if (query.has(name)) viewer.setOption(name, query.get(name) === "1");
+      }
+      if (query.has("px")) viewer.setOption("pixelSize", Number(query.get("px")));
+      viewer.resize();
+      viewer.setAsset(module, {});
+      if (query.has("view")) viewer.resetView(query.get("view"));
+      if (query.has("zoom")) {
+        viewer.iso.camera.zoom = Number(query.get("zoom"));
+        viewer.iso.camera.updateProjectionMatrix();
+      }
+      viewer.start();
+      window.viewer = viewer;
+    </script>
+  </body>
+</html>

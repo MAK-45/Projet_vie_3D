@@ -38,26 +38,254 @@ export function plain(geometry) {
 
 /**
  * Pose l'attribut `aTone` (décalage de lumière, voir `createToonMaterial({ tone: true })`) : un nombre pour toute la
- * géométrie, ou une fonction (x, y, z) => ton évaluée à chaque sommet (suie qui monte, usure au centre).
- * Les tons s'ajoutent à un ton déjà posé.
+ * géométrie, ou une fonction (x, y, z, nx, ny, nz) => ton évaluée à chaque sommet (suie qui monte, usure au centre,
+ * une face sur deux d'un fût cannelé). Les tons s'ajoutent à un ton déjà posé.
  */
 export function withTone(geometry, tone) {
   const p = geometry.attributes.position;
+  const n = geometry.attributes.normal;
   const old = geometry.attributes.aTone;
   const array = new Float32Array(p.count);
   for (let i = 0; i < p.count; i++) {
-    const t = typeof tone === "function" ? tone(p.getX(i), p.getY(i), p.getZ(i)) : tone;
+    const t = typeof tone === "function" ? tone(p.getX(i), p.getY(i), p.getZ(i), n.getX(i), n.getY(i), n.getZ(i)) : tone;
     array[i] = t + (old ? old.getX(i) : 0);
   }
   geometry.setAttribute("aTone", new THREE.BufferAttribute(array, 1));
   return geometry;
 }
 
-/** Fusionne des géométries dont certaines portent un ton : les autres reçoivent un ton nul. */
+/** Fusionne des géométries dont certaines portent un ton (`aTone`) ou une teinte (`aShade`) : les autres reçoivent 0. */
 export function mergeToned(geometries) {
-  const toned = geometries.some((g) => g.attributes.aTone);
-  if (toned) for (const g of geometries) if (!g.attributes.aTone) withTone(g, 0);
+  for (const name of ["aTone", "aShade"]) {
+    if (!geometries.some((g) => g.attributes[name])) continue;
+    for (const g of geometries) {
+      if (!g.attributes[name]) g.setAttribute(name, new THREE.BufferAttribute(new Float32Array(g.attributes.position.count), 1));
+    }
+  }
   return mergeGeometries(geometries);
+}
+
+/**
+ * Pose sur toute une géométrie la couleur n° `index` (0, 1, 2...) d'un `glowMixMaterial` à `count` couleurs
+ * (attribut `aShade`).
+ */
+export function withShade(geometry, index, count = 2) {
+  const array = new Float32Array(geometry.attributes.position.count).fill((index + 0.5) / count);
+  geometry.setAttribute("aShade", new THREE.BufferAttribute(array, 1));
+  return geometry;
+}
+
+/**
+ * Cintre une géométrie autour de l'axe vertical : x devient un arc de rayon `radius` (longueur conservée), z la
+ * distance au mur. `concave` (mur d'une salle ronde, face +z tournée vers le centre) : le centre est en z = +radius ;
+ * sinon (fût, objet rond) le centre est l'origine et z pousse vers l'extérieur. Les pièces doivent être assez
+ * courtes (≤ 0,5 m) pour que leurs faces suivent la courbe.
+ */
+export function bendAroundY(geometry, radius, { concave = true } = {}) {
+  const p = geometry.attributes.position;
+  const n = geometry.attributes.normal;
+  for (let i = 0; i < p.count; i++) {
+    const theta = p.getX(i) / radius;
+    const c = Math.cos(theta), s = Math.sin(theta);
+    const r = concave ? radius - p.getZ(i) : radius + p.getZ(i);
+    if (concave) p.setXYZ(i, s * r, p.getY(i), radius - c * r);
+    else p.setXYZ(i, s * r, p.getY(i), c * r);
+    if (n) {
+      const nx = n.getX(i), nz = n.getZ(i);
+      // Rotation de la normale du même angle que la tangente (−θ autour de y, mur concave ou fût).
+      n.setXYZ(i, nx * c + nz * s, n.getY(i), -nx * s + nz * c);
+    }
+  }
+  p.needsUpdate = true;
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+/**
+ * Fût cannelé : prisme vertical à `flutes` cannelures en creux (un sommet sur deux rentré de `depth`), de `y0` à
+ * `y1`, de rayon `radius`. Faces planes : la lumière prend chaque pan différemment, ce qui dessine les cannelures.
+ * `arc` [a0, a1] (radians, 0 = +z) : seulement une partie du tour (demi-colonne engagée), refermée par un plat.
+ */
+export function fluteShaft({ radius, flutes = 16, depth = PX, y0 = 0, y1 = 1, arc = null }) {
+  const outline = [];
+  const full = !arc;
+  const [a0, a1] = arc ?? [0, Math.PI * 2];
+  const count = full ? flutes * 2 : Math.max(2, Math.round((flutes * 2 * (a1 - a0)) / (Math.PI * 2)));
+  for (let i = 0; i < count + (full ? 0 : 1); i++) {
+    const a = a0 + ((a1 - a0) * i) / count;
+    const r = i % 2 ? radius - depth : radius;
+    outline.push([Math.sin(a) * r, Math.cos(a) * r]);
+  }
+  const positions = [];
+  const normals = [];
+  const index = [];
+  const quad = (a, b, c, d, nx, ny, nz) => {
+    const first = positions.length / 3;
+    for (const v of [a, b, c, d]) positions.push(...v), normals.push(nx, ny, nz);
+    index.push(first, first + 1, first + 2, first, first + 2, first + 3);
+  };
+  const m = outline.length;
+  const edges = full ? m : m - 1;
+  for (let i = 0; i < edges; i++) {
+    const [x1, z1] = outline[i];
+    const [x2, z2] = outline[(i + 1) % m];
+    const len = Math.hypot(x2 - x1, z2 - z1) || 1;
+    // Normale extérieure du pan.
+    const nx = -(z2 - z1) / len, nz = (x2 - x1) / len;
+    quad([x1, y0, z1], [x2, y0, z2], [x2, y1, z2], [x1, y1, z1], nx, 0, nz);
+  }
+  if (!full) {
+    // Le plat contre le mur, entre les deux bouts de l'arc.
+    const [xa, za] = outline[m - 1];
+    const [xb, zb] = outline[0];
+    const len = Math.hypot(xb - xa, zb - za) || 1;
+    quad([xa, y0, za], [xb, y0, zb], [xb, y1, zb], [xa, y1, za], -(zb - za) / len, 0, (xb - xa) / len);
+  }
+  // Dessus et dessous en éventail depuis le centre (le contour est étoilé autour de lui).
+  for (const [y, ny] of [[y1, 1], [y0, -1]]) {
+    const center = positions.length / 3;
+    positions.push(0, y, full ? 0 : (outline[0][1] + outline[m - 1][1]) / 2), normals.push(0, ny, 0);
+    for (const [x, z] of outline) positions.push(x, y, z), normals.push(0, ny, 0);
+    for (let i = 0; i < (full ? m : m - 1); i++) {
+      const a = center + 1 + i, b = center + 1 + ((i + 1) % m);
+      if (ny > 0) index.push(center, a, b);
+      else index.push(center, b, a);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  return geometry;
+}
+
+// --- Maçonnerie -------------------------------------------------------------------------------------------------
+
+const snap = (v) => Math.round(v / PX) * PX;
+
+/**
+ * Pan de mur en blocs de pierre appareillés : assises de hauteur et blocs de longueur tirés de la graine, joints
+ * d'un pixel plus sombres (le cœur du mur, en retrait, se voit entre les blocs), suie en haut, ton propre à chaque
+ * bloc. Le mur suit l'axe x (de −width/2 à +width/2), du sol à `height`, épaisseur `depth` centrée sur z = 0 ; la
+ * face appareillée est en +z (le dos est lisse, sauf `bothSides`).
+ *
+ * @param {object} rng générateur (createRng)
+ * @param {object} o
+ * @param {number} o.width
+ * @param {number} o.height
+ * @param {number} [o.depth]
+ * @param {Array<{x0:number,x1:number,y0:number,y1:number}>} [o.holes] ouvertures (porte, niche, conduit) : traversent
+ *   le mur, sauf `depth` donné dans le trou (niche : profondeur en m depuis la face avant)
+ * @param {{y0:number,y1:number}} [o.band] assise du bandeau : creusée d'un pixel, sans joints (les glyphes y sont posés)
+ * @param {number[]} [o.course] hauteur d'une assise [min, max]
+ * @param {number[]} [o.block] longueur d'un bloc [min, max]
+ * @param {boolean} [o.bothSides] appareiller aussi le dos
+ * @param {boolean} [o.facing] faux : pas de blocs devant (le cœur seul, en retrait : un doublage de métal s'y pose)
+ * @param {number} [o.soot] force de la suie en haut du mur (ton, négatif)
+ * @param {number} [o.split] longueur maximale d'une pièce (pour cintrer le mur ensuite)
+ * @returns {{parts: THREE.BufferGeometry[], courses: number[], bandFace: number}} géométries tonées de la pierre ;
+ *   `courses` : hauteurs des joints d'assise ; `bandFace` : z de la face creusée du bandeau
+ */
+export function buildMasonry(rng, o) {
+  const {
+    width, height, depth = 0.6, holes = [], band = null,
+    course = [0.42, 0.66], block = [0.5, 1.1], bothSides = false, soot: sootAmount = -0.24, split = Infinity,
+    facing = true,
+  } = o;
+  const relief = 0.09; // saillie des blocs sur le cœur : le joint fait un pixel et demi de profondeur
+  const front = depth / 2;
+  const core = front - relief;
+  const back = -depth / 2;
+  const backCore = bothSides ? back + relief : back;
+  const sootAt = soot(height * 0.55, height, sootAmount);
+  const parts = [];
+
+  // Hauteurs d'assise : bornes imposées (bandeau, haut et bas des ouvertures), comblées d'assises régulières.
+  const fixed = new Set([0, snap(height)]);
+  if (band) fixed.add(snap(band.y0)).add(snap(band.y1));
+  for (const h of holes) {
+    if (h.y0 > 0.01) fixed.add(snap(h.y0));
+    if (h.y1 < height - 0.01) fixed.add(snap(h.y1));
+  }
+  const bounds = [...fixed].filter((y) => y >= 0 && y <= height + 1e-6).sort((a, b) => a - b);
+  const courses = [0];
+  for (let i = 0; i < bounds.length - 1; i++) {
+    const gap = bounds[i + 1] - bounds[i];
+    const n = Math.max(1, Math.round(gap / rng.range(course[0], course[1])));
+    for (let k = 1; k <= n; k++) courses.push(k === n ? bounds[i + 1] : snap(bounds[i] + (gap * k) / n));
+  }
+
+  const box = (x0, x1, y0, y1, z0, z1, tone) => {
+    // Coupée en morceaux de `split` au plus (cintrage).
+    const n = Math.max(1, Math.ceil((x1 - x0) / split - 1e-6));
+    for (let k = 0; k < n; k++) {
+      const a = x0 + ((x1 - x0) * k) / n, b = x0 + ((x1 - x0) * (k + 1)) / n;
+      const g = buildBlock([b - a, y1 - y0, z1 - z0], [(a + b) / 2, (y0 + y1) / 2, (z0 + z1) / 2]);
+      parts.push(withTone(g, (x, y, z) => tone + sootAt(x, y)));
+    }
+  };
+
+  for (let c = 0; c < courses.length - 1; c++) {
+    const y0 = courses[c], y1 = courses[c + 1];
+    const mid = (y0 + y1) / 2;
+    const isBand = band && Math.abs(y0 - snap(band.y0)) < 1e-6 && Math.abs(y1 - snap(band.y1)) < 1e-6;
+    // Intervalles en x de cette assise, ouvertures retirées.
+    let spans = [[-width / 2, width / 2]];
+    const cut = [];
+    for (const h of holes) {
+      if (mid < h.y0 || mid > h.y1) continue;
+      cut.push(h);
+      spans = spans.flatMap(([a, b]) => {
+        if (h.x1 <= a || h.x0 >= b) return [[a, b]];
+        const out = [];
+        if (h.x0 > a) out.push([a, h.x0]);
+        if (h.x1 < b) out.push([h.x1, b]);
+        return out;
+      });
+    }
+    // Fond des niches : le cœur continue derrière, en retrait de la profondeur de la niche.
+    for (const h of cut) {
+      if (h.depth == null) continue;
+      box(h.x0, h.x1, y0, y1, backCore, front - h.depth, -0.32);
+    }
+    for (const [a, b] of spans) {
+      if (b - a < 1e-3) continue;
+      if (isBand) {
+        // Bandeau : une seule pierre creusée d'un pixel, un cran plus sombre.
+        box(a, b, y0, y1, back, front - PX, -0.12);
+        continue;
+      }
+      box(a, b, y0, y1, backCore, core, -0.34); // cœur : sa face avant fait les joints
+      if (!facing) continue;
+      let x = a;
+      while (b - x > 1e-3) {
+        let len = rng.range(block[0], block[1]);
+        if (b - (x + len) < block[0] * 0.6) len = b - x; // pas de chute trop courte en bout d'assise
+        const x1 = Math.min(b, snap(x + len) || b);
+        const end = x1 <= x ? b : x1;
+        const tone = rng.range(-0.08, 0.08);
+        box(x + PX / 2, end - PX / 2, y0 + PX / 2, y1 - PX / 2, core - 0.01, front, tone);
+        if (bothSides) box(x + PX / 2, end - PX / 2, y0 + PX / 2, y1 - PX / 2, back, backCore + 0.01, rng.range(-0.08, 0.08));
+        x = end;
+      }
+    }
+  }
+  return { parts, courses, bandFace: front - PX, coreFace: core };
+}
+
+/**
+ * Lueurs à plusieurs couleurs dans un seul maillage (un seul draw call) : chaque pièce dit sa couleur avec
+ * `withShade(géométrie, n°, nombre de couleurs)`. Chaque couleur est une entrée `[nom GLOWS, niveau 0..3]`. Garde son
+ * éclat dans le noir, sans contour.
+ */
+export function glowMixMaterial(colors, { id = 40 } = {}) {
+  const ramp = colors.map(([name, level]) => {
+    const r = (GLOWS[name] ?? GLOWS.amber).ramp;
+    return r[Math.max(0, Math.min(r.length - 1, Math.round(level)))];
+  });
+  if (ramp.length === 1) ramp.push(ramp[0]);
+  const steps = ramp.slice(1).map((_, i) => (i + 1) / ramp.length);
+  return createToonMaterial({ ramp, steps, unlit: true, shade: true, emissive: 0.001, glow: false, outline: false, id });
 }
 
 /** Suie : 0 jusqu'à `from` (m), puis de plus en plus sombre jusqu'à `amount` (négatif) à `to`. */

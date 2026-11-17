@@ -340,3 +340,27 @@ c'est ce fichier qui fait progresser les assets suivants.
   est un bloc en demi-lune **taillé en pente** (`buildPrism` : contour au sol, dessus = plan incliné), posé à plat
   sur le corps ; tablettes, cerclage et petit anneau sont posés sur ce plan.
 - Outils ajoutés au kit : `buildLathe`, `buildBlock`, `buildGem`, `buildPrism` ; matière `METALS` (bronze, or, fer).
+
+## 10. Le Complexe : architecture modulaire (éprouvé sur le lot 1 : dalle, mur, colonne, voûte, portes)
+
+- **Kit commun** `src/assets/kit/complex-parts.js` : `buildMasonry` (appareil de blocs, joints d'un pixel = le cœur
+  du mur en retrait de 0,09 m qui se voit entre des blocs écartés d'un pixel, assise du bandeau creusée, ouvertures
+  calées sur les assises), `glyphStrip` (lettres de traits droits), `fluteShaft` (fût cannelé à pans plats),
+  `bendAroundY` (cintrer un mur pour une salle ronde : pièces de 0,5 m au plus), `withTone` / `mergeToned`,
+  `stoneMaterial` / `metalMaterial` / `glowMaterial` / `glowMixMaterial` (plusieurs couleurs de lueur dans un seul
+  draw call, attribut `aShade`).
+- **Tons par sommet** (option `tone` du matériau) : un décalage de ±0,05 ne se voit pas ; ±0,08 par bloc commence à
+  se lire, −0,3 fait un joint, −0,6 à −0,9 fait un creux ou une gravure. Une surface déjà au ton le plus clair ne
+  peut pas s'éclaircir : pour montrer l'usure d'un dessus de dalle, poser tout le dessus un cran plus bas (−0,17)
+  et remonter le centre. Le dessus doit être quadrillé (12 × 12) pour qu'une tache ou une usure ait une forme.
+- **Lueurs d'un pixel** : `outline: false` (le contour mangerait le glyphe), `emissive` pour garder l'éclat la nuit.
+  Bandeau de glyphes à 1,10 m (assise de 1,00 à 1,25 m) partout : les modules (mur, porte) se raccordent.
+- **Vantaux animés sans draw call de plus** : deux battants dans un seul maillage, chaque sommet sait son battant,
+  rotation autour du pivot recalculée sur le CPU quand le temps partagé change de cran (comme la porte des étoiles) ;
+  `computeBoundingSphere` après. API de pilotage dans `group.userData.door`.
+- **Plafond** : un module vu d'en bas ne se juge pas dans l'Atelier ; réglage `display` « retournée » pour le
+  regarder, « au plafond » pour le monde.
+- **Scène d'essai** : `dev/complex-corner.html` assemble un coin de Sas avec le mannequin de 1,80 m (échelle). Piège :
+  un objet pile dans l'axe de la caméra derrière une colonne disparaît ; le décaler.
+- **Doublons de tags** : un mot identique en français et en anglais (« niche », « architecture ») fait échouer
+  `check` ; prendre un synonyme anglais.

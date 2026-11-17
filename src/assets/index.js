@@ -52,6 +52,11 @@ import * as animMagicSpell from "./animations/magic/spell.js";
 import * as starPortal from "./props/magic/star-portal.js";
 import * as starPortalDial from "./props/magic/star-portal-dial.js";
 import * as summerMeadow from "./worlds/islands/summer-meadow.js";
+import * as glyphFloorSlab from "./buildings/structure/glyph-floor-slab.js";
+import * as glyphWall from "./buildings/structure/glyph-wall.js";
+import * as glyphColumn from "./buildings/structure/glyph-column.js";
+import * as cofferedVault from "./buildings/structure/coffered-vault.js";
+import * as complexDoor from "./buildings/structure/complex-door.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
@@ -59,6 +64,7 @@ export { taxonomy, biomes } from "./taxonomy.js";
 export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin, magicMannequin,
   animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
   starPortal, starPortalDial,
+  glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
   summerMeadow,
 ];
 

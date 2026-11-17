@@ -9632,6 +9632,1069 @@
       }
     },
     {
+      "id": "buildings/structure/glyph-floor-slab",
+      "name": "Dalle de sol à glyphes",
+      "nameEn": "Glyph floor slab",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Dalle de basalte de 2 × 2 m du Complexe, posée sur la grille de 2 m : une rainure de glyphes à traits droits court le long du bord et en diagonale (vers la porte, une fois tournée). Intacte, fissurée, usée, à trappe de bronze ou tachée d'huile et de limaille. Fiche SAS-01.",
+      "tags": [
+        "dalle",
+        "sol",
+        "carrelage",
+        "basalte",
+        "glyphes",
+        "rainure",
+        "trappe",
+        "fissure",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "grille de 2 m",
+        "intérieur",
+        "floor slab",
+        "floor",
+        "tile",
+        "basalt",
+        "glyphs",
+        "groove",
+        "trapdoor",
+        "crack",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "2 m grid",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol (dessous de la dalle), au centre ; dessus à 0,20 m (le monde la pose à y = −0,20) ; la diagonale va de (−x, −z) vers (+x, +z)",
+      "footprint": {
+        "radius": 1.42,
+        "height": 0.24
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les glyphes de la rainure, le ton de la dalle, le tracé de la fissure, la place de la trappe, les taches."
+        },
+        "variant": {
+          "type": "enum",
+          "default": "intact",
+          "values": [
+            "intact",
+            "cracked",
+            "worn",
+            "trapdoor",
+            "stained"
+          ],
+          "labels": {
+            "intact": "Intacte",
+            "cracked": "Fissurée",
+            "worn": "Usée",
+            "trapdoor": "À trappe",
+            "stained": "Tachée (huile, limaille)"
+          },
+          "label": "État",
+          "description": "Intacte, fissurée, usée au centre (passage), à trappe de 0,6 m, ou tachée (Atelier)."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "blackBasalt",
+          "values": [
+            "blackBasalt",
+            "smoked"
+          ],
+          "labels": {
+            "blackBasalt": "Basalte noir-bleu",
+            "smoked": "Pierre fumée"
+          },
+          "label": "Pierre",
+          "description": "Pierre de la dalle."
+        },
+        "groove": {
+          "type": "enum",
+          "default": "dark",
+          "values": [
+            "dark",
+            "amber"
+          ],
+          "labels": {
+            "dark": "Trait sombre",
+            "amber": "Lueur ambre très faible"
+          },
+          "label": "Rainure",
+          "description": "La rainure de glyphes : un trait sombre, ou une lueur ambre à peine allumée."
+        }
+      },
+      "variants": [
+        {
+          "id": "intact",
+          "name": "Intacte",
+          "params": {
+            "variant": "intact"
+          }
+        },
+        {
+          "id": "cracked",
+          "name": "Fissurée",
+          "params": {
+            "variant": "cracked"
+          }
+        },
+        {
+          "id": "worn",
+          "name": "Usée",
+          "params": {
+            "variant": "worn"
+          }
+        },
+        {
+          "id": "trapdoor",
+          "name": "À trappe",
+          "params": {
+            "variant": "trapdoor"
+          }
+        },
+        {
+          "id": "stained",
+          "name": "Tachée (huile, limaille)",
+          "params": {
+            "variant": "stained"
+          }
+        }
+      ],
+      "slug": "buildings-structure-glyph-floor-slab",
+      "path": "src/assets/buildings/structure/glyph-floor-slab.js",
+      "module": "public/catalog/modules/buildings-structure-glyph-floor-slab.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 468,
+          "vertices": 529,
+          "drawCalls": 2
+        },
+        "intact": {
+          "triangles": 468,
+          "vertices": 529,
+          "drawCalls": 2
+        },
+        "cracked": {
+          "triangles": 588,
+          "vertices": 769,
+          "drawCalls": 2
+        },
+        "worn": {
+          "triangles": 468,
+          "vertices": 529,
+          "drawCalls": 2
+        },
+        "trapdoor": {
+          "triangles": 568,
+          "vertices": 729,
+          "drawCalls": 3
+        },
+        "stained": {
+          "triangles": 600,
+          "vertices": 793,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 10604,
+        "standalone": 50381
+      }
+    },
+    {
+      "id": "buildings/structure/glyph-wall",
+      "name": "Mur à bandeau de glyphes",
+      "nameEn": "Glyph band wall",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Module de mur du Complexe : basalte en blocs appareillés, suie vers le haut, bandeau creusé à 1,10 m où s'allume une ligne de glyphes ambre à traits droits. Plein, à niche ou à conduit encastré ; de 4 à 14 m de haut ; droit ou cintré pour les salles rondes ; nu ou doublé de cuivre. Fiche SAS-02.",
+      "tags": [
+        "mur",
+        "muraille",
+        "basalte",
+        "glyphes",
+        "bandeau",
+        "niche",
+        "conduit",
+        "tuyau",
+        "cuivre",
+        "salle ronde",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "grille de 2 m",
+        "lumineux",
+        "intérieur",
+        "wall",
+        "basalt",
+        "glyphs",
+        "glyph band",
+        "wall niche",
+        "duct",
+        "pipe",
+        "copper",
+        "curved wall",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "2 m grid",
+        "glowing",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu du mur ; le mur suit l'axe x, la face appareillée (bandeau, niche) regarde +z ; cintré, le centre de la salle est en z = +rayon",
+      "footprint": {
+        "radius": 1.05,
+        "height": 5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'appareil (hauteur des assises, longueur des blocs, tons), les glyphes du bandeau, la place de la niche ou du conduit."
+        },
+        "variant": {
+          "type": "enum",
+          "default": "plain",
+          "values": [
+            "plain",
+            "niche",
+            "conduit"
+          ],
+          "labels": {
+            "plain": "Plein",
+            "niche": "Avec niche",
+            "conduit": "Avec conduit encastré"
+          },
+          "label": "Forme",
+          "description": "Plein, avec une niche de 0,6 × 1,2 m, ou avec un conduit vertical où passe un tuyau de cuivre."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 4,
+          "max": 14,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du mur (5 m dans le Sas, jusqu'à 14 m dans les grandes salles)."
+        },
+        "width": {
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 4,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur du module (2 m sur la grille du Complexe)."
+        },
+        "curve": {
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 20,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Cintrage",
+          "description": "Rayon de la salle ronde où le mur s'inscrit, face vers le centre ; 0 = droit."
+        },
+        "lining": {
+          "type": "enum",
+          "default": "stone",
+          "values": [
+            "stone",
+            "copper"
+          ],
+          "labels": {
+            "stone": "Pierre nue",
+            "copper": "Doublage de cuivre"
+          },
+          "label": "Parement",
+          "description": "Pierre nue, ou doublage de plaques de cuivre rivetées (salle de la Cassette)."
+        },
+        "glyphs": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumés",
+            "dim": "En veille",
+            "off": "Éteints"
+          },
+          "label": "Glyphes",
+          "description": "Le bandeau de glyphes : allumé, en veille (lueur faible) ou éteint."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan",
+            "alarm"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan",
+            "alarm": "Rouge d'alerte"
+          },
+          "label": "Lueur",
+          "description": "Couleur des glyphes (ambre partout ; cyan près des artefacts ; rouge en alerte)."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "blackBasalt",
+          "values": [
+            "blackBasalt",
+            "smoked"
+          ],
+          "labels": {
+            "blackBasalt": "Basalte noir-bleu",
+            "smoked": "Pierre fumée"
+          },
+          "label": "Pierre",
+          "description": "Pierre du mur."
+        }
+      },
+      "variants": [
+        {
+          "id": "plain",
+          "name": "Plein",
+          "params": {
+            "variant": "plain"
+          }
+        },
+        {
+          "id": "niche",
+          "name": "Avec niche",
+          "params": {
+            "variant": "niche"
+          }
+        },
+        {
+          "id": "conduit",
+          "name": "Avec conduit encastré",
+          "params": {
+            "variant": "conduit"
+          }
+        }
+      ],
+      "slug": "buildings-structure-glyph-wall",
+      "path": "src/assets/buildings/structure/glyph-wall.js",
+      "module": "public/catalog/modules/buildings-structure-glyph-wall.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 600,
+          "vertices": 1200,
+          "drawCalls": 2
+        },
+        "plain": {
+          "triangles": 600,
+          "vertices": 1200,
+          "drawCalls": 2
+        },
+        "niche": {
+          "triangles": 708,
+          "vertices": 1416,
+          "drawCalls": 2
+        },
+        "conduit": {
+          "triangles": 1500,
+          "vertices": 2900,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 10191,
+        "standalone": 55871
+      }
+    },
+    {
+      "id": "buildings/structure/glyph-column",
+      "name": "Colonne à glyphes",
+      "nameEn": "Glyph column",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Colonne du Complexe : base moulurée, fût de pierre fumée, deux bagues de bronze, chapiteau ceint d'une couronne de glyphes ambre. Pilier carré à chanfreins, colonne cannelée, demi-colonne engagée ou pilastre ; de 3 à 14 m ; fibre de lumière cyan en option. Fiches SAS-03, ARC-09, GAL-11, ORA-06.",
+      "tags": [
+        "colonne",
+        "pilier",
+        "pilastre",
+        "demi-colonne",
+        "cannelures",
+        "chapiteau",
+        "glyphes",
+        "bronze",
+        "fibre",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "architecture",
+        "lumineux",
+        "intérieur",
+        "column",
+        "pillar",
+        "pilaster",
+        "engaged column",
+        "flutes",
+        "capital",
+        "glyphs",
+        "fiber",
+        "ancient complex",
+        "ancient-tech",
+        "architectural",
+        "glowing",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre du fût (pilier, colonne) ou au nu du mur (demi-colonne, pilastre : le mur est en z ≤ 0, la colonne avance vers +z)",
+      "footprint": {
+        "radius": 0.85,
+        "height": 5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les glyphes du chapiteau, les tons et les écaillures, la hauteur exacte des bagues, l'usure du pied."
+        },
+        "shape": {
+          "type": "enum",
+          "default": "square",
+          "values": [
+            "square",
+            "fluted",
+            "engaged",
+            "pilaster"
+          ],
+          "labels": {
+            "square": "Pilier carré à chanfreins",
+            "fluted": "Colonne cannelée",
+            "engaged": "Demi-colonne engagée",
+            "pilaster": "Pilastre"
+          },
+          "label": "Forme",
+          "description": "Pilier carré (Sas), colonne ronde cannelée (Archives, Rotonde), demi-colonne engagée dans un mur, ou pilastre."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 3,
+          "max": 14,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Du sol au-dessus du chapiteau (5 m au Sas, 7 m aux Archives, 10 m à l'Oracle)."
+        },
+        "diameter": {
+          "type": "number",
+          "default": 0.9,
+          "min": 0.6,
+          "max": 1.2,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur du fût (diamètre, ou côté du pilier carré)."
+        },
+        "flutes": {
+          "type": "int",
+          "default": 16,
+          "min": 8,
+          "max": 24,
+          "label": "Cannelures",
+          "description": "Nombre de cannelures d'une colonne ronde (16 aux Archives, 12 à la Rotonde, 20 à l'Oracle)."
+        },
+        "fiber": {
+          "type": "enum",
+          "default": "none",
+          "values": [
+            "none",
+            "cyan"
+          ],
+          "labels": {
+            "none": "Sans fibre",
+            "cyan": "Fibre cyan"
+          },
+          "label": "Fibre",
+          "description": "Une rainure verticale d'un pixel où court une fibre de lumière cyan (Oracle)."
+        },
+        "glyphs": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumés",
+            "dim": "En veille",
+            "off": "Éteints"
+          },
+          "label": "Glyphes",
+          "description": "La couronne de glyphes du chapiteau : allumée, en veille ou éteinte."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan",
+            "alarm"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan",
+            "alarm": "Rouge d'alerte"
+          },
+          "label": "Lueur",
+          "description": "Couleur des glyphes."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "smoked",
+          "values": [
+            "smoked",
+            "blackBasalt"
+          ],
+          "labels": {
+            "smoked": "Pierre fumée",
+            "blackBasalt": "Basalte noir-bleu"
+          },
+          "label": "Pierre",
+          "description": "Pierre de la colonne."
+        }
+      },
+      "variants": [
+        {
+          "id": "square",
+          "name": "Pilier carré à chanfreins",
+          "params": {
+            "shape": "square"
+          }
+        },
+        {
+          "id": "fluted",
+          "name": "Colonne cannelée",
+          "params": {
+            "shape": "fluted"
+          }
+        },
+        {
+          "id": "engaged",
+          "name": "Demi-colonne engagée",
+          "params": {
+            "shape": "engaged"
+          }
+        },
+        {
+          "id": "pilaster",
+          "name": "Pilastre",
+          "params": {
+            "shape": "pilaster"
+          }
+        }
+      ],
+      "slug": "buildings-structure-glyph-column",
+      "path": "src/assets/buildings/structure/glyph-column.js",
+      "module": "public/catalog/modules/buildings-structure-glyph-column.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 544,
+          "vertices": 1080,
+          "drawCalls": 3
+        },
+        "square": {
+          "triangles": 544,
+          "vertices": 1080,
+          "drawCalls": 3
+        },
+        "fluted": {
+          "triangles": 1200,
+          "vertices": 2338,
+          "drawCalls": 3
+        },
+        "engaged": {
+          "triangles": 282,
+          "vertices": 536,
+          "drawCalls": 3
+        },
+        "pilaster": {
+          "triangles": 264,
+          "vertices": 528,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 11464,
+        "standalone": 57841
+      }
+    },
+    {
+      "id": "buildings/structure/coffered-vault",
+      "name": "Voûte à caissons",
+      "nameEn": "Coffered vault",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Module de plafond du Complexe de 2 × 2 m : quatre caissons de 0,4 m à ressaut, un plot de bronze au fond de chacun, un crochet de lampe au croisement des nervures ; suie au fond des caissons. Au plafond ou retournée pour la regarder. Fiche SAS-04.",
+      "tags": [
+        "voûte",
+        "plafond",
+        "caissons",
+        "nervures",
+        "crochet",
+        "bronze",
+        "pierre fumée",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "grille de 2 m",
+        "intérieur",
+        "vault",
+        "ceiling",
+        "coffers",
+        "coffered ceiling",
+        "ribs",
+        "lamp hook",
+        "smoked stone",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "2 m grid",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; au plafond : origine sous les nervures, au centre, le module monte de 0,6 m (le monde le pose à la hauteur du plafond) ; retournée : origine au sol",
+      "footprint": {
+        "radius": 1.42,
+        "height": 0.78
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tons de chaque caisson, les plots manquants ou décalés, les écaillures des nervures."
+        },
+        "display": {
+          "type": "enum",
+          "default": "inspect",
+          "values": [
+            "inspect",
+            "ceiling"
+          ],
+          "labels": {
+            "inspect": "Retournée (pour la regarder)",
+            "ceiling": "Au plafond"
+          },
+          "label": "Pose",
+          "description": "Au plafond (caissons vers le bas, origine sous les nervures) ou retournée au sol, pour la regarder."
+        },
+        "hook": {
+          "type": "enum",
+          "default": "hook",
+          "values": [
+            "hook",
+            "none"
+          ],
+          "labels": {
+            "hook": "Avec crochet de lampe",
+            "none": "Sans crochet"
+          },
+          "label": "Crochet",
+          "description": "Un crochet de bronze au croisement des nervures, où pend une lampe à filament."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "smoked",
+          "values": [
+            "smoked",
+            "blackBasalt"
+          ],
+          "labels": {
+            "smoked": "Pierre fumée",
+            "blackBasalt": "Basalte noir-bleu"
+          },
+          "label": "Pierre",
+          "description": "Pierre de la voûte."
+        }
+      },
+      "variants": [
+        {
+          "id": "inspect",
+          "name": "Retournée (pour la regarder)",
+          "params": {
+            "display": "inspect"
+          }
+        },
+        {
+          "id": "ceiling",
+          "name": "Au plafond",
+          "params": {
+            "display": "ceiling"
+          }
+        }
+      ],
+      "slug": "buildings-structure-coffered-vault",
+      "path": "src/assets/buildings/structure/coffered-vault.js",
+      "module": "public/catalog/modules/buildings-structure-coffered-vault.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 664,
+          "vertices": 1328,
+          "drawCalls": 2
+        },
+        "inspect": {
+          "triangles": 664,
+          "vertices": 1328,
+          "drawCalls": 2
+        },
+        "ceiling": {
+          "triangles": 664,
+          "vertices": 1328,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 8036,
+        "standalone": 43632
+      }
+    },
+    {
+      "id": "buildings/structure/complex-door",
+      "name": "Porte du Complexe",
+      "nameEn": "Ancient complex door",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Module de mur percé d'une porte haute du Complexe : chambranle de pierre à glyphes, vantaux de bronze à panneaux qui pivotent sur leurs charnières. Porte standard, d'étude (hublot, plaque numérotée, voyant), grande porte à deux battants, porte de liaison gravée, issue de secours en fonte. Fermée, ouverte, ou pilotée par le scénario.",
+      "tags": [
+        "porte",
+        "vantail",
+        "battants",
+        "grande porte",
+        "hublot",
+        "voyant",
+        "chambranle",
+        "bronze",
+        "glyphes",
+        "issue de secours",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "door",
+        "door leaf",
+        "double door",
+        "porthole",
+        "status light",
+        "door frame",
+        "glyphs",
+        "emergency exit",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu de la baie ; le mur suit l'axe x (2 m de large, 4 m pour les grandes portes), face avant en +z ; les vantaux s'ouvrent vers −z",
+      "footprint": {
+        "radius": 2.15,
+        "height": 5.7
+      },
+      "animated": [
+        "door",
+        "glow"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'appareil du mur, les glyphes du chambranle, les tons des panneaux, la gravure de la porte de liaison."
+        },
+        "model": {
+          "type": "enum",
+          "default": "standard",
+          "values": [
+            "standard",
+            "study",
+            "double",
+            "link",
+            "emergency"
+          ],
+          "labels": {
+            "standard": "Porte standard",
+            "study": "Porte d'étude (hublot, voyant)",
+            "double": "Grande porte à deux battants",
+            "link": "Grande porte de liaison (gravée)",
+            "emergency": "Issue de secours"
+          },
+          "label": "Modèle",
+          "description": "Standard (1,4 × 2,8 m), d'étude (hublot, plaque, voyant), grande porte double ou de liaison (3 × 5 m), issue de secours."
+        },
+        "state": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "open",
+            "cycle"
+          ],
+          "labels": {
+            "closed": "Fermée",
+            "open": "Ouverte",
+            "cycle": "S'ouvre et se ferme en boucle"
+          },
+          "label": "État",
+          "description": "Fermée, ouverte, ou qui s'ouvre et se ferme en boucle (pour la regarder). Pilotable : group.userData.door."
+        },
+        "number": {
+          "type": "int",
+          "default": 1,
+          "min": 1,
+          "max": 5,
+          "label": "Numéro",
+          "description": "Porte d'étude : le numéro de la salle, en traits sur la plaque (1 à 5)."
+        },
+        "light": {
+          "type": "enum",
+          "default": "auto",
+          "values": [
+            "auto",
+            "amber",
+            "alarm",
+            "cyan"
+          ],
+          "labels": {
+            "auto": "Selon le modèle",
+            "amber": "Ambre",
+            "alarm": "Rouge d'alerte",
+            "cyan": "Cyan"
+          },
+          "label": "Voyant",
+          "description": "Couleur du voyant (portes d'étude, de liaison, de secours) ; « selon le modèle » : rouge pour l'issue de secours, ambre sinon."
+        },
+        "glyphs": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumés",
+            "dim": "En veille",
+            "off": "Éteints"
+          },
+          "label": "Glyphes",
+          "description": "La ligne de glyphes du chambranle et du bandeau : allumée, en veille ou éteinte."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 4,
+          "max": 8,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur du mur",
+          "description": "Hauteur du module de mur autour de la porte (au moins 5,7 m pour une grande porte)."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "blackBasalt",
+          "values": [
+            "blackBasalt",
+            "smoked"
+          ],
+          "labels": {
+            "blackBasalt": "Basalte noir-bleu",
+            "smoked": "Pierre fumée"
+          },
+          "label": "Pierre",
+          "description": "Pierre du mur et du chambranle."
+        }
+      },
+      "variants": [
+        {
+          "id": "standard",
+          "name": "Porte standard",
+          "params": {
+            "model": "standard"
+          }
+        },
+        {
+          "id": "study",
+          "name": "Porte d'étude (hublot, voyant)",
+          "params": {
+            "model": "study"
+          }
+        },
+        {
+          "id": "double",
+          "name": "Grande porte à deux battants",
+          "params": {
+            "model": "double"
+          }
+        },
+        {
+          "id": "link",
+          "name": "Grande porte de liaison (gravée)",
+          "params": {
+            "model": "link"
+          }
+        },
+        {
+          "id": "emergency",
+          "name": "Issue de secours",
+          "params": {
+            "model": "emergency"
+          }
+        }
+      ],
+      "slug": "buildings-structure-complex-door",
+      "path": "src/assets/buildings/structure/complex-door.js",
+      "module": "public/catalog/modules/buildings-structure-complex-door.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1304,
+          "vertices": 2608,
+          "drawCalls": 3
+        },
+        "standard": {
+          "triangles": 1304,
+          "vertices": 2608,
+          "drawCalls": 3
+        },
+        "study": {
+          "triangles": 1544,
+          "vertices": 3031,
+          "drawCalls": 3
+        },
+        "double": {
+          "triangles": 3228,
+          "vertices": 6456,
+          "drawCalls": 3
+        },
+        "link": {
+          "triangles": 3852,
+          "vertices": 7667,
+          "drawCalls": 3
+        },
+        "emergency": {
+          "triangles": 1140,
+          "vertices": 2243,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 17488,
+        "standalone": 61799
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",
