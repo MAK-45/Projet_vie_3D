@@ -99,9 +99,15 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vGround;
 #endif
 
+#ifdef SHADE
+  attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpol\xE9 puis d\xE9coup\xE9 en paliers
+#endif
 varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
 
 #ifdef TOON_MAP
   varying vec2 vMapUv;
@@ -132,6 +138,9 @@ void main() {
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
   #endif
   vObjPos = transformed;
+  #ifdef SHADE
+    vShade = aShade;
+  #endif
   #ifdef TOON_MAP
     vMapUv = uv;
   #endif
@@ -213,6 +222,9 @@ uniform vec4 uGlowColors[4];
 uniform float uDarkness;
 uniform float uGlowReceive;
 varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -322,6 +334,9 @@ void main() {
 
   #ifdef UNLIT
     float lit = 1.0; // lumineux par lui-m\xEAme : la couleur ne d\xE9pend que de la g\xE9om\xE9trie (occlusion des formes)
+    #ifdef SHADE
+      lit = vShade; // ton port\xE9 par chaque sommet (surfaces d'\xE9nergie anim\xE9es : vortex d'un portail, cristaux)
+    #endif
   #else
     float lit = dot(N, L) * 0.5 + 0.5;
   #endif
@@ -523,7 +538,8 @@ function createToonMaterial(options) {
     ground,
     map = null,
     currents = null,
-    wobble = null
+    wobble = null,
+    shade = false
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -532,6 +548,7 @@ function createToonMaterial(options) {
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
+  if (shade) defines.SHADE = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

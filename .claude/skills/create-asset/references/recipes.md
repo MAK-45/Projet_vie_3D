@@ -307,3 +307,24 @@ c'est ce fichier qui fait progresser les assets suivants.
 - Étincelles, poussières : un seul maillage de formes face caméra posé dans le groupe, repositionné à chaque
   `updateMatrixWorld` depuis l'os `spine_03`. Une particule éteinte se réduit à un point au cœur du torse (pas sous
   le sol : `check` le signale).
+
+## 9. Objets animés à mécanisme : la porte des étoiles et son pupitre (éprouvé)
+
+- **Design original** inspiré d'une mécanique (anneau qui tourne, verrous, vortex) : symboles inventés tirés de la
+  graine, verrous de cristal tenus par des griffes répartis sur 290° (le bas repose sur son berceau), pupitre à une
+  couronne de touches hexagonales. Pas de copie d'un décor de film ou de série.
+- **Séquence partagée** dans `kit/portal.js` (`portalSequence`, `portalStateAt`, `dialKeys`) : deux assets qui lisent
+  la même horloge (`sharedUniforms.uTime`) et la même graine restent synchronisés sans se connaître.
+- **Animation** comme le blob : `group.updateMatrixWorld` surchargé, mise à jour seulement quand le temps partagé
+  change de cran (12 images/s). La partie rigide qui tourne est un maillage à part (`rotation.z`) ; ce qui s'allume
+  ou glisse est dans un seul maillage d'énergie mis à jour sur le CPU (~1 500 sommets, sans souci).
+- **Énergie** : matériau `unlit` + `shade` (nouvel attribut `aShade`, 0..1 par sommet) : la couleur est choisie par
+  sommet puis découpée en paliers nets. Vortex : disque de 14 anneaux × 48 ; filaments = crêtes d'un bruit lent
+  `(1 − |2n − 1|)^5`, éclats = pics d'un bruit fin au-dessus de 0,66 ; premier seuil de la rampe bas (0,22), sinon
+  taches bleu nuit trop dures. Jaillissement : bosse `(1 − r²)^0,7` vers +Z, montée rapide puis retour lent.
+- Symboles gravés : quads d'un trait de 0,075 m sur les deux faces de l'anneau, sombres au repos (ton 0,12 de la rampe
+  d'énergie) : ils se lisent mieux en creux sombre sur la pierre qu'en relief de pierre.
+- Anneau intérieur un cran plus sombre que l'anneau extérieur (rampe décalée) : sinon la bande qui tourne ne se
+  détache pas. Cristaux des verrous : ≥ 0,2 m de rayon, et le logement ne doit pas les avaler.
+- Outils ajoutés au kit : `buildLathe` (révolution à facettes, axe y ou z), `buildBlock` (bloc posé et tourné,
+  dessus rétréci), `buildGem` (cristal à facettes, avec numéro de face par sommet).

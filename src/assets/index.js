@@ -49,6 +49,8 @@ import * as animCombatPunch from "./animations/combat/punch.js";
 import * as animCombatSword from "./animations/combat/sword.js";
 import * as animCombatPistol from "./animations/combat/pistol.js";
 import * as animMagicSpell from "./animations/magic/spell.js";
+import * as starPortal from "./props/magic/star-portal.js";
+import * as starPortalDial from "./props/magic/star-portal-dial.js";
 import * as summerMeadow from "./worlds/islands/summer-meadow.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
@@ -56,6 +58,7 @@ export { taxonomy, biomes } from "./taxonomy.js";
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
 export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin, magicMannequin,
   animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
+  starPortal, starPortalDial,
   summerMeadow,
 ];
 

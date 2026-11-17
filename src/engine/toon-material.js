@@ -133,9 +133,15 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
   varying vec2 vGround;
 #endif
 
+#ifdef SHADE
+  attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpolé puis découpé en paliers
+#endif
 varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
 
 #ifdef TOON_MAP
   varying vec2 vMapUv;
@@ -166,6 +172,9 @@ void main() {
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
   #endif
   vObjPos = transformed;
+  #ifdef SHADE
+    vShade = aShade;
+  #endif
   #ifdef TOON_MAP
     vMapUv = uv;
   #endif
@@ -245,6 +254,9 @@ uniform vec4 uGlowColors[4];
 uniform float uDarkness;
 uniform float uGlowReceive;
 varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
 uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -354,6 +366,9 @@ void main() {
 
   #ifdef UNLIT
     float lit = 1.0; // lumineux par lui-même : la couleur ne dépend que de la géométrie (occlusion des formes)
+    #ifdef SHADE
+      lit = vShade; // ton porté par chaque sommet (surfaces d'énergie animées : vortex d'un portail, cristaux)
+    #endif
   #else
     float lit = dot(N, L) * 0.5 + 0.5;
   #endif
@@ -558,6 +573,9 @@ function defaultSteps(count) {
  *   le `flex` de chaque sommet (le vent n'agit pas sur un astre)
  * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
  *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
+ * @param {boolean} [options.shade] avec `unlit` : la géométrie porte un attribut `aShade` (0..1) qui choisit la couleur
+ *   dans la rampe à chaque sommet ; interpolé puis découpé en paliers nets. Pour des surfaces lumineuses animées depuis
+ *   le CPU (vortex d'un portail, cristaux qui s'allument).
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
  * @param {number[]} [options.currents] [force, fréquence (1/unité)] : courants de lumière qui passent dans la matière
  *   (dérive animée des normales ; matières magiques : le mannequin magique). Le blob, lui, les calcule sur le CPU.
@@ -602,6 +620,7 @@ export function createToonMaterial(options) {
     map = null,
     currents = null,
     wobble = null,
+    shade = false,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -612,6 +631,7 @@ export function createToonMaterial(options) {
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
+  if (shade) defines.SHADE = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

@@ -786,3 +786,143 @@ export function buildTerrainChunk({ size, spacing = 0.5, origin = [0, 0], height
   skirt.setIndex(si);
   return { top, skirt };
 }
+
+/**
+ * Volume de révolution à facettes nettes le long du profil (anneau épais, colonne, socle, dôme). Le profil est un
+ * polygone fermé [[r, h], ...] (r : distance à l'axe, h : position le long de l'axe), parcouru dans le sens
+ * inverse des aiguilles d'une montre (r vers la droite, h vers le haut) pour que les normales pointent dehors.
+ * Attributs : position, normal ; indexée.
+ *
+ * @param {number[][]} profile contour [[r, h], ...] (fermé : le dernier point rejoint le premier)
+ * @param {object} [options]
+ * @param {number} [options.segments] nombre de côtés autour de l'axe
+ * @param {"y"|"z"} [options.axis] axe de révolution ("y" : colonne posée ; "z" : anneau debout face à +Z)
+ * @param {boolean} [options.facets] vrai : chaque côté est une face plane (colonne octogonale) ; faux : arrondi
+ * @param {number} [options.start] angle du premier côté (radians)
+ */
+export function buildLathe(profile, { segments = 32, axis = "y", facets = false, start = 0 } = {}) {
+  const positions = [];
+  const normals = [];
+  const index = [];
+  const n = profile.length;
+  const put = (r, h, angle, nr, nh) => {
+    const c = Math.cos(angle), s = Math.sin(angle);
+    if (axis === "y") {
+      positions.push(r * c, h, r * s);
+      normals.push(nr * c, nh, nr * s);
+    } else {
+      positions.push(r * c, r * s, h);
+      normals.push(nr * c, nr * s, nh);
+    }
+  };
+  for (let e = 0; e < n; e++) {
+    const [r1, h1] = profile[e];
+    const [r2, h2] = profile[(e + 1) % n];
+    const len = Math.hypot(r2 - r1, h2 - h1) || 1;
+    // Normale extérieure du bord (r, h) pour un contour parcouru dans le sens trigonométrique.
+    const nr = (h2 - h1) / len, nh = -(r2 - r1) / len;
+    for (let s = 0; s < segments; s++) {
+      const a1 = start + (s / segments) * Math.PI * 2;
+      const a2 = start + ((s + 1) / segments) * Math.PI * 2;
+      const first = positions.length / 3;
+      if (facets) {
+        const mid = (a1 + a2) / 2, k = Math.cos((a2 - a1) / 2);
+        // Une face plane : les sommets sont sur les arêtes, la normale au milieu du côté.
+        const cm = Math.cos(mid), sm = Math.sin(mid);
+        for (const [r, h, a] of [[r1, h1, a1], [r1, h1, a2], [r2, h2, a2], [r2, h2, a1]]) {
+          const c = Math.cos(a), s2 = Math.sin(a);
+          if (axis === "y") {
+            positions.push(r * c, h, r * s2);
+            normals.push(nr * cm, nh * k, nr * sm);
+          } else {
+            positions.push(r * c, r * s2, h);
+            normals.push(nr * cm, nr * sm, nh * k);
+          }
+        }
+      } else {
+        put(r1, h1, a1, nr, nh);
+        put(r1, h1, a2, nr, nh);
+        put(r2, h2, a2, nr, nh);
+        put(r2, h2, a1, nr, nh);
+      }
+      // Ordre des sommets : face extérieure tournée vers la normale, quel que soit l'axe.
+      if (axis === "y") index.push(first, first + 2, first + 1, first, first + 3, first + 2);
+      else index.push(first, first + 1, first + 2, first, first + 2, first + 3);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  return geometry;
+}
+
+/**
+ * Bloc (pierre taillée, marche, dalle, griffe) : boîte de taille [x, y, z] posée en `position` (centre), tournée de
+ * `rotation` [x, y, z] (radians, ordre XYZ). Attributs : position, normal ; indexée (fusionnable avec `buildLathe`).
+ * `taper` rétrécit le dessus (0 : droit, 0,2 : dessus 20 % plus petit en x et z).
+ */
+export function buildBlock(size, position = [0, 0, 0], rotation = [0, 0, 0], { taper = 0 } = {}) {
+  const geometry = new THREE.BoxGeometry(size[0], size[1], size[2]);
+  geometry.deleteAttribute("uv");
+  if (taper) {
+    const p = geometry.attributes.position;
+    for (let i = 0; i < p.count; i++) {
+      if (p.getY(i) > 0) p.setXYZ(i, p.getX(i) * (1 - taper), p.getY(i), p.getZ(i) * (1 - taper));
+    }
+    geometry.computeVertexNormals();
+  }
+  const matrix = new THREE.Matrix4().compose(
+    new THREE.Vector3(...position),
+    new THREE.Quaternion().setFromEuler(new THREE.Euler(...rotation)),
+    new THREE.Vector3(1, 1, 1),
+  );
+  geometry.applyMatrix4(matrix);
+  return geometry;
+}
+
+/**
+ * Cristal taillé : double pyramide à `sides` faces planes, de longueur `length` le long de son axe local Y et de
+ * rayon `radius` à la ceinture (placée à `waist` de la longueur, 0..1), posé en `position` le long de `direction`.
+ * Attributs : position, normal ; indexée. `userData.facet` donne pour chaque sommet le numéro de sa face (pour
+ * alterner les tons des facettes).
+ */
+export function buildGem({ length = 0.6, radius = 0.15, sides = 6, waist = 0.5, position = new THREE.Vector3(), direction = new THREE.Vector3(0, 1, 0), spin = 0 } = {}) {
+  const positions = [];
+  const normals = [];
+  const facet = [];
+  const index = [];
+  const top = new THREE.Vector3(0, length * (1 - waist), 0);
+  const bottom = new THREE.Vector3(0, -length * waist, 0);
+  const ring = [];
+  for (let i = 0; i < sides; i++) {
+    const a = spin + (i / sides) * Math.PI * 2;
+    ring.push(new THREE.Vector3(Math.cos(a) * radius, 0, Math.sin(a) * radius));
+  }
+  const quaternion = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+  const a = new THREE.Vector3(), b = new THREE.Vector3(), normal = new THREE.Vector3();
+  const tri = (p1, p2, p3, f) => {
+    a.subVectors(p2, p1);
+    b.subVectors(p3, p1);
+    normal.crossVectors(a, b).normalize().applyQuaternion(quaternion);
+    const first = positions.length / 3;
+    for (const p of [p1, p2, p3]) {
+      const q = p.clone().applyQuaternion(quaternion).add(position);
+      positions.push(q.x, q.y, q.z);
+      normals.push(normal.x, normal.y, normal.z);
+      facet.push(f);
+    }
+    index.push(first, first + 1, first + 2);
+  };
+  for (let i = 0; i < sides; i++) {
+    const p = ring[i], q = ring[(i + 1) % sides];
+    tri(top, q, p, i);
+    tri(bottom, p, q, i + sides);
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  geometry.userData.facet = facet;
+  return geometry;
+}
