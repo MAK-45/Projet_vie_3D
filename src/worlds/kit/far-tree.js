@@ -1,6 +1,6 @@
 // Version lointaine d'un arbre (ou de tout modèle à feuillage) : mêmes matériaux, donc mêmes couleurs, même vent et
 // mêmes contours, mais une fraction des triangles. Vu à plus de 50 m, un arbre ne fait que quelques dizaines de
-// pixels d'art : le feuillage garde une feuille sur six ou sept (plutôt celles du bord, qui font la silhouette),
+// pixels d'art : le feuillage garde une feuille sur huit ou neuf (plutôt celles du bord, qui font la silhouette),
 // agrandies pour couvrir la même couronne, et le bois ne garde que le tronc et les maîtresses branches.
 
 import * as THREE from "three";
@@ -12,7 +12,7 @@ import * as THREE from "three";
  * @param {number} [options.wood] rayon minimal d'une branche gardée, en part du rayon du tronc (0..1)
  * @returns {THREE.Group} modèle allégé, aux mêmes noms de maillages et aux mêmes matériaux
  */
-export function createFarVersion(prototype, { keep = 0.15, wood = 0.3 } = {}) {
+export function createFarVersion(prototype, { keep = 0.1, wood = 0.35 } = {}) {
   const far = new THREE.Group();
   far.name = `${prototype.name} (loin)`;
   prototype.updateMatrixWorld(true);

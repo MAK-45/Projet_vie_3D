@@ -22,9 +22,9 @@ import {
 const HALF = TILE / 2;
 const smoothstep = THREE.MathUtils.smoothstep;
 /** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±120 m autour du promeneur en isométrique,
- * ±248 m à la 3e personne (`around` donné), dont la vue porte à 230 m. */
+ * ±200 m à la 3e personne (`around` donné), dont la vue porte à 185 m. */
 const WINDOW = 7;
-const WINDOW_AROUND = 15;
+const WINDOW_AROUND = 12;
 /** Débord des morceaux nécessaires tout de suite (m) : couronnes et ombres portées venues de hors champ. */
 const NEED_MARGIN = 9;
 /** Débord des morceaux préparés d'avance (m), un par image au plus. */

@@ -26,6 +26,7 @@ export class StreamingScatter {
       fine: { cellSize: 4, height: 1.6, margin: 1.6 },
       low: { cellSize: 8, height: 3, margin: 3.5 },
       tall: { cellSize: 4, height: 15, margin: 8.5 },
+      flat: { cellSize: 8, height: 1, margin: 1.5 },
     },
   }) {
     this.chunkSize = chunkSize;

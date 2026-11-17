@@ -31,21 +31,21 @@ const POINTER_EVENTS = ["pointerdown", "pointermove", "pointerup", "pointercance
  * sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux pixels d'art.
  *
  * Dans un monde sans bord, pas de brume : le monde est courbé comme une petite planète (rayon THIRD_CURVE_RADIUS,
- * à partir de THIRD_CURVE_START du promeneur). Le sol passe derrière l'horizon vers 60 m (caméra à 3 m), les
- * rochers vers 110 m, les plus grands arbres (15 m) vers 200 à 225 m : la vue s'arrête juste après, sans qu'on la
- * voie finir. Au-delà de THIRD_LOD, les arbres sont dessinés allégés (kit/far-tree.js) ; au-delà de
+ * à partir de THIRD_CURVE_START du promeneur). Le sol passe derrière l'horizon vers 53 m (caméra à 3 m), ce qui
+ * est ras du sol vers 75 m, les rochers vers 100 m, les plus grands arbres (15 m) vers 160 à 180 m : la vue
+ * s'arrête juste après, sans qu'on la voie finir. Au-delà de THIRD_LOD, les arbres sont dessinés allégés (kit/far-tree.js) ; au-delà de
  * THIRD_GROUND_REACH, le sol n'est plus dessiné (il est sous l'horizon). Sur une île (monde fini), la brume reste.
  */
-const THIRD_FAR = 230;
-const THIRD_CURVE_RADIUS = 600;
+const THIRD_FAR = 185;
+const THIRD_CURVE_RADIUS = 400;
 const THIRD_CURVE_START = 20;
-const THIRD_REACH = { fine: 40, low: 115 };
-const THIRD_LOD = { tall: 55 };
-const THIRD_GROUND_REACH = 130;
-const THIRD_FOG_NEAR = 120; // île seulement
+const THIRD_REACH = { fine: 34, flat: 75, low: 100 };
+const THIRD_LOD = { tall: 40 };
+const THIRD_GROUND_REACH = 100;
+const THIRD_FOG_NEAR = 100; // île seulement
 /** Monde sans bord : rayon (m) où tout est gardé prêt quelle que soit la direction de la vue ; au-delà, seuls les
  * morceaux dans le champ sont fabriqués, un peu par image. */
-const THIRD_AROUND = 130;
+const THIRD_AROUND = 110;
 const THIRD_SHADOW_AHEAD = 14; // la carte d'ombre est centrée devant le promeneur, là où l'on regarde (m)
 const THIRD_SHADOW_RADIUS = 24; // (+ 14 m de marge dans le monde)
 /** Au-delà (m de la caméra), le semis ne projette plus d'ombre : c'est hors de la carte d'ombre. */

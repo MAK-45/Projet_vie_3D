@@ -179,8 +179,8 @@ export function createMeadowLayers(addLayer) {
     };
   }
   // Mousse au pied des arbres et des rochers ; taupinières en plein pré.
-  const moss = addLayer(mossPatch.create({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "low", castShadow: false });
-  const molehill = addLayer(dirtMound.create({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "low", castShadow: false });
+  const moss = addLayer(mossPatch.create({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "flat", castShadow: false });
+  const molehill = addLayer(dirtMound.create({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "flat", castShadow: false });
   return { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill };
 }
 

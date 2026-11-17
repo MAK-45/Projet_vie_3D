@@ -1570,8 +1570,10 @@ var ScatterField = class {
       fine: { cellSize: 4, height: 1.6, margin: 1.6 },
       low: { cellSize: 6, height: 3, margin: 3.5 },
       // marge : un rocher hors champ projette encore son ombre
-      tall: { cellSize: 3, height: 15, margin: 8.5 }
+      tall: { cellSize: 3, height: 15, margin: 8.5 },
       // un arbre par case environ ; marge = couronne + ombre portée
+      flat: { cellSize: 6, height: 1, margin: 1.5 }
+      // ras du sol, sans ombre (mousse, terre remuée)
     }
   }) {
     this.bounds = bounds;
@@ -1625,7 +1627,8 @@ var ScatterField = class {
    *
    * @param {THREE.Group} prototype groupe sorti de `create()` d'un asset
    * @param {object} [options]
-   * @param {"fine"|"low"|"tall"} [options.reach] famille de la couche : herbes et fleurs, rochers et plaques, arbres
+   * @param {"fine"|"low"|"tall"|"flat"} [options.reach] famille de la couche : herbes et fleurs, rochers et plaques,
+   *   arbres, ras du sol sans ombre (mousse, terre remuée)
    * @param {boolean} [options.thin] couche éclaircie quand la vue est large (herbe, fleurs)
    * @param {boolean} [options.castShadow] force ou coupe l'ombre portée de toute la couche
    * @param {string[]} [options.skip] noms des maillages du modèle à ne pas reprendre
@@ -2471,7 +2474,8 @@ var StreamingScatter = class {
     classes = {
       fine: { cellSize: 4, height: 1.6, margin: 1.6 },
       low: { cellSize: 8, height: 3, margin: 3.5 },
-      tall: { cellSize: 4, height: 15, margin: 8.5 }
+      tall: { cellSize: 4, height: 15, margin: 8.5 },
+      flat: { cellSize: 8, height: 1, margin: 1.5 }
     }
   }) {
     this.chunkSize = chunkSize;
@@ -2815,7 +2819,7 @@ import * as THREE22 from "three";
 
 // src/worlds/kit/far-tree.js
 import * as THREE10 from "three";
-function createFarVersion(prototype, { keep = 0.15, wood = 0.3 } = {}) {
+function createFarVersion(prototype, { keep = 0.1, wood = 0.35 } = {}) {
   const far = new THREE10.Group();
   far.name = `${prototype.name} (loin)`;
   prototype.updateMatrixWorld(true);
@@ -4996,8 +5000,8 @@ function createMeadowLayers(addLayer) {
       layer: addGroundCover(create3({ seed: kind.slot, species: name, season: SEASON, count: kind.count }), { outlined: ["petals", "hearts"] })
     };
   }
-  const moss = addLayer(create9({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "low", castShadow: false });
-  const molehill = addLayer(create7({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "low", castShadow: false });
+  const moss = addLayer(create9({ seed: 3, season: SEASON, size: 1.4, cushions: 7 }), { reach: "flat", castShadow: false });
+  const molehill = addLayer(create7({ seed: 2, soil: "dirt", size: 0.75, height: 0.28 }), { reach: "flat", castShadow: false });
   return { species, boulders, slabs, lawns, tufts, tallTufts, flowers, moss, molehill };
 }
 function createPlacer(heightAt) {
@@ -5020,7 +5024,7 @@ function createPlacer(heightAt) {
 var HALF = TILE / 2;
 var smoothstep2 = THREE23.MathUtils.smoothstep;
 var WINDOW = 7;
-var WINDOW_AROUND = 15;
+var WINDOW_AROUND = 12;
 var NEED_MARGIN = 9;
 var PREFETCH_MARGIN = 20;
 var KEEP_MARGIN = 36;

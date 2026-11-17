@@ -51,6 +51,7 @@ export class ScatterField {
       fine: { cellSize: 4, height: 1.6, margin: 1.6 },
       low: { cellSize: 6, height: 3, margin: 3.5 }, // marge : un rocher hors champ projette encore son ombre
       tall: { cellSize: 3, height: 15, margin: 8.5 }, // un arbre par case environ ; marge = couronne + ombre portée
+      flat: { cellSize: 6, height: 1, margin: 1.5 }, // ras du sol, sans ombre (mousse, terre remuée)
     },
   }) {
     this.bounds = bounds;
@@ -99,7 +100,8 @@ export class ScatterField {
    *
    * @param {THREE.Group} prototype groupe sorti de `create()` d'un asset
    * @param {object} [options]
-   * @param {"fine"|"low"|"tall"} [options.reach] famille de la couche : herbes et fleurs, rochers et plaques, arbres
+   * @param {"fine"|"low"|"tall"|"flat"} [options.reach] famille de la couche : herbes et fleurs, rochers et plaques,
+   *   arbres, ras du sol sans ombre (mousse, terre remuée)
    * @param {boolean} [options.thin] couche éclaircie quand la vue est large (herbe, fleurs)
    * @param {boolean} [options.castShadow] force ou coupe l'ombre portée de toute la couche
    * @param {string[]} [options.skip] noms des maillages du modèle à ne pas reprendre

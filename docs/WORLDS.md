@@ -161,26 +161,27 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   de pixels ici : en perspective, chaque pas redessine le décor.
 - **Monde courbé, sans brume** (prairie infinie) : le décor est courbé à l'affichage comme une petite planète
   (`setCurvature` de `engine/toon-material.js`, dans le vertex shader de tous les matériaux toon) : au-delà de 20 m
-  de la caméra, il descend de (d − 20)² / 1 200 m (rayon 600 m). Le sol passe derrière l'horizon vers 60 m (caméra
-  à 3 m de haut), les rochers vers 110 m, les plus grands arbres (15 m) vers 200 à 225 m ; la vue s'arrête à 230 m,
-  sans qu'on la voie finir. Les ombres et les motifs restent calculés sur le monde plat (la passe d'ombre ne
-  courbe rien, `DEPTH_ONLY`). Sur une île, la vue garde une brume de lointain (120 à 223 m) : la mer de nuages
+  de la caméra, il descend de (d − 20)² / 800 m (rayon 400 m). Le sol passe derrière l'horizon vers 53 m (caméra
+  à 3 m de haut), ce qui est ras du sol vers 75 m, les rochers vers 100 m, les plus grands arbres (15 m) vers 160
+  à 180 m ; la vue s'arrête à 185 m, sans qu'on la voie finir. Les ombres et les motifs restent calculés sur le monde plat (la passe d'ombre ne
+  courbe rien, `DEPTH_ONLY`). Sur une île, la vue garde une brume de lointain (100 à 180 m) : la mer de nuages
   n'est pas courbée.
-- **Arbres lointains** : au-delà de 55 m (`lod`), chaque arbre est dessiné en version allégée
-  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur six environ (plutôt celles du bord),
-  agrandie d'autant, et seulement le tronc et les maîtresses branches : ≈ 700 triangles au lieu de ≈ 4 000. Une
+- **Arbres lointains** : au-delà de 40 m (`lod`), chaque arbre est dessiné en version allégée
+  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur neuf environ (plutôt celles du bord),
+  agrandie d'autant, et seulement le tronc et les maîtresses branches : ≈ 450 triangles au lieu de ≈ 4 000. Une
   couche la déclare par `farVersion` dans `addLayer` (semis par morceaux) ; le semis d'île l'ignore.
-- **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 40 m (au-delà, une touffe ne fait qu'un pixel), les
-  rochers à 115 m, le sol à 130 m (`groundReach` : plus loin, il est sous l'horizon), les arbres jusqu'au bout de la
-  vue. La carte d'ombre est centrée 14 m devant le promeneur, et seules les copies à moins de 58 m de la caméra
+- **Coût** : l'herbe et les fleurs ne sont dessinées qu'à 34 m (au-delà, une touffe ne fait qu'un pixel), la
+  mousse et la terre remuée (famille `flat`, ras du sol) à 75 m, les rochers à 100 m, le sol à 100 m
+  (`groundReach` : plus loin, il est sous l'horizon), les arbres jusqu'au bout de la vue. La carte d'ombre est centrée 14 m devant le promeneur, et seules les copies à moins de 58 m de la caméra
   projettent leur ombre (`shadowReach` : le semis range ses copies de la plus proche à la plus lointaine et réduit
   `count` le temps de la passe d'ombre, `limitShadowCopies` dans `kit/scatter.js`). Dans la prairie infinie, tous
-  les morceaux dans un rayon de 130 m sont gardés prêts (`around`), quelle que soit la direction de la vue : la
-  caméra peut se retourner d'un geste sans saccade. Au-delà, jusqu'à 230 m, seuls les morceaux dans le champ sont
-  fabriqués, un peu par image ; la fenêtre de recherche passe de ±7 à ±15 morceaux.
+  les morceaux dans un rayon de 110 m sont gardés prêts (`around`), quelle que soit la direction de la vue : la
+  caméra peut se retourner d'un geste sans saccade. Au-delà, jusqu'à 185 m, seuls les morceaux dans le champ sont
+  fabriqués, un peu par image ; la fenêtre de recherche passe de ±7 à ±12 morceaux.
 - **Mesures, monde courbé** (navigateur de capture, prairie infinie, à l'arrêt, tout chargé) : téléphone
-  412 × 915 : ≈ 100 draw calls, ≈ 290 000 triangles ; écran large 1280 × 720 : ≈ 130 draw calls, ≈ 580 000
-  triangles ; 320 à 340 morceaux chargés. Avant (vue plate à 250 m avec brume) : téléphone ≈ 530 000 triangles,
+  412 × 915 : ≈ 80 draw calls, ≈ 190 000 triangles, ≈ 250 morceaux chargés ; écran large 1280 × 720 : ≈ 95 draw
+  calls, ≈ 280 000 triangles, ≈ 290 morceaux. Première version (rayon 600 m, vue à 230 m, arbres allégés dès
+  55 m) : ≈ 310 000 triangles au téléphone, mesurée à 35 i/s sur le téléphone de l'utilisateur. Avant (vue plate à 250 m avec brume) : téléphone ≈ 530 000 triangles,
   mesuré à 43 i/s sur le téléphone de l'utilisateur (≈ 1 000 000 triangles, 194 draw calls) ; vue à 150 m jugée
   fluide.
 
