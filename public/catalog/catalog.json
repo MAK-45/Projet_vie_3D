@@ -180,7 +180,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 32688
+      "bytes": 33328
     }
   ],
   "assets": [
@@ -344,7 +344,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 44876
+        "standalone": 45309
       }
     },
     {
@@ -513,7 +513,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 45773
+        "standalone": 46206
       }
     },
     {
@@ -685,7 +685,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 47286
+        "standalone": 47719
       }
     },
     {
@@ -886,7 +886,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 48255
+        "standalone": 48688
       }
     },
     {
@@ -1089,7 +1089,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 49317
+        "standalone": 49750
       }
     },
     {
@@ -1223,7 +1223,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 37556
+        "standalone": 37989
       }
     },
     {
@@ -1386,7 +1386,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 37462
+        "standalone": 37895
       }
     },
     {
@@ -1543,7 +1543,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 39708
+        "standalone": 40141
       }
     },
     {
@@ -1726,7 +1726,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 40857
+        "standalone": 41290
       }
     },
     {
@@ -1925,7 +1925,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 47157
+        "standalone": 47590
       }
     },
     {
@@ -2164,7 +2164,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 40641
+        "standalone": 41074
       }
     },
     {
@@ -2370,7 +2370,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 45436
+        "standalone": 45869
       }
     },
     {
@@ -2518,7 +2518,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 37772
+        "standalone": 38205
       }
     },
     {
@@ -2678,7 +2678,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 38782
+        "standalone": 39215
       }
     },
     {
@@ -2821,7 +2821,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 35624
+        "standalone": 36057
       }
     },
     {
@@ -2984,7 +2984,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 36502
+        "standalone": 36935
       }
     },
     {
@@ -3462,7 +3462,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 61545
+        "standalone": 61978
       }
     },
     {
@@ -3652,7 +3652,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 51637
+        "standalone": 52070
       }
     },
     {
@@ -3842,7 +3842,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 51583
+        "standalone": 52016
       }
     },
     {
@@ -4030,7 +4030,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 51597
+        "standalone": 52030
       }
     },
     {
@@ -4363,7 +4363,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 52176
+        "standalone": 52609
       }
     },
     {
@@ -4552,7 +4552,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 50551
+        "standalone": 50984
       }
     },
     {
@@ -4740,7 +4740,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 50639
+        "standalone": 51072
       }
     },
     {
@@ -4928,7 +4928,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 50599
+        "standalone": 51032
       }
     },
     {
@@ -5116,7 +5116,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 50568
+        "standalone": 51001
       }
     },
     {
@@ -5306,7 +5306,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 50650
+        "standalone": 51083
       }
     },
     {
@@ -5500,7 +5500,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 50874
+        "standalone": 51307
       }
     },
     {
@@ -5688,7 +5688,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 50559
+        "standalone": 50992
       }
     },
     {
@@ -5876,7 +5876,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 50545
+        "standalone": 50978
       }
     },
     {
@@ -6062,7 +6062,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 50596
+        "standalone": 51029
       }
     },
     {
@@ -6236,7 +6236,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 50531
+        "standalone": 50964
       }
     },
     {
@@ -6410,7 +6410,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 50515
+        "standalone": 50948
       }
     },
     {
@@ -6583,7 +6583,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 50555
+        "standalone": 50988
       }
     },
     {
@@ -6758,7 +6758,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 50567
+        "standalone": 51000
       }
     },
     {
@@ -6955,7 +6955,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 51079
+        "standalone": 51512
       }
     },
     {
@@ -7126,7 +7126,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 50492
+        "standalone": 50925
       }
     },
     {
@@ -7298,7 +7298,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 50646
+        "standalone": 51079
       }
     },
     {
@@ -7472,7 +7472,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 50483
+        "standalone": 50916
       }
     },
     {
@@ -7646,7 +7646,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 50589
+        "standalone": 51022
       }
     },
     {
@@ -7820,7 +7820,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 50582
+        "standalone": 51015
       }
     },
     {
@@ -7995,7 +7995,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 50599
+        "standalone": 51032
       }
     },
     {
@@ -8184,7 +8184,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 50666
+        "standalone": 51099
       }
     },
     {
@@ -8358,7 +8358,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 50589
+        "standalone": 51022
       }
     },
     {
@@ -8549,7 +8549,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 50695
+        "standalone": 51128
       }
     },
     {
@@ -8754,7 +8754,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 50741
+        "standalone": 51174
       }
     },
     {
@@ -8957,7 +8957,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 51201
+        "standalone": 51634
       }
     },
     {
@@ -9154,7 +9154,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 51128
+        "standalone": 51561
       }
     },
     {
@@ -9163,7 +9163,7 @@
       "nameEn": "Star portal",
       "category": "props",
       "subcategory": "magic",
-      "description": "Grand anneau de pierre de 6,7 m qui compose une adresse : son anneau intérieur gravé de symboles tourne, ses verrous de cristal s'enclenchent un à un, puis un vortex d'énergie jaillit et ondule avant de se refermer. Socle en escalier, estrade ou ruine ; la graine change l'adresse, les symboles et le socle. Se commande avec le pupitre (même graine, même nombre de verrous).",
+      "description": "Anneau de pierre de 6,70 m (ouverture de 4,76 m) enfoncé d'un quart dans une plateforme qu'on traverse de plain-pied. Son anneau intérieur gravé de symboles tourne, ses verrous de cristal se referment un à un et restent allumés, puis le vortex jaillit et ondule ; tout ce qui le traverse y fait une onde. Escaliers, rampes ou ruine ; se commande avec la console (même graine, même nombre de verrous).",
       "tags": [
         "porte des étoiles",
         "portail",
@@ -9176,6 +9176,8 @@
         "cristaux",
         "voyage",
         "passage entre les mondes",
+        "escalier",
+        "rampe",
         "magie",
         "science-fiction",
         "pierre",
@@ -9192,6 +9194,8 @@
         "crystals",
         "travel",
         "world gate",
+        "stairs",
+        "ramp",
         "magic",
         "sci-fi",
         "stone",
@@ -9209,16 +9213,17 @@
         "beach",
         "swamp"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-17",
-      "units": "1 unité = 1 mètre ; origine au sol au centre du socle ; l'anneau fait face à +Z (le vortex jaillit vers +Z)",
+      "units": "1 unité = 1 mètre ; origine au sol au centre de la plateforme ; l'anneau fait face à +Z (le vortex jaillit vers +Z) ; la passerelle (dessus de la plateforme) est à `group.userData.walkway` m",
       "footprint": {
-        "radius": 4.6,
-        "height": 8.6
+        "radius": 6.9,
+        "height": 7.1
       },
       "animated": [
         "dial",
-        "glow"
+        "glow",
+        "ripple"
       ],
       "params": {
         "seed": {
@@ -9227,23 +9232,23 @@
           "min": 0,
           "max": 9999,
           "label": "Graine",
-          "description": "Change l'adresse composée et le rythme de la séquence, le nombre de symboles (24 à 36) et leur dessin, les griffes des verrous, et le socle : marches, largeur, dalles et pierres tombées."
+          "description": "Change l'adresse composée et le rythme de la séquence, le nombre de symboles (24 à 36) et leur dessin, la forme des verrous, et la plateforme : hauteur, nombre de marches, dallage, bornes, pierres tombées."
         },
         "base": {
           "type": "enum",
           "default": "stairs",
           "values": [
             "stairs",
-            "dais",
+            "ramp",
             "ruin"
           ],
           "labels": {
-            "stairs": "Escalier",
-            "dais": "Estrade ronde",
+            "stairs": "Escaliers",
+            "ramp": "Rampes",
             "ruin": "Ruine"
           },
-          "label": "Socle",
-          "description": "Escalier en façade, estrade ronde à deux gradins, ou ruine aux dalles disjointes (la porte penche un peu)."
+          "label": "Plateforme",
+          "description": "Escaliers devant et derrière, longues rampes en pente douce, ou ruine (marches cassées, dalles disjointes, pierres tombées). La passerelle passe toujours au ras du bas de l'ouverture."
         },
         "state": {
           "type": "enum",
@@ -9259,7 +9264,21 @@
             "open": "Ouverte"
           },
           "label": "État",
-          "description": "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit puis se referme. Endormie ou ouverte : figée."
+          "description": "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit, ondule puis se referme. Endormie ou ouverte : figée."
+        },
+        "probe": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Une sonde traverse",
+            "off": "Aucune"
+          },
+          "label": "Sonde",
+          "description": "Une petite sonde de cristal traverse le vortex ouvert, aller et retour, pour montrer l'onde de passage."
         },
         "locks": {
           "type": "int",
@@ -9267,7 +9286,7 @@
           "min": 5,
           "max": 9,
           "label": "Verrous",
-          "description": "Nombre de verrous de cristal, donc de symboles dans une adresse (le pupitre doit avoir le même)."
+          "description": "Nombre de verrous de cristal, donc de symboles dans une adresse (la console doit avoir le même)."
         },
         "energy": {
           "type": "enum",
@@ -9305,22 +9324,22 @@
             "sandstone": "Grès"
           },
           "label": "Pierre",
-          "description": "Pierre de l'anneau et du socle."
+          "description": "Pierre de l'anneau et de la plateforme."
         }
       },
       "variants": [
         {
           "id": "stairs",
-          "name": "Escalier",
+          "name": "Escaliers",
           "params": {
             "base": "stairs"
           }
         },
         {
-          "id": "dais",
-          "name": "Estrade ronde",
+          "id": "ramp",
+          "name": "Rampes",
           "params": {
-            "base": "dais"
+            "base": "ramp"
           }
         },
         {
@@ -9345,47 +9364,50 @@
       ],
       "stats": {
         "default": {
-          "triangles": 4344,
-          "vertices": 6965,
+          "triangles": 4676,
+          "vertices": 7849,
           "drawCalls": 3
         },
         "stairs": {
-          "triangles": 4344,
-          "vertices": 6965,
+          "triangles": 4676,
+          "vertices": 7849,
           "drawCalls": 3
         },
-        "dais": {
-          "triangles": 4396,
-          "vertices": 7069,
+        "ramp": {
+          "triangles": 4532,
+          "vertices": 7561,
           "drawCalls": 3
         },
         "ruin": {
-          "triangles": 4404,
-          "vertices": 7085,
+          "triangles": 4640,
+          "vertices": 7777,
           "drawCalls": 3
         }
       },
       "bytes": {
-        "source": 23895,
-        "standalone": 60079
+        "source": 30386,
+        "standalone": 65461
       }
     },
     {
       "id": "props/magic/star-portal-dial",
-      "name": "Pupitre de la porte des étoiles",
-      "nameEn": "Star portal dial",
+      "name": "Console de la porte des étoiles",
+      "nameEn": "Star portal console",
       "category": "props",
       "subcategory": "magic",
-      "description": "Pupitre de pierre qui commande la porte des étoiles : une couronne de touches de cristal autour d'un grand cristal, sur un plateau incliné. Les touches s'allument une à une pendant la composition, le cristal s'embrase à l'ouverture, en même temps que la porte de même graine. Colonne, lutrin ou autel.",
+      "description": "Autel de pierre et de bronze d'une civilisation ancienne qui commande la porte des étoiles : un plateau incliné de tablettes incrustées de cristal (une par symbole de la porte) et, au fond, un petit anneau de bronze qui tient un cœur de cristal en lévitation. Les tablettes s'enfoncent et s'allument au rythme de la porte de même graine ; le cœur s'embrase et tourne à l'ouverture.",
       "tags": [
-        "pupitre",
         "console",
+        "autel",
         "commande",
         "porte des étoiles",
         "portail",
-        "touches",
+        "tablettes",
         "cristaux",
         "adresse",
+        "bronze",
+        "civilisation ancienne",
+        "technologie ancienne",
         "voyage",
         "magie",
         "science-fiction",
@@ -9394,11 +9416,13 @@
         "extérieur",
         "dial",
         "control panel",
+        "altar",
         "star portal",
         "portal",
-        "keys",
+        "tablets",
         "crystals",
         "address",
+        "ancient technology",
         "travel",
         "magic",
         "sci-fi",
@@ -9417,12 +9441,12 @@
         "beach",
         "swamp"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-17",
-      "units": "1 unité = 1 mètre ; origine au sol sous le pied ; le plateau s'incline vers +Z (on se tient côté +Z pour composer)",
+      "units": "1 unité = 1 mètre ; origine au sol sous l'autel ; le plateau s'incline vers +Z (on se tient côté +Z pour composer)",
       "footprint": {
-        "radius": 0.8,
-        "height": 1.5
+        "radius": 0.95,
+        "height": 1.75
       },
       "animated": [
         "dial",
@@ -9435,23 +9459,23 @@
           "min": 0,
           "max": 9999,
           "label": "Graine",
-          "description": "La même graine que la porte : même adresse, mêmes touches pressées au même moment. Change aussi le pied (facettes, galbe), l'inclinaison du plateau et le nombre de touches (12 à 16)."
+          "description": "La même graine que la porte : même adresse, mêmes tablettes pressées au même moment. Change aussi les proportions de l'autel, l'inclinaison du plateau, les cornes de bronze et les gradins."
         },
         "style": {
           "type": "enum",
-          "default": "pillar",
+          "default": "altar",
           "values": [
+            "altar",
             "pillar",
-            "lectern",
-            "altar"
+            "monolith"
           ],
           "labels": {
+            "altar": "Autel à degrés",
             "pillar": "Colonne",
-            "lectern": "Lutrin",
-            "altar": "Autel"
+            "monolith": "Monolithe"
           },
           "label": "Forme",
-          "description": "Colonne galbée, lutrin penché en bloc, ou autel bas et large."
+          "description": "Autel à degrés (pyramide tronquée), colonne à chapiteau, ou monolithe au plateau en surplomb."
         },
         "state": {
           "type": "enum",
@@ -9463,11 +9487,11 @@
           ],
           "labels": {
             "cycle": "Composition en boucle",
-            "dormant": "Endormi",
+            "dormant": "Endormie",
             "open": "Porte ouverte"
           },
           "label": "État",
-          "description": "En boucle (synchronisé avec la porte), endormi, ou figé porte ouverte."
+          "description": "En boucle (synchronisée avec la porte), endormie, ou figée porte ouverte."
         },
         "locks": {
           "type": "int",
@@ -9475,7 +9499,7 @@
           "min": 5,
           "max": 9,
           "label": "Verrous",
-          "description": "Le nombre de verrous de la porte qu'il commande : autant de touches pressées."
+          "description": "Le nombre de verrous de la porte qu'elle commande : autant de tablettes pressées."
         },
         "energy": {
           "type": "enum",
@@ -9497,6 +9521,22 @@
           "label": "Énergie",
           "description": "Couleur des cristaux allumés (la même que la porte)."
         },
+        "metal": {
+          "type": "enum",
+          "default": "bronze",
+          "values": [
+            "bronze",
+            "gold",
+            "iron"
+          ],
+          "labels": {
+            "bronze": "Bronze",
+            "gold": "Or",
+            "iron": "Fer"
+          },
+          "label": "Métal",
+          "description": "Garnitures, tablettes et petit anneau : bronze, or ou fer."
+        },
         "stone": {
           "type": "enum",
           "default": "granite",
@@ -9513,10 +9553,17 @@
             "sandstone": "Grès"
           },
           "label": "Pierre",
-          "description": "Pierre du pied et du plateau."
+          "description": "Pierre de l'autel."
         }
       },
       "variants": [
+        {
+          "id": "altar",
+          "name": "Autel à degrés",
+          "params": {
+            "style": "altar"
+          }
+        },
         {
           "id": "pillar",
           "name": "Colonne",
@@ -9525,17 +9572,10 @@
           }
         },
         {
-          "id": "lectern",
-          "name": "Lutrin",
+          "id": "monolith",
+          "name": "Monolithe",
           "params": {
-            "style": "lectern"
-          }
-        },
-        {
-          "id": "altar",
-          "name": "Autel",
-          "params": {
-            "style": "altar"
+            "style": "monolith"
           }
         }
       ],
@@ -9554,29 +9594,29 @@
       ],
       "stats": {
         "default": {
-          "triangles": 1360,
-          "vertices": 2736,
-          "drawCalls": 2
-        },
-        "pillar": {
-          "triangles": 1360,
-          "vertices": 2736,
-          "drawCalls": 2
-        },
-        "lectern": {
-          "triangles": 1248,
-          "vertices": 2512,
-          "drawCalls": 2
+          "triangles": 1400,
+          "vertices": 2784,
+          "drawCalls": 3
         },
         "altar": {
-          "triangles": 1328,
-          "vertices": 2672,
-          "drawCalls": 2
+          "triangles": 1400,
+          "vertices": 2784,
+          "drawCalls": 3
+        },
+        "pillar": {
+          "triangles": 1596,
+          "vertices": 3176,
+          "drawCalls": 3
+        },
+        "monolith": {
+          "triangles": 1388,
+          "vertices": 2760,
+          "drawCalls": 3
         }
       },
       "bytes": {
-        "source": 11682,
-        "standalone": 53169
+        "source": 16062,
+        "standalone": 57613
       }
     },
     {
@@ -9784,7 +9824,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 227308
+        "standalone": 227741
       }
     }
   ]

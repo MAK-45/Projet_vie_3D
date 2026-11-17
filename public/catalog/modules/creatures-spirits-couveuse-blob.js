@@ -220,6 +220,7 @@ uniform float uSeed;
 uniform vec4 uGlowLights[4];
 uniform vec4 uGlowColors[4];
 uniform float uDarkness;
+uniform float uEmissive; // > 0 : seuil de lumi\xE8re (lit) au-dessus duquel la couleur garde son \xE9clat la nuit
 uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
@@ -483,6 +484,9 @@ void main() {
 
   // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives, 0.6 = surface sans contour
   // (0 = fond, jamais \xE9crit ici) ; moins 0,02 par palier de lumi\xE8re de halo (0 \xE0 3).
+  // Mati\xE8re qui \xE9met sa propre lumi\xE8re (vortex, cristaux allum\xE9s) : au-dessus du seuil, elle \xE9chappe \xE0 la teinte de
+  // nuit comme ce qu'\xE9claire une lumi\xE8re de halo (palier 3).
+  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
@@ -539,7 +543,8 @@ function createToonMaterial(options) {
     map = null,
     currents = null,
     wobble = null,
-    shade = false
+    shade = false,
+    emissive = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -599,6 +604,7 @@ function createToonMaterial(options) {
       uSeed: { value: seed },
       uRim: { value: new THREE.Vector2(...rim) },
       uGlowReceive: { value: glow ? 1 : 0 },
+      uEmissive: { value: emissive },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
       uWobble: wobbleUniform,

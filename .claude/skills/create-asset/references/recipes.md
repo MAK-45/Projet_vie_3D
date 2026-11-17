@@ -308,23 +308,31 @@ c'est ce fichier qui fait progresser les assets suivants.
   `updateMatrixWorld` depuis l'os `spine_03`. Une particule éteinte se réduit à un point au cœur du torse (pas sous
   le sol : `check` le signale).
 
-## 9. Objets animés à mécanisme : la porte des étoiles et son pupitre (éprouvé)
+## 9. Objets animés à mécanisme : la porte des étoiles et sa console (éprouvé, v2)
 
 - **Design original** inspiré d'une mécanique (anneau qui tourne, verrous, vortex) : symboles inventés tirés de la
-  graine, verrous de cristal tenus par des griffes répartis sur 290° (le bas repose sur son berceau), pupitre à une
-  couronne de touches hexagonales. Pas de copie d'un décor de film ou de série.
-- **Séquence partagée** dans `kit/portal.js` (`portalSequence`, `portalStateAt`, `dialKeys`) : deux assets qui lisent
-  la même horloge (`sharedUniforms.uTime`) et la même graine restent synchronisés sans se connaître.
+  graine, verrous = cristal couché dans un sabot de pierre à deux mâchoires, console en autel à hémicycle. On suit
+  les demandes de mesures et de mise en scène de l'utilisateur, pas le décor d'un film ou d'une série.
+- **Mesures réelles demandées** : 6,70 m de diamètre extérieur, 4,76 m d'ouverture. **Mise en scène** : l'anneau
+  est enfoncé d'un quart dans la plateforme ; le dessus de la plateforme (la passerelle) passe au ras du bas de
+  l'ouverture, pour la traverser de plain-pied ; escaliers ou rampes devant ET derrière. Premier jet (anneau posé
+  sur l'escalier, verrous dépassant à l'extérieur de l'anneau) refusé par l'utilisateur.
+- Verrous **sur les faces de l'anneau**, pointés vers le centre, au-dessus de l'anneau intérieur, répartis sur
+  260° (le bas est sous la passerelle). Ils glissent vers le centre en verrouillant et restent allumés.
+- **Séquence partagée** dans `kit/portal.js` (`portalSequence`, `portalStateAt`) : deux assets qui lisent la même
+  horloge (`sharedUniforms.uTime`) et la même graine restent synchronisés sans se connaître.
 - **Animation** comme le blob : `group.updateMatrixWorld` surchargé, mise à jour seulement quand le temps partagé
   change de cran (12 images/s). La partie rigide qui tourne est un maillage à part (`rotation.z`) ; ce qui s'allume
-  ou glisse est dans un seul maillage d'énergie mis à jour sur le CPU (~1 500 sommets, sans souci).
-- **Énergie** : matériau `unlit` + `shade` (nouvel attribut `aShade`, 0..1 par sommet) : la couleur est choisie par
-  sommet puis découpée en paliers nets. Vortex : disque de 14 anneaux × 48 ; filaments = crêtes d'un bruit lent
-  `(1 − |2n − 1|)^5`, éclats = pics d'un bruit fin au-dessus de 0,66 ; premier seuil de la rampe bas (0,22), sinon
-  taches bleu nuit trop dures. Jaillissement : bosse `(1 − r²)^0,7` vers +Z, montée rapide puis retour lent.
-- Symboles gravés : quads d'un trait de 0,075 m sur les deux faces de l'anneau, sombres au repos (ton 0,12 de la rampe
-  d'énergie) : ils se lisent mieux en creux sombre sur la pierre qu'en relief de pierre.
-- Anneau intérieur un cran plus sombre que l'anneau extérieur (rampe décalée) : sinon la bande qui tourne ne se
-  détache pas. Cristaux des verrous : ≥ 0,2 m de rayon, et le logement ne doit pas les avaler.
-- Outils ajoutés au kit : `buildLathe` (révolution à facettes, axe y ou z), `buildBlock` (bloc posé et tourné,
-  dessus rétréci), `buildGem` (cristal à facettes, avec numéro de face par sommet).
+  ou glisse est dans un seul maillage d'énergie mis à jour sur le CPU.
+- **Énergie** : matériau `unlit` + `shade` (attribut `aShade`, 0..1 par sommet, découpé en paliers nets) +
+  `emissive` (seuil au-dessus duquel la couleur échappe à la teinte de nuit : sans lui, le vortex est sombre la
+  nuit). Les cristaux éteints restent sous le seuil (0,26–0,40), les allumés au-dessus.
+- Vortex : disque de 13 anneaux × 44 ; filaments = crêtes d'un bruit lent `(1 − |2n − 1|)^5`, éclats = pics d'un
+  bruit fin au-dessus de 0,7. Jaillissement : bosse `(1 − r²)^0,7` vers +Z, montée rapide puis retour lent.
+- **Onde de traversée** : on suit chaque objet de la scène (hors os, maillages instanciés, lumières) dans le repère
+  du vortex ; changement de signe de z dans l'ouverture = onde. Une onde lisible = éclair blanc au point de
+  passage, puis **crête blanche + creux sombre juste derrière + 2e crête** qui s'élargissent ; une simple bosse
+  claire se perd dans les reflets. Deux passages au même endroit à moins de 0,25 s = une seule onde.
+- Console : tablettes de métal en hémicycle (3 arcs) incrustées de cristal ; une grille droite faisait clavier
+  moderne. Plateau en demi-lune = `CylinderGeometry` ouverte sur π (sans uv) : fusionnable.
+- Outils ajoutés au kit : `buildLathe`, `buildBlock`, `buildGem` ; matière `METALS` (bronze, or, fer).

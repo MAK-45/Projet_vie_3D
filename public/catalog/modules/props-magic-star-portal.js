@@ -1,4 +1,4 @@
-// Projet Vie 3D — Porte des étoiles (props/magic/star-portal), version 1
+// Projet Vie 3D — Porte des étoiles (props/magic/star-portal), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
@@ -219,6 +219,7 @@ uniform float uSeed;
 uniform vec4 uGlowLights[4];
 uniform vec4 uGlowColors[4];
 uniform float uDarkness;
+uniform float uEmissive; // > 0 : seuil de lumi\xE8re (lit) au-dessus duquel la couleur garde son \xE9clat la nuit
 uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
@@ -482,6 +483,9 @@ void main() {
 
   // Alpha : 1 = surface, 0.75 = surface avec liser\xE9 clair sur les ar\xEAtes vives, 0.6 = surface sans contour
   // (0 = fond, jamais \xE9crit ici) ; moins 0,02 par palier de lumi\xE8re de halo (0 \xE0 3).
+  // Mati\xE8re qui \xE9met sa propre lumi\xE8re (vortex, cristaux allum\xE9s) : au-dessus du seuil, elle \xE9chappe \xE0 la teinte de
+  // nuit comme ce qu'\xE9claire une lumi\xE8re de halo (palier 3).
+  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
@@ -538,7 +542,8 @@ function createToonMaterial(options) {
     map = null,
     currents = null,
     wobble = null,
-    shade = false
+    shade = false,
+    emissive = 0
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -598,6 +603,7 @@ function createToonMaterial(options) {
       uSeed: { value: seed },
       uRim: { value: new THREE.Vector2(...rim) },
       uGlowReceive: { value: glow ? 1 : 0 },
+      uEmissive: { value: emissive },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
       uWobble: wobbleUniform,
@@ -907,7 +913,7 @@ function createNoise3(seed) {
 
 // src/assets/kit/portal.js
 var TAU = Math.PI * 2;
-var LOCK_ARC = 290 / 180 * Math.PI;
+var LOCK_ARC = 260 / 180 * Math.PI;
 function lockAngle(i, n) {
   return Math.PI / 2 + LOCK_ARC / 2 - i / (n - 1) * LOCK_ARC;
 }
@@ -997,17 +1003,24 @@ var PORTAL_ENERGIES = {
 function energyRamp(key) {
   return fitRamp(PORTAL_ENERGIES[key].from.colors.slice(1, 8), 5);
 }
-var BASES = { stairs: "Escalier", dais: "Estrade ronde", ruin: "Ruine" };
+var ENERGY_STEPS = [0.22, 0.45, 0.66, 0.85];
+var ENERGY_EMISSIVE = 0.44;
+var BASES = { stairs: "Escaliers", ramp: "Rampes", ruin: "Ruine" };
 var STATES = { cycle: "Composition en boucle", dormant: "Endormie", open: "Ouverte" };
 var params = {
   seed: seedParam(
-    "Change l'adresse compos\xE9e et le rythme de la s\xE9quence, le nombre de symboles (24 \xE0 36) et leur dessin, les griffes des verrous, et le socle : marches, largeur, dalles et pierres tomb\xE9es."
+    "Change l'adresse compos\xE9e et le rythme de la s\xE9quence, le nombre de symboles (24 \xE0 36) et leur dessin, la forme des verrous, et la plateforme : hauteur, nombre de marches, dallage, bornes, pierres tomb\xE9es."
   ),
-  base: choiceParam("Socle", BASES, "Escalier en fa\xE7ade, estrade ronde \xE0 deux gradins, ou ruine aux dalles disjointes (la porte penche un peu)."),
-  state: choiceParam("\xC9tat", STATES, "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit puis se referme. Endormie ou ouverte : fig\xE9e."),
-  locks: { type: "int", default: 7, min: 5, max: 9, label: "Verrous", description: "Nombre de verrous de cristal, donc de symboles dans une adresse (le pupitre doit avoir le m\xEAme)." },
+  base: choiceParam(
+    "Plateforme",
+    BASES,
+    "Escaliers devant et derri\xE8re, longues rampes en pente douce, ou ruine (marches cass\xE9es, dalles disjointes, pierres tomb\xE9es). La passerelle passe toujours au ras du bas de l'ouverture."
+  ),
+  state: choiceParam("\xC9tat", STATES, "En boucle : l'anneau tourne, les verrous s'enclenchent, le vortex jaillit, ondule puis se referme. Endormie ou ouverte : fig\xE9e."),
+  probe: choiceParam("Sonde", { on: "Une sonde traverse", off: "Aucune" }, "Une petite sonde de cristal traverse le vortex ouvert, aller et retour, pour montrer l'onde de passage."),
+  locks: { type: "int", default: 7, min: 5, max: 9, label: "Verrous", description: "Nombre de verrous de cristal, donc de symboles dans une adresse (la console doit avoir le m\xEAme)." },
   energy: choiceParam("\xC9nergie", PORTAL_ENERGIES, "Couleur du vortex, des cristaux et des symboles allum\xE9s."),
-  stone: stoneParam("Pierre de l'anneau et du socle.", { only: ["granite", "slate", "basalt", "sandstone"] })
+  stone: stoneParam("Pierre de l'anneau et de la plateforme.", { only: ["granite", "slate", "basalt", "sandstone"] })
 };
 var meta = {
   id: "props/magic/star-portal",
@@ -1015,7 +1028,7 @@ var meta = {
   nameEn: "Star portal",
   category: "props",
   subcategory: "magic",
-  description: "Grand anneau de pierre de 6,7 m qui compose une adresse : son anneau int\xE9rieur grav\xE9 de symboles tourne, ses verrous de cristal s'enclenchent un \xE0 un, puis un vortex d'\xE9nergie jaillit et ondule avant de se refermer. Socle en escalier, estrade ou ruine ; la graine change l'adresse, les symboles et le socle. Se commande avec le pupitre (m\xEAme graine, m\xEAme nombre de verrous).",
+  description: "Anneau de pierre de 6,70 m (ouverture de 4,76 m) enfonc\xE9 d'un quart dans une plateforme qu'on traverse de plain-pied. Son anneau int\xE9rieur grav\xE9 de symboles tourne, ses verrous de cristal se referment un \xE0 un et restent allum\xE9s, puis le vortex jaillit et ondule ; tout ce qui le traverse y fait une onde. Escaliers, rampes ou ruine ; se commande avec la console (m\xEAme graine, m\xEAme nombre de verrous).",
   tags: [
     "porte des \xE9toiles",
     "portail",
@@ -1028,6 +1041,8 @@ var meta = {
     "cristaux",
     "voyage",
     "passage entre les mondes",
+    "escalier",
+    "rampe",
     "magie",
     "science-fiction",
     "pierre",
@@ -1044,6 +1059,8 @@ var meta = {
     "crystals",
     "travel",
     "world gate",
+    "stairs",
+    "ramp",
     "magic",
     "sci-fi",
     "stone",
@@ -1052,117 +1069,116 @@ var meta = {
     "procedural"
   ],
   biomes: ["forest", "meadow", "desert", "snow", "mountain", "cave", "beach", "swamp"],
-  version: 1,
+  version: 2,
   added: "2026-11-17",
-  units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol au centre du socle ; l'anneau fait face \xE0 +Z (le vortex jaillit vers +Z)",
-  footprint: { radius: 4.6, height: 8.6 },
-  animated: ["dial", "glow"],
+  units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol au centre de la plateforme ; l'anneau fait face \xE0 +Z (le vortex jaillit vers +Z) ; la passerelle (dessus de la plateforme) est \xE0 `group.userData.walkway` m",
+  footprint: { radius: 6.9, height: 7.1 },
+  animated: ["dial", "glow", "ripple"],
   params,
   variants: variantsOf("base", params.base)
 };
 var TAU2 = Math.PI * 2;
-var R_APERTURE = 2.2;
-var LIP = [2.16, 2.34, 0.36];
-var INNER = [2.34, 2.84, 0.27];
-var OUTER = [2.84, 3.35, 0.42];
-var GLYPH_DEPTH = INNER[2] + 0.025;
+var R_APERTURE = 2.38;
+var LIP = [2.34, 2.5, 0.34];
+var INNER = [2.5, 2.93, 0.25];
+var OUTER = [2.93, 3.35, 0.4];
+var GLYPH_DEPTH = INNER[2] + 0.02;
 function create(given = {}) {
   const p = resolveParams(meta.params, given);
   const stone = STONES[p.stone];
   const ramp = energyRamp(p.energy);
   const baseRng = createRng(p.seed * 7919 + 17);
   const glyphRng = createRng(p.seed * 104729 + 71);
-  const clawRng = createRng(p.seed * 15485863 + 5);
+  const lockRng = createRng(p.seed * 15485863 + 5);
   const seq = portalSequence(p.seed, p.locks);
   const noise = createNoise3(p.seed * 31 + 7);
   const group = new THREE3.Group();
   group.name = meta.name;
   const stoneParts = [];
-  let top = 0;
-  let tilt = 0;
-  if (p.base === "stairs") {
-    const steps = baseRng.int(2, 4);
-    const rise = baseRng.range(0.16, 0.2);
-    top = steps * rise;
-    const width = baseRng.range(7.2, 8.4);
-    const depth = baseRng.range(2.6, 3.2);
-    stoneParts.push(buildBlock([width, top, depth], [0, top / 2, 0]));
-    const stairWidth = baseRng.range(3.4, 5);
-    const tread = baseRng.range(0.38, 0.48);
-    for (const side of baseRng.chance(0.45) ? [1, -1] : [1]) {
-      for (let s = 1; s < steps + 1; s++) {
-        const h = top - s * rise + rise;
-        const z = side * (depth / 2 + tread * (s - 0.5));
-        stoneParts.push(buildBlock([stairWidth + s * 0.25, h, tread], [0, h / 2, z]));
+  const rise = baseRng.range(0.16, 0.19);
+  const steps = p.base === "ramp" ? 0 : baseRng.int(5, 7);
+  const walkway = p.base === "ramp" ? baseRng.range(0.9, 1.15) : steps * rise;
+  const width = baseRng.range(7.6, 8.4);
+  const depth = baseRng.range(2.8, 3.4);
+  const ruin = p.base === "ruin";
+  stoneParts.push(buildBlock([width, walkway - 0.08, depth], [0, (walkway - 0.08) / 2, 0]));
+  const cols = Math.round(width / 1.05), rows = Math.max(2, Math.round(depth / 1.05));
+  for (let i = 0; i < cols; i++) {
+    for (let j = 0; j < rows; j++) {
+      const w = width / cols, d = depth / rows;
+      const x = -width / 2 + (i + 0.5) * w, z = -depth / 2 + (j + 0.5) * d;
+      if (ruin && Math.abs(x) > R_APERTURE && baseRng.chance(0.18)) continue;
+      const tilt = ruin && Math.abs(x) > 1.2 ? [baseRng.range(-0.05, 0.05), 0, baseRng.range(-0.05, 0.05)] : [0, 0, 0];
+      stoneParts.push(buildBlock([w - 0.06, 0.1, d - 0.06], [x, walkway - 0.05, z], tilt));
+    }
+  }
+  const stairWidth = baseRng.range(3.6, 4.4);
+  const tread = baseRng.range(0.36, 0.44);
+  let reach = depth / 2;
+  for (const side of [1, -1]) {
+    if (p.base === "ramp") {
+      const length = walkway / baseRng.range(0.22, 0.27);
+      const slope = Math.atan2(walkway, length);
+      const hyp = Math.hypot(length, walkway);
+      const mid = side * (depth / 2 + length / 2);
+      stoneParts.push(buildBlock([stairWidth, 0.24, hyp], [0, walkway / 2 - 0.1, mid], [side * slope, 0, 0]));
+      for (const sx of [-1, 1]) stoneParts.push(buildBlock([0.28, 0.42, hyp], [sx * (stairWidth / 2 + 0.14), walkway / 2 + 0.05, mid], [side * slope, 0, 0]));
+      reach = Math.max(reach, depth / 2 + length);
+    } else {
+      for (let s = 0; s < steps; s++) {
+        const h = walkway - s * rise;
+        if (ruin && s > 0 && baseRng.chance(0.25)) continue;
+        const z = side * (depth / 2 + tread * (s + 0.5));
+        const tilt = ruin ? [baseRng.range(-0.04, 0.04), baseRng.range(-0.04, 0.04), baseRng.range(-0.04, 0.04)] : [0, 0, 0];
+        stoneParts.push(buildBlock([stairWidth + s * 0.12, h, tread + 0.02], [0, h / 2, z], tilt));
       }
-    }
-    if (baseRng.chance(0.6)) {
-      const bh = baseRng.range(0.5, 0.9);
-      for (const sx of [-1, 1]) {
-        for (const sz of [-1, 1]) stoneParts.push(buildBlock([0.45, bh, 0.45], [sx * (width / 2 - 0.3), top + bh / 2, sz * (depth / 2 - 0.3)], [0, 0, 0], { taper: 0.25 }));
+      if (!ruin) {
+        for (const sx of [-1, 1]) {
+          const l = tread * steps;
+          stoneParts.push(buildBlock([0.3, walkway, l], [sx * (stairWidth / 2 + steps * 0.06 + 0.15), walkway / 2, side * (depth / 2 + l / 2)], [0, 0, 0], { taper: 0 }));
+        }
       }
+      reach = Math.max(reach, depth / 2 + tread * steps);
     }
-  } else if (p.base === "dais") {
-    const radius = baseRng.range(3.9, 4.6);
-    const h1 = baseRng.range(0.2, 0.28);
-    const h2 = baseRng.range(0.2, 0.28);
-    const sides = baseRng.pick([8, 10, 12]);
-    top = h1 + h2;
-    stoneParts.push(
-      buildLathe([[0, 0], [radius, 0], [radius, h1], [0, h1]], { segments: sides, facets: true, start: Math.PI / sides }),
-      buildLathe([[0, h1], [radius * 0.72, h1], [radius * 0.72, top], [0, top]], { segments: sides, facets: true, start: Math.PI / sides })
-    );
-  } else {
-    top = 0.3;
-    tilt = baseRng.range(0.025, 0.05) * (baseRng.chance(0.5) ? 1 : -1);
-    const slabs = baseRng.int(5, 7);
-    for (let i = 0; i < slabs; i++) {
-      const x = -3.6 + (i + 0.5) * (7.2 / slabs) + baseRng.range(-0.15, 0.15);
-      const h = baseRng.range(0.18, 0.42);
-      const w = 7.2 / slabs * baseRng.range(0.82, 0.98);
-      const d = baseRng.range(2.4, 3.4);
-      stoneParts.push(buildBlock([w, h, d], [x, h / 2 - 0.02, baseRng.range(-0.3, 0.3)], [baseRng.range(-0.06, 0.06), baseRng.range(-0.12, 0.12), baseRng.range(-0.05, 0.05)]));
-    }
-    const rubble = baseRng.int(5, 9);
+  }
+  if (baseRng.chance(0.65) && !ruin) {
+    const bh = baseRng.range(0.6, 1);
+    for (const sx of [-1, 1]) for (const sz of [-1, 1]) stoneParts.push(buildBlock([0.5, bh, 0.5], [sx * (width / 2 - 0.35), walkway + bh / 2, sz * (depth / 2 - 0.35)], [0, 0, 0], { taper: 0.3 }));
+  }
+  const buttress = baseRng.range(0.7, 1.1);
+  for (const sx of [-1, 1]) {
+    stoneParts.push(buildBlock([0.75, buttress, OUTER[2] * 2 + 0.5], [sx * (OUTER[1] + 0.05), walkway + buttress / 2 - 0.05, 0], [0, 0, 0], { taper: 0.25 }));
+  }
+  if (ruin) {
+    const rubble = baseRng.int(6, 10);
     for (let i = 0; i < rubble; i++) {
       const a = baseRng.range(0, TAU2);
-      const d = baseRng.range(3.2, 4.6);
+      const d = baseRng.range(4.4, 5.8);
       const s = baseRng.range(0.25, 0.6);
-      stoneParts.push(buildBlock([s * baseRng.range(1, 1.8), s, s * baseRng.range(0.8, 1.4)], [Math.cos(a) * d, s * 0.42, Math.sin(a) * d * 0.7], [baseRng.range(-0.25, 0.25), baseRng.range(0, TAU2), baseRng.range(-0.25, 0.25)]));
+      stoneParts.push(buildBlock([s * baseRng.range(1, 1.8), s, s * baseRng.range(0.8, 1.4)], [Math.cos(a) * d * 0.9, s * 0.42, Math.sin(a) * d], [baseRng.range(-0.25, 0.25), baseRng.range(0, TAU2), baseRng.range(-0.25, 0.25)]));
     }
   }
-  const cradleW = baseRng.range(2.2, 2.8);
-  stoneParts.push(buildBlock([cradleW + 1.2, 0.35, OUTER[2] * 2 + 0.7], [0, top + 0.175, 0]));
-  for (const sx of [-1, 1]) {
-    stoneParts.push(buildBlock([0.7, 1, OUTER[2] * 2 + 0.4], [sx * (cradleW / 2 + 0.15), top + 0.5, 0], [0, 0, sx * 0.35], { taper: 0.2 }));
-  }
-  const center = new THREE3.Vector3(0, top + 0.12 + OUTER[1], 0);
+  const center = new THREE3.Vector3(0, walkway - 0.04 + R_APERTURE, 0);
   const ringParts = [];
   const [ro1, ro2, dO] = OUTER;
-  const c = 0.12;
+  const c = 0.1;
   ringParts.push(
     buildLathe([[ro1, -dO], [ro2 - c, -dO], [ro2, -dO + c], [ro2, dO - c], [ro2 - c, dO], [ro1, dO]], { segments: 48, axis: "z" }),
-    buildLathe([[LIP[0], -LIP[2]], [LIP[1], -LIP[2]], [LIP[1], LIP[2]], [LIP[0] + 0.06, LIP[2]], [LIP[0], LIP[2] - 0.06]], { segments: 48, axis: "z" })
+    buildLathe([[LIP[0], -LIP[2]], [LIP[1], -LIP[2]], [LIP[1], LIP[2]], [LIP[0], LIP[2]]], { segments: 48, axis: "z" })
   );
-  const clawSpread = clawRng.range(0.24, 0.32);
-  const clawLength = clawRng.range(0.65, 0.9);
-  const clawLean = clawRng.range(0.08, 0.25);
-  const clawShape = clawRng.pick(["claw", "fin"]);
+  const shoeWide = lockRng.range(0.5, 0.6), shoeNarrow = lockRng.range(0.26, 0.34);
+  const jawLean = lockRng.range(0.12, 0.28);
+  const crystalLength = lockRng.range(0.56, 0.66);
   for (let i = 0; i < p.locks; i++) {
     const a = lockAngle(i, p.locks);
     const radial = [Math.cos(a), Math.sin(a)];
-    const at = (r, t, z = 0) => [radial[0] * r - radial[1] * t, radial[1] * r + radial[0] * t, z];
-    ringParts.push(buildBlock([0.34, 0.66, dO * 2 + 0.12], at(ro2 + 0.02, 0), [0, 0, a]));
-    for (const side of [-1, 1]) {
-      const len = clawShape === "claw" ? clawLength : clawLength * 0.8;
-      ringParts.push(
-        buildBlock(
-          [len, clawShape === "claw" ? 0.16 : 0.12, clawShape === "claw" ? 0.34 : dO * 2 + 0.1],
-          at(ro2 + 0.05 + len / 2, side * clawSpread),
-          [0, 0, a - side * clawLean],
-          { taper: 0 }
-        )
-      );
+    const at = (r, t, z) => [radial[0] * r - radial[1] * t, radial[1] * r + radial[0] * t, z];
+    for (const face of [1, -1]) {
+      const z = face * (dO + 0.05);
+      ringParts.push(buildBlock([ro2 - ro1 - 0.06, (shoeWide + shoeNarrow) / 2, 0.12], at((ro1 + ro2) / 2, 0, z), [0, 0, a]));
+      for (const side of [-1, 1]) {
+        ringParts.push(buildBlock([0.42, 0.09, 0.2], at(ro1 + 0.16, side * (shoeNarrow / 2 + 0.07), face * (dO + 0.1)), [0, 0, a + side * jawLean]));
+      }
     }
   }
   for (const geometry of ringParts) geometry.translate(center.x, center.y, center.z);
@@ -1181,17 +1197,14 @@ function create(given = {}) {
   frame.name = "frame";
   frame.castShadow = true;
   frame.receiveShadow = true;
-  const tilted = new THREE3.Group();
-  tilted.rotation.z = tilt;
-  group.add(tilted);
-  tilted.add(frame);
+  group.add(frame);
   const G = seq.glyphs;
   const [ri1, ri2, dI] = INNER;
   const innerParts = [buildLathe([[ri1, -dI], [ri2, -dI], [ri2, dI], [ri1, dI]], { segments: 48, axis: "z" })];
   for (let j = 0; j < G; j++) {
     const a = glyphAngle(j + 0.5, G);
     const rm = (ri1 + ri2) / 2;
-    innerParts.push(buildBlock([ri2 - ri1, 0.07, dI * 2 + 0.05], [Math.cos(a) * rm, Math.sin(a) * rm, 0], [0, 0, a]));
+    innerParts.push(buildBlock([ri2 - ri1, 0.06, dI * 2 + 0.04], [Math.cos(a) * rm, Math.sin(a) * rm, 0], [0, 0, a]));
   }
   const innerRing = new THREE3.Mesh(
     mergeGeometries(innerParts),
@@ -1211,21 +1224,20 @@ function create(given = {}) {
   innerRing.position.copy(center);
   innerRing.castShadow = true;
   innerRing.receiveShadow = true;
-  tilted.add(innerRing);
+  group.add(innerRing);
   const positions = [];
-  const shades = [];
+  const normalsOf = [];
   const index = [];
-  const pushQuad = (corners, z, shade) => {
+  const pushQuad = (corners, z) => {
     const first = positions.length / 3;
-    for (const [x, y] of corners) positions.push(x, y, z), shades.push(shade);
+    for (const [x, y] of corners) positions.push(x, y, z), normalsOf.push(0, 0, Math.sign(z));
     if (z > 0) index.push(first, first + 1, first + 2, first, first + 2, first + 3);
     else index.push(first, first + 2, first + 1, first, first + 3, first + 2);
   };
-  const normalsOf = [];
   const glyphRanges = [];
-  const STROKE = 0.075;
-  const gridU = [-0.11, 0, 0.11];
-  const gridV = [-0.17, -0.06, 0.06, 0.17];
+  const STROKE = 0.07;
+  const gridU = [-0.1, 0, 0.1];
+  const gridV = [-0.14, -0.05, 0.05, 0.14];
   for (let j = 0; j < G; j++) {
     const start = positions.length / 3;
     const a = glyphAngle(j, G);
@@ -1247,7 +1259,7 @@ function create(given = {}) {
       pu = nu;
       pv = nv;
     }
-    if (glyphRng.chance(0.35)) strokes.push([gridU[glyphRng.int(0, 2)], 0.235, null, null]);
+    if (glyphRng.chance(0.35)) strokes.push([gridU[glyphRng.int(0, 2)], 0.19, null, null]);
     for (const [u1, v1, u2, v2] of strokes) {
       let corners;
       if (u2 === null) {
@@ -1262,70 +1274,72 @@ function create(given = {}) {
       const ring = corners.map(([u, v]) => toRing(u, v));
       const area = ring.reduce((s, [x, y], k) => s + x * ring[(k + 1) % 4][1] - ring[(k + 1) % 4][0] * y, 0);
       if (area < 0) ring.reverse();
-      for (const z of [GLYPH_DEPTH, -GLYPH_DEPTH]) {
-        pushQuad(ring, z, 0.1);
-        for (let k = 0; k < 4; k++) normalsOf.push(0, 0, Math.sign(z));
-      }
+      for (const z of [GLYPH_DEPTH, -GLYPH_DEPTH]) pushQuad(ring, z);
     }
     glyphRanges.push([start, positions.length / 3]);
   }
-  const glyphEnd = positions.length / 3;
-  const gemGeometries = [];
-  const crystals = [];
-  let gemVertex = glyphEnd;
-  for (let i = 0; i < p.locks; i++) {
-    const a = lockAngle(i, p.locks);
-    const dir = new THREE3.Vector3(Math.cos(a), Math.sin(a), 0);
-    const first = gemVertex;
-    const pieces = [
-      buildGem({ length: 0.95, radius: 0.2, sides: 6, waist: 0.4, position: dir.clone().multiplyScalar(ro2 + 0.48), direction: dir, spin: Math.PI / 6 })
-    ];
-    for (const z of [dO + 0.05, -dO - 0.05]) {
-      pieces.push(buildGem({ length: 0.4, radius: 0.11, sides: 4, waist: 0.6, position: dir.clone().multiplyScalar(ro1 + 0.1).setZ(z), direction: dir.clone().negate(), spin: Math.PI / 4 }));
-    }
-    for (const piece of pieces) gemVertex += piece.attributes.position.count;
-    crystals.push({ first, last: gemVertex, dir, facets: pieces.flatMap((g) => g.userData.facet) });
-    gemGeometries.push(...pieces);
-  }
-  const RINGS = 14, SEG = 48;
-  const discFirst = gemVertex;
   const glyphGeometry = new THREE3.BufferGeometry();
   glyphGeometry.setAttribute("position", new THREE3.BufferAttribute(new Float32Array(positions), 3));
   glyphGeometry.setAttribute("normal", new THREE3.BufferAttribute(new Float32Array(normalsOf), 3));
   glyphGeometry.setIndex(index);
+  let vertex = positions.length / 3;
+  const gemGeometries = [];
+  const crystals = [];
+  for (let i = 0; i < p.locks; i++) {
+    const a = lockAngle(i, p.locks);
+    const dir = new THREE3.Vector3(Math.cos(a), Math.sin(a), 0);
+    const first = vertex;
+    const pieces = [];
+    for (const face of [1, -1]) {
+      const position = dir.clone().multiplyScalar(ro1 + 0.06).setZ(face * (dO + 0.17));
+      pieces.push(buildGem({ length: crystalLength, radius: 0.13, sides: 4, waist: 0.62, position, direction: dir.clone().negate(), spin: Math.PI / 4 }));
+    }
+    for (const piece of pieces) vertex += piece.attributes.position.count;
+    crystals.push({ first, last: vertex, dir, facets: pieces.flatMap((g) => g.userData.facet) });
+    gemGeometries.push(...pieces);
+  }
+  const probeGeometry = buildGem({ length: 0.5, radius: 0.2, sides: 6, waist: 0.5 });
+  const probeRange = [vertex, vertex + probeGeometry.attributes.position.count];
+  const probeFacets = probeGeometry.userData.facet;
+  vertex = probeRange[1];
+  const RINGS = 13, SEG = 44;
+  const discFirst = vertex;
   const disc = buildDisc(RINGS, SEG);
-  const energyGeometry = mergeGeometries([glyphGeometry, ...gemGeometries, disc]);
-  const vertexCount = energyGeometry.attributes.position.count;
-  const shadeArray = new Float32Array(vertexCount);
+  const energyGeometry = mergeGeometries([glyphGeometry, ...gemGeometries, probeGeometry, disc]);
+  const shadeArray = new Float32Array(energyGeometry.attributes.position.count);
   energyGeometry.setAttribute("aShade", new THREE3.BufferAttribute(shadeArray, 1));
-  energyGeometry.boundingSphere = new THREE3.Sphere(new THREE3.Vector3(0, 0, 1.5), 5.5);
+  energyGeometry.boundingSphere = new THREE3.Sphere(new THREE3.Vector3(0, 0, 0), 7);
   const basePositions = Float32Array.from(energyGeometry.attributes.position.array);
   const energy = new THREE3.Mesh(
     energyGeometry,
-    createToonMaterial({
-      ramp,
-      steps: [0.22, 0.45, 0.66, 0.85],
-      unlit: true,
-      shade: true,
-      glow: false,
-      side: THREE3.DoubleSide,
-      id: 12
-    })
+    createToonMaterial({ ramp, steps: ENERGY_STEPS, unlit: true, shade: true, emissive: ENERGY_EMISSIVE, glow: false, side: THREE3.DoubleSide, id: 12 })
   );
   energy.name = "energy";
   energy.position.copy(center);
-  tilted.add(energy);
+  group.add(energy);
+  const ripples = [];
+  const RIPPLE_LIFE = 1.6;
+  let now = 0;
+  function touch(x, y, direction = 1) {
+    if (ripples.some((r) => now - r.born < 0.25 && Math.hypot(r.x - x, r.y - y) < 0.4)) return;
+    ripples.push({ x, y, dir: Math.sign(direction) || 1, born: now });
+    if (ripples.length > 6) ripples.shift();
+  }
   const pos = energyGeometry.attributes.position;
   const pa = pos.array;
   const lockedGlyph = new Map(seq.address.map((g, i) => [g, i]));
+  let glowLevel = 0;
+  let horizonOpen = false;
+  let probeZ = null;
   function update(time) {
     const s = portalStateAt(seq, time, p.state);
+    now = time;
     innerRing.rotation.z = s.ring;
     const cos = Math.cos(s.ring), sin = Math.sin(s.ring);
     for (let j = 0; j < G; j++) {
       const lock = lockedGlyph.get(j);
       const lit = lock === void 0 ? 0 : s.locked[lock];
-      const shade = lit >= 1 ? 0.9 : lit > 0 ? 1 : 0.12;
+      const shade = lit >= 1 ? 0.92 : lit > 0 ? 1 : 0.1;
       for (let v2 = glyphRanges[j][0]; v2 < glyphRanges[j][1]; v2++) {
         const x = basePositions[v2 * 3], y = basePositions[v2 * 3 + 1];
         pa[v2 * 3] = x * cos - y * sin;
@@ -1335,15 +1349,15 @@ function create(given = {}) {
     }
     const open = s.horizon === "open" || s.horizon === "burst";
     for (let i = 0; i < p.locks; i++) {
-      const c2 = crystals[i];
+      const cr = crystals[i];
       const k = s.locked[i];
-      const push = -0.22 * k;
+      const push = -0.14 * smooth2(k);
       const flash = k > 0 && k < 1;
-      for (let v2 = c2.first; v2 < c2.last; v2++) {
-        pa[v2 * 3] = basePositions[v2 * 3] + c2.dir.x * push;
-        pa[v2 * 3 + 1] = basePositions[v2 * 3 + 1] + c2.dir.y * push;
-        const facet = c2.facets[v2 - c2.first] % 2;
-        shadeArray[v2] = flash ? 0.95 : k >= 1 ? (open ? 0.78 : 0.7) + facet * 0.12 : 0.34 + facet * 0.16;
+      for (let v2 = cr.first; v2 < cr.last; v2++) {
+        pa[v2 * 3] = basePositions[v2 * 3] + cr.dir.x * push;
+        pa[v2 * 3 + 1] = basePositions[v2 * 3 + 1] + cr.dir.y * push;
+        const facet = cr.facets[v2 - cr.first] % 2;
+        shadeArray[v2] = flash ? 1 : k >= 1 ? (open ? 0.8 : 0.72) + facet * 0.14 : 0.26 + facet * 0.14;
       }
     }
     let radius = 0, surge = 0, boost = 0;
@@ -1357,6 +1371,37 @@ function create(given = {}) {
       radius = 1 - smooth2(s.k);
       boost = 0.35 * s.k;
     }
+    horizonOpen = radius > 0.9 && s.horizon !== "burst";
+    if (!horizonOpen) ripples.length = 0;
+    let probe = null;
+    if (p.probe === "on" && horizonOpen) {
+      const k = s.horizon === "open" && p.state === "cycle" ? s.k : s.t / 9 % 1;
+      const leg = (from, to) => k >= from && k < to ? (k - from) / (to - from) : null;
+      const go = leg(0.12, 0.42), back = leg(0.55, 0.85);
+      const u = go ?? back;
+      if (u !== null) {
+        const z = go !== null ? 4.5 - 9 * u : -4.5 + 9 * u;
+        probe = { x: Math.sin(u * 5) * 0.3, y: -R_APERTURE + 1.25 + Math.sin(u * TAU2) * 0.15, z };
+      }
+    }
+    if (probe) {
+      if (probeZ !== null && Math.sign(probeZ) !== Math.sign(probe.z)) touch(probe.x, probe.y, probe.z - probeZ);
+      probeZ = probe.z;
+    } else probeZ = null;
+    for (let v2 = probeRange[0]; v2 < probeRange[1]; v2++) {
+      const f = probeFacets[v2 - probeRange[0]];
+      if (!probe) {
+        pa[v2 * 3] = pa[v2 * 3 + 1] = pa[v2 * 3 + 2] = 0;
+        continue;
+      }
+      const bx = basePositions[v2 * 3], by = basePositions[v2 * 3 + 1], bz = basePositions[v2 * 3 + 2];
+      const spin = time * 2.5;
+      pa[v2 * 3] = probe.x + bx * Math.cos(spin) + bz * Math.sin(spin);
+      pa[v2 * 3 + 1] = probe.y + by;
+      pa[v2 * 3 + 2] = probe.z - bx * Math.sin(spin) + bz * Math.cos(spin);
+      shadeArray[v2] = 0.62 + f % 3 * 0.14;
+    }
+    for (let r = ripples.length - 1; r >= 0; r--) if (time - ripples[r].born > RIPPLE_LIFE) ripples.splice(r, 1);
     const t = s.t;
     let v = discFirst;
     for (let ring = 0; ring <= RINGS; ring++) {
@@ -1368,43 +1413,84 @@ function create(given = {}) {
         const n1 = noise(x * 3.1 + t * 0.3 + 5, y * 3.1 - t * 0.2, t * 0.4);
         const n2 = noise(x * 6.5 - t * 0.45, y * 6.5 + t * 0.3 + 9, 20 + t * 0.7);
         const ridge = Math.pow(1 - Math.abs(n1 * 2 - 1), 5);
-        const sparkle = Math.max(0, n2 - 0.66) * 2.4;
-        let shade = 0.24 + 0.28 * (1 - r) ** 2 + 0.46 * ridge + sparkle - 0.1 * r ** 6;
+        const sparkle = Math.max(0, n2 - 0.7) * 2.4;
+        let shade = 0.26 + 0.24 * (1 - r) ** 2 + 0.4 * ridge + sparkle - 0.1 * r ** 6;
         shade += 0.06 * Math.sin(r * 14 - t * 2.6);
+        let z = 0.04 * Math.sin(r * 9 - t * 3) * (1 - r);
+        const px = x * R_APERTURE, py = y * R_APERTURE;
+        for (const rp of ripples) {
+          const age = time - rp.born;
+          const d = Math.hypot(px - rp.x, py - rp.y);
+          const fade = 1 - age / RIPPLE_LIFE;
+          const front = 0.25 + age * 2.2;
+          const crest = Math.exp(-(((d - front) / 0.2) ** 2)) * fade;
+          const trough = Math.exp(-(((d - front + 0.38) / 0.16) ** 2)) * fade;
+          const crest2 = Math.exp(-(((d - front + 0.8) / 0.16) ** 2)) * fade * 0.7;
+          const flash = Math.exp(-((d / 0.5) ** 2)) * Math.max(0, 1 - age / 0.35);
+          const hollow = Math.exp(-((d / 0.4) ** 2)) * Math.max(0, Math.min(1, (age - 0.2) * 4)) * fade;
+          shade += 0.9 * crest - 0.55 * trough + 0.6 * crest2 + 1.2 * flash - 0.5 * hollow;
+          z += rp.dir * (0.5 * flash + 0.25 * hollow + 0.15 * (crest - trough));
+        }
         const bulge = surge * 3.1 * Math.pow(Math.max(0, 1 - r * r), 0.7) * (0.8 + 0.4 * n2);
         const R = R_APERTURE * radius * (1 + surge * 0.04);
         pa[v * 3] = x * R;
         pa[v * 3 + 1] = y * R;
-        pa[v * 3 + 2] = radius > 0 ? bulge + 0.04 * Math.sin(r * 9 - t * 3) * (1 - r) : 0;
+        pa[v * 3 + 2] = radius > 0 ? bulge + z * (1 - r * r * 0.6) : 0;
         shadeArray[v] = shade + boost;
         v++;
       }
     }
     pos.needsUpdate = true;
     energyGeometry.attributes.aShade.needsUpdate = true;
-    glowLevel = radius;
+    glowLevel = Math.max(radius, s.locked.some((l) => l >= 1) ? 0.35 : 0);
   }
-  let glowLevel = 0;
+  const previous = /* @__PURE__ */ new WeakMap();
+  const local = new THREE3.Vector3();
+  const inverse = new THREE3.Matrix4();
+  function watchScene() {
+    let root = group;
+    while (root.parent) root = root.parent;
+    if (root === group) return;
+    inverse.copy(energy.matrixWorld).invert();
+    const visit = (object) => {
+      if (object === group) return;
+      if (!object.isBone && !object.isInstancedMesh && !object.isLight && !object.isCamera && object !== root) {
+        local.setFromMatrixPosition(object.matrixWorld).applyMatrix4(inverse);
+        const before = previous.get(object);
+        if (before !== void 0 && horizonOpen && Math.sign(before.z) !== Math.sign(local.z) && Math.abs(local.z - before.z) < 3) {
+          if (Math.hypot(local.x, local.y) < R_APERTURE - 0.1) touch(local.x, local.y, local.z - before.z);
+        }
+        if (before) before.copy(local);
+        else previous.set(object, local.clone());
+      }
+      for (const child of object.children) visit(child);
+    };
+    visit(root);
+  }
   const light = createGlowLight();
   energy.material.addEventListener("dispose", () => light.release());
   const lightColor = rgb(ramp[3]);
   const lightPosition = new THREE3.Vector3();
-  const lightOffset = new THREE3.Vector3(0, 0, 0.6);
+  const lightOffset = new THREE3.Vector3(0, 0, 0.8);
   let lastTime = -1;
   const baseUpdate = group.updateMatrixWorld.bind(group);
   group.updateMatrixWorld = (force) => {
     const time = sharedUniforms.uTime.value;
-    if (time !== lastTime) {
+    const changed = time !== lastTime;
+    if (changed) {
       lastTime = time;
       update(time);
     }
     baseUpdate(force);
-    if (glowLevel > 0) light.set(energy.localToWorld(lightPosition.copy(lightOffset)), lightColor, 7 * glowLevel, 1.3);
+    if (changed) watchScene();
+    if (glowLevel > 0) light.set(energy.localToWorld(lightPosition.copy(lightOffset)), lightColor, 8 * glowLevel, 1.4);
     else light.set(lightPosition.set(0, -999, 0), lightColor, 0, 0);
   };
   update(0);
   lastTime = 0;
-  group.userData.asset = { id: meta.id, params: p, address: seq.address, glyphs: G, duration: seq.duration };
+  group.userData.walkway = walkway;
+  group.userData.touch = (x, y, direction) => touch(x, y - center.y, direction);
+  group.userData.asset = { id: meta.id, params: p, address: seq.address, glyphs: G, duration: seq.duration, walkway };
   return group;
 }
 var smooth2 = (k) => k * k * (3 - 2 * k);
@@ -1430,6 +1516,8 @@ function buildDisc(rings, segments) {
   return geometry;
 }
 export {
+  ENERGY_EMISSIVE,
+  ENERGY_STEPS,
   PORTAL_ENERGIES,
   create,
   disposeObject as dispose,

@@ -252,6 +252,7 @@ uniform float uSeed;
 uniform vec4 uGlowLights[4];
 uniform vec4 uGlowColors[4];
 uniform float uDarkness;
+uniform float uEmissive; // > 0 : seuil de lumière (lit) au-dessus duquel la couleur garde son éclat la nuit
 uniform float uGlowReceive;
 varying vec3 vWorldPos;
 #ifdef SHADE
@@ -515,6 +516,9 @@ void main() {
 
   // Alpha : 1 = surface, 0.75 = surface avec liseré clair sur les arêtes vives, 0.6 = surface sans contour
   // (0 = fond, jamais écrit ici) ; moins 0,02 par palier de lumière de halo (0 à 3).
+  // Matière qui émet sa propre lumière (vortex, cristaux allumés) : au-dessus du seuil, elle échappe à la teinte de
+  // nuit comme ce qu'éclaire une lumière de halo (palier 3).
+  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
@@ -576,6 +580,8 @@ function defaultSteps(count) {
  * @param {boolean} [options.shade] avec `unlit` : la géométrie porte un attribut `aShade` (0..1) qui choisit la couleur
  *   dans la rampe à chaque sommet ; interpolé puis découpé en paliers nets. Pour des surfaces lumineuses animées depuis
  *   le CPU (vortex d'un portail, cristaux qui s'allument).
+ * @param {number} [options.emissive] seuil de lumière (0..1, 0 = désactivé) au-dessus duquel la matière garde son éclat
+ *   la nuit (vortex, cristaux allumés) : la passe finale ne lui applique pas la teinte de l'heure.
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
  * @param {number[]} [options.currents] [force, fréquence (1/unité)] : courants de lumière qui passent dans la matière
  *   (dérive animée des normales ; matières magiques : le mannequin magique). Le blob, lui, les calcule sur le CPU.
@@ -621,6 +627,7 @@ export function createToonMaterial(options) {
     currents = null,
     wobble = null,
     shade = false,
+    emissive = 0,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -685,6 +692,7 @@ export function createToonMaterial(options) {
       uSeed: { value: seed },
       uRim: { value: new THREE.Vector2(...rim) },
       uGlowReceive: { value: glow ? 1 : 0 },
+      uEmissive: { value: emissive },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
       uMap: { value: map },
       uWobble: wobbleUniform,

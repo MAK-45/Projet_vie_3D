@@ -1,8 +1,8 @@
 // Séquence d'un portail en anneau : composition d'une adresse (l'anneau intérieur tourne, chaque verrou s'enclenche
 // quand son symbole arrive en face), ouverture du vortex, vortex stable, fermeture, repos. Partagée par la porte
-// (`props/magic/star-portal`) et son pupitre (`props/magic/star-portal-dial`) : avec la même graine et le même
-// nombre de verrous, les deux suivent exactement la même horloge (le temps partagé du moteur, `tick`), donc le
-// pupitre allume ses touches au moment où la porte verrouille.
+// (`props/magic/star-portal`) et sa console (`props/magic/star-portal-dial`) : avec la même graine et le même
+// nombre de verrous, les deux suivent exactement la même horloge (le temps partagé du moteur, `tick`), donc la
+// console allume ses touches au moment où la porte verrouille.
 //
 // Tout est tiré de la graine : nombre de symboles de l'anneau, adresse, durée de chaque rotation, sens.
 
@@ -10,8 +10,8 @@ import { createRng } from "./rng.js";
 
 const TAU = Math.PI * 2;
 
-/** Arc couvert par les verrous : tout l'anneau sauf le bas (70°), où il repose sur son socle. */
-export const LOCK_ARC = (290 / 180) * Math.PI;
+/** Arc couvert par les verrous : tout l'anneau sauf le bas (100°), enfoncé dans son socle sous la passerelle. */
+export const LOCK_ARC = (260 / 180) * Math.PI;
 
 /**
  * Angle (radians, 0 = droite, sens trigonométrique, vu de face) du verrou i parmi n : répartis sur l'arc, du bas à
@@ -97,16 +97,3 @@ export function portalStateAt(seq, time, mode = "cycle") {
   return { ring, locked, horizon, k, t };
 }
 
-/**
- * Touches du pupitre pressées pour une adresse : une touche différente par verrou, tirée de la graine, parmi `keys`.
- * @returns {number[]} pour chaque verrou, le numéro de la touche
- */
-export function dialKeys(seq, keys) {
-  const rng = createRng(seq.address.reduce((s, g) => s * 37 + g, 11));
-  const order = Array.from({ length: keys }, (_, i) => i);
-  for (let i = keys - 1; i > 0; i--) {
-    const j = rng.int(0, i);
-    [order[i], order[j]] = [order[j], order[i]];
-  }
-  return seq.address.map((_, i) => order[i % keys]);
-}
