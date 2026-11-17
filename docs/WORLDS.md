@@ -167,9 +167,9 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   courbe rien, `DEPTH_ONLY`). Sur une île, la vue garde une brume de lointain (100 à 180 m) : la mer de nuages
   n'est pas courbée.
 - **Arbres lointains** : au-delà de 50 m (`lod`), chaque arbre est dessiné en version allégée
-  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur sept environ (plutôt celles du bord),
-  agrandie (× 1,8 au plus), et le bois dont tous les sommets font au moins 20 % du rayon du tronc (le tronc
-  entier et les maîtresses branches) : ≈ 650 à 800 triangles au lieu de ≈ 4 000.
+  (`kit/far-tree.js`, `createFarVersion`) : mêmes matériaux, une feuille sur six environ (surtout celles du bord ;
+  seules celles-ci sont agrandies, × 1,5 : un cœur sombre agrandi ferait une étoile noire), et le bois dont tous les sommets font au moins 20 % du rayon du tronc (le tronc
+  entier et les maîtresses branches) : ≈ 800 à 1 050 triangles au lieu de ≈ 4 000.
   **Sans saut** : de 30 à 50 m, le modèle complet se fond dans sa version lointaine dans le shader (`uLod`) : les
   feuilles absentes de la version lointaine (`aFar` 0) rapetissent jusqu'à rien, les autres grandissent, et le
   bois absent s'efface par trame (matrice de Bayer 4 × 4, par pixel d'art) ; au passage, les deux sont identiques.

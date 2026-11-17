@@ -349,7 +349,9 @@ void main() {
     #ifndef UNLIT
       if (uLod.y > 0.0) {
         float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
-        cornerScale *= mix(1.0, aFar * uLod.z, lod);
+        // Seules les feuilles du bord grandissent (aLeaf.y : 0 c\u0153ur, 1 dehors) : un c\u0153ur sombre agrandi ferait une
+        // \xE9toile noire dans la couronne.
+        cornerScale *= mix(1.0, aFar * mix(1.0, uLod.z, aLeaf.y), lod);
       }
     #endif
     #ifdef UNLIT

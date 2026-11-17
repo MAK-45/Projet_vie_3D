@@ -1,7 +1,7 @@
 // Version lointaine d'un arbre (ou de tout modèle à feuillage) : mêmes matériaux, donc mêmes couleurs, même vent et
 // mêmes contours, mais une fraction des triangles. Vu à plus de 50 m, un arbre ne fait que quelques dizaines de
-// pixels d'art : le feuillage garde une feuille sur huit ou neuf (plutôt celles du bord, qui font la silhouette),
-// agrandies pour couvrir la même couronne, et le bois ne garde que le tronc et les maîtresses branches.
+// pixels d'art : le feuillage garde une feuille sur six environ (surtout celles du bord, qui font la silhouette,
+// agrandies pour couvrir la même couronne), et le bois ne garde que le tronc et les maîtresses branches.
 
 import * as THREE from "three";
 
@@ -12,12 +12,13 @@ import * as THREE from "three";
  * @param {number} [options.wood] rayon minimal d'une branche gardée, en part du rayon du tronc (0..1)
  * @returns {THREE.Group} modèle allégé, aux mêmes noms de maillages et aux mêmes matériaux
  */
-export function createFarVersion(prototype, { keep = 0.14, wood = 0.2 } = {}) {
+export function createFarVersion(prototype, { keep = 0.16, wood = 0.2 } = {}) {
   const far = new THREE.Group();
   far.name = `${prototype.name} (loin)`;
-  /** Agrandissement des feuilles gardées, appliqué par le shader (uniform `uLod`) : le modèle complet s'y fond
-   * progressivement en approchant de la distance de passage, puis la version lointaine prend le relais. */
-  far.userData.grow = Math.min(1.8, 0.7 / Math.sqrt(keep));
+  /** Agrandissement des feuilles gardées du bord de la couronne (celles du cœur, sombres, gardent leur taille :
+   * agrandies, elles feraient des étoiles noires), appliqué par le shader (uniform `uLod`) : le modèle complet s'y
+   * fond progressivement en approchant de la distance de passage, puis la version lointaine prend le relais. */
+  far.userData.grow = 1.5;
   prototype.updateMatrixWorld(true);
   prototype.traverse((child) => {
     if (!child.isMesh) return;
@@ -63,7 +64,7 @@ function thinLeaves(source, keep) {
     let end = start + 3;
     while (end < count && position[end * 3] === position[start * 3] && position[end * 3 + 1] === position[start * 3 + 1] && position[end * 3 + 2] === position[start * 3 + 2]) end += 3;
     const outer = leaf[start * 4 + 1];
-    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) {
+    if (hash(leafIndex++) < keep * (0.1 + 1.8 * outer)) {
       kept.push(start, end);
       farFlag.fill(1, start, end);
     }

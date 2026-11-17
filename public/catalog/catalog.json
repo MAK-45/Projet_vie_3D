@@ -192,7 +192,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 37124
+      "bytes": 37304
     }
   ],
   "assets": [
@@ -356,7 +356,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 48245
+        "standalone": 48435
       }
     },
     {
@@ -525,7 +525,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 49142
+        "standalone": 49332
       }
     },
     {
@@ -697,7 +697,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 50655
+        "standalone": 50845
       }
     },
     {
@@ -898,7 +898,7 @@
       },
       "bytes": {
         "source": 6490,
-        "standalone": 52038
+        "standalone": 52228
       }
     },
     {
@@ -1101,7 +1101,7 @@
       },
       "bytes": {
         "source": 6458,
-        "standalone": 53100
+        "standalone": 53290
       }
     },
     {
@@ -1235,7 +1235,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 40925
+        "standalone": 41115
       }
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 40831
+        "standalone": 41021
       }
     },
     {
@@ -1555,7 +1555,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 43077
+        "standalone": 43267
       }
     },
     {
@@ -1738,7 +1738,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 44226
+        "standalone": 44416
       }
     },
     {
@@ -1937,7 +1937,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 50526
+        "standalone": 50716
       }
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 44010
+        "standalone": 44200
       }
     },
     {
@@ -2382,7 +2382,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 48805
+        "standalone": 48995
       }
     },
     {
@@ -2530,7 +2530,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 41141
+        "standalone": 41331
       }
     },
     {
@@ -2690,7 +2690,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 42151
+        "standalone": 42341
       }
     },
     {
@@ -2833,7 +2833,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 38993
+        "standalone": 39183
       }
     },
     {
@@ -2996,7 +2996,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 39871
+        "standalone": 40061
       }
     },
     {
@@ -3474,7 +3474,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 64914
+        "standalone": 65104
       }
     },
     {
@@ -3664,7 +3664,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 55006
+        "standalone": 55196
       }
     },
     {
@@ -3854,7 +3854,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 54952
+        "standalone": 55142
       }
     },
     {
@@ -4042,7 +4042,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 54966
+        "standalone": 55156
       }
     },
     {
@@ -4375,7 +4375,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 55545
+        "standalone": 55735
       }
     },
     {
@@ -4564,7 +4564,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 53920
+        "standalone": 54110
       }
     },
     {
@@ -4752,7 +4752,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 54008
+        "standalone": 54198
       }
     },
     {
@@ -4940,7 +4940,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 53968
+        "standalone": 54158
       }
     },
     {
@@ -5128,7 +5128,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 53937
+        "standalone": 54127
       }
     },
     {
@@ -5318,7 +5318,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 54019
+        "standalone": 54209
       }
     },
     {
@@ -5512,7 +5512,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 54243
+        "standalone": 54433
       }
     },
     {
@@ -5700,7 +5700,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 53928
+        "standalone": 54118
       }
     },
     {
@@ -5888,7 +5888,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 53914
+        "standalone": 54104
       }
     },
     {
@@ -6074,7 +6074,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 53965
+        "standalone": 54155
       }
     },
     {
@@ -6248,7 +6248,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 53900
+        "standalone": 54090
       }
     },
     {
@@ -6422,7 +6422,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 53884
+        "standalone": 54074
       }
     },
     {
@@ -6595,7 +6595,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 53924
+        "standalone": 54114
       }
     },
     {
@@ -6770,7 +6770,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 53936
+        "standalone": 54126
       }
     },
     {
@@ -6967,7 +6967,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 54448
+        "standalone": 54638
       }
     },
     {
@@ -7138,7 +7138,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 53861
+        "standalone": 54051
       }
     },
     {
@@ -7310,7 +7310,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 54015
+        "standalone": 54205
       }
     },
     {
@@ -7484,7 +7484,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 53852
+        "standalone": 54042
       }
     },
     {
@@ -7658,7 +7658,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 53958
+        "standalone": 54148
       }
     },
     {
@@ -7832,7 +7832,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 53951
+        "standalone": 54141
       }
     },
     {
@@ -8007,7 +8007,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 53968
+        "standalone": 54158
       }
     },
     {
@@ -8196,7 +8196,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 54035
+        "standalone": 54225
       }
     },
     {
@@ -8370,7 +8370,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 53958
+        "standalone": 54148
       }
     },
     {
@@ -8561,7 +8561,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 54064
+        "standalone": 54254
       }
     },
     {
@@ -8766,7 +8766,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 54110
+        "standalone": 54300
       }
     },
     {
@@ -8969,7 +8969,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 54570
+        "standalone": 54760
       }
     },
     {
@@ -9166,7 +9166,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 54497
+        "standalone": 54687
       }
     },
     {
@@ -9398,7 +9398,7 @@
       },
       "bytes": {
         "source": 30740,
-        "standalone": 68791
+        "standalone": 68981
       }
     },
     {
@@ -9628,7 +9628,7 @@
       },
       "bytes": {
         "source": 16495,
-        "standalone": 63137
+        "standalone": 63327
       }
     },
     {
@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 52998
+        "standalone": 53188
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 58491
+        "standalone": 58681
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 60461
+        "standalone": 60651
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 46252
+        "standalone": 46442
       }
     },
     {
@@ -10691,7 +10691,7 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 64416
+        "standalone": 64606
       }
     },
     {
@@ -10885,7 +10885,7 @@
       },
       "bytes": {
         "source": 8642,
-        "standalone": 50861
+        "standalone": 51051
       }
     },
     {
@@ -11094,7 +11094,7 @@
       },
       "bytes": {
         "source": 11264,
-        "standalone": 53370
+        "standalone": 53560
       }
     },
     {
@@ -11283,7 +11283,7 @@
       },
       "bytes": {
         "source": 10838,
-        "standalone": 52296
+        "standalone": 52486
       }
     },
     {
@@ -11445,7 +11445,7 @@
       },
       "bytes": {
         "source": 14146,
-        "standalone": 53469
+        "standalone": 53659
       }
     },
     {
@@ -11619,7 +11619,7 @@
       },
       "bytes": {
         "source": 11346,
-        "standalone": 52379
+        "standalone": 52569
       }
     },
     {
@@ -11828,7 +11828,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 243282
+        "standalone": 243439
       }
     }
   ]

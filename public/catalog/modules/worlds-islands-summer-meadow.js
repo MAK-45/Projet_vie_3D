@@ -194,7 +194,9 @@ void main() {
     #ifndef UNLIT
       if (uLod.y > 0.0) {
         float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
-        cornerScale *= mix(1.0, aFar * uLod.z, lod);
+        // Seules les feuilles du bord grandissent (aLeaf.y : 0 c\u0153ur, 1 dehors) : un c\u0153ur sombre agrandi ferait une
+        // \xE9toile noire dans la couronne.
+        cornerScale *= mix(1.0, aFar * mix(1.0, uLod.z, aLeaf.y), lod);
       }
     #endif
     #ifdef UNLIT
@@ -2872,10 +2874,10 @@ import * as THREE22 from "three";
 
 // src/worlds/kit/far-tree.js
 import * as THREE10 from "three";
-function createFarVersion(prototype, { keep = 0.14, wood = 0.2 } = {}) {
+function createFarVersion(prototype, { keep = 0.16, wood = 0.2 } = {}) {
   const far = new THREE10.Group();
   far.name = `${prototype.name} (loin)`;
-  far.userData.grow = Math.min(1.8, 0.7 / Math.sqrt(keep));
+  far.userData.grow = 1.5;
   prototype.updateMatrixWorld(true);
   prototype.traverse((child) => {
     if (!child.isMesh) return;
@@ -2911,7 +2913,7 @@ function thinLeaves(source, keep) {
     let end = start + 3;
     while (end < count && position[end * 3] === position[start * 3] && position[end * 3 + 1] === position[start * 3 + 1] && position[end * 3 + 2] === position[start * 3 + 2]) end += 3;
     const outer = leaf[start * 4 + 1];
-    if (hash(leafIndex++) < keep * (0.4 + 1.2 * outer)) {
+    if (hash(leafIndex++) < keep * (0.1 + 1.8 * outer)) {
       kept.push(start, end);
       farFlag.fill(1, start, end);
     }
