@@ -30,7 +30,17 @@ export const sharedUniforms = {
   uDarkness: { value: 0 },
   // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
   uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
+  // 1 : le décor est vu de côté (caméra à la 3e personne), voir setSideView.
+  uSideView: { value: 0 },
 };
+
+/**
+ * Le décor est-il vu de côté (caméra à la 3e personne) ? Les couronnes des arbres, faites pour la vue de haut,
+ * rapetissent alors leurs feuilles sombres du cœur, qui se verraient entre les autres comme des étoiles noires.
+ */
+export function setSideView(value) {
+  sharedUniforms.uSideView.value = value ? 1 : 0;
+}
 
 /**
  * Courbe le monde à l'affichage, comme une petite planète : au-delà de `start` mètres du centre (la caméra), le
@@ -107,6 +117,7 @@ uniform float uTime;
 uniform vec2 uWindDir;
 uniform float uWindStrength;
 uniform vec4 uCurve;
+uniform float uSideView;
 uniform vec2 uFade; // apparition en douceur : de x à y mètres de la caméra, la copie rentre dans le sol (0, 0 : rien)
 uniform vec3 uLod;  // FOLIAGE, passage à la version lointaine : de x à y mètres, les feuilles absentes de cette
                     // version (aFar 0) rapetissent jusqu'à rien, les autres grandissent de z (y à 0 : rien)
@@ -253,15 +264,16 @@ void main() {
   #ifdef FOLIAGE
     float cornerScale = length(toWorld[0].xyz) * fade;
     #ifndef UNLIT
+      // Vue de côté (3e personne, setSideView) : les feuilles sombres du cœur de la couronne (aLeaf.y petit), faites
+      // pour remplir l'arbre vu de haut, se verraient entre les feuilles du bord comme des étoiles noires (deux
+      // triangles sombres qui se croisent) : elles rapetissent d'autant plus qu'elles sont profondes.
+      // Les feuilles du bord grandissent un peu pour garder une couronne aussi pleine.
+      cornerScale *= mix(1.0, mix(0.2, 1.15, smoothstep(0.15, 0.75, aLeaf.y)), uSideView);
       if (uLod.y > 0.0) {
         float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
         // Seules les feuilles du bord grandissent (aLeaf.y : 0 cœur, 1 dehors) : un cœur sombre agrandi ferait une
         // étoile noire dans la couronne.
         cornerScale *= mix(1.0, aFar * mix(1.0, uLod.z, aLeaf.y), lod);
-        // De près, en perspective, les grosses touffes sombres qui remplissent le cœur de la couronne (aLeaf.y ≈ 0,
-        // faites pour la vue de haut) se verraient entre les feuilles comme des étoiles noires : elles rapetissent.
-        float core = 1.0 - smoothstep(0.05, 0.35, aLeaf.y);
-        cornerScale *= mix(1.0, mix(0.3, 1.0, smoothstep(12.0, 40.0, distance(origin, cameraPosition))), core);
       }
     #endif
     #ifdef UNLIT

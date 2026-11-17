@@ -173,9 +173,12 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   **Sans saut** : de 30 à 50 m, le modèle complet se fond dans sa version lointaine dans le shader (`uLod`) : les
   feuilles absentes de la version lointaine (`aFar` 0) rapetissent jusqu'à rien, les autres grandissent, et le
   bois absent s'efface par trame (matrice de Bayer 4 × 4, par pixel d'art) ; au passage, les deux sont identiques.
-- **Cœur des couronnes** : les grosses touffes sombres qui remplissent le cœur d'un arbre (`aLeaf.y` ≈ 0), faites
-  pour la vue de haut, se verraient de près entre les feuilles comme des étoiles noires : en 3e personne (prairie
-  infinie), elles rapetissent jusqu'à 30 % de leur taille sous 12 m de la caméra (pleine taille à 40 m).
+- **Couronnes vues de côté** (`setSideView` de `engine/toon-material.js`, mis par l'explorateur en 3e personne, île
+  comme prairie infinie) : les feuilles sombres du cœur d'un arbre (`aLeaf.y` petit), faites pour remplir la
+  couronne vue de haut, se verraient entre les feuilles du bord comme des étoiles noires (deux triangles sombres qui
+  se croisent). Elles rapetissent d'autant plus qu'elles sont profondes (20 % au cœur), et les feuilles du bord
+  grandissent un peu (× 1,15) pour garder une couronne pleine. Quitter l'explorateur remet le décor à plat et vu de
+  haut (courbure et vue de côté à zéro).
 - **Apparition en douceur** : sur le dernier quart de sa portée, une copie du semis rentre dans le sol (`uFade`,
   réglé par `StreamingScatter` selon `reach`) : l'herbe, les fleurs, la mousse et les rochers sortent du sol en
   approchant au lieu d'apparaître d'un coup. Une

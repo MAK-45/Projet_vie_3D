@@ -6,7 +6,7 @@ import * as THREE from "three";
 import { ChaseCamera } from "../engine/chase-camera.js";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
-import { setCurvature, setDarkness, setWind, tick } from "../engine/toon-material.js";
+import { setCurvature, setDarkness, setSideView, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
 import { createSummerMeadow, MEADOW_EXTENTS } from "../worlds/summer-meadow.js";
@@ -419,6 +419,9 @@ export class Explorer {
 
   dispose() {
     this.setImmersive(false);
+    // Réglages globaux des matériaux : la galerie retrouve un décor plat, vu de haut.
+    setCurvature(0, 0, 0);
+    setSideView(false);
     this.pixel.renderer.setAnimationLoop(null);
     this._resizeObserver.disconnect();
     this._intersectionObserver.disconnect();
@@ -792,6 +795,7 @@ export class Explorer {
       view.area = 1;
       view.radius = THIRD_SHADOW_RADIUS;
       reach = THIRD_REACH;
+      setSideView(true);
       const curved = Boolean(this.world.endless);
       setCurvature(camera.position.x, camera.position.z, curved ? THIRD_CURVE_RADIUS : 0, THIRD_CURVE_START);
       this.pixel.fog.far = curved ? 0 : THIRD_FAR * 0.97; // 0 : pas de brume
@@ -803,6 +807,7 @@ export class Explorer {
       );
     } else {
       setCurvature(0, 0, 0);
+      setSideView(false);
       this._steerCamera(dt, walker.speed > 0.5);
       iso.update();
       camera = iso.camera;
