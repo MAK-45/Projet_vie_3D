@@ -11,6 +11,8 @@
 // - Variante `unlit` : lumineux par lui-même (astres), ni soleil ni ombre ; avec `foliage`, formes face caméra qui
 //   peuvent pulser (`twinkle`).
 // - Motifs procéduraux (`pattern`) : `bark` (tirets d'écorce), `furrow` (écorce crevassée) et `speckle` (grain de pixels), sans texture.
+// - Texture de couleur (`map`, modèles importés) : la rampe sert alors de filtre de lumière posé sur la texture.
+// - Modèles à squelette (SkinnedMesh) : le shader inclut les étapes de skinning de three.js, actives d'elles-mêmes.
 // - Motif `ground` (sols) : couches de taches (herbe grasse, herbe sèche, terre...) calculées en coordonnées du monde
 //   (attribut `aGround`), donc continues d'un morceau de terrain au suivant ; en aplats nets ou en dégradés lisses.
 
@@ -86,6 +88,7 @@ export function rgb(hex) {
 
 const VERTEX = /* glsl */ `
 #include <common>
+#include <skinning_pars_vertex>
 #include <shadowmap_pars_vertex>
 
 uniform float uTime;
@@ -115,16 +118,26 @@ varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
 
+#ifdef TOON_MAP
+  varying vec2 vMapUv;
+#endif
+
 void main() {
   #ifdef PATTERN_GROUND
     vGround = aGround;
   #endif
+  #include <skinbase_vertex>
   #include <beginnormal_vertex>
+  #include <skinnormal_vertex>
   #include <defaultnormal_vertex>
   vNormal = transformedNormal;
 
   #include <begin_vertex>
+  #include <skinning_vertex>
   vObjPos = transformed;
+  #ifdef TOON_MAP
+    vMapUv = uv;
+  #endif
 
   mat4 toWorld = modelMatrix;
   #ifdef USE_INSTANCING
@@ -222,6 +235,11 @@ varying vec3 vObjPos;
   uniform vec4 uLayers[3];     // x : échelle des taches (1/m), y : seuil (0..1), z : graine, w : poids de la modulation lente (±)
   uniform vec3 uFlowers[2];    // deux couleurs de fleurs semées en pixels
   uniform vec4 uGround;        // x : lisse (0/1), y : densité des fleurs, z : échelle de la modulation lente (1/m), w : frange tramée
+#endif
+
+#ifdef TOON_MAP
+  uniform sampler2D uMap;
+  varying vec2 vMapUv;
 #endif
 
 float hash12(vec2 p) {
@@ -383,6 +401,11 @@ void main() {
       color = mix(color, layerColor, weight);
     }
   #endif
+  #ifdef TOON_MAP
+    // Texture de couleur (personnages importés) : la rampe devient un filtre de lumière, de l'ombre froide à la
+    // pleine lumière, posé sur la couleur peinte.
+    color *= texture2D(uMap, vMapUv).rgb;
+  #endif
   color = mix(color, uInk, ink);
 
   // Lumières de halo : dans le noir, le décor proche prend la couleur de la source, en trois paliers nets à
@@ -479,6 +502,8 @@ function defaultSteps(count) {
  * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
  *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
+ * @param {THREE.Texture} [options.map] texture de couleur (sRGB brut : `colorSpace = NoColorSpace`) : la rampe
+ *   devient un filtre multiplié à la couleur peinte (blanc = couleur de la texture). Pour les modèles importés.
  * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
  *   `aGround`, voir `buildTerrainChunk`) : jusqu'à 3 couches de taches posées dans l'ordre sur la rampe de base.
  * @param {Array<{ramp: string[], scale: number, threshold: number, seed?: number, drift?: number}>} [options.ground.layers]
@@ -512,6 +537,7 @@ export function createToonMaterial(options) {
     rim = [0, 0],
     glow = true,
     ground,
+    map = null,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -522,6 +548,7 @@ export function createToonMaterial(options) {
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
+  if (map) defines.TOON_MAP = "";
 
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
@@ -572,6 +599,7 @@ export function createToonMaterial(options) {
       uRim: { value: new THREE.Vector2(...rim) },
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
+      uMap: { value: map },
       ...groundUniforms,
     },
     vertexShader: VERTEX,
