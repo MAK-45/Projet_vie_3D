@@ -21,8 +21,9 @@ import {
 
 const HALF = TILE / 2;
 const smoothstep = THREE.MathUtils.smoothstep;
-/** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±120 m autour du promeneur. */
-const WINDOW = 7;
+/** Rayon (en morceaux) de la fenêtre où l'on cherche les morceaux vus : ±168 m autour du promeneur (la vue à la
+ * 3e personne porte à 150 m). */
+const WINDOW = 10;
 /** Débord des morceaux nécessaires tout de suite (m) : couronnes et ombres portées venues de hors champ. */
 const NEED_MARGIN = 9;
 /** Débord des morceaux préparés d'avance (m), un par image au plus. */

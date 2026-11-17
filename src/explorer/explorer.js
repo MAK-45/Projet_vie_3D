@@ -30,9 +30,9 @@ const numberFormat = new Intl.NumberFormat("fr-FR");
  * L'herbe et les fleurs (« fine ») ne sont dessinées que de près : au-delà, une touffe ne fait qu'un ou deux
  * pixels d'art, et c'est elle qui coûte le plus de triangles. Les arbres vont jusqu'à la brume.
  */
-const THIRD_FAR = 85;
-const THIRD_FOG_NEAR = 40;
-const THIRD_REACH = { fine: 32, low: 60 };
+const THIRD_FAR = 150;
+const THIRD_FOG_NEAR = 80;
+const THIRD_REACH = { fine: 36, low: 80 };
 const THIRD_SHADOW_AHEAD = 14; // la carte d'ombre est centrée devant le promeneur, là où l'on regarde (m)
 const THIRD_SHADOW_RADIUS = 24; // (+ 14 m de marge dans le monde)
 /** Au-delà (m de la caméra), le semis ne projette plus d'ombre : c'est hors de la carte d'ombre. */
