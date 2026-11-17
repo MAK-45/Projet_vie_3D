@@ -8,6 +8,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+
+// Les assets importés (personnages, animations) lisent leurs fichiers glTF dans public/models/.
+const { setModelSource } = await import(pathToFileURL(path.join(ROOT, "src/assets/kit/model.js")).href);
+setModelSource({ read: (file) => readFile(path.join(ROOT, "public/models", file)) });
 export const THREE_VERSION = JSON.parse(await readFile(path.join(ROOT, "node_modules/three/package.json"), "utf8")).version;
 
 const ENGINE_FILES = [
@@ -51,14 +55,15 @@ export async function buildCatalog({ withSources = true } = {}) {
       bundle: true,
       format: "esm",
       target: "es2022",
-      external: ["three"],
+      // three et ses addons (chargeur glTF des assets importés) restent à fournir.
+      external: ["three", "three/addons/*"],
       write: false,
       metafile: true,
       legalComments: "none",
       banner: {
         js:
           `// Projet Vie 3D — ${meta.name} (${meta.id}), version ${meta.version}\n` +
-          `// Module autonome : seule dépendance, three@${THREE_VERSION} (import "three").\n` +
+          `// Module autonome : seule dépendance, three@${THREE_VERSION} (import "three" et, pour les assets importés, "three/addons/...").\n` +
           `// Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).`,
       },
     });
@@ -71,6 +76,7 @@ export async function buildCatalog({ withSources = true } = {}) {
     const cases = [{ id: "default", params: {} }, ...(meta.variants ?? [])];
     for (const variant of cases) {
       const object = module.create(variant.params);
+      await object.userData.ready; // assets importés : le modèle arrive après create()
       stats[variant.id] = measure(object);
       module.dispose?.(object);
     }

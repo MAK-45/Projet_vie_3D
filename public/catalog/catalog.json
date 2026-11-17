@@ -108,6 +108,32 @@
         }
       }
     },
+    "animations": {
+      "label": "Animations",
+      "description": "Mouvements du squelette humanoïde, joués par le personnage de son choix.",
+      "subcategories": {
+        "locomotion": {
+          "label": "Déplacements",
+          "description": "Marcher, courir, sauter, nager, pousser."
+        },
+        "idle": {
+          "label": "Attitudes",
+          "description": "Attendre, parler, s'asseoir, danser : ce qu'on fait sur place."
+        },
+        "actions": {
+          "label": "Gestes et actions",
+          "description": "Ramasser, réparer, interagir, encaisser, tomber."
+        },
+        "combat": {
+          "label": "Combat",
+          "description": "Poings, épée, arme de poing."
+        },
+        "magic": {
+          "label": "Magie",
+          "description": "Lancer des sorts."
+        }
+      }
+    },
     "creatures": {
       "label": "Créatures",
       "description": "La créature humanoïde et les animaux d'ambiance.",
@@ -154,7 +180,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 26664
+      "bytes": 27733
     }
   ],
   "assets": [
@@ -318,7 +344,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 40149
+        "standalone": 40810
       }
     },
     {
@@ -487,7 +513,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 41046
+        "standalone": 41707
       }
     },
     {
@@ -659,7 +685,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 42559
+        "standalone": 43220
       }
     },
     {
@@ -860,7 +886,7 @@
       },
       "bytes": {
         "source": 6422,
-        "standalone": 43528
+        "standalone": 44189
       }
     },
     {
@@ -1063,7 +1089,7 @@
       },
       "bytes": {
         "source": 6390,
-        "standalone": 44590
+        "standalone": 45251
       }
     },
     {
@@ -1197,7 +1223,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 32829
+        "standalone": 33490
       }
     },
     {
@@ -1360,7 +1386,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 32735
+        "standalone": 33396
       }
     },
     {
@@ -1517,7 +1543,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 34981
+        "standalone": 35642
       }
     },
     {
@@ -1700,7 +1726,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 36130
+        "standalone": 36791
       }
     },
     {
@@ -1899,7 +1925,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 42430
+        "standalone": 43091
       }
     },
     {
@@ -2138,7 +2164,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 35914
+        "standalone": 36575
       }
     },
     {
@@ -2344,7 +2370,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 40709
+        "standalone": 41370
       }
     },
     {
@@ -2492,7 +2518,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 33045
+        "standalone": 33706
       }
     },
     {
@@ -2652,7 +2678,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 34055
+        "standalone": 34716
       }
     },
     {
@@ -2795,7 +2821,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 30897
+        "standalone": 31558
       }
     },
     {
@@ -2958,7 +2984,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 31775
+        "standalone": 32436
       }
     },
     {
@@ -3436,7 +3462,4944 @@
       },
       "bytes": {
         "source": 31200,
-        "standalone": 56781
+        "standalone": 57442
+      }
+    },
+    {
+      "id": "creatures/humanoid/superhero-female",
+      "name": "Héroïne",
+      "nameEn": "Heroine",
+      "category": "creatures",
+      "subcategory": "humanoid",
+      "description": "Une femme athlétique en tenue de sport sombre (brassière et short), peau mate, yeux marron. Joue n'importe quelle animation de la catégorie « Animations ».",
+      "tags": [
+        "héroïne",
+        "femme",
+        "personnage",
+        "humain",
+        "humanoïde",
+        "athlétique",
+        "heroine",
+        "woman",
+        "character",
+        "human",
+        "humanoid",
+        "rigged",
+        "animé",
+        "animated"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "interior",
+        "beach"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; 1,77 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.5,
+        "height": 1.8
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "files": [
+        "characters/superhero-female.glb",
+        "animations/ual-standard.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence."
+        },
+        "animation": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "walk",
+            "talk",
+            "dance",
+            "sit",
+            "spell"
+          ],
+          "labels": {
+            "idle": "Attente",
+            "walk": "Marche",
+            "talk": "Parle",
+            "dance": "Danse",
+            "sit": "Assis",
+            "spell": "Sort"
+          },
+          "label": "Animation",
+          "description": "Le mouvement joué dans la fiche. Les 43 animations sont dans la catégorie « Animations », avec ce personnage au choix."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "idle",
+          "name": "Attente",
+          "params": {
+            "animation": "idle"
+          }
+        },
+        {
+          "id": "walk",
+          "name": "Marche",
+          "params": {
+            "animation": "walk"
+          }
+        },
+        {
+          "id": "talk",
+          "name": "Parle",
+          "params": {
+            "animation": "talk"
+          }
+        },
+        {
+          "id": "dance",
+          "name": "Danse",
+          "params": {
+            "animation": "dance"
+          }
+        },
+        {
+          "id": "sit",
+          "name": "Assis",
+          "params": {
+            "animation": "sit"
+          }
+        },
+        {
+          "id": "spell",
+          "name": "Sort",
+          "params": {
+            "animation": "spell"
+          }
+        }
+      ],
+      "slug": "creatures-humanoid-superhero-female",
+      "path": "src/assets/creatures/humanoid/superhero-female.js",
+      "module": "public/catalog/modules/creatures-humanoid-superhero-female.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "idle": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "walk": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "talk": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "dance": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "sit": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "spell": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 768,
+        "standalone": 34114
+      }
+    },
+    {
+      "id": "creatures/humanoid/superhero-male",
+      "name": "Héros",
+      "nameEn": "Hero",
+      "category": "creatures",
+      "subcategory": "humanoid",
+      "description": "Un homme musclé en short sombre, peau mate, barbe naissante, yeux marron. Joue n'importe quelle animation de la catégorie « Animations ».",
+      "tags": [
+        "héros",
+        "homme",
+        "personnage",
+        "humain",
+        "humanoïde",
+        "musclé",
+        "hero",
+        "man",
+        "character",
+        "human",
+        "humanoid",
+        "rigged",
+        "animé",
+        "animated"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "interior",
+        "beach"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.5,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "files": [
+        "characters/superhero-male.glb",
+        "animations/ual-standard.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence."
+        },
+        "animation": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "walk",
+            "talk",
+            "dance",
+            "sit",
+            "spell"
+          ],
+          "labels": {
+            "idle": "Attente",
+            "walk": "Marche",
+            "talk": "Parle",
+            "dance": "Danse",
+            "sit": "Assis",
+            "spell": "Sort"
+          },
+          "label": "Animation",
+          "description": "Le mouvement joué dans la fiche. Les 43 animations sont dans la catégorie « Animations », avec ce personnage au choix."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "idle",
+          "name": "Attente",
+          "params": {
+            "animation": "idle"
+          }
+        },
+        {
+          "id": "walk",
+          "name": "Marche",
+          "params": {
+            "animation": "walk"
+          }
+        },
+        {
+          "id": "talk",
+          "name": "Parle",
+          "params": {
+            "animation": "talk"
+          }
+        },
+        {
+          "id": "dance",
+          "name": "Danse",
+          "params": {
+            "animation": "dance"
+          }
+        },
+        {
+          "id": "sit",
+          "name": "Assis",
+          "params": {
+            "animation": "sit"
+          }
+        },
+        {
+          "id": "spell",
+          "name": "Sort",
+          "params": {
+            "animation": "spell"
+          }
+        }
+      ],
+      "slug": "creatures-humanoid-superhero-male",
+      "path": "src/assets/creatures/humanoid/superhero-male.js",
+      "module": "public/catalog/modules/creatures-humanoid-superhero-male.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "idle": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "walk": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "talk": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "dance": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "sit": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "spell": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 724,
+        "standalone": 34060
+      }
+    },
+    {
+      "id": "creatures/humanoid/mannequin",
+      "name": "Mannequin",
+      "nameEn": "Mannequin",
+      "category": "creatures",
+      "subcategory": "humanoid",
+      "description": "Le mannequin de la bibliothèque d'animations : un corps neutre orange aux articulations violettes, sans visage. Pour régler une scène ou juger un mouvement sans distraction.",
+      "tags": [
+        "mannequin",
+        "personnage",
+        "neutre",
+        "articulations",
+        "humanoïde",
+        "dummy",
+        "character",
+        "neutral",
+        "humanoid",
+        "rigged",
+        "animé",
+        "animated"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "interior",
+        "beach"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; 1,8 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.5,
+        "height": 1.8
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "files": [
+        "characters/mannequin.glb",
+        "animations/ual-standard.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence."
+        },
+        "animation": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "walk",
+            "talk",
+            "dance",
+            "sit",
+            "spell"
+          ],
+          "labels": {
+            "idle": "Attente",
+            "walk": "Marche",
+            "talk": "Parle",
+            "dance": "Danse",
+            "sit": "Assis",
+            "spell": "Sort"
+          },
+          "label": "Animation",
+          "description": "Le mouvement joué dans la fiche. Les 43 animations sont dans la catégorie « Animations », avec ce personnage au choix."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "idle",
+          "name": "Attente",
+          "params": {
+            "animation": "idle"
+          }
+        },
+        {
+          "id": "walk",
+          "name": "Marche",
+          "params": {
+            "animation": "walk"
+          }
+        },
+        {
+          "id": "talk",
+          "name": "Parle",
+          "params": {
+            "animation": "talk"
+          }
+        },
+        {
+          "id": "dance",
+          "name": "Danse",
+          "params": {
+            "animation": "dance"
+          }
+        },
+        {
+          "id": "sit",
+          "name": "Assis",
+          "params": {
+            "animation": "sit"
+          }
+        },
+        {
+          "id": "spell",
+          "name": "Sort",
+          "params": {
+            "animation": "spell"
+          }
+        }
+      ],
+      "slug": "creatures-humanoid-mannequin",
+      "path": "src/assets/creatures/humanoid/mannequin.js",
+      "module": "public/catalog/modules/creatures-humanoid-mannequin.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "idle": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "walk": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "talk": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "dance": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "sit": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        },
+        "spell": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 756,
+        "standalone": 34074
+      }
+    },
+    {
+      "id": "animations/locomotion/walk",
+      "name": "Marcher",
+      "nameEn": "Walk",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Marche tranquille, bras ballants : le pas de tous les jours.",
+      "tags": [
+        "marcher",
+        "marche",
+        "pas",
+        "déplacement",
+        "walk",
+        "walking",
+        "locomotion",
+        "cycle",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.9,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Walk_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-walk",
+      "path": "src/assets/animations/locomotion/walk.js",
+      "module": "public/catalog/modules/animations-locomotion-walk.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 775,
+        "standalone": 35045
+      }
+    },
+    {
+      "id": "animations/locomotion/walk-formal",
+      "name": "Marche posée",
+      "nameEn": "Formal walk",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Marche droite et mesurée, épaules tenues : pour une entrée solennelle ou une visite.",
+      "tags": [
+        "marcher",
+        "marche posée",
+        "solennel",
+        "déplacement",
+        "walk",
+        "formal walk",
+        "locomotion",
+        "cycle",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.9,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Walk_Formal_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-walk-formal",
+      "path": "src/assets/animations/locomotion/walk-formal.js",
+      "module": "public/catalog/modules/animations-locomotion-walk-formal.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 839,
+        "standalone": 35133
+      }
+    },
+    {
+      "id": "animations/locomotion/jog",
+      "name": "Trottiner",
+      "nameEn": "Jog",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Petite course régulière, buste droit, foulées souples : le rythme d'un footing ou d'une course pressée.",
+      "tags": [
+        "trottiner",
+        "courir",
+        "course",
+        "déplacement",
+        "jog",
+        "jogging",
+        "run",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1.2,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Jog_Fwd_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-jog",
+      "path": "src/assets/animations/locomotion/jog.js",
+      "module": "public/catalog/modules/animations-locomotion-jog.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 817,
+        "standalone": 35093
+      }
+    },
+    {
+      "id": "animations/locomotion/sprint",
+      "name": "Sprinter",
+      "nameEn": "Sprint",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Course à pleine vitesse, bras qui pompent, corps penché en avant.",
+      "tags": [
+        "sprinter",
+        "sprint",
+        "courir vite",
+        "course",
+        "déplacement",
+        "run",
+        "fast",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1.4,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Sprint_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-sprint",
+      "path": "src/assets/animations/locomotion/sprint.js",
+      "module": "public/catalog/modules/animations-locomotion-sprint.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 784,
+        "standalone": 35062
+      }
+    },
+    {
+      "id": "animations/locomotion/crouch-walk",
+      "name": "Avancer accroupi",
+      "nameEn": "Crouch walk",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Pas lents et feutrés, genoux pliés : se faufiler sans être vu.",
+      "tags": [
+        "accroupi",
+        "furtif",
+        "discrétion",
+        "déplacement",
+        "crouch",
+        "sneak",
+        "stealth",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain",
+        "cave",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.9,
+        "height": 1.2
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Crouch_Fwd_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-crouch-walk",
+      "path": "src/assets/animations/locomotion/crouch-walk.js",
+      "module": "public/catalog/modules/animations-locomotion-crouch-walk.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 852,
+        "standalone": 35144
+      }
+    },
+    {
+      "id": "animations/locomotion/jump",
+      "name": "Sauter",
+      "nameEn": "Jump",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Un saut sur place en trois temps : l'élan, la suspension en l'air, la réception.",
+      "tags": [
+        "sauter",
+        "saut",
+        "bond",
+        "élan",
+        "jump",
+        "leap",
+        "landing",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.8,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Jump_Start",
+        "Jump_Loop",
+        "Jump_Land"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "start",
+            "air",
+            "land"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "start": "Élan",
+            "air": "En l'air",
+            "land": "Réception"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-jump",
+      "path": "src/assets/animations/locomotion/jump.js",
+      "module": "public/catalog/modules/animations-locomotion-jump.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 1088,
+        "standalone": 35368
+      }
+    },
+    {
+      "id": "animations/locomotion/roll",
+      "name": "Roulade",
+      "nameEn": "Roll",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Roulade avant au sol, pour esquiver ou franchir un obstacle.",
+      "tags": [
+        "roulade",
+        "rouler",
+        "esquive",
+        "acrobatie",
+        "roll",
+        "dodge",
+        "tumble",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1.4,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Roll"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-roll",
+      "path": "src/assets/animations/locomotion/roll.js",
+      "module": "public/catalog/modules/animations-locomotion-roll.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 785,
+        "standalone": 35053
+      }
+    },
+    {
+      "id": "animations/locomotion/push",
+      "name": "Pousser",
+      "nameEn": "Push",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Pousser une lourde charge à deux mains, appuyé de tout son poids.",
+      "tags": [
+        "pousser",
+        "effort",
+        "charge",
+        "caisse",
+        "push",
+        "pushing",
+        "heavy",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.9,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Push_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-push",
+      "path": "src/assets/animations/locomotion/push.js",
+      "module": "public/catalog/modules/animations-locomotion-push.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 767,
+        "standalone": 35039
+      }
+    },
+    {
+      "id": "animations/locomotion/swim",
+      "name": "Nager",
+      "nameEn": "Swim",
+      "category": "animations",
+      "subcategory": "locomotion",
+      "description": "Brasse à la surface de l'eau, le corps à l'horizontale (l'origine est la surface de l'eau : le corps flotte juste dessous).",
+      "tags": [
+        "nager",
+        "nage",
+        "brasse",
+        "eau",
+        "swim",
+        "swimming",
+        "water",
+        "locomotion",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "beach",
+        "swamp"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1.2,
+        "height": 0.4
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "pedestal": false,
+      "clips": [
+        "Swim_Fwd_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-locomotion-swim",
+      "path": "src/assets/animations/locomotion/swim.js",
+      "module": "public/catalog/modules/animations-locomotion-swim.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 818,
+        "standalone": 35090
+      }
+    },
+    {
+      "id": "animations/idle/idle",
+      "name": "Attendre",
+      "nameEn": "Idle",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Debout, au repos : respiration, léger balancement du poids d'une jambe sur l'autre.",
+      "tags": [
+        "attendre",
+        "debout",
+        "repos",
+        "respiration",
+        "idle",
+        "standing",
+        "rest",
+        "posture",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Idle_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-idle",
+      "path": "src/assets/animations/idle/idle.js",
+      "module": "public/catalog/modules/animations-idle-idle.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 767,
+        "standalone": 35025
+      }
+    },
+    {
+      "id": "animations/idle/talk",
+      "name": "Parler",
+      "nameEn": "Talk",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Debout, en pleine conversation : les mains accompagnent les mots.",
+      "tags": [
+        "parler",
+        "discuter",
+        "conversation",
+        "gestes",
+        "talk",
+        "talking",
+        "chat",
+        "posture",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Idle_Talking_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-talk",
+      "path": "src/assets/animations/idle/talk.js",
+      "module": "public/catalog/modules/animations-idle-talk.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 753,
+        "standalone": 35009
+      }
+    },
+    {
+      "id": "animations/idle/torch",
+      "name": "Tenir une torche",
+      "nameEn": "Hold a torch",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Debout, un bras levé qui tient une torche ou une lanterne pour éclairer devant soi.",
+      "tags": [
+        "torche",
+        "lanterne",
+        "éclairer",
+        "nuit",
+        "torch",
+        "lantern",
+        "light",
+        "posture",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "cave",
+        "forest",
+        "village",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Idle_Torch_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-torch",
+      "path": "src/assets/animations/idle/torch.js",
+      "module": "public/catalog/modules/animations-idle-torch.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 785,
+        "standalone": 35049
+      }
+    },
+    {
+      "id": "animations/idle/crouch",
+      "name": "Rester accroupi",
+      "nameEn": "Crouch idle",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Accroupi sur place, aux aguets ou en train d'observer le sol.",
+      "tags": [
+        "accroupi",
+        "aux aguets",
+        "observer",
+        "posture",
+        "crouch",
+        "crouching",
+        "idle",
+        "watch",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "mountain",
+        "cave"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.2
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Crouch_Idle_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-crouch",
+      "path": "src/assets/animations/idle/crouch.js",
+      "module": "public/catalog/modules/animations-idle-crouch.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 801,
+        "standalone": 35061
+      }
+    },
+    {
+      "id": "animations/idle/sit",
+      "name": "S'asseoir",
+      "nameEn": "Sit",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "S'asseoir, rester assis puis se relever. Le personnage s'assoit sur un siège invisible de 45 cm : poser une chaise, un banc ou une souche derrière lui.",
+      "tags": [
+        "s'asseoir",
+        "assis",
+        "chaise",
+        "banc",
+        "sit",
+        "sitting",
+        "seat",
+        "posture",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Sitting_Enter",
+        "Sitting_Idle_Loop",
+        "Sitting_Talking_Loop",
+        "Sitting_Exit"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "enter",
+            "idle",
+            "talk",
+            "exit"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "enter": "S'asseoir",
+            "idle": "Assis",
+            "talk": "Assis, parle",
+            "exit": "Se relever"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-sit",
+      "path": "src/assets/animations/idle/sit.js",
+      "module": "public/catalog/modules/animations-idle-sit.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 1313,
+        "standalone": 35573
+      }
+    },
+    {
+      "id": "animations/idle/drive",
+      "name": "Conduire",
+      "nameEn": "Drive",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Assis, les mains sur un volant invisible, qui tournent au rythme de la route.",
+      "tags": [
+        "conduire",
+        "volant",
+        "voiture",
+        "assis",
+        "drive",
+        "driving",
+        "car",
+        "vehicle",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "village",
+        "meadow"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Driving_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-drive",
+      "path": "src/assets/animations/idle/drive.js",
+      "module": "public/catalog/modules/animations-idle-drive.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 728,
+        "standalone": 34986
+      }
+    },
+    {
+      "id": "animations/idle/swim-idle",
+      "name": "Faire du surplace",
+      "nameEn": "Tread water",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Dans l'eau jusqu'aux épaules, bras et jambes qui battent doucement pour rester à la surface. L'origine est la surface de l'eau : les jambes pendent dessous.",
+      "tags": [
+        "nager",
+        "surplace",
+        "flotter",
+        "eau",
+        "swim",
+        "tread water",
+        "float",
+        "water",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "beach",
+        "swamp"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 0.6
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "pedestal": false,
+      "clips": [
+        "Swim_Idle_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-swim-idle",
+      "path": "src/assets/animations/idle/swim-idle.js",
+      "module": "public/catalog/modules/animations-idle-swim-idle.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 870,
+        "standalone": 35140
+      }
+    },
+    {
+      "id": "animations/idle/dance",
+      "name": "Danser",
+      "nameEn": "Dance",
+      "category": "animations",
+      "subcategory": "idle",
+      "description": "Une petite danse joyeuse sur place, en rythme.",
+      "tags": [
+        "danser",
+        "danse",
+        "fête",
+        "joie",
+        "dance",
+        "dancing",
+        "party",
+        "happy",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Dance_Loop"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-idle-dance",
+      "path": "src/assets/animations/idle/dance.js",
+      "module": "public/catalog/modules/animations-idle-dance.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 717,
+        "standalone": 34977
+      }
+    },
+    {
+      "id": "animations/actions/interact",
+      "name": "Interagir",
+      "nameEn": "Interact",
+      "category": "animations",
+      "subcategory": "actions",
+      "description": "Tendre la main pour actionner quelque chose devant soi : levier, porte, bouton, objet magique.",
+      "tags": [
+        "interagir",
+        "actionner",
+        "toucher",
+        "bouton",
+        "interact",
+        "use",
+        "press",
+        "action",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Interact"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-actions-interact",
+      "path": "src/assets/animations/actions/interact.js",
+      "module": "public/catalog/modules/animations-actions-interact.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 813,
+        "standalone": 35083
+      }
+    },
+    {
+      "id": "animations/actions/pick-up",
+      "name": "Ramasser",
+      "nameEn": "Pick up",
+      "category": "animations",
+      "subcategory": "actions",
+      "description": "Se pencher pour prendre un objet posé sur une table ou un plan de travail, puis se redresser.",
+      "tags": [
+        "ramasser",
+        "prendre",
+        "objet",
+        "table",
+        "pick up",
+        "grab",
+        "take",
+        "action",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "PickUp_Table"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-actions-pick-up",
+      "path": "src/assets/animations/actions/pick-up.js",
+      "module": "public/catalog/modules/animations-actions-pick-up.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 806,
+        "standalone": 35076
+      }
+    },
+    {
+      "id": "animations/actions/repair",
+      "name": "Réparer à genoux",
+      "nameEn": "Repair kneeling",
+      "category": "animations",
+      "subcategory": "actions",
+      "description": "À genoux, les mains au ras du sol : réparer, construire, planter, fouiller.",
+      "tags": [
+        "réparer",
+        "construire",
+        "bricoler",
+        "à genoux",
+        "jardiner",
+        "repair",
+        "build",
+        "kneel",
+        "fix",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Fixing_Kneeling"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-actions-repair",
+      "path": "src/assets/animations/actions/repair.js",
+      "module": "public/catalog/modules/animations-actions-repair.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 815,
+        "standalone": 35093
+      }
+    },
+    {
+      "id": "animations/actions/hit",
+      "name": "Être touché",
+      "nameEn": "Get hit",
+      "category": "animations",
+      "subcategory": "actions",
+      "description": "Le personnage encaisse un coup et vacille : à la poitrine ou à la tête.",
+      "tags": [
+        "touché",
+        "coup",
+        "choc",
+        "douleur",
+        "hit",
+        "hurt",
+        "impact",
+        "reaction",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.6,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Hit_Chest",
+        "Hit_Head"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "chest",
+          "values": [
+            "chest",
+            "head"
+          ],
+          "labels": {
+            "chest": "À la poitrine",
+            "head": "À la tête"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-actions-hit",
+      "path": "src/assets/animations/actions/hit.js",
+      "module": "public/catalog/modules/animations-actions-hit.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 882,
+        "standalone": 35160
+      }
+    },
+    {
+      "id": "animations/actions/death",
+      "name": "Tomber",
+      "nameEn": "Fall down",
+      "category": "animations",
+      "subcategory": "actions",
+      "description": "Le personnage s'effondre en arrière et reste au sol : évanouissement, défaite, sommeil soudain.",
+      "tags": [
+        "tomber",
+        "s'effondrer",
+        "mort",
+        "évanouissement",
+        "fall",
+        "death",
+        "collapse",
+        "faint",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Death01"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-actions-death",
+      "path": "src/assets/animations/actions/death.js",
+      "module": "public/catalog/modules/animations-actions-death.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 813,
+        "standalone": 35083
+      }
+    },
+    {
+      "id": "animations/combat/punch",
+      "name": "Coups de poing",
+      "nameEn": "Punches",
+      "category": "animations",
+      "subcategory": "combat",
+      "description": "Garde haute, un direct du bras avant puis un crochet du bras arrière.",
+      "tags": [
+        "poing",
+        "boxe",
+        "frapper",
+        "combat",
+        "punch",
+        "jab",
+        "cross",
+        "fight",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Punch_Jab",
+        "Punch_Cross"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "jab",
+            "cross"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "jab": "Direct",
+            "cross": "Crochet"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-combat-punch",
+      "path": "src/assets/animations/combat/punch.js",
+      "module": "public/catalog/modules/animations-combat-punch.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 923,
+        "standalone": 35189
+      }
+    },
+    {
+      "id": "animations/combat/sword",
+      "name": "Épée",
+      "nameEn": "Sword",
+      "category": "animations",
+      "subcategory": "combat",
+      "description": "En garde, épée en main, puis une attaque en avant.",
+      "tags": [
+        "épée",
+        "lame",
+        "attaque",
+        "combat",
+        "sword",
+        "blade",
+        "attack",
+        "fight",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 1.2,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Sword_Idle",
+        "Sword_Attack"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "guard",
+            "attack"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "guard": "En garde",
+            "attack": "Attaque"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "path": {
+          "type": "enum",
+          "default": "inPlace",
+          "values": [
+            "inPlace",
+            "forward"
+          ],
+          "labels": {
+            "inPlace": "Sur place",
+            "forward": "Avance"
+          },
+          "label": "Trajet",
+          "description": "« Sur place » : le personnage reste au centre, comme sur un tapis roulant ; « Avance » : il se déplace et revient au départ à chaque boucle."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-combat-sword",
+      "path": "src/assets/animations/combat/sword.js",
+      "module": "public/catalog/modules/animations-combat-sword.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 959,
+        "standalone": 35235
+      }
+    },
+    {
+      "id": "animations/combat/pistol",
+      "name": "Pistolet",
+      "nameEn": "Pistol",
+      "category": "animations",
+      "subcategory": "combat",
+      "description": "Arme de poing : en attente, viser haut, droit ou bas, tirer, recharger.",
+      "tags": [
+        "pistolet",
+        "viser",
+        "tirer",
+        "recharger",
+        "pistol",
+        "aim",
+        "shoot",
+        "reload",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Pistol_Idle_Loop",
+        "Pistol_Aim_Neutral",
+        "Pistol_Shoot",
+        "Pistol_Reload",
+        "Pistol_Aim_Up",
+        "Pistol_Aim_Down"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "idle",
+            "aimUp",
+            "aim",
+            "aimDown",
+            "shoot",
+            "reload"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "idle": "En attente",
+            "aimUp": "Viser haut",
+            "aim": "Viser droit",
+            "aimDown": "Viser bas",
+            "shoot": "Tirer",
+            "reload": "Recharger"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-combat-pistol",
+      "path": "src/assets/animations/combat/pistol.js",
+      "module": "public/catalog/modules/animations-combat-pistol.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 1429,
+        "standalone": 35695
+      }
+    },
+    {
+      "id": "animations/magic/spell",
+      "name": "Lancer un sort",
+      "nameEn": "Cast a spell",
+      "category": "animations",
+      "subcategory": "magic",
+      "description": "Lever la main, concentrer la magie, lancer le sort devant soi, puis relâcher. À marier avec un effet de magie (pixelfx).",
+      "tags": [
+        "sort",
+        "magie",
+        "lancer",
+        "incantation",
+        "spell",
+        "magic",
+        "cast",
+        "wizard",
+        "animation",
+        "personnage",
+        "character"
+      ],
+      "biomes": [
+        "meadow",
+        "forest",
+        "village",
+        "garden",
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "imported": true,
+      "units": "mètres ; personnages de 1,77 à 1,81 m, origine entre les pieds, regard vers +Z",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.9
+      },
+      "animated": [
+        "skeleton"
+      ],
+      "clips": [
+        "Spell_Simple_Enter",
+        "Spell_Simple_Idle_Loop",
+        "Spell_Simple_Shoot",
+        "Spell_Simple_Exit"
+      ],
+      "files": [
+        "animations/ual-standard.glb",
+        "characters/superhero-female.glb",
+        "characters/superhero-male.glb",
+        "characters/mannequin.glb"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Moment du cycle où l'animation commence : plusieurs personnages ne bougent pas en même temps."
+        },
+        "character": {
+          "type": "enum",
+          "default": "superhero-female",
+          "values": [
+            "superhero-female",
+            "superhero-male",
+            "mannequin"
+          ],
+          "labels": {
+            "superhero-female": "Héroïne",
+            "superhero-male": "Héros",
+            "mannequin": "Mannequin"
+          },
+          "label": "Personnage",
+          "description": "Le personnage qui joue le mouvement. Tous partagent le même squelette."
+        },
+        "phase": {
+          "type": "enum",
+          "default": "sequence",
+          "values": [
+            "sequence",
+            "enter",
+            "idle",
+            "shoot",
+            "exit"
+          ],
+          "labels": {
+            "sequence": "Enchaînement",
+            "enter": "Préparer",
+            "idle": "Concentrer",
+            "shoot": "Lancer",
+            "exit": "Relâcher"
+          },
+          "label": "Temps",
+          "description": "Le mouvement complet, enchaîné, ou l'un de ses temps joué seul."
+        },
+        "speed": {
+          "type": "number",
+          "default": 1,
+          "min": 0.25,
+          "max": 2,
+          "step": 0.05,
+          "unit": "×",
+          "label": "Vitesse",
+          "description": "Vitesse de lecture de l'animation."
+        },
+        "cadence": {
+          "type": "enum",
+          "default": "sprite",
+          "values": [
+            "sprite",
+            "smooth"
+          ],
+          "labels": {
+            "sprite": "12 images/s",
+            "smooth": "Fluide"
+          },
+          "label": "Cadence",
+          "description": "« 12 images/s » : la pose change par à-coups, comme un sprite dessiné ; « Fluide » : à chaque image."
+        }
+      },
+      "variants": [
+        {
+          "id": "superhero-female",
+          "name": "Héroïne",
+          "params": {
+            "character": "superhero-female"
+          }
+        },
+        {
+          "id": "superhero-male",
+          "name": "Héros",
+          "params": {
+            "character": "superhero-male"
+          }
+        },
+        {
+          "id": "mannequin",
+          "name": "Mannequin",
+          "params": {
+            "character": "mannequin"
+          }
+        }
+      ],
+      "slug": "animations-magic-spell",
+      "path": "src/assets/animations/magic/spell.js",
+      "module": "public/catalog/modules/animations-magic-spell.js",
+      "dependencies": [
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/model.js",
+        "src/assets/kit/humanoid.js",
+        "src/assets/kit/animation-asset.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-female": {
+          "triangles": 4516,
+          "vertices": 2787,
+          "drawCalls": 3
+        },
+        "superhero-male": {
+          "triangles": 4292,
+          "vertices": 2687,
+          "drawCalls": 3
+        },
+        "mannequin": {
+          "triangles": 4978,
+          "vertices": 3180,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 1352,
+        "standalone": 35622
       }
     },
     {
@@ -3638,7 +8601,7 @@
       },
       "bytes": {
         "source": 4077,
-        "standalone": 188099
+        "standalone": 188760
       }
     }
   ]

@@ -50,6 +50,17 @@ export const taxonomy = {
       islands: { label: "Îles", description: "Mondes bornés qui flottent dans une mer de nuages." },
     },
   },
+  animations: {
+    label: "Animations",
+    description: "Mouvements du squelette humanoïde, joués par le personnage de son choix.",
+    subcategories: {
+      locomotion: { label: "Déplacements", description: "Marcher, courir, sauter, nager, pousser." },
+      idle: { label: "Attitudes", description: "Attendre, parler, s'asseoir, danser : ce qu'on fait sur place." },
+      actions: { label: "Gestes et actions", description: "Ramasser, réparer, interagir, encaisser, tomber." },
+      combat: { label: "Combat", description: "Poings, épée, arme de poing." },
+      magic: { label: "Magie", description: "Lancer des sorts." },
+    },
+  },
   creatures: {
     label: "Créatures",
     description: "La créature humanoïde et les animaux d'ambiance.",

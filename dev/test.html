@@ -16,7 +16,10 @@
     <div id="viewer"></div>
     <script type="module">
       import { assets, getAsset } from "/src/assets/index.js";
+      import { setModelSource } from "/src/assets/kit/model.js";
       import { Viewer } from "/src/gallery/viewer.js";
+
+      setModelSource({ base: "/models/" }); // personnages : fichiers de public/models/
 
       const query = new URLSearchParams(location.search);
       const module = getAsset(query.get("asset")) ?? assets[0];

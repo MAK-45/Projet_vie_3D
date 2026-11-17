@@ -1,5 +1,5 @@
 // Projet Vie 3D — Couveuse (blob) (creatures/spirits/couveuse-blob), version 2
-// Module autonome : seule dépendance, three@0.186.0 (import "three").
+// Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 
 // src/assets/creatures/spirits/couveuse-blob.js
@@ -54,6 +54,7 @@ var VERTEX = (
   /* glsl */
   `
 #include <common>
+#include <skinning_pars_vertex>
 #include <shadowmap_pars_vertex>
 
 uniform float uTime;
@@ -83,16 +84,26 @@ varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
 
+#ifdef TOON_MAP
+  varying vec2 vMapUv;
+#endif
+
 void main() {
   #ifdef PATTERN_GROUND
     vGround = aGround;
   #endif
+  #include <skinbase_vertex>
   #include <beginnormal_vertex>
+  #include <skinnormal_vertex>
   #include <defaultnormal_vertex>
   vNormal = transformedNormal;
 
   #include <begin_vertex>
+  #include <skinning_vertex>
   vObjPos = transformed;
+  #ifdef TOON_MAP
+    vMapUv = uv;
+  #endif
 
   mat4 toWorld = modelMatrix;
   #ifdef USE_INSTANCING
@@ -192,6 +203,11 @@ varying vec3 vObjPos;
   uniform vec4 uLayers[3];     // x : \xE9chelle des taches (1/m), y : seuil (0..1), z : graine, w : poids de la modulation lente (\xB1)
   uniform vec3 uFlowers[2];    // deux couleurs de fleurs sem\xE9es en pixels
   uniform vec4 uGround;        // x : lisse (0/1), y : densit\xE9 des fleurs, z : \xE9chelle de la modulation lente (1/m), w : frange tram\xE9e
+#endif
+
+#ifdef TOON_MAP
+  uniform sampler2D uMap;
+  varying vec2 vMapUv;
 #endif
 
 float hash12(vec2 p) {
@@ -353,6 +369,11 @@ void main() {
       color = mix(color, layerColor, weight);
     }
   #endif
+  #ifdef TOON_MAP
+    // Texture de couleur (personnages import\xE9s) : la rampe devient un filtre de lumi\xE8re, de l'ombre froide \xE0 la
+    // pleine lumi\xE8re, pos\xE9 sur la couleur peinte.
+    color *= texture2D(uMap, vMapUv).rgb;
+  #endif
   color = mix(color, uInk, ink);
 
   // Lumi\xE8res de halo : dans le noir, le d\xE9cor proche prend la couleur de la source, en trois paliers nets \xE0
@@ -442,7 +463,8 @@ function createToonMaterial(options) {
     twinkle = 0,
     rim = [0, 0],
     glow = true,
-    ground
+    ground,
+    map = null
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -451,6 +473,7 @@ function createToonMaterial(options) {
   if (foliage) defines.FOLIAGE = "";
   if (patternInfo.define) defines[patternInfo.define] = "";
   if (unlit) defines.UNLIT = "";
+  if (map) defines.TOON_MAP = "";
   const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
   const twinkleUniform = { value: twinkle };
   const groundUniforms = {};
@@ -498,6 +521,7 @@ function createToonMaterial(options) {
       uRim: { value: new THREE.Vector2(...rim) },
       uGlowReceive: { value: glow ? 1 : 0 },
       uLeafShade: { value: new THREE.Vector2(...leafShade) },
+      uMap: { value: map },
       ...groundUniforms
     },
     vertexShader: VERTEX,

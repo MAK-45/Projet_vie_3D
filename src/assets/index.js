@@ -19,12 +19,44 @@ import * as moon from "./nature/sky/moon.js";
 import * as cloud from "./nature/sky/cloud.js";
 import * as star from "./nature/sky/star.js";
 import * as couveuseBlob from "./creatures/spirits/couveuse-blob.js";
+import * as heroine from "./creatures/humanoid/superhero-female.js";
+import * as hero from "./creatures/humanoid/superhero-male.js";
+import * as mannequin from "./creatures/humanoid/mannequin.js";
+import * as animLocomotionWalk from "./animations/locomotion/walk.js";
+import * as animLocomotionWalkFormal from "./animations/locomotion/walk-formal.js";
+import * as animLocomotionJog from "./animations/locomotion/jog.js";
+import * as animLocomotionSprint from "./animations/locomotion/sprint.js";
+import * as animLocomotionCrouchWalk from "./animations/locomotion/crouch-walk.js";
+import * as animLocomotionJump from "./animations/locomotion/jump.js";
+import * as animLocomotionRoll from "./animations/locomotion/roll.js";
+import * as animLocomotionPush from "./animations/locomotion/push.js";
+import * as animLocomotionSwim from "./animations/locomotion/swim.js";
+import * as animIdleIdle from "./animations/idle/idle.js";
+import * as animIdleTalk from "./animations/idle/talk.js";
+import * as animIdleTorch from "./animations/idle/torch.js";
+import * as animIdleCrouch from "./animations/idle/crouch.js";
+import * as animIdleSit from "./animations/idle/sit.js";
+import * as animIdleDrive from "./animations/idle/drive.js";
+import * as animIdleSwimIdle from "./animations/idle/swim-idle.js";
+import * as animIdleDance from "./animations/idle/dance.js";
+import * as animActionsInteract from "./animations/actions/interact.js";
+import * as animActionsPickUp from "./animations/actions/pick-up.js";
+import * as animActionsRepair from "./animations/actions/repair.js";
+import * as animActionsHit from "./animations/actions/hit.js";
+import * as animActionsDeath from "./animations/actions/death.js";
+import * as animCombatPunch from "./animations/combat/punch.js";
+import * as animCombatSword from "./animations/combat/sword.js";
+import * as animCombatPistol from "./animations/combat/pistol.js";
+import * as animMagicSpell from "./animations/magic/spell.js";
 import * as summerMeadow from "./worlds/islands/summer-meadow.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, summerMeadow];
+export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin,
+  animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
+  summerMeadow,
+];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */
 export function getAsset(id) {

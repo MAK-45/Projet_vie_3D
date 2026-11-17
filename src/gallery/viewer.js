@@ -83,20 +83,18 @@ export class Viewer {
     const changed = module !== this.assetModule;
     if (this.asset) {
       this.scene.remove(this.asset);
-      disposeObject(this.asset);
+      (this.assetModule.dispose ?? disposeObject)(this.asset);
     }
     this.assetModule = module;
-    this.asset = module.create(params);
-    this.scene.add(this.asset);
+    const asset = (this.asset = module.create(params));
+    this.scene.add(asset);
     this._applyWireframe();
-
-    // Mesures de l'asset seul (sans socle ni passe d'ombre).
-    this.assetStats = { triangles: 0, drawCalls: 0 };
-    this.asset.traverse((child) => {
-      if (!child.isMesh) return;
-      const geometry = child.geometry;
-      this.assetStats.drawCalls += 1;
-      this.assetStats.triangles += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
+    this._measureAsset();
+    // Asset importé (personnage, animation) : le modèle arrive après create().
+    this.ready = Promise.resolve(asset.userData.ready).then(() => {
+      if (this.asset !== asset) return;
+      this._applyWireframe();
+      this._measureAsset();
     });
 
     if (changed) {
@@ -106,6 +104,17 @@ export class Viewer {
       this._needsFit = this.stats.width <= 1;
       if (!this._needsFit) this.resetView();
     }
+  }
+
+  /** Mesures de l'asset seul (sans socle ni passe d'ombre). */
+  _measureAsset() {
+    this.assetStats = { triangles: 0, drawCalls: 0 };
+    this.asset.traverse((child) => {
+      if (!child.isMesh) return;
+      const geometry = child.geometry;
+      this.assetStats.drawCalls += 1;
+      this.assetStats.triangles += (geometry.index ? geometry.index.count : geometry.attributes.position.count) / 3;
+    });
   }
 
   setOption(name, value, notify = false) {
@@ -217,7 +226,7 @@ export class Viewer {
     this._resizeObserver?.disconnect();
     this._intersectionObserver?.disconnect();
     this._timer.dispose();
-    if (this.asset) disposeObject(this.asset);
+    if (this.asset) (this.assetModule.dispose ?? disposeObject)(this.asset);
     disposeObject(this.ground);
     this.sun.shadow.map?.dispose();
     this.iso.dispose();
@@ -239,6 +248,8 @@ export class Viewer {
   _frame() {
     this._timer.update();
     tick(this._timer.getElapsed());
+    // Animations de squelette (personnages) : avancées par l'asset lui-même, à sa cadence.
+    this.asset?.userData.update?.(Math.min(this._timer.getDelta(), 0.1));
     this._render();
     this.stats.triangles = this.pixel.info.triangles;
     this.stats.calls = this.pixel.info.calls;

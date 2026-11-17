@@ -20,7 +20,10 @@
     <table id="sheet"></table>
     <script type="module">
       import { assets, getAsset } from "/src/assets/index.js";
+      import { setModelSource } from "/src/assets/kit/model.js";
       import { Viewer } from "/src/gallery/viewer.js";
+
+      setModelSource({ base: "/models/" }); // personnages : fichiers de public/models/
 
       const query = new URLSearchParams(location.search);
       const module = getAsset(query.get("asset")) ?? assets[0];
@@ -51,6 +54,7 @@
         row.append(Object.assign(document.createElement("th"), { textContent: variant.name }));
         for (const column of columns) {
           viewer.setAsset(module, { ...variant.params, seed: column.seed });
+          await viewer.ready;
           viewer.resetView(column.view);
           viewer.renderOnce(0);
           const image = new Image(WIDTH * scale, HEIGHT * scale);

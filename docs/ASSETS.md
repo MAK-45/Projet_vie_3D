@@ -122,6 +122,36 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 Les rampes de couleurs des matières communes sont dans `src/assets/kit/palettes.js`. Le détail par famille est
 dans `.claude/skills/create-asset/references/variation-axes.md`.
 
+## Assets importés : personnages et animations
+
+Exception au « tout en code » : les personnages humanoïdes et leurs animations viennent de fichiers glTF fournis
+par l'utilisateur, optimisés par `scripts/prepare-models.mjs` (maillage simplifié à ~5 000 triangles, quantifié
+et compressé Meshopt ; texture de couleur 256 px ; animations sans maillage) et rangés dans `public/models/` :
+
+```
+public/models/
+  characters/<personnage>.glb (+ .png)   Héroïne, Héros, Mannequin — même squelette de 65 os (noms Unreal)
+  animations/ual-standard.glb            43 animations (Universal Animation Library), 1,1 Mo
+```
+
+- **Personnages** : `creatures/humanoid/<nom>` (paramètre `animation` pour la démonstration).
+- **Animations** : catégorie `animations` (déplacements, attitudes, gestes et actions, combat, magie), un fichier
+  par mouvement qui ne contient que sa fiche et la liste des clips joués (`kit/animation-asset.js`). Paramètres
+  communs : `character` (le corps qui joue le mouvement), `phase` (enchaînement complet ou un temps seul : s'asseoir,
+  rester assis, se relever), `path` (sur place ou en avançant, pour ce qui se déplace), `speed`, `cadence`
+  (12 images/s façon sprite, ou fluide). La graine décale le départ dans le cycle.
+- Retargeting (`kit/humanoid.js`) : seules les rotations des os passent d'un corps à l'autre ; bassin et racine
+  sont mis à l'échelle de la jambe du personnage. Toute animation au squelette « UE » (UAL, Quaternius) marche.
+- `create()` rend un groupe vide tout de suite, rempli au chargement : `await group.userData.ready`, puis à chaque
+  image `group.userData.update(secondes)`. `meta.imported: true`, `meta.files` liste les fichiers nécessaires.
+- Rendu : `createToonMaterial({ map, ramp })` — la rampe devient un filtre de lumière (ombre froide → couleur
+  peinte) posé sur la texture ; le skinning est géré par le matériau toon.
+- Fichiers : chargés par `fetch` relativement à la page (`models/...`, réglable par `setModelSource` de
+  `kit/model.js`) ; dans Node (catalogue, `check`), lus sur le disque. L'Artifact publie `dist-artifact/models/`
+  à côté de la page (liste prête dans `dist-artifact/models.json`, à passer en `files`) ; comme il ne sert pas le
+  type `.glb`, `npm run artifact` y convertit chaque modèle en glTF texte `.gltf.json` (+33 %), et la page le sait
+  par `<meta name="pv3d-model-format" content="gltf-json">`.
+
 ## Vérifier un asset
 
 - `npm run check [-- <id>]` : fiche complète, rangement, graine déterministe et qui change la forme, chaque

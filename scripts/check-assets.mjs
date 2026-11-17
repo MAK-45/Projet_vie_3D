@@ -2,10 +2,11 @@
 // contrat de docs/ASSETS.md — fiche complète, rangement, graine déterministe, variantes, matériaux, budget,
 // emprise. Sort en erreur (code 1) s'il reste un ✗ ; les ⚠ sont à regarder mais ne bloquent pas.
 
+import * as THREE from "three";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { ROOT } from "./catalog-lib.mjs";
+import { ROOT } from "./catalog-lib.mjs"; // règle aussi la source des fichiers de public/models/
 
 const registry = await import(pathToFileURL(path.join(ROOT, "src/assets/index.js")).href);
 const only = process.argv[2];
@@ -13,6 +14,8 @@ const BUDGET = { triangles: 5000, drawCalls: 3 };
 
 const catalogFile = path.join(ROOT, "public/catalog/catalog.json");
 const published = existsSync(catalogFile) ? JSON.parse(readFileSync(catalogFile, "utf8")).assets : [];
+
+const skinned = new THREE.Vector3();
 
 function measure(object) {
   const result = { triangles: 0, drawCalls: 0, radius: 0, top: -Infinity, bottom: Infinity, hash: 0, nan: false, materials: new Set() };
@@ -29,7 +32,8 @@ function measure(object) {
     const corner = geometry.attributes.aCorner;
     const scale = Math.hypot(e[0], e[1], e[2]);
     for (let i = 0; i < position.count; i++) {
-      const x0 = position.getX(i), y0 = position.getY(i), z0 = position.getZ(i);
+      let x0 = position.getX(i), y0 = position.getY(i), z0 = position.getZ(i);
+      if (child.isSkinnedMesh) ({ x: x0, y: y0, z: z0 } = child.getVertexPosition(i, skinned)); // pose du squelette
       const x = e[0] * x0 + e[4] * y0 + e[8] * z0 + e[12];
       const y = e[1] * x0 + e[5] * y0 + e[9] * z0 + e[13];
       const z = e[2] * x0 + e[6] * y0 + e[10] * z0 + e[14];
@@ -48,7 +52,13 @@ function measure(object) {
   return result;
 }
 
-function checkAsset(module) {
+/** Attend le chargement d'un asset importé (rien à attendre pour un asset dessiné en code). */
+async function ready(object) {
+  await object.userData.ready;
+  return object;
+}
+
+async function checkAsset(module) {
   const errors = [];
   const warnings = [];
   const meta = module.meta;
@@ -112,9 +122,10 @@ function checkAsset(module) {
   let base;
   try {
     const object = module.create({});
+    await object.userData.ready;
     base = measure(object);
     if (object.userData.asset?.id !== meta.id) error("group.userData.asset.id doit valoir meta.id");
-    const again = measure(module.create({}));
+    const again = measure(await ready(module.create({})));
     if (again.hash !== base.hash) error("non déterministe : deux create() identiques donnent deux formes (Math.random ? Date ?)");
     module.dispose(object);
   } catch (failure) {
@@ -123,16 +134,21 @@ function checkAsset(module) {
   }
   if (base.drawCalls === 0) error("create() ne contient aucun maillage");
 
-  const seeds = [1, 2, 3, 4, 5].map((seed) => measure(module.create({ seed })));
+  const seeds = [];
+  for (const seed of [1, 2, 3, 4, 5]) seeds.push(measure(await ready(module.create({ seed }))));
   const distinct = new Set(seeds.map((shape) => shape.hash)).size;
-  if (distinct === 1) error("la graine ne change rien : seed 1 à 5 donnent la même forme");
+  // Asset importé (meta.imported) : la graine décale l'animation, la forme au repos ne change pas.
+  if (meta.imported) {
+    if (!meta.files?.length) error("asset importé : meta.files doit lister ses fichiers de public/models/");
+    for (const file of meta.files ?? []) if (!existsSync(path.join(ROOT, "public/models", file))) error(`fichier manquant : public/models/${file}`);
+  } else if (distinct === 1) error("la graine ne change rien : seed 1 à 5 donnent la même forme");
   else if (distinct < 5) warn(`seulement ${distinct} formes différentes pour 5 graines`);
 
   const shapes = [base, ...seeds];
   for (const [name, spec] of enums) {
     for (const value of spec.values) {
       try {
-        shapes.push(measure(module.create({ [name]: value })));
+        shapes.push(measure(await ready(module.create({ [name]: value }))));
       } catch (failure) {
         error(`create({ ${name}: "${value}" }) échoue : ${failure.message}`);
       }
@@ -145,7 +161,7 @@ function checkAsset(module) {
     if (spec.type !== "number" && !(spec.type === "int" && name !== "seed")) continue;
     for (const value of [spec.min, spec.max]) {
       try {
-        extremes.push(measure(module.create({ [name]: value })));
+        extremes.push(measure(await ready(module.create({ [name]: value }))));
       } catch (failure) {
         error(`create({ ${name}: ${value} }) échoue : ${failure.message}`);
       }
@@ -171,9 +187,10 @@ function checkAsset(module) {
   const top = Math.max(...shapes.map((shape) => shape.top));
   const bottom = Math.min(...shapes.map((shape) => shape.bottom));
   const round = (value) => Math.round(value * 10) / 10;
-  if (radius > meta.footprint.radius * 1.08) warn(`emprise : l'asset atteint ${round(radius)} m de rayon, footprint.radius = ${meta.footprint.radius}`);
+  // Un personnage importé est mesuré dans sa pose de repos, bras en croix : seule sa hauteur compte.
+  if (radius > meta.footprint.radius * 1.08 && !meta.imported) warn(`emprise : l'asset atteint ${round(radius)} m de rayon, footprint.radius = ${meta.footprint.radius}`);
   if (top > meta.footprint.height * 1.08) warn(`emprise : l'asset monte à ${round(top)} m, footprint.height = ${meta.footprint.height}`);
-  if (radius < meta.footprint.radius * 0.6) warn(`emprise trop large : rayon réel ${round(radius)} m pour footprint.radius = ${meta.footprint.radius}`);
+  if (radius < meta.footprint.radius * 0.6 && !meta.imported) warn(`emprise trop large : rayon réel ${round(radius)} m pour footprint.radius = ${meta.footprint.radius}`);
   if (top < meta.footprint.height * 0.6) warn(`emprise trop haute : hauteur réelle ${round(top)} m pour footprint.height = ${meta.footprint.height}`);
   if (bottom < -0.3 && !meta.composite) warn(`l'asset descend à ${round(bottom)} m sous le sol : l'origine doit être au niveau du sol`);
 
@@ -199,7 +216,7 @@ if (modules.length === 0) {
 
 let failed = 0;
 for (const module of modules) {
-  const { errors, warnings, summary } = checkAsset(module);
+  const { errors, warnings, summary } = await checkAsset(module);
   console.log(`${errors.length ? "✗" : "✓"} ${module.meta.id ?? "(sans id)"}${summary ? ` — ${summary}` : ""}`);
   for (const text of errors) console.log(`    ✗ ${text}`);
   for (const text of warnings) console.log(`    ⚠ ${text}`);

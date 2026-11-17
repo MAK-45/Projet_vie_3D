@@ -34,7 +34,8 @@ fichiers) en anglais.
    le même, « Atelier Vie 3D » : https://claude.ai/artifact/C8NQjFucdBRX4bo9eT4Jim — `npm run artifact`, puis
    publier `dist-artifact/atelier-vie-3d.html` en passant ce lien comme `url` (sinon un nouvel Artifact est créé).
    Les mondes y sont aussi : un monde est un asset (catégorie « Mondes ») dont la fiche ouvre l'explorateur.
-   Un seul Artifact pour tout le projet.
+   Un seul Artifact pour tout le projet. Publier aussi les modèles importés : `files` = contenu de
+   `dist-artifact/models.json` (sinon personnages et animations restent vides).
 
 ## Organisation
 
@@ -49,12 +50,14 @@ src/
               Chaque monde est aussi rangé comme asset dans assets/worlds/ (catégorie « Mondes »).
   explorer/   l'explorateur d'un monde (classe Explorer) : réglages, promeneur de 1,80 m, caméras, heure, météo ;
               monté par la fiche de l'asset dans la galerie, et seul dans explorer.html pour les captures
-  creature/   (à venir) modèle, squelette/animations, actions (marcher, dormir, lancer un sort...)
+  creature/   (à venir) comportement de la créature dans un scénario ; ses corps et mouvements sont déjà des assets :
+              personnages importés (creatures/humanoid) et 26 animations (catégorie « Animations »), kit/humanoid.js
   script/     (à venir) moteur de scénario : timeline d'actions décidées à l'avance
   fx/         effets : ambient-life (papillons, graines au vent, lucioles la nuit) ; à venir, conversions pixelfx en 3D
               (docs/PIXELFX-3D.md)
 scripts/        catalogue, page Artifact, vérification d'assets, planche de contrôle, capture
 public/catalog/ GÉNÉRÉ et versionné : catalog.json + un module autonome par asset, pour les agents IA
+public/models/  modèles importés optimisés (personnages .glb + texture, bibliothèque d'animations) ; voir docs/ASSETS.md
 dev/            test.html (un asset plein écran, options dans l'URL), sheet.html (planche variantes × graines)
 vendor/pixelfx/ bibliothèque d'effets 2D (source des conversions), voir vendor/README.md
 .claude/skills/ create-asset et create-world (maison), threejs-*, grill-me, grilling, pixelfx

@@ -275,3 +275,16 @@ c'est ce fichier qui fait progresser les assets suivants.
 - Un asset posé en grand nombre (herbe, fleur, galet) doit rester sous quelques centaines de triangles.
 - Pas de texture : motifs procéduraux uniquement. Pas de géométrie cachée (fond d'un bloc posé au sol,
   intérieur d'un volume fermé).
+
+## 9. Modèles importés (personnages, animations)
+
+- Un modèle fourni par l'utilisateur ne se redessine pas : il passe par `scripts/prepare-models.mjs`, puis un
+  asset léger le décrit (`kit/animation-asset.js`). Voir `docs/ASSETS.md`, « Assets importés ».
+- Piège : `prune()` de gltf-transform supprime les UV d'un maillage dont le matériau n'a plus de texture. Garder
+  `prune({ keepAttributes: true })` quand la texture est rechargée à part.
+- Textures : 256 px et 64 couleurs suffisent (le personnage fait ~29 pixels de haut au zoom 1) ; éclaircir un peu
+  (`modulate`) car la rampe-filtre de lumière ne fait qu'assombrir.
+- Un personnage se lit à sa silhouette et à ses deux ou trois masses de couleur (peau, tenue) : les yeux et
+  sourcils se simplifient fort (~250 triangles chacun).
+- Vue iso de face : une pose assise ressemble à un buste penché ; juger un mouvement en vue de côté.
+- Retargeting : ne copier que les rotations ; les translations des os du mannequin déformeraient un autre corps.

@@ -164,7 +164,7 @@ function renderCard(entry) {
 }
 
 /** Vignettes : chaque asset est rendu une fois par une visionneuse hors écran, en pixel art. */
-function renderThumbnails() {
+async function renderThumbnails() {
   const pending = catalog.assets.filter((entry) => !thumbnails.has(entry.id));
   if (pending.length === 0) return;
   const thumbViewer = new Viewer(document.createElement("div"), { interactive: false });
@@ -172,9 +172,11 @@ function renderThumbnails() {
   thumbViewer.resize(144, 168, 1);
   for (const entry of pending) {
     thumbViewer.setAsset(getAsset(entry.id), {});
+    await thumbViewer.ready; // personnages : attendre le modèle
     thumbViewer.resetView();
     thumbViewer.renderOnce(0);
     thumbnails.set(entry.id, thumbViewer.canvas.toDataURL("image/png"));
+    for (const image of document.querySelectorAll(`[data-thumb="${CSS.escape(entry.id)}"]`)) image.src = thumbnails.get(entry.id);
   }
   thumbViewer.dispose();
   for (const image of document.querySelectorAll("[data-thumb]")) {
@@ -524,7 +526,14 @@ function renderFactsTab(entry) {
       h("dt", {}, "Fichier"),
       h("dd", {}, h("span", { class: "path" }, entry.path)),
       h("dt", {}, "Poids"),
-      h("dd", {}, `source ${formatKb(entry.bytes.source)} · module autonome ${formatKb(entry.bytes.standalone)} · aucune texture, aucun fichier à charger`),
+      h(
+        "dd",
+        {},
+        `source ${formatKb(entry.bytes.source)} · module autonome ${formatKb(entry.bytes.standalone)} · `,
+        entry.files?.length
+          ? ["modèle importé, fichiers de ", h("span", { class: "path" }, "public/models/"), " : ", entry.files.join(", ")]
+          : "aucune texture, aucun fichier à charger",
+      ),
       h("dt", {}, "Version"),
       h("dd", {}, `${entry.version} · ajouté le ${new Date(entry.added).toLocaleDateString("fr-FR")}`),
     ),
@@ -542,7 +551,24 @@ function renderFactsTab(entry) {
 function renderAgentsTab(entry) {
   const given = Object.entries(state.params).filter(([name, value]) => value !== entry.params[name]?.default);
   const args = given.length ? `{ ${given.map(([name, value]) => `${name}: ${JSON.stringify(value)}`).join(", ")} }` : "";
-  const usage = `import * as THREE from "three"; // three@${catalog.three}
+  const usage = entry.imported
+    ? `import * as THREE from "three"; // three@${catalog.three} (+ three/addons : chargeur glTF)
+import { create, tick, dispose } from "./${entry.slug}.js";
+import { setModelSource } from "./model.js"; // si les fichiers ne sont pas dans ./models/
+
+// Fichiers à servir à côté de la page, dans models/ : ${entry.files.join(", ")}
+const object = create(${args}); // THREE.Group vide, rempli quand le modèle est chargé
+scene.add(object);
+await object.userData.ready;
+
+// à chaque image : fait avancer l'animation (secondes écoulées depuis l'image précédente)
+object.userData.update(deltaSeconds);
+tick(elapsedSeconds);
+
+// quand l'objet n'est plus utile
+scene.remove(object);
+dispose(object);`
+    : `import * as THREE from "three"; // three@${catalog.three}
 import { create, tick, dispose } from "./${entry.slug}.js";
 
 const object = create(${args}); // THREE.Group, origine au sol
