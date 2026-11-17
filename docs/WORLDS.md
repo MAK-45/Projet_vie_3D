@@ -156,7 +156,7 @@ au-dessus de lui, qui regarde loin devant : on voit le décor en face de soi, su
   brume : leur arrivée ne se voit pas) ; la fenêtre de recherche passe de ±7 à ±17 morceaux.
 - **Mesures, vue à 250 m** (tout chargé) : téléphone 412 × 915 : ≈ 140 draw calls, ≈ 530 000 triangles,
   ≈ 285 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 1 000 000 triangles, ≈ 380 morceaux (≈ 28 Mo).
-- **Mesures, vue à 150 m** (validée à 60 fps sur téléphone par l'utilisateur) (navigateur de capture, prairie infinie, à l'arrêt) : téléphone 412 × 915 : ≈ 96 draw
+- **Mesures, vue à 150 m** (jugée fluide sur téléphone par l'utilisateur) (navigateur de capture, prairie infinie, à l'arrêt) : téléphone 412 × 915 : ≈ 96 draw
   calls, ≈ 320 000 triangles, ≈ 165 morceaux ; écran large 1280 × 720 : ≈ 150 draw calls, ≈ 610 000 triangles,
   ≈ 195 morceaux. Portée en cours de réglage avec des mesures de fps sur téléphone.
 - **Mesures, ancienne vue à 85 m** (à l'arrêt et en marchant) : téléphone en hauteur 412 × 915 :
