@@ -4866,7 +4866,7 @@ function createPlacer(heightAt) {
 // src/worlds/summer-meadow-endless.js
 var HALF = TILE / 2;
 var smoothstep2 = THREE22.MathUtils.smoothstep;
-var WINDOW = 7;
+var WINDOW = 10;
 var NEED_MARGIN = 9;
 var PREFETCH_MARGIN = 20;
 var KEEP_MARGIN = 36;
