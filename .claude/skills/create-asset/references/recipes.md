@@ -364,3 +364,23 @@ c'est ce fichier qui fait progresser les assets suivants.
   un objet pile dans l'axe de la caméra derrière une colonne disparaît ; le décaler.
 - **Doublons de tags** : un mot identique en français et en anglais (« niche », « architecture ») fait échouer
   `check` ; prendre un synonyme anglais.
+
+### Le Complexe, lot 2 : lumière et réseaux (lampe, lustre, tuyau, valve, câbles)
+
+- **Ampoules qui scintillent** : `createFlicker` (kit) sur un maillage `glowMixMaterial(glowLevels(couleur))` à 4
+  niveaux ; une plage de sommets par ampoule, niveau de base tiré de la graine (quelques faibles ou mortes dans un
+  lustre), paliers lents (≈ 4/s) ; mis à jour dans `updateMatrixWorld` quand le temps partagé change.
+- **Halo** (option `halo`, désactivée par défaut) : `createGlowLight` placé au centre de l'ampoule ; dans le noir, deux
+  lampes suffisent à donner l'ambiance du Complexe (flaques d'ambre tramées sur la pierre). 4 places pour toute la
+  scène : c'est le monde qui choisira lesquelles allumer.
+- **Suspendu, origine au sol** : `height` = hauteur de l'ampoule (ou du cercle), la chaîne monte jusqu'à une rosace.
+  Le monde règle `height` et `chain` selon le plafond.
+- **Cuivre** : avec les seuils par défaut, le ton rose (frottements) couvre tout le dessus ; `steps: [0.28, 0.46,
+  0.68, 0.95]` le réserve aux reflets (option `steps` de `metalMaterial`). Coulures = bandes d'un pixel le long du
+  tube (`uv.y` de `buildTube` = distance parcourue en mètres), sur le bas et les flancs seulement.
+- **Pièce qui tourne sans draw call de plus** : l'aiguille d'un cadran est dans le maillage du corps, en dernier
+  (ses sommets à la fin), réécrite sur le CPU à chaque changement ; le volant, lui, est un maillage à part qui tourne
+  (`rotation.y` autour de la tige). Une jante ronde reste dans le corps : elle ne change pas en tournant.
+- **Graine trop discrète** (`check` : « seulement 3 formes pour 5 graines ») : décaler aussi une position (colliers
+  posés à la main ± 8 cm), pas seulement des tons.
+- Piège : un commentaire `//` ajouté en bout de ligne par un remplacement automatique avale la fin de l'expression.

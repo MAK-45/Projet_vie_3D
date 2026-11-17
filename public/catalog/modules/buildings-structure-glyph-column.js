@@ -1077,12 +1077,12 @@ function stoneMaterial(entry, { seed = 0, id = 20, grain = 0.06, crease = true }
     id
   });
 }
-function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed = 0, tone = false } = {}) {
+function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed = 0, tone = false, steps } = {}) {
   const five = entry.ramp.length === 5;
   return createToonMaterial({
     ramp: entry.ramp,
     ink: entry.ink,
-    steps: five ? [0.28, 0.46, 0.68, 0.9] : [0.3, 0.52, 0.76],
+    steps: steps ?? (five ? [0.28, 0.46, 0.68, 0.9] : [0.3, 0.52, 0.76]),
     pattern: grain > 0 ? "speckle" : "none",
     patternParams: [16, grain, 0.18, 0.5],
     seed,

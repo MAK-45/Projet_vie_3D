@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 50381
+        "standalone": 50399
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 55871
+        "standalone": 55889
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 57841
+        "standalone": 57859
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 43632
+        "standalone": 43650
       }
     },
     {
@@ -10691,7 +10691,935 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 61799
+        "standalone": 61817
+      }
+    },
+    {
+      "id": "furniture/lighting/filament-lamp",
+      "name": "Lampe à filament",
+      "nameEn": "Filament cage lamp",
+      "category": "furniture",
+      "subcategory": "lighting",
+      "description": "Lampe du Complexe : une ampoule ronde ambre dans une cage de huit barreaux de bronze, au chapeau conique ; suspendue à une chaîne ou en applique sur une console murale. Le filament scintille lentement par paliers ; allumée, en veille ou éteinte ; peut éclairer le décor dans le noir. Fiches SAS-05, GAL-05.",
+      "tags": [
+        "lampe",
+        "ampoule",
+        "filament",
+        "cage",
+        "applique",
+        "suspension",
+        "chaîne",
+        "bronze",
+        "ambre",
+        "scintillement",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "éclairage",
+        "lumineux",
+        "animé",
+        "intérieur",
+        "lamp",
+        "light bulb",
+        "cage lamp",
+        "wall sconce",
+        "pendant lamp",
+        "amber",
+        "flicker",
+        "ancient complex",
+        "ancient-tech",
+        "lighting",
+        "glowing",
+        "animated",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, à l'aplomb de l'ampoule (suspendue) ou au pied du mur (applique : le mur est en z = 0, la lampe avance vers +z) ; `height` = hauteur de l'ampoule",
+      "footprint": {
+        "radius": 0.5,
+        "height": 4.2
+      },
+      "animated": [
+        "flicker",
+        "glow"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le galbe de la cage, un barreau tordu ou manquant, le ton du bronze, le rythme du scintillement."
+        },
+        "mount": {
+          "type": "enum",
+          "default": "hanging",
+          "values": [
+            "hanging",
+            "wall"
+          ],
+          "labels": {
+            "hanging": "Suspendue (chaîne)",
+            "wall": "Applique murale"
+          },
+          "label": "Pose",
+          "description": "Suspendue à une chaîne (Sas), ou applique sur une console murale (Galerie, une par travée)."
+        },
+        "state": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumée",
+            "dim": "En veille",
+            "off": "Éteinte"
+          },
+          "label": "État",
+          "description": "Allumée (scintillement lent), en veille (lueur faible) ou éteinte (verre ambre sombre)."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan",
+            "alarm"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan",
+            "alarm": "Rouge d'alerte"
+          },
+          "label": "Lueur",
+          "description": "Couleur du filament."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "Éclaire le décor autour d'elle dans le noir (lumière de halo : 4 pour toute la scène)."
+        },
+        "height": {
+          "type": "number",
+          "default": 2.6,
+          "min": 1.2,
+          "max": 12,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur de l'ampoule au-dessus du sol (2,6 m pour une applique de Galerie)."
+        },
+        "chain": {
+          "type": "number",
+          "default": 1.2,
+          "min": 0.2,
+          "max": 4,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Chaîne",
+          "description": "Longueur de la chaîne au-dessus de la cage (lampe suspendue)."
+        }
+      },
+      "variants": [
+        {
+          "id": "hanging",
+          "name": "Suspendue (chaîne)",
+          "params": {
+            "mount": "hanging"
+          }
+        },
+        {
+          "id": "wall",
+          "name": "Applique murale",
+          "params": {
+            "mount": "wall"
+          }
+        }
+      ],
+      "slug": "furniture-lighting-filament-lamp",
+      "path": "src/assets/furniture/lighting/filament-lamp.js",
+      "module": "public/catalog/modules/furniture-lighting-filament-lamp.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 900,
+          "vertices": 1763,
+          "drawCalls": 2
+        },
+        "hanging": {
+          "triangles": 900,
+          "vertices": 1763,
+          "drawCalls": 2
+        },
+        "wall": {
+          "triangles": 680,
+          "vertices": 1323,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 8642,
+        "standalone": 48262
+      }
+    },
+    {
+      "id": "furniture/lighting/filament-chandelier",
+      "name": "Lustre à filaments",
+      "nameEn": "Filament chandelier",
+      "category": "furniture",
+      "subcategory": "lighting",
+      "description": "Lustre du Complexe : un cercle de bronze qui porte des ampoules ambre scintillantes, pendu à des chaînes. Lanterne des Archives (6 ampoules, coupelle de verre), grand lustre de la Rotonde (3 m, 24 ampoules) ou anneau de voûte de l'Oracle (12 ampoules) ; allumé, en veille ou éteint ; peut éclairer le décor dans le noir. Fiches ARC-16, GAL-12, ORA-13.",
+      "tags": [
+        "lustre",
+        "lanterne",
+        "suspension",
+        "ampoules",
+        "filament",
+        "chaînes",
+        "anneau",
+        "bronze",
+        "ambre",
+        "scintillement",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "éclairage",
+        "lumineux",
+        "animé",
+        "intérieur",
+        "chandelier",
+        "lantern",
+        "pendant light",
+        "light bulbs",
+        "chains",
+        "light ring",
+        "amber",
+        "flicker",
+        "ancient complex",
+        "ancient-tech",
+        "lighting",
+        "glowing",
+        "animated",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, à l'aplomb du centre ; `height` = hauteur du cercle d'ampoules",
+      "footprint": {
+        "radius": 1.6,
+        "height": 6.1
+      },
+      "animated": [
+        "flicker",
+        "glow"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les ampoules faibles ou mortes, le rythme des scintillements, la légère gîte du cercle, les tons du bronze."
+        },
+        "model": {
+          "type": "enum",
+          "default": "lantern",
+          "values": [
+            "lantern",
+            "rotunda",
+            "vaultRing"
+          ],
+          "labels": {
+            "lantern": "Lanterne (Archives)",
+            "rotunda": "Grand lustre (Rotonde)",
+            "vaultRing": "Anneau de voûte (Oracle)"
+          },
+          "label": "Modèle",
+          "description": "Lanterne à 6 ampoules et coupelle de verre, grand lustre de 3 m à 24 ampoules, ou anneau de voûte à 12 ampoules."
+        },
+        "state": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumé",
+            "dim": "En veille",
+            "off": "Éteint"
+          },
+          "label": "État",
+          "description": "Allumé (scintillement lent), en veille (lueur faible) ou éteint."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan",
+            "alarm"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan",
+            "alarm": "Rouge d'alerte"
+          },
+          "label": "Lueur",
+          "description": "Couleur des filaments."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "Éclaire le décor autour de lui dans le noir (lumière de halo : 4 pour toute la scène)."
+        },
+        "height": {
+          "type": "number",
+          "default": 3,
+          "min": 2,
+          "max": 12,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du cercle d'ampoules au-dessus du sol."
+        },
+        "chain": {
+          "type": "number",
+          "default": 1.5,
+          "min": 0.3,
+          "max": 5,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Chaîne",
+          "description": "Longueur de la chaîne principale, jusqu'à la rosace du plafond."
+        }
+      },
+      "variants": [
+        {
+          "id": "lantern",
+          "name": "Lanterne (Archives)",
+          "params": {
+            "model": "lantern"
+          }
+        },
+        {
+          "id": "rotunda",
+          "name": "Grand lustre (Rotonde)",
+          "params": {
+            "model": "rotunda"
+          }
+        },
+        {
+          "id": "vaultRing",
+          "name": "Anneau de voûte (Oracle)",
+          "params": {
+            "model": "vaultRing"
+          }
+        }
+      ],
+      "slug": "furniture-lighting-filament-chandelier",
+      "path": "src/assets/furniture/lighting/filament-chandelier.js",
+      "module": "public/catalog/modules/furniture-lighting-filament-chandelier.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1208,
+          "vertices": 2194,
+          "drawCalls": 3
+        },
+        "lantern": {
+          "triangles": 1208,
+          "vertices": 2194,
+          "drawCalls": 3
+        },
+        "rotunda": {
+          "triangles": 4292,
+          "vertices": 7696,
+          "drawCalls": 2
+        },
+        "vaultRing": {
+          "triangles": 1520,
+          "vertices": 2596,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 11264,
+        "standalone": 50771
+      }
+    },
+    {
+      "id": "props/machines/copper-pipe",
+      "name": "Tuyau de cuivre",
+      "nameEn": "Copper pipe",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Tuyau de cuivre oxydé du Complexe, vert d'oxyde avec des coulures, en pièces de 2 m qui s'assemblent : droit, coude, raccord en T, bout bouché. Tuyau mural à colliers de bronze, ou tuyau géant à brides de laiton boulonnées ; contre un mur ou sur des berceaux. Fiches SAS-09, COE-07.",
+      "tags": [
+        "tuyau",
+        "conduite",
+        "canalisation",
+        "cuivre",
+        "oxyde",
+        "coude",
+        "raccord",
+        "bride",
+        "collier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "réseau",
+        "modulaire",
+        "intérieur",
+        "pipe",
+        "pipeline",
+        "copper",
+        "verdigris",
+        "elbow",
+        "tee",
+        "flange",
+        "pipe clamp",
+        "ancient complex",
+        "ancient-tech",
+        "network",
+        "modular",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol (au pied du mur pour la pose murale : le mur est en z = 0) ; l'axe court selon x de −1 à +1 à la hauteur `height` ; le coude et le T montent vers +y en x = 0",
+      "footprint": {
+        "radius": 1.4,
+        "height": 3.3
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la place des coulures, un collier manquant, un manchon de réparation, les tons du cuivre."
+        },
+        "piece": {
+          "type": "enum",
+          "default": "straight",
+          "values": [
+            "straight",
+            "elbow",
+            "tee",
+            "cap"
+          ],
+          "labels": {
+            "straight": "Droit (2 m)",
+            "elbow": "Coude à 90°",
+            "tee": "Raccord en T",
+            "cap": "Bout bouché"
+          },
+          "label": "Pièce",
+          "description": "Droit de 2 m, coude à 90° (qui monte), raccord en T (branche vers le haut) ou bout bouché."
+        },
+        "size": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "giant"
+          ],
+          "labels": {
+            "wall": "Tuyau mural (Ø 0,12 m)",
+            "giant": "Tuyau géant (Ø 0,8 m)"
+          },
+          "label": "Taille",
+          "description": "Tuyau mural du Sas (colliers de bronze) ou tuyau géant de la salle du Cœur (brides de laiton boulonnées)."
+        },
+        "mount": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "floor"
+          ],
+          "labels": {
+            "wall": "Contre un mur",
+            "floor": "Sur des berceaux au sol"
+          },
+          "label": "Pose",
+          "description": "Contre un mur (pattes de fixation vers z = 0) ou sur des berceaux au sol."
+        },
+        "height": {
+          "type": "number",
+          "default": 1.8,
+          "min": 0.2,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur de l'axe du tuyau."
+        }
+      },
+      "variants": [
+        {
+          "id": "straight",
+          "name": "Droit (2 m)",
+          "params": {
+            "piece": "straight"
+          }
+        },
+        {
+          "id": "elbow",
+          "name": "Coude à 90°",
+          "params": {
+            "piece": "elbow"
+          }
+        },
+        {
+          "id": "tee",
+          "name": "Raccord en T",
+          "params": {
+            "piece": "tee"
+          }
+        },
+        {
+          "id": "cap",
+          "name": "Bout bouché",
+          "params": {
+            "piece": "cap"
+          }
+        }
+      ],
+      "slug": "props-machines-copper-pipe",
+      "path": "src/assets/props/machines/copper-pipe.js",
+      "module": "public/catalog/modules/props-machines-copper-pipe.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 600,
+          "vertices": 817,
+          "drawCalls": 2
+        },
+        "straight": {
+          "triangles": 600,
+          "vertices": 817,
+          "drawCalls": 2
+        },
+        "elbow": {
+          "triangles": 468,
+          "vertices": 570,
+          "drawCalls": 2
+        },
+        "tee": {
+          "triangles": 804,
+          "vertices": 1037,
+          "drawCalls": 2
+        },
+        "cap": {
+          "triangles": 342,
+          "vertices": 413,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 10838,
+        "standalone": 49694
+      }
+    },
+    {
+      "id": "props/machines/wheel-valve",
+      "name": "Valve à volant",
+      "nameEn": "Wheel valve",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Valve du Complexe : volant de fonte à rayons sur une tige filetée, corps de bronze traversé par un tuyau de cuivre, petit cadran à aiguille. Murale (volant de 0,22 m) ou géante (roue de 0,9 m à jante de bronze, plaque numérotée). Le volant tourne et l'aiguille suit : réglage, boucle ou pilotage par le scénario. Fiches SAS-10, COE-08.",
+      "tags": [
+        "valve",
+        "vanne",
+        "volant",
+        "roue",
+        "tige filetée",
+        "cadran",
+        "aiguille",
+        "fonte",
+        "bronze",
+        "tuyau",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "machine",
+        "commande",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "wheel valve",
+        "gate valve",
+        "handwheel",
+        "threaded stem",
+        "gauge",
+        "needle",
+        "cast iron",
+        "pipe",
+        "ancient complex",
+        "ancient-tech",
+        "control",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol ; murale : au pied du mur (le mur est en z = 0, le volant regarde +z) ; géante : au centre du socle, le tuyau suit l'axe x",
+      "footprint": {
+        "radius": 0.95,
+        "height": 1.85
+      },
+      "animated": [
+        "valve"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'angle de repos du volant, l'aiguille, l'usure de la poignée, le numéro de la plaque, les tons."
+        },
+        "size": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "giant"
+          ],
+          "labels": {
+            "wall": "Murale (Ø 0,22 m)",
+            "giant": "Géante (roue de Ø 0,9 m)"
+          },
+          "label": "Taille",
+          "description": "Valve murale du Sas, ou valve géante de la salle du Cœur."
+        },
+        "turn": {
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "label": "Ouverture",
+          "description": "0 = fermée, 1 = ouverte (deux tours de volant) ; l'aiguille du cadran suit."
+        },
+        "state": {
+          "type": "enum",
+          "default": "still",
+          "values": [
+            "still",
+            "cycle"
+          ],
+          "labels": {
+            "still": "Immobile",
+            "cycle": "Tourne en boucle"
+          },
+          "label": "Mouvement",
+          "description": "Immobile, ou s'ouvre et se ferme en boucle (pour la regarder)."
+        },
+        "height": {
+          "type": "number",
+          "default": 1.2,
+          "min": 0.6,
+          "max": 3,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Valve murale : hauteur de l'axe du tuyau (commandes à 1,10–1,30 m)."
+        }
+      },
+      "variants": [
+        {
+          "id": "wall",
+          "name": "Murale (Ø 0,22 m)",
+          "params": {
+            "size": "wall"
+          }
+        },
+        {
+          "id": "giant",
+          "name": "Géante (roue de Ø 0,9 m)",
+          "params": {
+            "size": "giant"
+          }
+        }
+      ],
+      "slug": "props-machines-wheel-valve",
+      "path": "src/assets/props/machines/wheel-valve.js",
+      "module": "public/catalog/modules/props-machines-wheel-valve.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 980,
+          "vertices": 1892,
+          "drawCalls": 3
+        },
+        "wall": {
+          "triangles": 980,
+          "vertices": 1892,
+          "drawCalls": 3
+        },
+        "giant": {
+          "triangles": 1840,
+          "vertices": 3456,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 14146,
+        "standalone": 50870
+      }
+    },
+    {
+      "id": "props/machines/braided-cable",
+      "name": "Câbles tressés",
+      "nameEn": "Braided cables",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Câbles de tissu goudronné du Complexe, à connecteurs de bronze : fin, d'étude (étiquettes claires), ombilical (manchons de laiton) ou principal (colliers de bronze) ; pendus en chaînette, posés au sol ou en faisceau sanglé avec une boucle de rangement. Traçables par points de passage (createRoute). Fiches SAS-11, ETU-07, COE-14, ORA-11.",
+      "tags": [
+        "câble",
+        "câbles",
+        "faisceau",
+        "gaine",
+        "tissu goudronné",
+        "connecteur",
+        "manchon",
+        "étiquette",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "réseau",
+        "instruments",
+        "intérieur",
+        "cable",
+        "cables",
+        "cable bundle",
+        "braided",
+        "tarred cloth",
+        "connector",
+        "sleeve",
+        "label",
+        "ancient complex",
+        "ancient-tech",
+        "network",
+        "wiring",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-17",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu du tracé ; les bouts sont en x = ±longueur/2",
+      "footprint": {
+        "radius": 1.9,
+        "height": 2.6
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le tracé (serpentin, flèche), le nombre de câbles du faisceau, la boucle de rangement, la place des étiquettes."
+        },
+        "gauge": {
+          "type": "enum",
+          "default": "fine",
+          "values": [
+            "fine",
+            "study",
+            "umbilical",
+            "main"
+          ],
+          "labels": {
+            "fine": "Fin (Ø 6 cm)",
+            "study": "D'étude (Ø 12 cm, étiquettes)",
+            "umbilical": "Ombilical (Ø 18 cm, manchons de laiton)",
+            "main": "Principal (Ø 25 cm, colliers de bronze)"
+          },
+          "label": "Calibre",
+          "description": "Câble fin du Sas, câble d'étude, câble ombilical de l'Oracle ou câble principal du Cœur."
+        },
+        "layout": {
+          "type": "enum",
+          "default": "hanging",
+          "values": [
+            "hanging",
+            "floor",
+            "bundle"
+          ],
+          "labels": {
+            "hanging": "Pendu en chaînette",
+            "floor": "Posé au sol",
+            "bundle": "Faisceau au sol"
+          },
+          "label": "Tracé",
+          "description": "Pendu entre deux points d'accroche, posé au sol, ou faisceau de 3 à 5 câbles sanglés."
+        },
+        "length": {
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 10,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Longueur",
+          "description": "Distance entre les deux bouts."
+        },
+        "height": {
+          "type": "number",
+          "default": 2.2,
+          "min": 0.6,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Accroche",
+          "description": "Câble pendu : hauteur des deux points d'accroche."
+        }
+      },
+      "variants": [
+        {
+          "id": "hanging",
+          "name": "Pendu en chaînette",
+          "params": {
+            "layout": "hanging"
+          }
+        },
+        {
+          "id": "floor",
+          "name": "Posé au sol",
+          "params": {
+            "layout": "floor"
+          }
+        },
+        {
+          "id": "bundle",
+          "name": "Faisceau au sol",
+          "params": {
+            "layout": "bundle"
+          }
+        }
+      ],
+      "slug": "props-machines-braided-cable",
+      "path": "src/assets/props/machines/braided-cable.js",
+      "module": "public/catalog/modules/props-machines-braided-cable.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 368,
+          "vertices": 433,
+          "drawCalls": 2
+        },
+        "hanging": {
+          "triangles": 368,
+          "vertices": 433,
+          "drawCalls": 2
+        },
+        "floor": {
+          "triangles": 352,
+          "vertices": 423,
+          "drawCalls": 2
+        },
+        "bundle": {
+          "triangles": 1204,
+          "vertices": 1312,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 11346,
+        "standalone": 49780
       }
     },
     {

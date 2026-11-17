@@ -469,7 +469,7 @@ export function bulb({ radius = PX, position = [0, 0, 0], segments = 6 } = {}) {
 }
 
 /** Repère local d'une pièce posée sur une face : origine `position`, face tournée vers `normal`, `spin` autour d'elle. */
-function faceMatrix(position, normal, spin = 0) {
+export function faceMatrix(position, normal, spin = 0) {
   const z = toVector(normal).clone().normalize();
   const up = Math.abs(z.y) > 0.99 ? new THREE.Vector3(0, 0, -1) : new THREE.Vector3(0, 1, 0);
   const x = new THREE.Vector3().crossVectors(up, z).normalize();
@@ -482,7 +482,8 @@ function faceMatrix(position, normal, spin = 0) {
 
 /**
  * Cadran rond posé sur une face : `face` (le disque, en laiton ou en verre) et `marks` (repères tout autour et
- * aiguille, à dessiner d'un ton contrasté ou en lueur). `needle` : angle de l'aiguille (radians, 0 = midi).
+ * aiguille, à dessiner d'un ton contrasté ou en lueur). `needle` : angle de l'aiguille (radians, 0 = midi) ; `null` :
+ * pas d'aiguille (l'asset la dessine et l'anime lui-même).
  */
 export function dial({ radius = 2 * PX, position = [0, 0, 0], normal = [0, 0, 1], ticks = 8, needle = 0, depth = PX * 0.5 } = {}) {
   const m = faceMatrix(position, normal);
@@ -498,7 +499,7 @@ export function dial({ radius = 2 * PX, position = [0, 0, 0], normal = [0, 0, 1]
     marks.push(buildBlock([tick * 0.6, tick, PX * 0.3], [Math.sin(a) * r, Math.cos(a) * r, depth + PX * 0.15], [0, 0, -a]));
   }
   const l = radius * 0.8;
-  marks.push(buildBlock([PX * 0.45, l, PX * 0.3], [(Math.sin(needle) * l) / 2, (Math.cos(needle) * l) / 2, depth + PX * 0.2], [0, 0, -needle]));
+  if (needle !== null) marks.push(buildBlock([PX * 0.45, l, PX * 0.3], [(Math.sin(needle) * l) / 2, (Math.cos(needle) * l) / 2, depth + PX * 0.2], [0, 0, -needle]));
   const markGeometry = mergeGeometries(marks);
   markGeometry.applyMatrix4(m);
   return { face: disc, marks: markGeometry };
@@ -570,12 +571,12 @@ export function stoneMaterial(entry, { seed = 0, id = 20, grain = 0.06, crease =
  * Métal du Complexe (bronze patiné, laiton noirci, cuivre oxydé, fonte) : rampe de 4 ou 5 tons ; avec 5, le dernier
  * ne sort que sur les faces les plus éclairées (arête polie, reflet d'un pixel).
  */
-export function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed = 0, tone = false } = {}) {
+export function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed = 0, tone = false, steps } = {}) {
   const five = entry.ramp.length === 5;
   return createToonMaterial({
     ramp: entry.ramp,
     ink: entry.ink,
-    steps: five ? [0.28, 0.46, 0.68, 0.9] : [0.3, 0.52, 0.76],
+    steps: steps ?? (five ? [0.28, 0.46, 0.68, 0.9] : [0.3, 0.52, 0.76]),
     pattern: grain > 0 ? "speckle" : "none",
     patternParams: [16, grain, 0.18, 0.5],
     seed,
@@ -602,4 +603,58 @@ export function glowMaterial(name = "amber", { level = 2, id = 40 } = {}) {
     outline: false,
     id,
   });
+}
+
+// --- Pièces orientées, lumières qui vivent ------------------------------------------------------------------------
+
+/** Tourne une géométrie construite autour de l'axe +y pour qu'elle suive `direction`, puis la pose en `position`. */
+export function orient(geometry, position, direction) {
+  const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), toVector(direction).clone().normalize());
+  geometry.applyQuaternion(q);
+  const p = toVector(position);
+  geometry.translate(p.x, p.y, p.z);
+  return geometry;
+}
+
+const hash2 = (a, b) => {
+  const s = Math.sin(a * 127.1 + b * 311.7) * 43758.5453;
+  return s - Math.floor(s);
+};
+
+/**
+ * Scintillement par paliers d'ampoules à filament, dans un maillage de lueurs `glowMixMaterial` à 4 couleurs (les
+ * niveaux 0 à 3 d'une rampe GLOWS) : chaque ampoule occupe une plage de sommets et a son niveau de base (0 éteinte,
+ * 1 faible, 2 allumée) ; de temps en temps elle baisse d'un cran ou s'avive. Rend `update(temps)` : à appeler quand
+ * le temps partagé change (12 images/s) ; rend vrai si un niveau a changé.
+ * @param {THREE.BufferGeometry} geometry géométrie qui porte `aShade`
+ * @param {Array<{start: number, count: number, base: number, phase: number}>} bulbs
+ */
+export function createFlicker(geometry, bulbs) {
+  const shade = geometry.attributes.aShade;
+  const current = bulbs.map(() => -1);
+  const update = (time) => {
+    let changed = false;
+    bulbs.forEach((b, i) => {
+      let level = b.base;
+      if (b.base > 0) {
+        // Paliers lents (≈ 4 par seconde), décalés d'une ampoule à l'autre ; une baisse brève est plus rare qu'un éclat.
+        const r = hash2(Math.floor(time * 4 + b.phase * 13), b.phase * 91 + i);
+        if (r < 0.07) level = b.base - 1;
+        else if (r > 0.86) level = Math.min(3, b.base + 1);
+      }
+      if (level === current[i]) return;
+      current[i] = level;
+      changed = true;
+      shade.array.fill((level + 0.5) / 4, b.start, b.start + b.count);
+    });
+    if (changed) shade.needsUpdate = true;
+    return changed;
+  };
+  update(0);
+  return update;
+}
+
+/** Les quatre niveaux (0 éteint à 3 vif) d'une lueur GLOWS, pour `glowMixMaterial` et `createFlicker`. */
+export function glowLevels(name) {
+  return [0, 1, 2, 3].map((level) => [name, level]);
 }

@@ -57,6 +57,11 @@ import * as glyphWall from "./buildings/structure/glyph-wall.js";
 import * as glyphColumn from "./buildings/structure/glyph-column.js";
 import * as cofferedVault from "./buildings/structure/coffered-vault.js";
 import * as complexDoor from "./buildings/structure/complex-door.js";
+import * as filamentLamp from "./furniture/lighting/filament-lamp.js";
+import * as filamentChandelier from "./furniture/lighting/filament-chandelier.js";
+import * as copperPipe from "./props/machines/copper-pipe.js";
+import * as wheelValve from "./props/machines/wheel-valve.js";
+import * as braidedCable from "./props/machines/braided-cable.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
@@ -65,6 +70,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
   starPortal, starPortalDial,
   glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
+  filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
   summerMeadow,
 ];
 
