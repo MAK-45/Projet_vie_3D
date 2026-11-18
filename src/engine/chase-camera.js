@@ -158,15 +158,17 @@ export class ChaseCamera {
 
     // Recul : raccourci si un tronc est sur le chemin (on cherche la première place libre, du promeneur vers la
     // caméra), puis lissé pour ne pas sauter.
+    // Par pas courts (40 cm au plus) : un mur de 60 cm ne doit pas passer entre deux sondes.
     let reach = this.distance;
-    for (let step = 1; step <= 4; step++) {
-      const d = (this.distance * step) / 4;
+    const steps = Math.max(4, Math.ceil(this.distance / 0.4));
+    for (let step = 1; step <= steps; step++) {
+      const d = (this.distance * step) / steps;
       _probe.copy(this.pivot).addScaledVector(_offset, d);
       const x = _probe.x;
       const z = _probe.z;
       world.collide(_probe, 0.35);
       if (Math.abs(_probe.x - x) + Math.abs(_probe.z - z) > 1e-4) {
-        reach = Math.max(MIN_DISTANCE * 0.6, d - this.distance / 4);
+        reach = Math.max(MIN_DISTANCE * 0.6, d - this.distance / steps);
         break;
       }
     }
@@ -177,6 +179,9 @@ export class ChaseCamera {
     // Jamais sous le sol : on remonte la caméra (une bosse derrière le promeneur), le regard reste sur lui.
     const ground = world.heightAt(camera.position.x, camera.position.z) + GROUND_CLEARANCE;
     if (camera.position.y < ground) camera.position.y = ground;
+    // Sous le plafond d'un intérieur.
+    const ceiling = world.ceilingAt?.(camera.position.x, camera.position.z) ?? Infinity;
+    if (camera.position.y > ceiling - 0.35) camera.position.y = ceiling - 0.35;
     // Le regard vise un point devant le pivot (et un peu plus bas), pour voir loin devant soi.
     _probe.copy(this.pivot).addScaledVector(_offset, -2.5);
     _probe.y = this.pivot.y - 0.45;

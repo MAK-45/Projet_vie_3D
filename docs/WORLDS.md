@@ -269,12 +269,20 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
 - **Vue en coupe** (moteur : `enableCutaway`, `setCutaway`) : règle portée par l'origine de chaque copie. Murs,
   portes, piliers coupés à 1,20 m quand ils sont entre le promeneur et la caméra ; ce qui y est accroché (casiers,
   plaques, appliques, tuyaux) et les lampes suspendues disparaissent. Actif en vue isométrique seulement.
-- **Lumière** : une lumière de service venue d'en haut (élévation 62°) ; les 3 lampes les plus proches du promeneur
-  prennent une lumière de halo (la 4e reste aux personnages qui brillent). « Nuit » : les lampes seules.
+- **Lumière** : lieu clos, donc toujours la nuit (le réglage « Moment » est masqué) : seules les lampes éclairent.
+  Le moteur a 12 lumières de halo (`GLOW_LIGHT_COUNT`) ; 11 vont aux lampes près du point regardé (devant la caméra en
+  3e personne), d'abord celles dans le champ ; la 12e reste aux personnages qui brillent. La source d'une lampe
+  suspendue est posée 0,8 m sous l'ampoule pour que la flaque tombe au sol ; force 0,62 pour que les flaques voisines
+  ne se fondent pas en un aplat orange.
+- **Plafond** : voûtes à caissons sur chaque case, à la hauteur de la pièce, montrées seulement à la 3e personne
+  (`setThirdPerson`) ; un crochet là où pend une lampe ; sans ombre portée. La caméra suiveuse reste sous le plafond
+  (`ceilingAt`) et sonde les obstacles par pas de 40 cm (un mur ne passe plus entre deux sondes).
+- **Départ** : au milieu du Sas, face au nord (`spawnHeading`), vers la porte des Archives.
 - **Praticable** : collisions en boîtes (murs, piliers, meubles, portes fermées) ; les portes entre deux pièces
   s'ouvrent à l'approche ; la balade automatique passe de pièce en pièce par les portes (`strollTarget`).
 - **Explorateur** : générique (`src/explorer/worlds.js` : une fiche par monde) ; `explorer.html?world=worlds/interiors/complex-test`.
   Intérieur : ni pluie, ni vent, ni papillons, fond sombre.
-- **Mesures** (capture logicielle, téléphone, balade de 60 s) : 105 à 147 draw calls, 225 000 à 275 000 triangles
-  par image (passe d'ombre comprise). Au-dessus de la cible de 100 draw calls : le vrai monde montrera une pièce et
+- **Mesures** (capture logicielle, téléphone, balade de 60 s) : en vue isométrique 105 à 147 draw calls, 225 000 à
+  275 000 triangles par image (passe d'ombre comprise) ; à la 3e personne (plafond compris) 57 à 119 draw calls,
+  225 000 à 320 000 triangles. Au-dessus de la cible de 100 draw calls : le vrai monde montrera une pièce et
   ses voisines seulement, et regroupera les petits modèles.

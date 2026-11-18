@@ -4,13 +4,13 @@
 // - `InteriorKit` : chaque asset « modèle » (identifiant + réglages) est créé une fois ; ses copies posées deviennent
 //   un `InstancedMesh` par maillage du modèle. Cent dalles ou quarante murs du même modèle coûtent les draw calls
 //   d'une seule. Chaque modèle dit comment il se coupe (vue en coupe : `enableCutaway` du moteur).
-// - `createHaloPool` : des dizaines de lampes, mais 4 lumières de halo dans le moteur ; on prête les places libres
+// - `createHaloPool` : des dizaines de lampes, mais 12 lumières de halo dans le moteur ; on prête les places libres
 //   aux lampes les plus proches du promeneur.
 // - `BoxColliders` : murs, piliers et meubles en boîtes alignées sur les axes (le Complexe est orthogonal), portes
 //   qui ne bloquent que fermées.
 
 import * as THREE from "three";
-import { createGlowLight, disposeObject, enableCutaway, rgb } from "../../engine/toon-material.js";
+import { createGlowLight, disposeObject, enableCutaway, GLOW_LIGHT_COUNT, rgb } from "../../engine/toon-material.js";
 
 const _matrix = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -115,21 +115,40 @@ export class InteriorKit {
 }
 
 /**
- * Prête les lumières de halo du moteur aux lampes les plus proches.
+ * Prête les lumières de halo du moteur aux lampes les plus utiles : celles près du point regardé (devant la caméra
+ * en 3e personne), et, à distance égale, celles qui sont dans le champ.
  * @param {Array<{position: THREE.Vector3, color: string, radius: number, strength?: number}>} sources
- * @param {number} [slots] places prises (le moteur en a 4 ; en laisser une aux personnages qui brillent)
+ * @param {number} [slots] places prises (en laisser une aux personnages qui brillent)
  */
-export function createHaloPool(sources, slots = 3) {
+export function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
   const lights = Array.from({ length: Math.min(slots, sources.length) }, () => createGlowLight());
   const colors = sources.map((source) => rgb(source.color));
-  let last = -1;
+  const score = new Float32Array(sources.length);
   const order = sources.map((_, i) => i);
+  const frustum = new THREE.Frustum();
+  const viewProjection = new THREE.Matrix4();
+  const sphere = new THREE.Sphere();
+  let last = -1;
   return {
-    /** Réattribue les places (4 fois par seconde suffit) aux sources les plus proches de `target`. */
-    update(target, time) {
+    /**
+     * Réattribue les places (4 fois par seconde) autour de `focus`.
+     * @param {THREE.Vector3} focus point regardé
+     * @param {number} time secondes
+     * @param {THREE.Camera} [camera] pour préférer les lampes dans le champ
+     */
+    update(focus, time, camera) {
       if (Math.floor(time * 4) === last) return;
       last = Math.floor(time * 4);
-      order.sort((a, b) => sources[a].position.distanceToSquared(target) - sources[b].position.distanceToSquared(target));
+      if (camera) {
+        viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+        frustum.setFromProjectionMatrix(viewProjection);
+      }
+      for (let i = 0; i < sources.length; i++) {
+        const source = sources[i];
+        const seen = !camera || frustum.intersectsSphere(sphere.set(source.position, source.radius));
+        score[i] = source.position.distanceTo(focus) + (seen ? 0 : 30);
+      }
+      order.sort((a, b) => score[a] - score[b]);
       lights.forEach((light, k) => {
         const source = sources[order[k]];
         light.set(source.position, colors[order[k]], source.radius, source.strength ?? 1.1);

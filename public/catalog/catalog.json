@@ -192,7 +192,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 42545
+      "bytes": 42953
     }
   ],
   "assets": [
@@ -356,7 +356,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 50655
+        "standalone": 50837
       }
     },
     {
@@ -525,7 +525,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 51552
+        "standalone": 51734
       }
     },
     {
@@ -697,7 +697,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 53065
+        "standalone": 53247
       }
     },
     {
@@ -898,7 +898,7 @@
       },
       "bytes": {
         "source": 6490,
-        "standalone": 54448
+        "standalone": 54630
       }
     },
     {
@@ -1101,7 +1101,7 @@
       },
       "bytes": {
         "source": 6458,
-        "standalone": 55510
+        "standalone": 55692
       }
     },
     {
@@ -1235,7 +1235,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 43335
+        "standalone": 43517
       }
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 43241
+        "standalone": 43423
       }
     },
     {
@@ -1555,7 +1555,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 45487
+        "standalone": 45669
       }
     },
     {
@@ -1738,7 +1738,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 46636
+        "standalone": 46818
       }
     },
     {
@@ -1937,7 +1937,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 52936
+        "standalone": 53118
       }
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 46420
+        "standalone": 46602
       }
     },
     {
@@ -2382,7 +2382,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 51215
+        "standalone": 51397
       }
     },
     {
@@ -2530,7 +2530,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 43551
+        "standalone": 43733
       }
     },
     {
@@ -2690,7 +2690,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 44561
+        "standalone": 44743
       }
     },
     {
@@ -2833,7 +2833,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 41403
+        "standalone": 41585
       }
     },
     {
@@ -2996,7 +2996,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 42281
+        "standalone": 42463
       }
     },
     {
@@ -3474,7 +3474,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 67324
+        "standalone": 67460
       }
     },
     {
@@ -3664,7 +3664,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 57416
+        "standalone": 57552
       }
     },
     {
@@ -3854,7 +3854,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 57362
+        "standalone": 57498
       }
     },
     {
@@ -4042,7 +4042,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 57376
+        "standalone": 57512
       }
     },
     {
@@ -4375,7 +4375,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 57955
+        "standalone": 58091
       }
     },
     {
@@ -4564,7 +4564,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 56330
+        "standalone": 56466
       }
     },
     {
@@ -4752,7 +4752,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 56418
+        "standalone": 56554
       }
     },
     {
@@ -4940,7 +4940,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 56378
+        "standalone": 56514
       }
     },
     {
@@ -5128,7 +5128,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 56347
+        "standalone": 56483
       }
     },
     {
@@ -5318,7 +5318,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 56429
+        "standalone": 56565
       }
     },
     {
@@ -5512,7 +5512,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 56653
+        "standalone": 56789
       }
     },
     {
@@ -5700,7 +5700,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 56338
+        "standalone": 56474
       }
     },
     {
@@ -5888,7 +5888,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 56324
+        "standalone": 56460
       }
     },
     {
@@ -6074,7 +6074,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 56375
+        "standalone": 56511
       }
     },
     {
@@ -6248,7 +6248,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 56310
+        "standalone": 56446
       }
     },
     {
@@ -6422,7 +6422,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 56294
+        "standalone": 56430
       }
     },
     {
@@ -6595,7 +6595,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 56334
+        "standalone": 56470
       }
     },
     {
@@ -6770,7 +6770,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 56346
+        "standalone": 56482
       }
     },
     {
@@ -6967,7 +6967,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 56858
+        "standalone": 56994
       }
     },
     {
@@ -7138,7 +7138,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 56271
+        "standalone": 56407
       }
     },
     {
@@ -7310,7 +7310,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 56425
+        "standalone": 56561
       }
     },
     {
@@ -7484,7 +7484,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 56262
+        "standalone": 56398
       }
     },
     {
@@ -7658,7 +7658,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 56368
+        "standalone": 56504
       }
     },
     {
@@ -7832,7 +7832,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 56361
+        "standalone": 56497
       }
     },
     {
@@ -8007,7 +8007,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 56378
+        "standalone": 56514
       }
     },
     {
@@ -8196,7 +8196,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 56445
+        "standalone": 56581
       }
     },
     {
@@ -8370,7 +8370,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 56368
+        "standalone": 56504
       }
     },
     {
@@ -8561,7 +8561,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 56474
+        "standalone": 56610
       }
     },
     {
@@ -8766,7 +8766,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 56520
+        "standalone": 56656
       }
     },
     {
@@ -8969,7 +8969,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 56980
+        "standalone": 57116
       }
     },
     {
@@ -9166,7 +9166,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 56907
+        "standalone": 57043
       }
     },
     {
@@ -9398,7 +9398,7 @@
       },
       "bytes": {
         "source": 30740,
-        "standalone": 71201
+        "standalone": 71337
       }
     },
     {
@@ -9628,7 +9628,7 @@
       },
       "bytes": {
         "source": 16495,
-        "standalone": 65547
+        "standalone": 65683
       }
     },
     {
@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 55408
+        "standalone": 55590
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 60903
+        "standalone": 61085
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 62873
+        "standalone": 63055
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 48664
+        "standalone": 48846
       }
     },
     {
@@ -10691,7 +10691,7 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 66826
+        "standalone": 67008
       }
     },
     {
@@ -10815,7 +10815,7 @@
             "on": "Éclaire le décor (dans le noir)"
           },
           "label": "Halo",
-          "description": "Éclaire le décor autour d'elle dans le noir (lumière de halo : 4 pour toute la scène)."
+          "description": "Éclaire le décor autour d'elle dans le noir (lumière de halo : 12 pour toute la scène)."
         },
         "height": {
           "type": "number",
@@ -10884,8 +10884,8 @@
         }
       },
       "bytes": {
-        "source": 8642,
-        "standalone": 53271
+        "source": 8644,
+        "standalone": 53408
       }
     },
     {
@@ -11012,7 +11012,7 @@
             "on": "Éclaire le décor (dans le noir)"
           },
           "label": "Halo",
-          "description": "Éclaire le décor autour de lui dans le noir (lumière de halo : 4 pour toute la scène)."
+          "description": "Éclaire le décor autour de lui dans le noir (lumière de halo : 12 pour toute la scène)."
         },
         "height": {
           "type": "number",
@@ -11093,8 +11093,8 @@
         }
       },
       "bytes": {
-        "source": 11264,
-        "standalone": 55780
+        "source": 11265,
+        "standalone": 55917
       }
     },
     {
@@ -11283,7 +11283,7 @@
       },
       "bytes": {
         "source": 10838,
-        "standalone": 54708
+        "standalone": 54890
       }
     },
     {
@@ -11445,7 +11445,7 @@
       },
       "bytes": {
         "source": 14146,
-        "standalone": 55879
+        "standalone": 56061
       }
     },
     {
@@ -11619,7 +11619,7 @@
       },
       "bytes": {
         "source": 11346,
-        "standalone": 54789
+        "standalone": 54971
       }
     },
     {
@@ -11782,7 +11782,7 @@
       },
       "bytes": {
         "source": 12168,
-        "standalone": 54266
+        "standalone": 54448
       }
     },
     {
@@ -11938,7 +11938,7 @@
       },
       "bytes": {
         "source": 13598,
-        "standalone": 54182
+        "standalone": 54364
       }
     },
     {
@@ -12102,7 +12102,7 @@
       },
       "bytes": {
         "source": 17008,
-        "standalone": 66649
+        "standalone": 66831
       }
     },
     {
@@ -12288,7 +12288,7 @@
       },
       "bytes": {
         "source": 10873,
-        "standalone": 50311
+        "standalone": 50493
       }
     },
     {
@@ -12474,7 +12474,7 @@
       },
       "bytes": {
         "source": 10379,
-        "standalone": 55016
+        "standalone": 55198
       }
     },
     {
@@ -12683,7 +12683,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 245659
+        "standalone": 245841
       }
     },
     {
@@ -12818,6 +12818,7 @@
         "src/assets/kit/params.js",
         "src/assets/kit/variation.js",
         "src/assets/props/machines/braided-cable.js",
+        "src/assets/buildings/structure/coffered-vault.js",
         "src/assets/buildings/structure/complex-door.js",
         "src/assets/props/machines/copper-pipe.js",
         "src/assets/furniture/storage/equipment-locker.js",
@@ -12838,29 +12839,29 @@
       ],
       "stats": {
         "default": {
-          "triangles": 52948,
-          "vertices": 94924,
-          "drawCalls": 118
+          "triangles": 54312,
+          "vertices": 97652,
+          "drawCalls": 122
         },
         "sas": {
-          "triangles": 16460,
-          "vertices": 27510,
-          "drawCalls": 39
+          "triangles": 17836,
+          "vertices": 30262,
+          "drawCalls": 43
         },
         "wing": {
-          "triangles": 29892,
-          "vertices": 52769,
-          "drawCalls": 75
+          "triangles": 31256,
+          "vertices": 55497,
+          "drawCalls": 79
         },
         "full": {
-          "triangles": 52948,
-          "vertices": 94924,
-          "drawCalls": 118
+          "triangles": 54312,
+          "vertices": 97652,
+          "drawCalls": 122
         }
       },
       "bytes": {
         "source": 3480,
-        "standalone": 241909
+        "standalone": 250287
       }
     }
   ]

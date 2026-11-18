@@ -8,15 +8,16 @@ import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 
 // src/engine/toon-material.js
 import * as THREE from "three";
+var GLOW_LIGHT_COUNT = 12;
 var sharedUniforms = {
   uTime: { value: 0 },
   uWindDir: { value: new THREE.Vector2(0.92, 0.38) },
   uWindStrength: { value: 1 },
   // Lumières de halo (créatures qui brillent, lanternes...) : xyz position dans le monde, w portée (m) ; couleur
   // rgb + force. Elles ne comptent que dans le noir (`uDarkness`).
-  uGlowLights: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uGlowLights: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
   // w = 0 : place libre
-  uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uGlowColors: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
   uDarkness: { value: 0 },
   // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
   uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
@@ -27,7 +28,7 @@ var sharedUniforms = {
   uCutAway: { value: new THREE.Vector4(0, 0, 0, 1) },
   uCutOptions: { value: new THREE.Vector2(0, 0.3) }
 };
-var glowSlots = [false, false, false, false];
+var glowSlots = Array.from({ length: GLOW_LIGHT_COUNT }, () => false);
 function createGlowLight() {
   const slot = glowSlots.indexOf(false);
   if (slot < 0) return { set() {
@@ -301,8 +302,8 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
-uniform vec4 uGlowLights[4];
-uniform vec4 uGlowColors[4];
+uniform vec4 uGlowLights[${GLOW_LIGHT_COUNT}];
+uniform vec4 uGlowColors[${GLOW_LIGHT_COUNT}];
 uniform float uDarkness;
 uniform float uEmissive; // > 0 : seuil de lumi\xE8re (lit) au-dessus duquel la couleur garde son \xE9clat la nuit
 uniform float uGlowReceive;
@@ -555,7 +556,7 @@ void main() {
   if (uGlowReceive > 0.5 && uDarkness > 0.001) {
     vec3 glowTint = vec3(0.0);
     float glowSum = 0.0;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < ${GLOW_LIGHT_COUNT}; i++) {
       vec4 source = uGlowLights[i];
       vec4 tint = uGlowColors[i];
       if (source.w <= 0.0 || tint.w <= 0.0) continue;

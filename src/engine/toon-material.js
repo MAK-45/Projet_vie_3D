@@ -18,6 +18,12 @@
 
 import * as THREE from "three";
 
+/**
+ * Lumières de halo partagées par toute la scène (`createGlowLight`). 12 places : un intérieur garde allumées les
+ * lampes qu'on voit au loin ; chaque pixel les parcourt toutes, à la résolution basse du pixel art (peu coûteux).
+ */
+export const GLOW_LIGHT_COUNT = 12;
+
 /** Uniforms partagés par tous les matériaux (vent, temps). Mis à jour par `tick()`. */
 export const sharedUniforms = {
   uTime: { value: 0 },
@@ -25,8 +31,8 @@ export const sharedUniforms = {
   uWindStrength: { value: 1 },
   // Lumières de halo (créatures qui brillent, lanternes...) : xyz position dans le monde, w portée (m) ; couleur
   // rgb + force. Elles ne comptent que dans le noir (`uDarkness`).
-  uGlowLights: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) }, // w = 0 : place libre
-  uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uGlowLights: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) }, // w = 0 : place libre
+  uGlowColors: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
   uDarkness: { value: 0 },
   // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
   uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
@@ -115,10 +121,10 @@ export function setDarkness(value) {
   sharedUniforms.uDarkness.value = THREE.MathUtils.clamp(value, 0, 1);
 }
 
-const glowSlots = [false, false, false, false];
+const glowSlots = Array.from({ length: GLOW_LIGHT_COUNT }, () => false);
 
 /**
- * Réserve une des 4 lumières de halo partagées : une source qui éclaire le décor autour d'elle, dans sa couleur, en
+ * Réserve une des lumières de halo partagées (GLOW_LIGHT_COUNT) : une source qui éclaire le décor autour d'elle, dans sa couleur, en
  * paliers nets, et qui échappe à la teinte de nuit (un îlot de lumière dans le noir). Sans place libre, la poignée
  * rendue ne fait rien.
  * @returns {{set: (position: THREE.Vector3, color: THREE.Vector3, radius: number, strength?: number) => void,
@@ -402,8 +408,8 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
-uniform vec4 uGlowLights[4];
-uniform vec4 uGlowColors[4];
+uniform vec4 uGlowLights[${GLOW_LIGHT_COUNT}];
+uniform vec4 uGlowColors[${GLOW_LIGHT_COUNT}];
 uniform float uDarkness;
 uniform float uEmissive; // > 0 : seuil de lumière (lit) au-dessus duquel la couleur garde son éclat la nuit
 uniform float uGlowReceive;
@@ -656,7 +662,7 @@ void main() {
   if (uGlowReceive > 0.5 && uDarkness > 0.001) {
     vec3 glowTint = vec3(0.0);
     float glowSum = 0.0;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < ${GLOW_LIGHT_COUNT}; i++) {
       vec4 source = uGlowLights[i];
       vec4 tint = uGlowColors[i];
       if (source.w <= 0.0 || tint.w <= 0.0) continue;

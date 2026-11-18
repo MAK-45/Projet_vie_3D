@@ -132,8 +132,8 @@ const PAGES = [
     id: "sky",
     label: "Ciel",
     html: (profile) => `
-      ${group("Moment", choice("moment", "Moment de la journée", MOMENTS))}
-      ${profile.interior ? `<p class="x-note">Intérieur : le moment règle la lumière de service (jour : allumée ; nuit : les lampes seules).</p>` : group("Météo", choice("weather", "Météo", WEATHERS))}`,
+      ${profile.moment ? `<p class="x-note">Lieu clos : il y fait toujours nuit, seules les lampes éclairent.</p>` : group("Moment", choice("moment", "Moment de la journée", MOMENTS))}
+      ${profile.interior ? "" : group("Météo", choice("weather", "Météo", WEATHERS))}`,
   },
   {
     id: "character",
@@ -576,6 +576,7 @@ export class Explorer {
     if (!(s.moment in MOMENTS)) s.moment = d.moment;
     if (!(s.weather in WEATHERS)) s.weather = d.weather;
     if (this.profile.interior) s.weather = "clear";
+    if (this.profile.moment) s.moment = this.profile.moment; // lieu clos : toujours la même lumière
     if (!(s.camera in CAMERAS)) s.camera = d.camera;
     if (!(s.character in CHARACTERS)) s.character = d.character;
     for (const [name, , min, max] of this.profile.amounts) {
@@ -629,6 +630,7 @@ export class Explorer {
     this.scene.add(this.world.group);
     this._limitView();
     walker.placeAt(this.world, place?.x ?? this.world.spawn.x, place?.z ?? this.world.spawn.z);
+    if (!place && this.world.spawnHeading !== undefined) walker.heading = this.world.spawnHeading;
     look.set(walker.position.x, walker.position.y + walker.lookHeight, walker.position.z);
     this.iso.follow(look);
     if (!place) {
@@ -844,6 +846,7 @@ export class Explorer {
     this.life.setMood(mood.night, mood.rain);
 
     const shadows = this._frameIndex++ % 2 === 0;
+    world.setThirdPerson?.(third);
     world.update({
       camera, target: look, dt, viewArea: view.area, viewRadius: view.radius, shadows, reach, shadowCenter,
       shadowReach: third ? THIRD_SHADOW_REACH : Infinity,

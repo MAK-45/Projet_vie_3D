@@ -23,6 +23,7 @@ import { enableCutaway } from "../engine/toon-material.js";
 import { GLOWS } from "../assets/kit/palettes.js";
 import { createRng } from "../assets/kit/rng.js";
 import * as braidedCable from "../assets/props/machines/braided-cable.js";
+import * as cofferedVault from "../assets/buildings/structure/coffered-vault.js";
 import * as complexDoor from "../assets/buildings/structure/complex-door.js";
 import * as copperPipe from "../assets/props/machines/copper-pipe.js";
 import * as equipmentLocker from "../assets/furniture/storage/equipment-locker.js";
@@ -373,37 +374,42 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     return prototype.userData.lightPoint ?? new THREE.Vector3(0, 2.5, 0);
   };
   const _v = new THREE.Vector3();
+  const hooks = new Set(); // cases de voûte où pend une lampe (crochet)
   const lamp = (key, point, x, z, turn, radius) => {
     put(key, x, z, turn);
+    if (key !== "lamp-wall") hooks.add(`${x},${z}`);
     _v.copy(point).applyAxisAngle(new THREE.Vector3(0, 1, 0), turn);
-    lightSources.push({ position: new THREE.Vector3(x + _v.x, _v.y, z + _v.z), color: AMBER, radius });
+    // Suspendue : la source est posée un peu sous l'ampoule, pour que la flaque de lumière tombe sur le sol.
+    if (key !== "lamp-wall") _v.y -= 0.8;
+    lightSources.push({ position: new THREE.Vector3(x + _v.x, _v.y, z + _v.z), color: AMBER, radius, strength: 0.62 });
     counts.lamps += 1;
   };
   if (lampOn) {
-    const hanging = lampModel("lamp-hanging", filamentLamp, { seed: seed + 70, height: 3, chain: 1.6 }, VIEW_HIDE);
-    const hangingHigh = lampModel("lamp-high", filamentLamp, { seed: seed + 71, height: 3.4, chain: 2.2 }, VIEW_HIDE);
+    // Suspendues : la chaîne monte jusqu'au crochet de la voûte (plafond à 5 m au Sas, 6 m ailleurs).
+    const hanging = lampModel("lamp-hanging", filamentLamp, { seed: seed + 70, height: 3, chain: 1.5 }, VIEW_HIDE);
+    const hangingHigh = lampModel("lamp-high", filamentLamp, { seed: seed + 71, height: 3.4, chain: 2.1 }, VIEW_HIDE);
     const sconce = lampModel("lamp-wall", filamentLamp, { seed: seed + 72, mount: "wall", height: 2.6 }, HIDE_ON_WALL);
     const chandelier = lampModel("chandelier", filamentChandelier, { seed: seed + 74, model: "lantern", height: 3.6, chain: 1.6 }, VIEW_HIDE);
     const wall = (room, side, t, dim = false) => {
       const [x, z, turn] = onWall(room, side, t, 0);
-      lamp("lamp-wall", sconce, x, z, turn, dim ? 2.2 : 3.2); // une applique faible n'éclaire que de près
+      lamp("lamp-wall", sconce, x, z, turn, dim ? 2.8 : 3.6); // une applique faible n'éclaire que de près
     };
     if (has("sas")) {
-      lamp("lamp-hanging", hanging, -2, 3, 0, 3.4);
-      lamp("lamp-hanging", hanging, 2, 3, 0, 3.4);
+      lamp("lamp-hanging", hanging, -2, 3, 0, 4.4);
+      lamp("lamp-hanging", hanging, 2, 3, 0, 4.4);
       if (lampMany) wall(R.sas, "w", 1.9);
     }
     if (has("archives")) {
-      lamp("chandelier", chandelier, 0, -6.5, 0, 4.5);
-      for (const z of [-3, -10]) lamp("lamp-high", hangingHigh, 0, z, 0, 3.4);
+      lamp("chandelier", chandelier, 0, -7, 0, 5.4);
+      for (const z of [-3, -11]) lamp("lamp-high", hangingHigh, 0, z, 0, 4.7);
       wall(R.archives, "e", -8, rng.chance(0.4));
       wall(R.archives, "w", -1.2);
       if (lampMany) for (const z of [-4.5, -8.5]) wall(R.archives, "e", z);
     }
     if (has("atelier")) {
-      for (const [x, z] of [[12, -3], [16, -6.5], [12, -8]]) lamp("lamp-high", hangingHigh, x, z, 0, 3.6);
+      for (const [x, z] of [[12, -3], [16, -7], [12, -9]]) lamp("lamp-high", hangingHigh, x, z, 0, 4.7);
       wall(R.atelier, "n", 18, true);
-      if (lampMany) lamp("lamp-high", hangingHigh, 18, -2.5, 0, 3.6);
+      if (lampMany) lamp("lamp-high", hangingHigh, 18, -3, 0, 4.7);
     }
     if (has("gallery")) {
       for (const [side, t] of [["w", -11.5], ["e", -12.5], ["w", -17.5], ["e", -21], ["w", -21.5], ["e", -29], ["w", -28.5]]) {
@@ -415,6 +421,21 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
   kit.build();
   group.add(kit.group);
 
+  // --- Plafond : voûtes à caissons de 2 × 2 m sur chaque case, à la hauteur de la pièce. Vu seulement à la 3e
+  // personne (en vue isométrique, la maquette est ouverte) ; il ne projette pas d'ombre (la lumière de service
+  // vient d'en haut).
+  const ceiling = new InteriorKit();
+  ceiling.model("vault", cofferedVault, { seed: seed + 80, display: "ceiling", hook: "none" }, { castShadow: false });
+  ceiling.model("vault-hook", cofferedVault, { seed: seed + 81, display: "ceiling", hook: "hook" }, { castShadow: false });
+  for (const room of rooms) {
+    for (let x = room.x0 + 1; x < room.x1; x += 2) {
+      for (let z = room.z0 + 1; z < room.z1; z += 2) ceiling.place(hooks.has(`${x},${z}`) ? "vault-hook" : "vault", x, z, 0, room.h);
+    }
+  }
+  ceiling.build();
+  ceiling.group.visible = false;
+  group.add(ceiling.group);
+
   // --- Lumière : une lumière de service venue d'en haut (les ombres restent courtes), et les halos des lampes ------
   let daylight = null;
   let halos = null;
@@ -422,12 +443,13 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     daylight = createDaylight({ azimuth: THREE.MathUtils.degToRad(160), elevation: THREE.MathUtils.degToRad(62) });
     daylight.setSun(THREE.MathUtils.degToRad(160), THREE.MathUtils.degToRad(62));
     group.add(daylight.light, daylight.light.target);
-    if (lightSources.length) halos = createHaloPool(lightSources, 3);
+    if (lightSources.length) halos = createHaloPool(lightSources);
   }
 
   const first = rooms[0];
   const spawn = new THREE.Vector3((first.x0 + first.x1) / 2, 0, (first.z0 + first.z1) / 2 + (first.id === "sas" ? 0.5 : 0));
   let time = 0;
+  const _focus = new THREE.Vector3();
   const route = [];
   // Liaisons entre pièces : les portes qui s'ouvrent, avec un point de passage de chaque côté (1,3 m de la baie).
   const links = doors.filter((d) => d.auto).map((d) => {
@@ -449,6 +471,18 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     rooms,
     interior: true,
     heightAt: () => 0,
+    /** Face au nord au départ : la porte des Archives, pas l'entrée fermée. */
+    spawnHeading: Math.PI,
+
+    /** Hauteur du plafond (la caméra à la 3e personne reste dessous). */
+    ceilingAt(x, z) {
+      return roomAt(x, z)?.h ?? Infinity;
+    },
+
+    /** Vue à la 3e personne : le plafond se ferme au-dessus de la tête. */
+    setThirdPerson(value) {
+      ceiling.group.visible = value;
+    },
 
     /** Murs, piliers, meubles, portes fermées ; et on ne sort pas des pièces. */
     collide(position, radius) {
@@ -509,7 +543,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
 
     setMood() {},
 
-    update({ target, dt, viewRadius, shadows }) {
+    update({ camera, target, dt, viewRadius, shadows }) {
       time += dt;
       for (const d of doors) {
         if (!d.auto) continue;
@@ -522,7 +556,17 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
           d.opening = false;
         }
       }
-      halos?.update(target, time);
+      // Les lampes allumées sont celles près du point regardé : devant la caméra en 3e personne.
+      if (halos) {
+        if (ceiling.group.visible && camera) {
+          camera.getWorldDirection(_focus);
+          _focus.y = 0;
+          _focus.normalize().multiplyScalar(6).add(target);
+        } else {
+          _focus.copy(target);
+        }
+        halos.update(_focus, time, camera);
+      }
       if (shadows && daylight) daylight.update(target, Math.min(viewRadius + 6, 40));
     },
 
@@ -534,6 +578,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
       halos?.dispose();
       daylight?.dispose();
       kit.dispose();
+      ceiling.dispose();
       for (const d of doors) {
         d.object.traverse((child) => {
           child.geometry?.dispose();

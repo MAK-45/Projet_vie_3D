@@ -50,8 +50,10 @@ export const WORLD_PROFILES = {
       ["furniture", "Mobilier", 0, 2, 0.5],
       ["lamps", "Lampes", 0, 2, 0.5],
     ],
-    defaults: { seed: 1, size: "full", furniture: 1, lamps: 1, moment: "dusk" },
+    defaults: { seed: 1, size: "full", furniture: 1, lamps: 1, moment: "night" },
     interior: true,
+    /** Lieu clos : toujours la nuit (seules les lampes éclairent) ; le réglage « Moment » est masqué. */
+    moment: "night",
     describe(world, settings) {
       const c = world.counts;
       return {

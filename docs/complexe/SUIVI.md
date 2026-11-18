@@ -198,6 +198,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-18 | Monde d'essai retouché (retours de l'utilisateur) : toujours la nuit, 12 lumières de halo dans le moteur (11 pour les lampes vues, même de loin), plafond à caissons en 3e personne, caméra suiveuse qui ne traverse plus les murs, départ face à la porte des Archives. | Retours sur le monde d'essai, puis lot 4. |
 | 2026-11-18 | Lot 3 validé. Monde d'essai du Complexe (demande de l'utilisateur) : 4 pièces praticables, vue en coupe (moteur), portes automatiques, halos des lampes proches, explorateur rendu générique ; Atelier publié. | Retours sur le monde d'essai, puis lot 4. |
 | 2026-11-18 | Lot 3 : banc, casier, pupitre à leviers, grille et caillebotis, plaque à glyphes (kit : `gridBlock`), vérifiés en planches et dans le coin du Sas de jour et de nuit, mobile et bureau, Atelier publié (v40). | Validation du lot 3, puis lot 4. |
 | 2026-11-17 | Lecture de la bible HD (document Claude Docs), adaptation au pixel art dans `docs/complexe/` (README, PIECES, SALLES), plan en 28 lots (PLAN), ce suivi. | Validation de la bible et du plan, puis lots 0 et 1. |

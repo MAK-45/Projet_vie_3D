@@ -1,7 +1,7 @@
 // Lampe à filament du Complexe (fiches SAS-05 et GAL-05, docs/complexe/PIECES.md) : une ampoule ronde ambre de 2 px
 // dans une cage de 8 barreaux de bronze, chapeau conique et pointe en bas ; suspendue à une chaîne en pointillé (Sas)
 // ou portée par une console murale (Galerie). Le filament scintille lentement, par paliers. Option `halo` : elle
-// éclaire le décor autour d'elle dans le noir (une des 4 lumières de halo du moteur : à réserver aux lampes proches
+// éclaire le décor autour d'elle dans le noir (une des 12 lumières de halo du moteur : à réserver aux lampes proches
 // de la créature, le monde s'en charge).
 //
 // 2 draw calls : bronze (cage, chapeau, chaîne ou console), lueur (l'ampoule).
@@ -29,7 +29,7 @@ const params = {
   mount: choiceParam("Pose", MOUNTS, "Suspendue à une chaîne (Sas), ou applique sur une console murale (Galerie, une par travée)."),
   state: choiceParam("État", STATES, "Allumée (scintillement lent), en veille (lueur faible) ou éteinte (verre ambre sombre)."),
   glow: glowParam("Couleur du filament."),
-  halo: choiceParam("Halo", HALOS, "Éclaire le décor autour d'elle dans le noir (lumière de halo : 4 pour toute la scène)."),
+  halo: choiceParam("Halo", HALOS, "Éclaire le décor autour d'elle dans le noir (lumière de halo : 12 pour toute la scène)."),
   height: numberParam("Hauteur", 2.6, 1.2, 12, "Hauteur de l'ampoule au-dessus du sol (2,6 m pour une applique de Galerie).", { step: 0.1, unit: "m" }),
   chain: numberParam("Chaîne", 1.2, 0.2, 4, "Longueur de la chaîne au-dessus de la cage (lampe suspendue).", { step: 0.1, unit: "m" }),
 };

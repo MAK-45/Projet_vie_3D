@@ -7,15 +7,16 @@ import * as THREE4 from "three";
 
 // src/engine/toon-material.js
 import * as THREE from "three";
+var GLOW_LIGHT_COUNT = 12;
 var sharedUniforms = {
   uTime: { value: 0 },
   uWindDir: { value: new THREE.Vector2(0.92, 0.38) },
   uWindStrength: { value: 1 },
   // Lumières de halo (créatures qui brillent, lanternes...) : xyz position dans le monde, w portée (m) ; couleur
   // rgb + force. Elles ne comptent que dans le noir (`uDarkness`).
-  uGlowLights: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uGlowLights: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
   // w = 0 : place libre
-  uGlowColors: { value: Array.from({ length: 4 }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uGlowColors: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
   uDarkness: { value: 0 },
   // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
   uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
@@ -26,7 +27,7 @@ var sharedUniforms = {
   uCutAway: { value: new THREE.Vector4(0, 0, 0, 1) },
   uCutOptions: { value: new THREE.Vector2(0, 0.3) }
 };
-var glowSlots = [false, false, false, false];
+var glowSlots = Array.from({ length: GLOW_LIGHT_COUNT }, () => false);
 function createGlowLight() {
   const slot = glowSlots.indexOf(false);
   if (slot < 0) return { set() {
@@ -300,8 +301,8 @@ uniform float uSelfEdge;
 uniform float uShadowLit;
 uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
 uniform float uSeed;
-uniform vec4 uGlowLights[4];
-uniform vec4 uGlowColors[4];
+uniform vec4 uGlowLights[${GLOW_LIGHT_COUNT}];
+uniform vec4 uGlowColors[${GLOW_LIGHT_COUNT}];
 uniform float uDarkness;
 uniform float uEmissive; // > 0 : seuil de lumi\xE8re (lit) au-dessus duquel la couleur garde son \xE9clat la nuit
 uniform float uGlowReceive;
@@ -554,7 +555,7 @@ void main() {
   if (uGlowReceive > 0.5 && uDarkness > 0.001) {
     vec3 glowTint = vec3(0.0);
     float glowSum = 0.0;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < ${GLOW_LIGHT_COUNT}; i++) {
       vec4 source = uGlowLights[i];
       vec4 tint = uGlowColors[i];
       if (source.w <= 0.0 || tint.w <= 0.0) continue;
@@ -1119,7 +1120,7 @@ var params = {
   mount: choiceParam("Pose", MOUNTS, "Suspendue \xE0 une cha\xEEne (Sas), ou applique sur une console murale (Galerie, une par trav\xE9e)."),
   state: choiceParam("\xC9tat", STATES, "Allum\xE9e (scintillement lent), en veille (lueur faible) ou \xE9teinte (verre ambre sombre)."),
   glow: glowParam("Couleur du filament."),
-  halo: choiceParam("Halo", HALOS, "\xC9claire le d\xE9cor autour d'elle dans le noir (lumi\xE8re de halo : 4 pour toute la sc\xE8ne)."),
+  halo: choiceParam("Halo", HALOS, "\xC9claire le d\xE9cor autour d'elle dans le noir (lumi\xE8re de halo : 12 pour toute la sc\xE8ne)."),
   height: numberParam("Hauteur", 2.6, 1.2, 12, "Hauteur de l'ampoule au-dessus du sol (2,6 m pour une applique de Galerie).", { step: 0.1, unit: "m" }),
   chain: numberParam("Cha\xEEne", 1.2, 0.2, 4, "Longueur de la cha\xEEne au-dessus de la cage (lampe suspendue).", { step: 0.1, unit: "m" })
 };

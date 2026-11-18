@@ -31,7 +31,7 @@ const params = {
   model: choiceParam("Modèle", MODELS, "Lanterne à 6 ampoules et coupelle de verre, grand lustre de 3 m à 24 ampoules, ou anneau de voûte à 12 ampoules."),
   state: choiceParam("État", STATES, "Allumé (scintillement lent), en veille (lueur faible) ou éteint."),
   glow: glowParam("Couleur des filaments."),
-  halo: choiceParam("Halo", HALOS, "Éclaire le décor autour de lui dans le noir (lumière de halo : 4 pour toute la scène)."),
+  halo: choiceParam("Halo", HALOS, "Éclaire le décor autour de lui dans le noir (lumière de halo : 12 pour toute la scène)."),
   height: numberParam("Hauteur", 3, 2, 12, "Hauteur du cercle d'ampoules au-dessus du sol.", { step: 0.1, unit: "m" }),
   chain: numberParam("Chaîne", 1.5, 0.3, 5, "Longueur de la chaîne principale, jusqu'à la rosace du plafond.", { step: 0.1, unit: "m" }),
 };
