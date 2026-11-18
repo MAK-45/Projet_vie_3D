@@ -843,7 +843,9 @@ var METALS = {
   patinatedBronze: { label: "Bronze patin\xE9", ramp: ["#263732", "#4a7366", "#8a6a3b", "#b48a4c", "#e2c47e"], ink: "#16130f" },
   blackenedBrass: { label: "Laiton noirci", ramp: ["#221b11", "#3b2f1a", "#5e4a26", "#857036", "#d6c27c"], ink: "#120e08" },
   oxidizedCopper: { label: "Cuivre oxyd\xE9", ramp: ["#1c3532", "#2c5a51", "#3f7f6e", "#68a58b", "#c98b6b"], ink: "#0f1d1c" },
-  castIron: { label: "Fonte", ramp: ["#16171c", "#25272e", "#3a3d45", "#5c6069"], ink: "#0b0c0f" }
+  castIron: { label: "Fonte", ramp: ["#16171c", "#25272e", "#3a3d45", "#5c6069"], ink: "#0b0c0f" },
+  // Cuivre resté vif (bandes gravées des rouleaux, fils neufs) : rose-orangé, ombre brun-violet.
+  copper: { label: "Cuivre", ramp: ["#3a1f22", "#6e3a2c", "#a85f3c", "#d8935c", "#f4c79a"], ink: "#1f1013" }
 };
 var GLASSES = {
   amber: { label: "Verre ambre", ramp: ["#4a2410", "#8a4a1c", "#c97a2e", "#f2b764"], ink: "#2a1408" },
@@ -858,6 +860,12 @@ var GLOWS = {
   amber: { label: "Ambre", ramp: ["#5a2a12", "#b8581c", "#ff9a3c", "#ffd796"], light: "#ff9a3c" },
   cyan: { label: "Cyan", ramp: ["#12505e", "#2a9bb0", "#5fd4e6", "#d6fbff"], light: "#5fd4e6" },
   alarm: { label: "Rouge d'alerte", ramp: ["#3a0d0c", "#6e1815", "#a3261f", "#e0574a"], light: "#c8302a" }
+};
+var DATA_GLOWS = {
+  amber: GLOWS.amber,
+  cyan: GLOWS.cyan,
+  green: { label: "Vert", ramp: ["#123f22", "#2a8a45", "#5fd07a", "#c8f7cf"], light: "#5fd07a" },
+  red: { label: "Rouge", ramp: GLOWS.alarm.ramp, light: GLOWS.alarm.light }
 };
 var COVERS = {
   moss: { label: "Mousse", ramp: ["#22473c", "#33663e", "#4f8a3f", "#86b44a"], ink: "#142a26" },
@@ -1356,7 +1364,7 @@ function buildMasonry(rng, o) {
 }
 function glowMixMaterial(colors, { id = 40 } = {}) {
   const ramp = colors.map(([name, level]) => {
-    const r = (GLOWS[name] ?? GLOWS.amber).ramp;
+    const r = (typeof name === "object" ? name : GLOWS[name] ?? GLOWS.amber).ramp;
     return r[Math.max(0, Math.min(r.length - 1, Math.round(level)))];
   });
   if (ramp.length === 1) ramp.push(ramp[0]);
@@ -1607,7 +1615,7 @@ function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed = 0, ton
   });
 }
 function glowMaterial(name = "amber", { level = 2, id = 40 } = {}) {
-  const ramp = (GLOWS[name] ?? GLOWS.amber).ramp;
+  const ramp = (typeof name === "object" ? name : GLOWS[name] ?? GLOWS.amber).ramp;
   const color = ramp[Math.max(0, Math.min(ramp.length - 1, Math.round(level)))];
   return createToonMaterial({
     ramp: [color, color],
@@ -1662,9 +1670,14 @@ function createRigidParts(geometry, partOf, count) {
   const basePosition = position.array.slice();
   const baseNormal = normal.array.slice();
   const matrices = Array.from({ length: count }, () => new THREE3.Matrix4());
+  let first = 0;
+  while (first < partOf.length && partOf[first] === 255) first++;
+  let last = partOf.length - 1;
+  while (last >= first && partOf[last] === 255) last--;
   const apply = () => {
+    if (last < first) return;
     const p = position.array, n = normal.array;
-    for (let i = 0; i < position.count; i++) {
+    for (let i = first; i <= last; i++) {
       const k = partOf[i];
       if (k === 255) continue;
       const e = matrices[k].elements;
@@ -1677,6 +1690,8 @@ function createRigidParts(geometry, partOf, count) {
       n[i * 3 + 1] = e[1] * nx + e[5] * ny + e[9] * nz;
       n[i * 3 + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
     }
+    position.addUpdateRange(first * 3, (last - first + 1) * 3);
+    normal.addUpdateRange(first * 3, (last - first + 1) * 3);
     position.needsUpdate = true;
     normal.needsUpdate = true;
     geometry.computeBoundingSphere();

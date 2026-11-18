@@ -432,3 +432,31 @@ c'est ce fichier qui fait progresser les assets suivants.
   trame : le bout du cône sortait plein. Borner avec `Math.max(0, …)`.
 - **Peinture qui s'use** (bandes ambre de la barrière) : une matière éclairée, pas une lueur ; traverse sombre
   (−0,3) dessous pour que les bandes se lisent, quelques bandes plus courtes ou absentes.
+
+### Le Complexe, lot 6 : Archives, rangement (rayonnage, cassette, échelle, table, lampe articulée)
+
+- **Des centaines de petites façades** (276 tiroirs du rayonnage) : `buildQuads` (kit/geometry.js), un rectangle de
+  2 triangles par façade avec son ton, posé 3 cm devant un fond sombre : le fond fait les joints d'un pixel. Une
+  poignée = un second rectangle d'un pixel, un peu plus clair. 12 × 23 tiroirs = 1 100 triangles. Pas de 0,24 × 0,2 m
+  (3 × 3 px de façade + 1 px de joint) : se lit de près, fait une grille régulière de loin.
+- **Tiroir qui sort d'une grille de faces plates** : une réserve de 6 vrais tiroirs (pièces rigides) ; quand la scène
+  en tire un, il prend la place de la case et la façade plate de la case rentre au fond (ses 8 sommets réécrits, avec
+  `addUpdateRange`). Rangé au fond tant qu'il ne sert pas.
+- **Pièces rigides : n'envoyer que ce qui bouge.** `createRigidParts` ne réécrit et ne renvoie au GPU que la plage
+  des sommets mobiles (`addUpdateRange`) : mettre les pièces mobiles **à la fin** de la fusion (après la façade fixe).
+- **Rouages** (`gearWheel`, kit) : roue pleine, 8 à 11 dents au module 0,034 (Ø 0,27 à 0,37 m) ; lue en trois anneaux
+  (jante dentée claire, toile sombre posée devant, moyeu clair) sur une frise sombre. Ratés : des roues de Ø 0,2 m
+  (des confettis), des jours en croix (des flocons). Une roue sur deux décalée de 1,4 cm en profondeur. Mouvement :
+  une dent par à-coup (0,2 s) toutes les 0,7 à 1,1 s, recalculé seulement quand l'angle change (pas à chaque image).
+- **Une petite chose qui luit sur une matière de même teinte** (tranche ambre sur serti de cuivre) se perd : foncer le
+  serti (ton −0,2), la lueur ressort de jour comme de nuit.
+- **Couleurs de lueur propres à un asset** (vert des cassettes) : `DATA_GLOWS` à part de `GLOWS`, sinon le vert devient
+  un choix des murs et des lampes ; `glowMaterial` et `glowMixMaterial` acceptent une entrée `{ ramp }`.
+- **Traits gravés sur une bande longue** : des rectangles sombres posés dessus (`buildQuads`), pas un ton par sommet
+  (une bande de 8 sommets n'a pas de quoi dessiner un trait).
+- **Plateau de pierre** : un ton par dalle, pas un bruit par sommet (le plateau devenait moucheté) ; la tache d'usure
+  à +0,1 au plus. Feutre = ton −0,75 sur la pierre (pas de matériau en plus).
+- **Bras articulé** : un segment = une pièce rigide ; pose de proche en proche (lacet, puis chaque articulation tourne
+  autour de x à son pivot) ; `lightPoint` suit l'abat-jour pour le halo. Lampe suspendue = le même bras retourné.
+- **Petits objets sur une table sans matériau de plus** : carnets en bronze patiné, couverture à −0,6 (vert-noir),
+  pages à +0,45 (or pâle = papier jauni).

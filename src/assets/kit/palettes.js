@@ -35,6 +35,8 @@ export const METALS = {
   blackenedBrass: { label: "Laiton noirci", ramp: ["#221b11", "#3b2f1a", "#5e4a26", "#857036", "#d6c27c"], ink: "#120e08" },
   oxidizedCopper: { label: "Cuivre oxydé", ramp: ["#1c3532", "#2c5a51", "#3f7f6e", "#68a58b", "#c98b6b"], ink: "#0f1d1c" },
   castIron: { label: "Fonte", ramp: ["#16171c", "#25272e", "#3a3d45", "#5c6069"], ink: "#0b0c0f" },
+  // Cuivre resté vif (bandes gravées des rouleaux, fils neufs) : rose-orangé, ombre brun-violet.
+  copper: { label: "Cuivre", ramp: ["#3a1f22", "#6e3a2c", "#a85f3c", "#d8935c", "#f4c79a"], ink: "#1f1013" },
 };
 
 /**
@@ -62,6 +64,17 @@ export const GLOWS = {
   amber: { label: "Ambre", ramp: ["#5a2a12", "#b8581c", "#ff9a3c", "#ffd796"], light: "#ff9a3c" },
   cyan: { label: "Cyan", ramp: ["#12505e", "#2a9bb0", "#5fd4e6", "#d6fbff"], light: "#5fd4e6" },
   alarm: { label: "Rouge d'alerte", ramp: ["#3a0d0c", "#6e1815", "#a3261f", "#e0574a"], light: "#c8302a" },
+};
+
+/**
+ * Tranches des cassettes de données (le Complexe, ARC-03) : quatre couleurs de classement. Ambre, cyan et rouge
+ * reprennent les lueurs du Complexe ; le vert ne sert qu'aux cassettes (il n'est pas une lueur des murs ni des lampes).
+ */
+export const DATA_GLOWS = {
+  amber: GLOWS.amber,
+  cyan: GLOWS.cyan,
+  green: { label: "Vert", ramp: ["#123f22", "#2a8a45", "#5fd07a", "#c8f7cf"], light: "#5fd07a" },
+  red: { label: "Rouge", ramp: GLOWS.alarm.ramp, light: GLOWS.alarm.light },
 };
 
 /** Couvertures posées sur une surface (dessus d'un rocher, d'un mur, d'un toit). Clés du paramètre `cover`. */

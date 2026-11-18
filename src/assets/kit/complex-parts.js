@@ -292,7 +292,7 @@ export function buildMasonry(rng, o) {
  */
 export function glowMixMaterial(colors, { id = 40 } = {}) {
   const ramp = colors.map(([name, level]) => {
-    const r = (GLOWS[name] ?? GLOWS.amber).ramp;
+    const r = (typeof name === "object" ? name : GLOWS[name] ?? GLOWS.amber).ramp;
     return r[Math.max(0, Math.min(r.length - 1, Math.round(level)))];
   });
   if (ramp.length === 1) ramp.push(ramp[0]);
@@ -587,6 +587,50 @@ export function cable(points, { radius = PX / 2, sides = 4, segments } = {}) {
   return plain(buildTube(pts, () => radius, { radialSegments: sides, lengthSegments: segments ?? Math.max(4, Math.ceil(length / 0.25)) }));
 }
 
+/**
+ * Rouage denté (mécanismes des rayonnages, visionneuses, orrery) : disque plat de `teeth` dents carrées (le pas des
+ * dents vaut `module` × π, deux rouages de même `module` engrènent ; rayon primitif = teeth × module / 2), épaisseur
+ * `depth` le long de +z, centré sur l'origine, avec un moyeu en saillie et `spokes` jours entre la jante et le moyeu
+ * (0 : disque plein). Indexé, fusionnable. Rend aussi `radius` (rayon primitif) pour poser les rouages voisins.
+ */
+export function gearWheel({ teeth = 12, module = 0.022, depth = PX * 0.6, spokes = 4, hub = 0.3 } = {}) {
+  const r = (teeth * module) / 2;
+  const outer = r + module * 0.9, root = r - module * 0.9;
+  const shape = new THREE.Shape();
+  for (let i = 0; i < teeth; i++) {
+    const a0 = (i / teeth) * Math.PI * 2;
+    const da = (Math.PI * 2) / teeth;
+    const pts = [[root, a0], [outer, a0 + da * 0.12], [outer, a0 + da * 0.48], [root, a0 + da * 0.6]];
+    pts.forEach(([rr, a], k) => (i === 0 && k === 0 ? shape.moveTo(rr * Math.cos(a), rr * Math.sin(a)) : shape.lineTo(rr * Math.cos(a), rr * Math.sin(a))));
+  }
+  shape.closePath();
+  if (spokes > 0) {
+    // Jours : des secteurs vides entre la jante (75 % du pied des dents) et le moyeu.
+    const rIn = root * 0.72, rHub = Math.max(root * hub, PX * 1.2);
+    for (let k = 0; k < spokes; k++) {
+      const a0 = (k / spokes) * Math.PI * 2 + 0.28, a1 = ((k + 1) / spokes) * Math.PI * 2 - 0.28;
+      if (a1 <= a0) continue;
+      const hole = new THREE.Path();
+      hole.moveTo(rHub * Math.cos(a0), rHub * Math.sin(a0));
+      for (let j = 0; j <= 3; j++) {
+        const a = a0 + ((a1 - a0) * j) / 3;
+        hole.lineTo(rIn * Math.cos(a), rIn * Math.sin(a));
+      }
+      hole.lineTo(rHub * Math.cos(a1), rHub * Math.sin(a1));
+      hole.closePath();
+      shape.holes.push(hole);
+    }
+  }
+  const disc = plain(new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: false, curveSegments: 1 }));
+  const rBoss = Math.max(root * hub, PX * 1.2) * 0.8;
+  const boss = plain(new THREE.CylinderGeometry(rBoss, rBoss, depth * 2.2, 6));
+  boss.rotateX(Math.PI / 2);
+  boss.translate(0, 0, depth / 2);
+  const geometry = mergeGeometries([disc, boss]);
+  geometry.userData.radius = r;
+  return geometry;
+}
+
 // --- Matériaux --------------------------------------------------------------------------------------------------
 
 /**
@@ -629,10 +673,10 @@ export function metalMaterial(entry, { id = 30, crease = true, grain = 0, seed =
 /**
  * Lueur : matière qui émet sa propre lumière (glyphes, filaments, voyants), d'un seul ton de la rampe GLOWS
  * (`level` 0 = éteinte à 3 = vive), qui garde son éclat dans le noir. Sans contour : un glyphe d'un pixel serait
- * mangé par son trait d'encre.
+ * mangé par son trait d'encre. `name` : une clé de GLOWS, ou une entrée { ramp } (DATA_GLOWS...).
  */
 export function glowMaterial(name = "amber", { level = 2, id = 40 } = {}) {
-  const ramp = (GLOWS[name] ?? GLOWS.amber).ramp;
+  const ramp = (typeof name === "object" ? name : GLOWS[name] ?? GLOWS.amber).ramp;
   const color = ramp[Math.max(0, Math.min(ramp.length - 1, Math.round(level)))];
   return createToonMaterial({
     ramp: [color, color],
@@ -714,9 +758,16 @@ export function createRigidParts(geometry, partOf, count) {
   const basePosition = position.array.slice();
   const baseNormal = normal.array.slice();
   const matrices = Array.from({ length: count }, () => new THREE.Matrix4());
+  // Seule la plage des sommets mobiles est réécrite et renvoyée au GPU (les pièces fixes peuvent être nombreuses) :
+  // mettre les pièces mobiles à la fin de la fusion la rend courte.
+  let first = 0;
+  while (first < partOf.length && partOf[first] === 255) first++;
+  let last = partOf.length - 1;
+  while (last >= first && partOf[last] === 255) last--;
   const apply = () => {
+    if (last < first) return;
     const p = position.array, n = normal.array;
-    for (let i = 0; i < position.count; i++) {
+    for (let i = first; i <= last; i++) {
       const k = partOf[i];
       if (k === 255) continue;
       const e = matrices[k].elements;
@@ -729,6 +780,8 @@ export function createRigidParts(geometry, partOf, count) {
       n[i * 3 + 1] = e[1] * nx + e[5] * ny + e[9] * nz;
       n[i * 3 + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
     }
+    position.addUpdateRange(first * 3, (last - first + 1) * 3);
+    normal.addUpdateRange(first * 3, (last - first + 1) * 3);
     position.needsUpdate = true;
     normal.needsUpdate = true;
     geometry.computeBoundingSphere();

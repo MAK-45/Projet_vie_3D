@@ -858,6 +858,48 @@ export function buildLathe(profile, { segments = 32, axis = "y", facets = false,
 }
 
 /**
+ * Faces plates (façades de tiroirs, plaques, étiquettes posées par centaines) : un rectangle de 2 triangles par
+ * entrée, sans épaisseur, tourné vers `normal` (+z par défaut ; le haut du rectangle suit +y, ou −z pour une face
+ * vers ±y). Entrées : { position: [x, y, z] (centre), size: [largeur, hauteur], normal?, tone? }. Attributs :
+ * position, normal, et `aTone` si une entrée porte `tone` ; indexée (fusionnable avec `buildBlock`).
+ */
+export function buildQuads(quads) {
+  const n = quads.length;
+  const position = new Float32Array(n * 12);
+  const normal = new Float32Array(n * 12);
+  const toned = quads.some((q) => q.tone !== undefined);
+  const tone = toned ? new Float32Array(n * 4) : null;
+  const index = n * 4 > 65535 ? new Uint32Array(n * 6) : new Uint16Array(n * 6);
+  const N = new THREE.Vector3(), U = new THREE.Vector3(), R = new THREE.Vector3();
+  quads.forEach((q, i) => {
+    N.set(...(q.normal ?? [0, 0, 1])).normalize();
+    U.set(0, 1, 0);
+    if (Math.abs(N.y) > 0.9) U.set(0, 0, -Math.sign(N.y));
+    R.crossVectors(U, N).normalize();
+    U.crossVectors(N, R);
+    const [w, h] = q.size;
+    const [cx, cy, cz] = q.position;
+    [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([a, b], k) => {
+      const o = (i * 4 + k) * 3;
+      position[o] = cx + R.x * a * w / 2 + U.x * b * h / 2;
+      position[o + 1] = cy + R.y * a * w / 2 + U.y * b * h / 2;
+      position[o + 2] = cz + R.z * a * w / 2 + U.z * b * h / 2;
+      normal[o] = N.x;
+      normal[o + 1] = N.y;
+      normal[o + 2] = N.z;
+      if (tone) tone[i * 4 + k] = q.tone ?? 0;
+    });
+    index.set([i * 4, i * 4 + 1, i * 4 + 2, i * 4, i * 4 + 2, i * 4 + 3], i * 6);
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normal, 3));
+  if (tone) geometry.setAttribute("aTone", new THREE.BufferAttribute(tone, 1));
+  geometry.setIndex(new THREE.BufferAttribute(index, 1));
+  return geometry;
+}
+
+/**
  * Bloc (pierre taillée, marche, dalle, griffe) : boîte de taille [x, y, z] posée en `position` (centre), tournée de
  * `rotation` [x, y, z] (radians, ordre XYZ). Attributs : position, normal ; indexée (fusionnable avec `buildLathe`).
  * `taper` rétrécit le dessus (0 : droit, 0,2 : dessus 20 % plus petit en x et z).

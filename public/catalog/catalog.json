@@ -356,7 +356,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 52009
+        "standalone": 52567
       }
     },
     {
@@ -525,7 +525,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 52906
+        "standalone": 53464
       }
     },
     {
@@ -697,7 +697,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 54419
+        "standalone": 54977
       }
     },
     {
@@ -898,7 +898,7 @@
       },
       "bytes": {
         "source": 6490,
-        "standalone": 55802
+        "standalone": 56360
       }
     },
     {
@@ -1101,7 +1101,7 @@
       },
       "bytes": {
         "source": 6458,
-        "standalone": 56864
+        "standalone": 57422
       }
     },
     {
@@ -1235,7 +1235,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 44689
+        "standalone": 45247
       }
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 44595
+        "standalone": 45153
       }
     },
     {
@@ -1555,7 +1555,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 46841
+        "standalone": 47399
       }
     },
     {
@@ -1738,7 +1738,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 47990
+        "standalone": 48548
       }
     },
     {
@@ -1937,7 +1937,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 54290
+        "standalone": 54848
       }
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 47774
+        "standalone": 48332
       }
     },
     {
@@ -2382,7 +2382,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 52569
+        "standalone": 53127
       }
     },
     {
@@ -2530,7 +2530,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 44905
+        "standalone": 45463
       }
     },
     {
@@ -2690,7 +2690,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 45915
+        "standalone": 46473
       }
     },
     {
@@ -2833,7 +2833,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 42757
+        "standalone": 43315
       }
     },
     {
@@ -2996,7 +2996,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 43635
+        "standalone": 44193
       }
     },
     {
@@ -3474,7 +3474,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 68632
+        "standalone": 69190
       }
     },
     {
@@ -3664,7 +3664,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 58724
+        "standalone": 59282
       }
     },
     {
@@ -3854,7 +3854,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 58670
+        "standalone": 59228
       }
     },
     {
@@ -4042,7 +4042,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 58684
+        "standalone": 59242
       }
     },
     {
@@ -4375,7 +4375,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 59263
+        "standalone": 59821
       }
     },
     {
@@ -4564,7 +4564,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 57638
+        "standalone": 58196
       }
     },
     {
@@ -4752,7 +4752,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 57726
+        "standalone": 58284
       }
     },
     {
@@ -4940,7 +4940,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 57686
+        "standalone": 58244
       }
     },
     {
@@ -5128,7 +5128,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 57655
+        "standalone": 58213
       }
     },
     {
@@ -5318,7 +5318,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 57737
+        "standalone": 58295
       }
     },
     {
@@ -5512,7 +5512,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 57961
+        "standalone": 58519
       }
     },
     {
@@ -5700,7 +5700,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 57646
+        "standalone": 58204
       }
     },
     {
@@ -5888,7 +5888,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 57632
+        "standalone": 58190
       }
     },
     {
@@ -6074,7 +6074,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 57683
+        "standalone": 58241
       }
     },
     {
@@ -6248,7 +6248,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 57618
+        "standalone": 58176
       }
     },
     {
@@ -6422,7 +6422,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 57602
+        "standalone": 58160
       }
     },
     {
@@ -6595,7 +6595,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 57642
+        "standalone": 58200
       }
     },
     {
@@ -6770,7 +6770,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 57654
+        "standalone": 58212
       }
     },
     {
@@ -6967,7 +6967,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 58166
+        "standalone": 58724
       }
     },
     {
@@ -7138,7 +7138,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 57579
+        "standalone": 58137
       }
     },
     {
@@ -7310,7 +7310,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 57733
+        "standalone": 58291
       }
     },
     {
@@ -7484,7 +7484,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 57570
+        "standalone": 58128
       }
     },
     {
@@ -7658,7 +7658,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 57676
+        "standalone": 58234
       }
     },
     {
@@ -7832,7 +7832,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 57669
+        "standalone": 58227
       }
     },
     {
@@ -8007,7 +8007,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 57686
+        "standalone": 58244
       }
     },
     {
@@ -8196,7 +8196,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 57753
+        "standalone": 58311
       }
     },
     {
@@ -8370,7 +8370,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 57676
+        "standalone": 58234
       }
     },
     {
@@ -8561,7 +8561,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 57782
+        "standalone": 58340
       }
     },
     {
@@ -8766,7 +8766,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 57828
+        "standalone": 58386
       }
     },
     {
@@ -8969,7 +8969,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 58288
+        "standalone": 58846
       }
     },
     {
@@ -9166,7 +9166,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 58215
+        "standalone": 58773
       }
     },
     {
@@ -9398,7 +9398,7 @@
       },
       "bytes": {
         "source": 30740,
-        "standalone": 72509
+        "standalone": 73067
       }
     },
     {
@@ -9628,7 +9628,7 @@
       },
       "bytes": {
         "source": 16495,
-        "standalone": 66855
+        "standalone": 67624
       }
     },
     {
@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 56762
+        "standalone": 57245
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 62257
+        "standalone": 62740
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 64227
+        "standalone": 64710
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 50018
+        "standalone": 50787
       }
     },
     {
@@ -10691,7 +10691,7 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 68180
+        "standalone": 68663
       }
     },
     {
@@ -10885,7 +10885,7 @@
       },
       "bytes": {
         "source": 8644,
-        "standalone": 54580
+        "standalone": 55063
       }
     },
     {
@@ -11094,7 +11094,7 @@
       },
       "bytes": {
         "source": 11265,
-        "standalone": 57089
+        "standalone": 57572
       }
     },
     {
@@ -11283,7 +11283,7 @@
       },
       "bytes": {
         "source": 10838,
-        "standalone": 56062
+        "standalone": 56831
       }
     },
     {
@@ -11445,7 +11445,7 @@
       },
       "bytes": {
         "source": 14146,
-        "standalone": 57233
+        "standalone": 58002
       }
     },
     {
@@ -11619,7 +11619,7 @@
       },
       "bytes": {
         "source": 11346,
-        "standalone": 56143
+        "standalone": 56912
       }
     },
     {
@@ -11782,7 +11782,7 @@
       },
       "bytes": {
         "source": 12168,
-        "standalone": 55620
+        "standalone": 56389
       }
     },
     {
@@ -11938,7 +11938,7 @@
       },
       "bytes": {
         "source": 13598,
-        "standalone": 55536
+        "standalone": 56305
       }
     },
     {
@@ -12102,7 +12102,7 @@
       },
       "bytes": {
         "source": 17008,
-        "standalone": 68003
+        "standalone": 68486
       }
     },
     {
@@ -12288,7 +12288,7 @@
       },
       "bytes": {
         "source": 10873,
-        "standalone": 51665
+        "standalone": 52148
       }
     },
     {
@@ -12474,7 +12474,7 @@
       },
       "bytes": {
         "source": 10379,
-        "standalone": 56370
+        "standalone": 56853
       }
     },
     {
@@ -12686,7 +12686,7 @@
       },
       "bytes": {
         "source": 22635,
-        "standalone": 72155
+        "standalone": 72960
       }
     },
     {
@@ -12860,7 +12860,7 @@
       },
       "bytes": {
         "source": 18282,
-        "standalone": 62919
+        "standalone": 64010
       }
     },
     {
@@ -13056,7 +13056,7 @@
       },
       "bytes": {
         "source": 10525,
-        "standalone": 52058
+        "standalone": 52827
       }
     },
     {
@@ -13252,7 +13252,970 @@
       },
       "bytes": {
         "source": 9054,
-        "standalone": 50705
+        "standalone": 51188
+      }
+    },
+    {
+      "id": "furniture/storage/drawer-archive",
+      "name": "Rayonnage à tiroirs",
+      "nameEn": "Drawer archive",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Rayonnage monumental des Archives du Complexe : ossature de bronze sur plinthe de basalte, façade en grille de petits tiroirs à cassettes (12 × 23 pour 3 × 5,5 m), poignées d'un pixel, frise de rouages qui tournent d'une dent par à-coups sous la corniche. Quelques tiroirs sortis montrent leurs cassettes de verre à la tranche lumineuse ; la scène peut en tirer d'autres. Fiches ARC-01, ARC-02.",
+      "tags": [
+        "rayonnage",
+        "tiroirs",
+        "archives",
+        "cassettes",
+        "classeur",
+        "rouages",
+        "engrenages",
+        "bronze",
+        "basalte",
+        "bibliothèque",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "drawer cabinet",
+        "filing",
+        "archive",
+        "data cassettes",
+        "gears",
+        "clockwork",
+        "patinated bronze",
+        "black basalt",
+        "library",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu du dos (le mur est en z = 0, la façade regarde +z)",
+      "footprint": {
+        "radius": 2,
+        "height": 5.5
+      },
+      "animated": [
+        "gears",
+        "drawers"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tiroirs sortis, les tons des colonnes, les tiroirs plus clairs ou plus sombres, la place et la taille des rouages, leur cadence."
+        },
+        "width": {
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 3,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur du rayonnage (une colonne de tiroirs par 0,25 m ; 3 m = 12 colonnes)."
+        },
+        "height": {
+          "type": "number",
+          "default": 5.5,
+          "min": 2,
+          "max": 5.5,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur totale, corniche comprise (5,5 m = 23 rangées ; les rangs hauts se lisent depuis la mezzanine)."
+        },
+        "drawers": {
+          "type": "enum",
+          "default": "few",
+          "values": [
+            "few",
+            "closed",
+            "many"
+          ],
+          "labels": {
+            "few": "Quelques tiroirs sortis",
+            "closed": "Tous fermés",
+            "many": "Beaucoup de tiroirs sortis"
+          },
+          "label": "Tiroirs",
+          "description": "Tous fermés, quelques-uns sortis (entrouverts de 0,3 m ou ouverts de 0,7 m), ou beaucoup. Pilotable : group.userData.archive."
+        },
+        "gears": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Rouages qui tournent",
+            "off": "Rouages à l'arrêt"
+          },
+          "label": "Rouages",
+          "description": "Les rouages de la frise avancent d'une dent de temps en temps, ou restent immobiles."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan"
+          },
+          "label": "Lueur",
+          "description": "Couleur des tranches de cassettes, dans les tiroirs ouverts."
+        }
+      },
+      "variants": [
+        {
+          "id": "monumental",
+          "name": "Monumental (3 × 5,5 m)",
+          "params": {}
+        },
+        {
+          "id": "low",
+          "name": "Bas (2 × 2,4 m)",
+          "params": {
+            "width": 2,
+            "height": 2.4,
+            "drawers": "many"
+          }
+        },
+        {
+          "id": "closed",
+          "name": "Tous fermés",
+          "params": {
+            "drawers": "closed"
+          }
+        }
+      ],
+      "slug": "furniture-storage-drawer-archive",
+      "path": "src/assets/furniture/storage/drawer-archive.js",
+      "module": "public/catalog/modules/furniture-storage-drawer-archive.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 3344,
+          "vertices": 6996,
+          "drawCalls": 3
+        },
+        "monumental": {
+          "triangles": 3344,
+          "vertices": 6996,
+          "drawCalls": 3
+        },
+        "low": {
+          "triangles": 2076,
+          "vertices": 4444,
+          "drawCalls": 3
+        },
+        "closed": {
+          "triangles": 3344,
+          "vertices": 6996,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 18459,
+        "standalone": 64726
+      }
+    },
+    {
+      "id": "props/books/data-cassette",
+      "name": "Cassette de données",
+      "nameEn": "Data cassette",
+      "category": "props",
+      "subcategory": "books",
+      "description": "Le livre du Complexe : une plaquette de verre fumé sertie de cuivre dont la tranche luit d'une couleur de classement (ambre, cyan, vert, rouge), couchée, debout ou en pile ; très légère, faite pour être posée par centaines. Ou un rouleau-bande de cuivre gravé sur sa bobine de bois, le bout déroulé. Fiches ARC-03, ARC-12.",
+      "tags": [
+        "cassette",
+        "données",
+        "mémoire",
+        "archive",
+        "verre fumé",
+        "cuivre",
+        "tranche lumineuse",
+        "rouleau",
+        "bande gravée",
+        "bobine",
+        "livre",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "lumineux",
+        "léger",
+        "intérieur",
+        "data cassette",
+        "glass tablet",
+        "record",
+        "smoked glass",
+        "copper",
+        "glowing edge",
+        "scroll",
+        "engraved tape",
+        "spool",
+        "book",
+        "ancient complex",
+        "ancient-tech",
+        "glowing",
+        "lightweight",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de l'objet (la tranche lumineuse regarde +z, ou le haut debout)",
+      "footprint": {
+        "radius": 0.32,
+        "height": 0.12
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le code lumineux de la tranche, l'éraflure du verre, le désordre d'une pile ; pour le rouleau, la longueur du bout, les traits gravés, la bande restante."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "cassette",
+          "values": [
+            "cassette",
+            "roll"
+          ],
+          "labels": {
+            "cassette": "Cassette de verre",
+            "roll": "Rouleau-bande de cuivre"
+          },
+          "label": "Objet",
+          "description": "Cassette de verre sertie de cuivre (ARC-03), ou rouleau-bande de cuivre sur bobine de bois (ARC-12)."
+        },
+        "color": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan",
+            "green",
+            "red"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan",
+            "green": "Vert",
+            "red": "Rouge"
+          },
+          "label": "Tranche",
+          "description": "Couleur de classement de la tranche lumineuse (cassette)."
+        },
+        "wear": {
+          "type": "enum",
+          "default": "used",
+          "values": [
+            "used",
+            "new",
+            "worn"
+          ],
+          "labels": {
+            "used": "Servie",
+            "new": "Neuve",
+            "worn": "Usée"
+          },
+          "label": "Usure",
+          "description": "Neuve (cuivre vif, tranche vive), servie, ou usée (cuivre terni, verre éraflé, tranche faible)."
+        },
+        "pose": {
+          "type": "enum",
+          "default": "lying",
+          "values": [
+            "lying",
+            "standing",
+            "stack"
+          ],
+          "labels": {
+            "lying": "Couchée",
+            "standing": "Debout sur sa tranche",
+            "stack": "En pile"
+          },
+          "label": "Pose",
+          "description": "Couchée à plat, debout sur sa tranche (lueur en haut), ou en pile."
+        },
+        "count": {
+          "type": "number",
+          "default": 5,
+          "min": 2,
+          "max": 8,
+          "step": 1,
+          "label": "Pile",
+          "description": "Nombre de cassettes dans une pile (pose « En pile »), ou de rouleaux (3 au plus)."
+        }
+      },
+      "variants": [
+        {
+          "id": "lying",
+          "name": "Cassette couchée",
+          "params": {}
+        },
+        {
+          "id": "standing",
+          "name": "Cassette debout",
+          "params": {
+            "pose": "standing",
+            "color": "cyan"
+          }
+        },
+        {
+          "id": "stack",
+          "name": "Pile de cassettes",
+          "params": {
+            "pose": "stack",
+            "color": "green",
+            "wear": "worn"
+          }
+        },
+        {
+          "id": "roll",
+          "name": "Rouleau-bande",
+          "params": {
+            "kind": "roll"
+          }
+        }
+      ],
+      "slug": "props-books-data-cassette",
+      "path": "src/assets/props/books/data-cassette.js",
+      "module": "public/catalog/modules/props-books-data-cassette.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 18,
+          "vertices": 36,
+          "drawCalls": 3
+        },
+        "lying": {
+          "triangles": 18,
+          "vertices": 36,
+          "drawCalls": 3
+        },
+        "standing": {
+          "triangles": 18,
+          "vertices": 36,
+          "drawCalls": 3
+        },
+        "stack": {
+          "triangles": 92,
+          "vertices": 184,
+          "drawCalls": 3
+        },
+        "roll": {
+          "triangles": 220,
+          "vertices": 384,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 11742,
+        "standalone": 53747
+      }
+    },
+    {
+      "id": "buildings/structure/rolling-ladder",
+      "name": "Échelle roulante",
+      "nameEn": "Rolling library ladder",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Échelle de bibliothèque des Archives du Complexe : montants de laiton noirci inclinés, marches plates au pas de 0,30 m, roulettes de fonte au pied, crochets à galet accrochés à un rail de laiton posé sur la façade d'un rayonnage. Glisse le long du rail ; donne ses marches pour qu'un personnage y grimpe. Fiche ARC-04.",
+      "tags": [
+        "échelle",
+        "échelle roulante",
+        "bibliothèque",
+        "rail",
+        "laiton",
+        "roulettes",
+        "marches",
+        "archives",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "praticable",
+        "pilotable",
+        "intérieur",
+        "ladder",
+        "rolling ladder",
+        "library ladder",
+        "guide rail",
+        "brass",
+        "casters",
+        "rungs",
+        "archive room",
+        "ancient complex",
+        "ancient-tech",
+        "climbable",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol au pied de la façade du rayonnage (z = 0), au milieu du rail ; l'échelle avance vers +z",
+      "footprint": {
+        "radius": 1.6,
+        "height": 5.25
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'inclinaison (9 à 12°), la marche usée, la place de l'échelle sur le rail, la patine du laiton."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 2.4,
+          "max": 5,
+          "step": 0.3,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du haut de l'échelle ; le rail est 0,2 m plus haut (5,2 m pour les rayonnages de 5,5 m)."
+        },
+        "rail": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Avec son rail (3 m)",
+            "off": "Sans rail"
+          },
+          "label": "Rail",
+          "description": "Avec son tronçon de rail de 3 m et ses pattes (posé sur la façade du rayonnage), ou l'échelle seule."
+        },
+        "slide": {
+          "type": "number",
+          "default": 0,
+          "min": -1.2,
+          "max": 1.2,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Position",
+          "description": "Place de l'échelle le long du rail (0 : au milieu ; la graine la décale un peu). Pilotable : group.userData.ladder.setSlide(x)."
+        }
+      },
+      "variants": [
+        {
+          "id": "full",
+          "name": "Grande, sur son rail",
+          "params": {}
+        },
+        {
+          "id": "short",
+          "name": "Courte (2,4 m)",
+          "params": {
+            "height": 2.4
+          }
+        },
+        {
+          "id": "alone",
+          "name": "Sans rail",
+          "params": {
+            "rail": "off"
+          }
+        }
+      ],
+      "slug": "buildings-structure-rolling-ladder",
+      "path": "src/assets/buildings/structure/rolling-ladder.js",
+      "module": "public/catalog/modules/buildings-structure-rolling-ladder.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 560,
+          "vertices": 1072,
+          "drawCalls": 2
+        },
+        "full": {
+          "triangles": 560,
+          "vertices": 1072,
+          "drawCalls": 2
+        },
+        "short": {
+          "triangles": 452,
+          "vertices": 856,
+          "drawCalls": 2
+        },
+        "alone": {
+          "triangles": 452,
+          "vertices": 856,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 8819,
+        "standalone": 50905
+      }
+    },
+    {
+      "id": "furniture/tables/stone-table",
+      "name": "Table de pierre",
+      "nameEn": "Stone table",
+      "category": "furniture",
+      "subcategory": "tables",
+      "description": "Table du Complexe : plateau épais de pierre fumée sur deux pieds de bronze en patte, tiroir au milieu, trait de glyphes lumineux sur la tranche. Table de lecture des Archives, table d'observation (feutre, rebord), de transcription (bois noirci, carnets, plume, encrier), de dissection (rigoles, feutre) ou simple support. Fiches ARC-05, ETU-10, E2-04, E5-05, E6-06.",
+      "tags": [
+        "table",
+        "table de lecture",
+        "établi",
+        "plateau",
+        "pierre fumée",
+        "bronze",
+        "pattes",
+        "tiroir",
+        "glyphes",
+        "feutre",
+        "carnets",
+        "encrier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "mobilier",
+        "intérieur",
+        "reading table",
+        "desk",
+        "stone top",
+        "smoked stone",
+        "bronze legs",
+        "paw feet",
+        "drawer",
+        "glyphs",
+        "felt mat",
+        "notebooks",
+        "inkwell",
+        "ancient complex",
+        "ancient-tech",
+        "furniture",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de la table (le tiroir et la tranche à glyphes regardent +z)",
+      "footprint": {
+        "radius": 1.3,
+        "height": 0.95
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les dalles du plateau, l'angle écorné, l'usure, le code des glyphes, la place des carnets et de l'encrier."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "reading",
+          "values": [
+            "reading",
+            "observation",
+            "transcription",
+            "dissection",
+            "support"
+          ],
+          "labels": {
+            "reading": "Lecture (Archives)",
+            "observation": "Observation (salle d'étude)",
+            "transcription": "Transcription (salle 2)",
+            "dissection": "Dissection (salle 5)",
+            "support": "Support (salle 6)"
+          },
+          "label": "Modèle",
+          "description": "Lecture (Archives), observation (feutre et rebord), transcription (bois, carnets, encrier), dissection (rigoles, feutre), support (nue)."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan"
+          },
+          "label": "Lueur",
+          "description": "Couleur du trait de glyphes de la tranche."
+        }
+      },
+      "variants": [
+        {
+          "id": "reading",
+          "name": "Lecture (Archives)",
+          "params": {
+            "kind": "reading"
+          }
+        },
+        {
+          "id": "observation",
+          "name": "Observation (salle d'étude)",
+          "params": {
+            "kind": "observation"
+          }
+        },
+        {
+          "id": "transcription",
+          "name": "Transcription (salle 2)",
+          "params": {
+            "kind": "transcription"
+          }
+        },
+        {
+          "id": "dissection",
+          "name": "Dissection (salle 5)",
+          "params": {
+            "kind": "dissection"
+          }
+        },
+        {
+          "id": "support",
+          "name": "Support (salle 6)",
+          "params": {
+            "kind": "support"
+          }
+        }
+      ],
+      "slug": "furniture-tables-stone-table",
+      "path": "src/assets/furniture/tables/stone-table.js",
+      "module": "public/catalog/modules/furniture-tables-stone-table.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2188,
+          "vertices": 1960,
+          "drawCalls": 3
+        },
+        "reading": {
+          "triangles": 2188,
+          "vertices": 1960,
+          "drawCalls": 3
+        },
+        "observation": {
+          "triangles": 1376,
+          "vertices": 1502,
+          "drawCalls": 3
+        },
+        "transcription": {
+          "triangles": 1308,
+          "vertices": 1584,
+          "drawCalls": 3
+        },
+        "dissection": {
+          "triangles": 1582,
+          "vertices": 1604,
+          "drawCalls": 3
+        },
+        "support": {
+          "triangles": 920,
+          "vertices": 1084,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 12902,
+        "standalone": 59659
+      }
+    },
+    {
+      "id": "furniture/lighting/articulated-lamp",
+      "name": "Lampe articulée",
+      "nameEn": "Articulated lamp",
+      "category": "furniture",
+      "subcategory": "lighting",
+      "description": "Lampe à bras articulé du Complexe : lampe de lecture des Archives (socle rond, trois segments de laiton, plots d'articulation, cloche de verre ambre qui luit) ou lampe d'atelier (deux bras, contrepoids, cône noir à l'intérieur jaune pâle). Posée, serrée à un étau ou suspendue ; allumée, en veille ou éteinte ; le bras se replie à la demande. Fiches ARC-06, ATE-09.",
+      "tags": [
+        "lampe",
+        "lampe de bureau",
+        "lampe articulée",
+        "bras",
+        "abat-jour",
+        "cloche",
+        "contrepoids",
+        "étau",
+        "laiton",
+        "ambre",
+        "lecture",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "éclairage",
+        "lumineux",
+        "pilotable",
+        "intérieur",
+        "desk lamp",
+        "articulated lamp",
+        "task lamp",
+        "arm",
+        "lampshade",
+        "bell shade",
+        "counterweight",
+        "clamp",
+        "brass",
+        "amber",
+        "reading",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "lighting",
+        "glowing",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine sous le socle (sur le plateau), au ras du bord de la table pour l'étau (le plateau est en y = 0, z < 0), ou au sol à l'aplomb de la tige pour la lampe suspendue",
+      "footprint": {
+        "radius": 0.9,
+        "height": 2.8
+      },
+      "animated": [
+        "flicker",
+        "arm"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la pose du bras (angles des articulations), son orientation, la patine, le rythme du scintillement."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "reading",
+          "values": [
+            "reading",
+            "workshop"
+          ],
+          "labels": {
+            "reading": "Lecture (cloche ambre, 3 segments)",
+            "workshop": "Atelier (cône noir, contrepoids)"
+          },
+          "label": "Modèle",
+          "description": "Lampe de lecture des Archives (3 segments, cloche ambre) ou lampe d'atelier (2 bras, contrepoids, cône noir)."
+        },
+        "mount": {
+          "type": "enum",
+          "default": "desk",
+          "values": [
+            "desk",
+            "clamp",
+            "hanging"
+          ],
+          "labels": {
+            "desk": "Posée sur un socle",
+            "clamp": "Serrée par un étau (bord de table)",
+            "hanging": "Suspendue sous une tige"
+          },
+          "label": "Pose",
+          "description": "Sur un socle, serrée par un étau au bord d'une table (origine au ras du plateau), ou suspendue sous une tige (au-dessus du catalogue)."
+        },
+        "state": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumée",
+            "dim": "En veille",
+            "off": "Éteinte"
+          },
+          "label": "État",
+          "description": "Allumée (scintillement lent), en veille (lueur faible) ou éteinte."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "Éclaire le décor autour d'elle dans le noir (une des 12 lumières de halo de la scène)."
+        },
+        "height": {
+          "type": "number",
+          "default": 1.8,
+          "min": 1,
+          "max": 4,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Lampe suspendue : hauteur du point d'attache du bras au-dessus du sol (la tige monte au-dessus)."
+        },
+        "chain": {
+          "type": "number",
+          "default": 1,
+          "min": 0.2,
+          "max": 4,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Tige",
+          "description": "Lampe suspendue : longueur de la tige jusqu'au plafond."
+        }
+      },
+      "variants": [
+        {
+          "id": "reading",
+          "name": "Lecture, posée",
+          "params": {}
+        },
+        {
+          "id": "workshop",
+          "name": "Atelier, à l'étau",
+          "params": {
+            "kind": "workshop",
+            "mount": "clamp"
+          }
+        },
+        {
+          "id": "hanging",
+          "name": "Lecture, suspendue",
+          "params": {
+            "mount": "hanging"
+          }
+        },
+        {
+          "id": "off",
+          "name": "Atelier éteinte",
+          "params": {
+            "kind": "workshop",
+            "state": "off"
+          }
+        }
+      ],
+      "slug": "furniture-lighting-articulated-lamp",
+      "path": "src/assets/furniture/lighting/articulated-lamp.js",
+      "module": "public/catalog/modules/furniture-lighting-articulated-lamp.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 496,
+          "vertices": 956,
+          "drawCalls": 2
+        },
+        "reading": {
+          "triangles": 496,
+          "vertices": 956,
+          "drawCalls": 2
+        },
+        "workshop": {
+          "triangles": 608,
+          "vertices": 1143,
+          "drawCalls": 2
+        },
+        "hanging": {
+          "triangles": 464,
+          "vertices": 892,
+          "drawCalls": 2
+        },
+        "off": {
+          "triangles": 656,
+          "vertices": 1239,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 14358,
+        "standalone": 60447
       }
     },
     {
@@ -13461,7 +14424,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 247013
+        "standalone": 247571
       }
     },
     {
@@ -13638,7 +14601,7 @@
       },
       "bytes": {
         "source": 3500,
-        "standalone": 298665
+        "standalone": 299504
       }
     },
     {
@@ -13820,7 +14783,7 @@
       },
       "bytes": {
         "source": 3537,
-        "standalone": 304410
+        "standalone": 305249
       }
     }
   ]

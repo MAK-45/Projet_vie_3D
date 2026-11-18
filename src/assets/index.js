@@ -71,6 +71,11 @@ import * as irisDoor from "./buildings/structure/iris-door.js";
 import * as travelTrunk from "./furniture/storage/travel-trunk.js";
 import * as bronzeRailing from "./buildings/structure/bronze-railing.js";
 import * as handLamp from "./props/tools/hand-lamp.js";
+import * as drawerArchive from "./furniture/storage/drawer-archive.js";
+import * as dataCassette from "./props/books/data-cassette.js";
+import * as rollingLadder from "./buildings/structure/rolling-ladder.js";
+import * as stoneTable from "./furniture/tables/stone-table.js";
+import * as articulatedLamp from "./furniture/lighting/articulated-lamp.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
@@ -84,6 +89,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
   stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
   irisDoor, travelTrunk, bronzeRailing, handLamp,
+  drawerArchive, dataCassette, rollingLadder, stoneTable, articulatedLamp,
   summerMeadow, ancientComplex, complexTest,
 ];
 
