@@ -170,3 +170,19 @@ dépasser.
   largeur sur les liaisons, deux points de passage par porte, sans halte).
 - **Coût** : beaucoup de modèles utilisés une ou deux fois = beaucoup de draw calls. Fusionner les variantes
   proches (une seule dalle intacte tournée au hasard, un seul casier).
+
+## Le Complexe : le Sas (lot 5)
+
+- **Une lueur qui s'allume en vague** se fait dans le shader (`enableReveal` : sphère du monde, un uniform partagé),
+  pas en changeant de modèle : les copies instanciées d'un même mur s'allument chacune à leur tour sans un draw call
+  de plus.
+- **Allumer une lampe instanciée** : la poser deux fois (allumée, éteinte) et cacher l'une des copies
+  (`kit.setVisible` : matrice réduite à un point). Pas de reconstruction.
+- **Une lueur sur toute une surface** (rainures de 100 dalles) se lit beaucoup plus fort que sur un asset seul :
+  la ramener à un ton sourd dans le monde.
+- **Balade qui joue une scène** : un parcours fixe plutôt que des buts au hasard. Les haltes sont atteintes à 1,5 m
+  et les passages à 0,6 m : prévoir un point de passage avant chaque halte qui doit être précise (devant un pupitre),
+  et des étapes gardées qui attendent une porte (`gate`, `wait`). Un bout de rambarde sur la ligne droite entre deux
+  buts bloque le personnage : passer par un point dégagé.
+- **Grains de poussière en 3e personne** : une forme de taille fixe dans le monde devient un gros carré à 1 m de la
+  caméra ; la réduire avec la distance.

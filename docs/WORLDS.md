@@ -288,3 +288,51 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
   275 000 triangles par image (passe d'ombre comprise) ; à la 3e personne (plafond compris) 57 à 119 draw calls,
   225 000 à 320 000 triangles. Au-dessus de la cible de 100 draw calls : le vrai monde montrera une pièce et
   ses voisines seulement, et regroupera les petits modèles.
+
+## Le Complexe (`worlds/interiors/ancient-complex`)
+
+Le vrai monde du Complexe (`docs/complexe/`), assemblé pièce par pièce au fil des lots. Lot 5 : le **Sas de
+Scellement** (10 × 6 × 5 m, fidèle à `docs/complexe/PIECES.md`) et le **vestibule** d'où l'on arrive (6 × 4 m,
+4 m sous plafond). Générateur : `src/worlds/ancient-complex.js` ; outils : `src/worlds/kit/interior.js`,
+`src/fx/lamp-dust.js`. Le monde d'essai (`complex-test`) reste à part jusqu'au lot 12.
+
+| Réglage | Valeurs |
+|---|---|
+| `seed` | trappe et fissure des dalles, niche du mur ouest (au nord ou au sud du pupitre), leviers, lampe de veille, contenu de la malle |
+| `room` (« Taille » dans l'explorateur) | `sas` (les pièces suivantes s'ajouteront) |
+| `state` | `check` (vérification, par défaut dans l'explorateur), `awake` (éveillé, par défaut pour la fiche), `asleep` (endormi) |
+
+- **Plan** : Porte-Iris au centre du mur sud (face décorée vers le Sas), porte standard au centre du mur nord (vers
+  les Archives, pas encore faites : elle s'ouvre sur le noir et on ne la franchit pas), piliers d'angle, bandeau de
+  glyphes. Dalles de 2 m dont les diagonales forment des chevrons pointés vers la porte nord ; allée usée au milieu.
+  Pupitre de vérification à l'ouest sous la plaque gravée, casiers à l'est sous le tuyau, bancs de part et d'autre de
+  la porte nord, valve dans l'angle nord-est, malles dans les coins sud, file d'attente de poteaux à chaînes de
+  l'Iris au milieu du Sas. Dans le vestibule, la lampe portative laissée allumée.
+- **États** : endormi (glyphes et rainures éteints, une des deux suspendues allumée), éveillé (tout allumé),
+  vérification : endormi au départ ; l'Iris s'ouvre à l'approche, se referme une fois qu'on est entré (1,4 m) et
+  reste scellée ; à moins d'1 m du pupitre, ses 8 leviers basculent un à un (0,22 s chacun), puis la lueur part du
+  pupitre en vague (3,4 m/s) : glyphes des murs, rainures du sol, glyphes de la porte nord, et chaque lampe
+  s'allume quand la vague l'atteint. La porte nord se déverrouille, l'Iris aussi. Revenir dans le vestibule rendort
+  le Sas (vague inverse) : la scène se rejoue.
+- **Vague** : moteur `enableReveal(material, uniform, off)` (`toon-material.js`) : une lueur `unlit` n'est allumée
+  que dans une sphère du monde ; au-delà, couleur éteinte et pas d'éclat de nuit. Un seul uniform pour tout le Sas ;
+  le kit le pose sur un maillage nommé d'un modèle (`kit.model(..., { reveal: { mesh, uniform, off } })`). Les
+  rainures allumées sont ramenées à un ambre sourd (`#7c3a16`) : sinon le sol devient un quadrillage orange.
+- **Lampes** : chaque lampe est posée deux fois (allumée, éteinte), une seule copie visible (`kit.setVisible`) ;
+  halo (`createHaloPool`, source `on`, `refresh()`) et poussière suivent.
+- **Poussière** (`createLampDust`) : 10 grains par lampe, pour les 5 lampes allumées les plus proches du point
+  regardé, 1 draw call ; positions calculées du temps seul, à 12 images/s. En 3e personne, les grains proches sont
+  réduits pour rester d'un pixel d'art (sinon de gros carrés devant la caméra).
+- **Brume** (`world.fog`) : un voile sombre tramé (4 paliers de Bayer, opacité 0,5 au plus) sur ce qui est loin
+  derrière le point regardé : en isométrique de 2 à 14 m derrière lui (`PixelRenderer.orthoFog`, compté depuis le
+  point suivi), en 3e personne de 3 à 16 m de la caméra (`fog.max`).
+- **Caméra bornée** (`world.viewLimits`) : zoom ≥ 0,8, inclinaison ≥ 22°.
+- **Étages** (`heightAt(x, z, y)`) : le promeneur passe sa hauteur ; le monde rend la plus haute surface de marche
+  atteignable d'un pas (0,40 m). Ici, le seuil de l'Iris (0,20 m). La prairie ignore `y`.
+- **Praticable** : collisions en boîtes ; on reste dans les pièces, et la baie de l'Iris ne se franchit qu'ouverte.
+  La balade automatique joue la scène (`strollTarget` : parcours fixe, étapes gardées qui attendent une porte ou la
+  vérification). Vérifié avec les six personnages : vestibule → Iris → pupitre → porte nord → retour, en boucle.
+- **Mesures** (capture logicielle, téléphone, état éveillé) : en vue isométrique 81 à 87 draw calls, environ
+  77 000 triangles par image (passe d'ombre comprise) ; en 3e personne 61 à 68 draw calls, 75 000 à 79 000
+  triangles. Sous le budget de 100 draw calls ; les pièces suivantes ne montreront que la pièce courante et ses
+  voisines.

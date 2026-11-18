@@ -23,9 +23,9 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-18
-- **Étape actuelle** : lot 4 validé (Porte-Iris, malle, rambarde de bronze, lampe portative) ; ajouté au coin du Sas et
-  au monde d'essai (la Porte-Iris remplace l'entrée du Sas et s'ouvre à l'approche).
-- **Prochaine action** : lot 5 (Monde : le Sas, avec `create-world`), à discuter d'abord.
+- **Étape actuelle** : lot 5 fait, **à valider** : le monde `worlds/interiors/ancient-complex` avec le Sas et son
+  vestibule, trois états (vérification, éveillé, endormi), la séquence de vérification jouée par la balade auto.
+- **Prochaine action** : retours de l'utilisateur sur le lot 5, puis lot 6 (Archives : rangement), à discuter d'abord.
 
 ## Les lots
 
@@ -37,7 +37,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 2 | Lumière et réseaux | 5 | ✅ validé | 2026-11-17 | lampe, lustre, tuyau, valve, câbles ; ajoutés au coin du Sas (jour et nuit) |
 | 3 | Mobilier du Sas | 5 | ✅ validé | 2026-11-18 | banc, casier, pupitre, grille et caillebotis, plaque ; ajoutés au coin du Sas (jour et nuit) ; kit : `gridBlock` |
 | 4 | La Porte-Iris et le balisage | 4 | ✅ validé | 2026-11-18 | Porte-Iris, malle, rambarde, lampe portative ; ajoutés au coin du Sas et au monde d'essai ; kit : `arcBlock`, `slantPlate`, `createRigidParts`, `mergeParts` ; moteur : option `dither` (trame) |
-| 5 | Monde : le Sas | — | ⬜ à faire | | |
+| 5 | Monde : le Sas | — | 👀 à valider | 2026-11-18 | monde `ancient-complex` (Sas + vestibule, états, vérification) ; moteur : `enableReveal`, brume d'intérieur ; kit : lampes allumées ou éteintes, halos `on` ; fx : `lamp-dust` ; marche à étages `heightAt(x, z, y)` |
 | 6 | Archives : rangement | 5 | ⬜ à faire | | |
 | 7 | Archives : lecture | 5 | ⬜ à faire | | |
 | 8 | Archives : hauteur et catalogue, puis Monde : les Archives | 4 | ⬜ à faire | | |
@@ -169,7 +169,7 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 25 | `props/artifacts/alignment-circle` ★ | E10-A1 (le cercle) | ⬜ | |
 | 26 | `props/artifacts/hex-star-gate` ★ | E10-A1 (l'arche et sa membrane, séquence commune avec stèles et cercle) | ⬜ | |
 
-Monde : `worlds/interiors/ancient-complex` — pièces assemblées : aucune pour l'instant. Monde d'essai (hors plan) :
+Monde : `worlds/interiors/ancient-complex` — pièces assemblées : le Sas (et son vestibule), lot 5. Monde d'essai (hors plan) :
 `worlds/interiors/complex-test` (Sas, Archives, Atelier, tronçon de Galerie, avec les assets des lots 1 à 4) ; son
 kit (`src/worlds/kit/interior.js`, vue en coupe du moteur, explorateur générique) servira au lot 5.
 
@@ -193,12 +193,15 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-18 | Lot 3 validé tel quel. | validé |
 | 2026-11-18 | Lot 3 : casier fermé par défaut (portes ouvertes par le scénario) ; caillebotis courbe du Cœur fait dès le lot 3. | demandé par l'utilisateur |
 | 2026-11-18 | Lot 4 validé tel quel : Porte-Iris centrée à 1,40 m, ouverture Ø 2,80 m (au lieu de 1,5 m et 2,6 m) pour un passage de 1,44 m sur le seuil et un sommet à 2,80 m comme les portes ; livrée avec son pan de mur de 6 m ; glyphes éteints quand elle est fermée. | validé |
+| 2026-11-18 | Lot 5, proposition validée : vestibule de 6 × 4 m au sud de l'Iris (départ dehors), Iris qui se scelle derrière soi, porte nord qui s'ouvre sur le noir, réglage `state` (vérification, éveillé, endormi) avec séquence au pupitre, bancs au nord de part et d'autre de la porte, monde d'essai gardé jusqu'au lot 12. | validé |
+| 2026-11-18 | Lot 5, faits en route : Porte-Iris décorée côté Sas (côté vestibule, on voit son dos sombre) ; rainures allumées ramenées à un ambre sourd ; file d'attente en deux lignes de poteaux ; une lampe sur deux en veille (choisie par la graine) ; fiche de la galerie en état éveillé, explorateur en vérification avec le mannequin. | à confirmer |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-18 | Lot 5 : le monde du Complexe avec le Sas et son vestibule (états, vérification au pupitre, vague de glyphes, lampes qui s'allument, poussière, brume tramée, seuil de l'Iris à 0,20 m) ; traversé par les six personnages en balade auto ; captures mobile, bureau, isométrique et 3e personne ; 81 à 87 draw calls ; Atelier publié. | Validation du lot 5, puis lot 6. |
 | 2026-11-18 | Lot 4 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 5 : propositions à discuter. |
 | 2026-11-18 | Lot 4 : Porte-Iris, malle, rambarde de bronze, lampe portative (kit : blocs en arc, plaques en biseau, pièces rigides dans un maillage ; moteur : trame `dither`), vérifiés en planches, en gros plan, dans le coin du Sas (jour, nuit, mobile) et dans le monde d'essai ; Atelier publié (v43). | Validation du lot 4, puis lot 5. |
 | 2026-11-18 | Monde d'essai retouché (retours de l'utilisateur) : toujours la nuit, 12 lumières de halo dans le moteur (11 pour les lampes vues, même de loin), plafond à caissons en 3e personne, caméra suiveuse qui ne traverse plus les murs, départ face à la porte des Archives. | Retours sur le monde d'essai, puis lot 4. |
