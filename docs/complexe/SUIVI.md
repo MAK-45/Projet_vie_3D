@@ -23,8 +23,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-18
-- **Étape actuelle** : lot 3 (mobilier du Sas) fait, à valider par l'utilisateur.
-- **Prochaine action** : validation du lot 3, puis lot 4 (Porte-Iris, malle de voyage, rambarde de bronze, lampe à
+- **Étape actuelle** : lot 3 validé ; monde de test du Complexe (demande de l'utilisateur) avant le lot 4.
+- **Prochaine action** : monde de test avec les assets des lots 1 à 3, puis lot 4 (Porte-Iris, malle de voyage, rambarde de bronze, lampe à
   main), à discuter d'abord.
 
 ## Les lots
@@ -35,7 +35,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 0 | Préparation | — | ✅ validé | 2026-11-17 | palettes du Complexe, `kit/complex-parts.js`, option `tone` du matériau, taxonomie, nuancier `dev/complex-swatch.html` |
 | 1 | Ossature du Sas | 5 | ✅ validé | 2026-11-17 | dalle, mur, colonne, voûte, portes ; scène d'essai `dev/complex-corner.html` |
 | 2 | Lumière et réseaux | 5 | ✅ validé | 2026-11-17 | lampe, lustre, tuyau, valve, câbles ; ajoutés au coin du Sas (jour et nuit) |
-| 3 | Mobilier du Sas | 5 | 👀 à valider | 2026-11-18 | banc, casier, pupitre, grille et caillebotis, plaque ; ajoutés au coin du Sas (jour et nuit) ; kit : `gridBlock` |
+| 3 | Mobilier du Sas | 5 | ✅ validé | 2026-11-18 | banc, casier, pupitre, grille et caillebotis, plaque ; ajoutés au coin du Sas (jour et nuit) ; kit : `gridBlock` |
 | 4 | La Porte-Iris et le balisage | 4 | ⬜ à faire | | |
 | 5 | Monde : le Sas | — | ⬜ à faire | | |
 | 6 | Archives : rangement | 5 | ⬜ à faire | | |
@@ -78,11 +78,11 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 2 | `props/machines/copper-pipe` | SAS-09, COE-07 | ✅ | droit, coude, T, bout bouché ; mural (colliers) ou géant (brides) ; contre un mur ou sur berceaux |
 | 2 | `props/machines/wheel-valve` | SAS-10, COE-08 | ✅ | murale ou géante ; `turn`, boucle, `userData.valve` (setTurn, turnTo) ; l'aiguille suit |
 | 2 | `props/machines/braided-cable` | SAS-11, ETU-07, COE-14, ORA-11 | ✅ | fin, d'étude, ombilical, principal ; pendu, au sol, faisceau avec boucle ; `createRoute(points)` |
-| 3 | `furniture/seating/stone-bench` | SAS-06, GAL-07, ORA-10, E5-02 | 👀 | Sas, galerie, méditation, maintenance ; assise en 1 à 3 blocs, angle écorné ; `userData.seats` |
-| 3 | `furniture/storage/equipment-locker` | SAS-07, COE-10 | 👀 | casier (6 cases) ou armoire à fusibles (24, levier de coupure) ; portes fermées par défaut ; `userData.locker` (setOpen, setAll) |
-| 3 | `props/machines/lever-desk` | SAS-08, GAL-09, E2-01 | 👀 | vérification, garde (registre, 10 voyants), lecteur (fente cyan) ; `userData.desk` (setLever, setLights, setCassette) |
-| 3 | `buildings/structure/vent-grate` | SAS-12, COE-12 | 👀 | grille murale à damier, caillebotis droit ou courbe (rayon réglable, fait dès ce lot) ; lueur ambre ou cyan ; `userData.walkable` |
-| 3 | `props/decor/glyph-plaque` | SAS-14, GAL-06, ORA-12, plaque de COE-15 | 👀 | inscription, direction (flèche, numéro : couché = 5, debout = 1), dédicace inclinée, avertissement rouge |
+| 3 | `furniture/seating/stone-bench` | SAS-06, GAL-07, ORA-10, E5-02 | ✅ | Sas, galerie, méditation, maintenance ; assise en 1 à 3 blocs, angle écorné ; `userData.seats` |
+| 3 | `furniture/storage/equipment-locker` | SAS-07, COE-10 | ✅ | casier (6 cases) ou armoire à fusibles (24, levier de coupure) ; portes fermées par défaut ; `userData.locker` (setOpen, setAll) |
+| 3 | `props/machines/lever-desk` | SAS-08, GAL-09, E2-01 | ✅ | vérification, garde (registre, 10 voyants), lecteur (fente cyan) ; `userData.desk` (setLever, setLights, setCassette) |
+| 3 | `buildings/structure/vent-grate` | SAS-12, COE-12 | ✅ | grille murale à damier, caillebotis droit ou courbe (rayon réglable, fait dès ce lot) ; lueur ambre ou cyan ; `userData.walkable` |
+| 3 | `props/decor/glyph-plaque` | SAS-14, GAL-06, ORA-12, plaque de COE-15 | ✅ | inscription, direction (flèche, numéro : couché = 5, debout = 1), dédicace inclinée, avertissement rouge |
 | 4 | `buildings/structure/iris-door` ★ | SAS-17 | ⬜ | |
 | 4 | `furniture/storage/travel-trunk` | SAS-13 | ⬜ | |
 | 4 | `buildings/structure/bronze-railing` | SAS-15, ETU-15, COE-03, barrière de COE-15 | ⬜ | |
@@ -188,6 +188,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Le matériau toon gagne l'option `tone` (attribut `aTone`, décalage de lumière par sommet) : suie, tons par bloc, usure, sans texture. Sans effet sur les assets qui ne l'utilisent pas. | validé |
 | 2026-11-17 | Lot 2 validé tel quel : origine au sol pour les luminaires suspendus (`height` = hauteur de l'ampoule, `chain` jusqu'au plafond), halo désactivé par défaut (le monde attribue les 4 lumières de halo), valve géante à roue couchée. | validé |
 | 2026-11-17 | Lot 1 validé tel quel : portes pivotantes vers l'arrière livrées avec leur morceau de mur, chambranle dans la pierre du mur (un ton plus clair), dalles posées à y = −0,20. | validé |
+| 2026-11-18 | Lot 3 validé tel quel. | validé |
 | 2026-11-18 | Lot 3 : casier fermé par défaut (portes ouvertes par le scénario) ; caillebotis courbe du Cœur fait dès le lot 3. | demandé par l'utilisateur |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
