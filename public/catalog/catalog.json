@@ -182,7 +182,7 @@
     {
       "path": "src/engine/pixel-renderer.js",
       "role": "Pipeline pixel art : rendu basse résolution + passe de contours.",
-      "bytes": 14794
+      "bytes": 15356
     },
     {
       "path": "src/engine/iso-camera.js",
@@ -192,7 +192,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 43861
+      "bytes": 45209
     }
   ],
   "assets": [
@@ -356,7 +356,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 51539
+        "standalone": 52009
       }
     },
     {
@@ -525,7 +525,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 52436
+        "standalone": 52906
       }
     },
     {
@@ -697,7 +697,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 53949
+        "standalone": 54419
       }
     },
     {
@@ -898,7 +898,7 @@
       },
       "bytes": {
         "source": 6490,
-        "standalone": 55332
+        "standalone": 55802
       }
     },
     {
@@ -1101,7 +1101,7 @@
       },
       "bytes": {
         "source": 6458,
-        "standalone": 56394
+        "standalone": 56864
       }
     },
     {
@@ -1235,7 +1235,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 44219
+        "standalone": 44689
       }
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 44125
+        "standalone": 44595
       }
     },
     {
@@ -1555,7 +1555,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 46371
+        "standalone": 46841
       }
     },
     {
@@ -1738,7 +1738,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 47520
+        "standalone": 47990
       }
     },
     {
@@ -1937,7 +1937,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 53820
+        "standalone": 54290
       }
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 47304
+        "standalone": 47774
       }
     },
     {
@@ -2382,7 +2382,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 52099
+        "standalone": 52569
       }
     },
     {
@@ -2530,7 +2530,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 44435
+        "standalone": 44905
       }
     },
     {
@@ -2690,7 +2690,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 45445
+        "standalone": 45915
       }
     },
     {
@@ -2833,7 +2833,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 42287
+        "standalone": 42757
       }
     },
     {
@@ -2996,7 +2996,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 43165
+        "standalone": 43635
       }
     },
     {
@@ -3474,7 +3474,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 68162
+        "standalone": 68632
       }
     },
     {
@@ -3664,7 +3664,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 58254
+        "standalone": 58724
       }
     },
     {
@@ -3854,7 +3854,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 58200
+        "standalone": 58670
       }
     },
     {
@@ -4042,7 +4042,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 58214
+        "standalone": 58684
       }
     },
     {
@@ -4375,7 +4375,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 58793
+        "standalone": 59263
       }
     },
     {
@@ -4564,7 +4564,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 57168
+        "standalone": 57638
       }
     },
     {
@@ -4752,7 +4752,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 57256
+        "standalone": 57726
       }
     },
     {
@@ -4940,7 +4940,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 57216
+        "standalone": 57686
       }
     },
     {
@@ -5128,7 +5128,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 57185
+        "standalone": 57655
       }
     },
     {
@@ -5318,7 +5318,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 57267
+        "standalone": 57737
       }
     },
     {
@@ -5512,7 +5512,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 57491
+        "standalone": 57961
       }
     },
     {
@@ -5700,7 +5700,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 57176
+        "standalone": 57646
       }
     },
     {
@@ -5888,7 +5888,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 57162
+        "standalone": 57632
       }
     },
     {
@@ -6074,7 +6074,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 57213
+        "standalone": 57683
       }
     },
     {
@@ -6248,7 +6248,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 57148
+        "standalone": 57618
       }
     },
     {
@@ -6422,7 +6422,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 57132
+        "standalone": 57602
       }
     },
     {
@@ -6595,7 +6595,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 57172
+        "standalone": 57642
       }
     },
     {
@@ -6770,7 +6770,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 57184
+        "standalone": 57654
       }
     },
     {
@@ -6967,7 +6967,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 57696
+        "standalone": 58166
       }
     },
     {
@@ -7138,7 +7138,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 57109
+        "standalone": 57579
       }
     },
     {
@@ -7310,7 +7310,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 57263
+        "standalone": 57733
       }
     },
     {
@@ -7484,7 +7484,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 57100
+        "standalone": 57570
       }
     },
     {
@@ -7658,7 +7658,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 57206
+        "standalone": 57676
       }
     },
     {
@@ -7832,7 +7832,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 57199
+        "standalone": 57669
       }
     },
     {
@@ -8007,7 +8007,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 57216
+        "standalone": 57686
       }
     },
     {
@@ -8196,7 +8196,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 57283
+        "standalone": 57753
       }
     },
     {
@@ -8370,7 +8370,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 57206
+        "standalone": 57676
       }
     },
     {
@@ -8561,7 +8561,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 57312
+        "standalone": 57782
       }
     },
     {
@@ -8766,7 +8766,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 57358
+        "standalone": 57828
       }
     },
     {
@@ -8969,7 +8969,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 57818
+        "standalone": 58288
       }
     },
     {
@@ -9166,7 +9166,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 57745
+        "standalone": 58215
       }
     },
     {
@@ -9398,7 +9398,7 @@
       },
       "bytes": {
         "source": 30740,
-        "standalone": 72039
+        "standalone": 72509
       }
     },
     {
@@ -9628,7 +9628,7 @@
       },
       "bytes": {
         "source": 16495,
-        "standalone": 66385
+        "standalone": 66855
       }
     },
     {
@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 56292
+        "standalone": 56762
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 61787
+        "standalone": 62257
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 63757
+        "standalone": 64227
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 49548
+        "standalone": 50018
       }
     },
     {
@@ -10691,7 +10691,7 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 67710
+        "standalone": 68180
       }
     },
     {
@@ -10885,7 +10885,7 @@
       },
       "bytes": {
         "source": 8644,
-        "standalone": 54110
+        "standalone": 54580
       }
     },
     {
@@ -11094,7 +11094,7 @@
       },
       "bytes": {
         "source": 11265,
-        "standalone": 56619
+        "standalone": 57089
       }
     },
     {
@@ -11283,7 +11283,7 @@
       },
       "bytes": {
         "source": 10838,
-        "standalone": 55592
+        "standalone": 56062
       }
     },
     {
@@ -11445,7 +11445,7 @@
       },
       "bytes": {
         "source": 14146,
-        "standalone": 56763
+        "standalone": 57233
       }
     },
     {
@@ -11619,7 +11619,7 @@
       },
       "bytes": {
         "source": 11346,
-        "standalone": 55673
+        "standalone": 56143
       }
     },
     {
@@ -11782,7 +11782,7 @@
       },
       "bytes": {
         "source": 12168,
-        "standalone": 55150
+        "standalone": 55620
       }
     },
     {
@@ -11938,7 +11938,7 @@
       },
       "bytes": {
         "source": 13598,
-        "standalone": 55066
+        "standalone": 55536
       }
     },
     {
@@ -12102,7 +12102,7 @@
       },
       "bytes": {
         "source": 17008,
-        "standalone": 67533
+        "standalone": 68003
       }
     },
     {
@@ -12288,7 +12288,7 @@
       },
       "bytes": {
         "source": 10873,
-        "standalone": 51195
+        "standalone": 51665
       }
     },
     {
@@ -12474,7 +12474,7 @@
       },
       "bytes": {
         "source": 10379,
-        "standalone": 55900
+        "standalone": 56370
       }
     },
     {
@@ -12686,7 +12686,7 @@
       },
       "bytes": {
         "source": 22635,
-        "standalone": 71685
+        "standalone": 72155
       }
     },
     {
@@ -12860,7 +12860,7 @@
       },
       "bytes": {
         "source": 18282,
-        "standalone": 62449
+        "standalone": 62919
       }
     },
     {
@@ -13056,7 +13056,7 @@
       },
       "bytes": {
         "source": 10525,
-        "standalone": 51588
+        "standalone": 52058
       }
     },
     {
@@ -13252,7 +13252,7 @@
       },
       "bytes": {
         "source": 9054,
-        "standalone": 50235
+        "standalone": 50705
       }
     },
     {
@@ -13461,7 +13461,184 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 246543
+        "standalone": 247013
+      }
+    },
+    {
+      "id": "worlds/interiors/ancient-complex",
+      "name": "Le Complexe",
+      "nameEn": "The Ancient Complex",
+      "category": "worlds",
+      "subcategory": "interiors",
+      "description": "Le lieu ancien-technologique, vu en coupe : pour l'instant le Sas de Scellement (10 × 6 × 5 m) et son vestibule. Porte-Iris au sud, qui s'ouvre à l'approche puis se scelle derrière soi ; pupitre de vérification à l'ouest : ses leviers basculent, et la lueur ambre part de lui en vague (glyphes des murs, rainures du sol en chevrons, lampes) jusqu'à la porte nord, qui se déverrouille. Casiers, bancs, malles, file d'attente à chaînes, poussière dans la lumière des lampes. Praticable par tous les personnages.",
+      "tags": [
+        "monde",
+        "carte",
+        "intérieur",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "sas",
+        "sas de scellement",
+        "porte-iris",
+        "vérification",
+        "glyphes",
+        "vue en coupe",
+        "à explorer",
+        "assemblage",
+        "scénario",
+        "world",
+        "map",
+        "interior",
+        "ancient complex",
+        "ancient-tech",
+        "airlock",
+        "iris door",
+        "verification",
+        "glyphs",
+        "cutaway",
+        "explorable",
+        "composition",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10",
+      "footprint": {
+        "radius": 8,
+        "height": 5
+      },
+      "animated": [
+        "door",
+        "glow"
+      ],
+      "pedestal": false,
+      "composite": true,
+      "experience": "explorer",
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Usure et variantes des dalles (trappe, fissure), place de la niche, leviers, lampe de veille, contenu de la malle."
+        },
+        "room": {
+          "type": "enum",
+          "default": "sas",
+          "values": [
+            "sas"
+          ],
+          "labels": {
+            "sas": "Le Sas"
+          },
+          "label": "Pièce",
+          "description": "La pièce montrée (le Sas pour l'instant ; les Archives, l'Atelier et les salles d'étude viendront)."
+        },
+        "state": {
+          "type": "enum",
+          "default": "awake",
+          "values": [
+            "check",
+            "awake",
+            "asleep"
+          ],
+          "labels": {
+            "check": "Vérification",
+            "awake": "Éveillé",
+            "asleep": "Endormi"
+          },
+          "label": "État du Sas",
+          "description": "Vérification (on entre, l'Iris se scelle, le pupitre vérifie et la lueur gagne tout le Sas), éveillé (tout allumé) ou endormi (glyphes éteints, une lampe sur deux)."
+        }
+      },
+      "variants": [
+        {
+          "id": "check",
+          "name": "Vérification",
+          "params": {
+            "state": "check"
+          }
+        },
+        {
+          "id": "awake",
+          "name": "Éveillé",
+          "params": {
+            "state": "awake"
+          }
+        },
+        {
+          "id": "asleep",
+          "name": "Endormi",
+          "params": {
+            "state": "asleep"
+          }
+        }
+      ],
+      "slug": "worlds-interiors-ancient-complex",
+      "path": "src/assets/worlds/interiors/ancient-complex.js",
+      "module": "public/catalog/modules/worlds-interiors-ancient-complex.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/variation.js",
+        "src/assets/buildings/structure/bronze-railing.js",
+        "src/assets/buildings/structure/coffered-vault.js",
+        "src/assets/buildings/structure/complex-door.js",
+        "src/assets/buildings/structure/glyph-column.js",
+        "src/assets/buildings/structure/glyph-floor-slab.js",
+        "src/assets/buildings/structure/glyph-wall.js",
+        "src/assets/buildings/structure/iris-door.js",
+        "src/assets/buildings/structure/vent-grate.js",
+        "src/assets/furniture/lighting/filament-lamp.js",
+        "src/assets/furniture/seating/stone-bench.js",
+        "src/assets/furniture/storage/equipment-locker.js",
+        "src/assets/furniture/storage/travel-trunk.js",
+        "src/assets/props/decor/glyph-plaque.js",
+        "src/assets/props/machines/braided-cable.js",
+        "src/assets/props/machines/copper-pipe.js",
+        "src/assets/props/machines/lever-desk.js",
+        "src/assets/props/machines/wheel-valve.js",
+        "src/assets/props/tools/hand-lamp.js",
+        "src/fx/lamp-dust.js",
+        "src/assets/nature/sky/cloud.js",
+        "src/worlds/kit/sky.js",
+        "src/worlds/kit/interior.js",
+        "src/worlds/ancient-complex.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 30258,
+          "vertices": 55292,
+          "drawCalls": 72
+        },
+        "check": {
+          "triangles": 30258,
+          "vertices": 55292,
+          "drawCalls": 72
+        },
+        "awake": {
+          "triangles": 30258,
+          "vertices": 55292,
+          "drawCalls": 72
+        },
+        "asleep": {
+          "triangles": 30258,
+          "vertices": 55292,
+          "drawCalls": 72
+        }
+      },
+      "bytes": {
+        "source": 3500,
+        "standalone": 298625
       }
     },
     {
@@ -13643,7 +13820,7 @@
       },
       "bytes": {
         "source": 3535,
-        "standalone": 302295
+        "standalone": 304374
       }
     }
   ]

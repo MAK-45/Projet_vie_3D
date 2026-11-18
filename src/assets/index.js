@@ -72,6 +72,7 @@ import * as travelTrunk from "./furniture/storage/travel-trunk.js";
 import * as bronzeRailing from "./buildings/structure/bronze-railing.js";
 import * as handLamp from "./props/tools/hand-lamp.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
+import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
@@ -83,7 +84,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
   stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
   irisDoor, travelTrunk, bronzeRailing, handLamp,
-  summerMeadow, complexTest,
+  summerMeadow, ancientComplex, complexTest,
 ];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */

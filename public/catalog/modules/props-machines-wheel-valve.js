@@ -304,6 +304,10 @@ varying vec3 vWorldPos;
   varying float vCover;
 #endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
+#ifdef REVEAL
+  uniform vec4 uReveal;   // xyz : centre (monde), w : rayon (m) ; au-del\xE0, la mati\xE8re prend la couleur \xE9teinte
+  uniform vec3 uRevealOff;
+#endif
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
@@ -546,6 +550,12 @@ void main() {
     color *= texture2D(uMap, vMapUv).rgb;
   #endif
   color = mix(color, uInk, ink);
+  float revealed = 1.0;
+  #ifdef REVEAL
+    // Lueurs qui s'allument en vague (enableReveal) : hors de la sph\xE8re, la couleur \xE9teinte, sans \xE9clat propre.
+    revealed = step(distance(vWorldPos, uReveal.xyz), uReveal.w);
+    color = mix(uRevealOff, color, revealed);
+  #endif
 
   // Lumi\xE8res de halo : dans le noir, le d\xE9cor proche prend la couleur de la source, en trois paliers nets \xE0
   // fronti\xE8re tram\xE9e. Le palier est \xE9crit dans l'alpha : la passe finale ne l'assombrit pas de la teinte de nuit.
@@ -584,7 +594,7 @@ void main() {
   // (0 = fond, jamais \xE9crit ici) ; moins 0,02 par palier de lumi\xE8re de halo (0 \xE0 3).
   // Mati\xE8re qui \xE9met sa propre lumi\xE8re (vortex, cristaux allum\xE9s) : au-dessus du seuil, elle \xE9chappe \xE0 la teinte de
   // nuit comme ce qu'\xE9claire une lumi\xE8re de halo (palier 3).
-  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
+  if (uEmissive > 0.0 && lit > uEmissive && revealed > 0.5) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }

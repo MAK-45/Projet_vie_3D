@@ -53,6 +53,13 @@ function enableCutaway(material, rule, height) {
   }
   return material;
 }
+function enableReveal(material, uniform, off) {
+  material.defines.REVEAL = "";
+  material.uniforms.uReveal = uniform;
+  material.uniforms.uRevealOff = { value: rgb(off) };
+  material.needsUpdate = true;
+  return material;
+}
 var glowSlots = Array.from({ length: GLOW_LIGHT_COUNT }, () => false);
 function createGlowLight() {
   const slot = glowSlots.indexOf(false);
@@ -350,6 +357,10 @@ varying vec3 vWorldPos;
   varying float vCover;
 #endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
+#ifdef REVEAL
+  uniform vec4 uReveal;   // xyz : centre (monde), w : rayon (m) ; au-del\xE0, la mati\xE8re prend la couleur \xE9teinte
+  uniform vec3 uRevealOff;
+#endif
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
@@ -592,6 +603,12 @@ void main() {
     color *= texture2D(uMap, vMapUv).rgb;
   #endif
   color = mix(color, uInk, ink);
+  float revealed = 1.0;
+  #ifdef REVEAL
+    // Lueurs qui s'allument en vague (enableReveal) : hors de la sph\xE8re, la couleur \xE9teinte, sans \xE9clat propre.
+    revealed = step(distance(vWorldPos, uReveal.xyz), uReveal.w);
+    color = mix(uRevealOff, color, revealed);
+  #endif
 
   // Lumi\xE8res de halo : dans le noir, le d\xE9cor proche prend la couleur de la source, en trois paliers nets \xE0
   // fronti\xE8re tram\xE9e. Le palier est \xE9crit dans l'alpha : la passe finale ne l'assombrit pas de la teinte de nuit.
@@ -630,7 +647,7 @@ void main() {
   // (0 = fond, jamais \xE9crit ici) ; moins 0,02 par palier de lumi\xE8re de halo (0 \xE0 3).
   // Mati\xE8re qui \xE9met sa propre lumi\xE8re (vortex, cristaux allum\xE9s) : au-dessus du seuil, elle \xE9chappe \xE0 la teinte de
   // nuit comme ce qu'\xE9claire une lumi\xE8re de halo (palier 3).
-  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
+  if (uEmissive > 0.0 && lit > uEmissive && revealed > 0.5) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }
@@ -6034,21 +6051,39 @@ var InteriorKit = class {
    * @param {{rule: "wall"|"view", height: number}|null} [options.cut] vue en coupe
    * @param {boolean} [options.castShadow] faux : la copie ne projette pas d'ombre (dalles) ; par défaut, ce qui se
    *   cache avec la coupe (accroché aux murs, lampes) n'en projette pas : elle ne se verrait pas sur le mur
+   * @param {{mesh: string, uniform: {value: THREE.Vector4}, off: string}|null} [options.reveal] lueurs qui
+   *   s'allument en vague (`enableReveal`) : le maillage du modèle qui porte ce nom
    * @returns {THREE.Group} le modèle (pour lire ses `userData`)
    */
-  model(key, asset, params22, { cut = null, castShadow = !(cut && cut.height < 0) } = {}) {
+  model(key, asset, params22, { cut = null, castShadow = !(cut && cut.height < 0), reveal = null } = {}) {
     if (this.models.has(key)) return this.models.get(key).prototype;
     const prototype = asset.create(params22);
-    this.models.set(key, { prototype, matrices: [], cut, castShadow });
+    this.models.set(key, { prototype, matrices: [], cut, castShadow, reveal, meshes: [] });
     return prototype;
   }
-  /** Pose une copie du modèle `key` en (x, y, z), tournée de `rotY` (radians). */
+  /** Pose une copie du modèle `key` en (x, y, z), tournée de `rotY` (radians). Rend son numéro (`setVisible`). */
   place(key, x, z, rotY = 0, y = 0) {
     const model = this.models.get(key);
     if (!model) throw new Error(`mod\xE8le non d\xE9clar\xE9 : ${key}`);
     _q.setFromAxisAngle(_up, rotY);
     _matrix.compose(_p.set(x, y, z), _q, _s);
     model.matrices.push(..._matrix.elements);
+    return model.matrices.length / 16 - 1;
+  }
+  /**
+   * Montre ou cache une copie déjà construite (une lampe éteinte remplacée par la même allumée, posée deux fois :
+   * une copie de chaque modèle, une seule visible). Cachée : réduite à un point, plus aucun triangle.
+   */
+  setVisible(key, index, visible) {
+    const model = this.models.get(key);
+    if (!model?.meshes.length) return;
+    for (const mesh of model.meshes) {
+      _matrix.fromArray(model.matrices, index * 16);
+      if (mesh.userData.offset) _matrix.multiply(mesh.userData.offset);
+      if (!visible) _matrix.scale(_p.set(0, 0, 0));
+      mesh.setMatrixAt(index, _matrix);
+      mesh.instanceMatrix.needsUpdate = true;
+    }
   }
   /** Construit les maillages instanciés. À appeler une fois tout posé. */
   build() {
@@ -6067,6 +6102,7 @@ var InteriorKit = class {
       for (const part of parts) {
         const material = part.material;
         if (model.cut && material.isShaderMaterial && material.uniforms?.uRamp) enableCutaway(material, model.cut.rule, model.cut.height);
+        if (model.reveal && part.name === model.reveal.mesh) enableReveal(material, model.reveal.uniform, model.reveal.off);
         const mesh = new THREE25.InstancedMesh(part.geometry, material, count);
         mesh.name = `${key} / ${part.name}`;
         mesh.instanceMatrix = matrices;
@@ -6074,6 +6110,7 @@ var InteriorKit = class {
           const array = new Float32Array(count * 16);
           for (let i = 0; i < count; i++) _matrix.fromArray(model.matrices, i * 16).multiply(part.matrixWorld).toArray(array, i * 16);
           mesh.instanceMatrix = new THREE25.InstancedBufferAttribute(array, 16);
+          mesh.userData.offset = part.matrixWorld.clone();
         }
         mesh.customDepthMaterial = material.userData.depthMaterial ?? part.customDepthMaterial;
         mesh.castShadow = model.castShadow && part.castShadow;
@@ -6081,6 +6118,7 @@ var InteriorKit = class {
         mesh.matrixAutoUpdate = false;
         mesh.computeBoundingSphere();
         this.meshes.push(mesh);
+        model.meshes.push(mesh);
         this.group.add(mesh);
       }
     }
@@ -6131,13 +6169,17 @@ function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
       for (let i = 0; i < sources.length; i++) {
         const source = sources[i];
         const seen = !camera || frustum.intersectsSphere(sphere.set(source.position, source.radius));
-        score[i] = source.position.distanceTo(focus) + (seen ? 0 : 30);
+        score[i] = source.on === false ? Infinity : source.position.distanceTo(focus) + (seen ? 0 : 30);
       }
       order.sort((a, b) => score[a] - score[b]);
       lights.forEach((light, k) => {
         const source = sources[order[k]];
-        light.set(source.position, colors[order[k]], source.radius, source.strength ?? 1.1);
+        light.set(source.position, colors[order[k]], source.radius, source.on === false ? 0 : source.strength ?? 1.1);
       });
+    },
+    /** Une lampe s'est allumée ou éteinte : réattribuer dès la prochaine mise à jour. */
+    refresh() {
+      last = -1;
     },
     dispose() {
       for (const light of lights) light.release();
