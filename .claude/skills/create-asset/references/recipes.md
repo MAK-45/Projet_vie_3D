@@ -405,3 +405,30 @@ c'est ce fichier qui fait progresser les assets suivants.
   quadrillage = des barreaux croisés. La lueur est un plan derrière (ou dessous), en `glowMaterial`.
 - **Petite plaque** (0,3 × 0,2 m = 5 × 3 px) : un glyphe de 4 ou 5 pièces tient, pas un dessin ; plots réduits
   à la taille de la plaque.
+
+### Le Complexe, lot 4 : Porte-Iris, malle, rambarde, lampe portative
+
+- **Pièces rigides dans un maillage** (kit : `createRigidParts`, `mergeParts`) : chaque géométrie entre avec son n° de
+  pièce (255 = fixe) ; on donne une matrice par pièce et `apply()` réécrit positions et normales depuis la pose de
+  construction. Les 12 lames de l'iris, l'anneau qui tourne, les 4 verrous, le médaillon et même les glyphes portés
+  par les lames : 3 draw calls pour toute la porte. Le couvercle de la malle : même outil (une pièce).
+- **Une séquence = une avancée s de 0 à 1** : chaque mouvement est une fenêtre de s (verrous 0–0,11, anneau
+  0,11–0,23, lames en cascade ensuite, une lame par 0,042) ; l'ouverture fait avancer s en 5,2 s, la fermeture le
+  fait reculer en 3,2 s. Les lueurs lisent la même avancée (un niveau par groupe de glyphes, réécrit seulement
+  quand il change).
+- **Lames en moulinet** : contour convexe à 5 points (arc extérieur, pointe décalée de 40° à 100°) ; la face avant
+  en biseau (`slantPlate`) monte vers le bord d'attaque, si bien que chaque lame passe sur la suivante sans
+  z-fighting ; le dos alterne d'une lame à l'autre. Pivot au coin arrière, −54° : repliées, elles forment une
+  couronne juste dans l'anneau (rayon mini calculé avant de dessiner : un petit script qui balaie l'angle).
+- **Cercle dans un mur** : `ExtrudeGeometry` d'un pavé percé (le trou coupé au seuil), posé dans un trou rectangulaire
+  de `buildMasonry` ; voussoirs en `arcBlock` un ton plus clair (+0,3), en saillie de 6 cm, sinon le cadre se perd
+  dans le mur. L'anneau en bronze sombre (−0,12 / −0,24 alternés) pour qu'il se détache des lames claires.
+- **Ouverture praticable** : un cercle posé sur un seuil n'a pas de largeur au sol ; centre à 1,40 m et Ø 2,80 m
+  donnent 1,44 m de passage sur le seuil de 0,20 m.
+- **Petits objets en métal sombre** : le cuir d'une poignée peut partager la rampe du laiton noirci (ton −0,6) :
+  un draw call de moins.
+- **Trame** (option `dither` du matériau, attribut `aCover`) : un faisceau de lampe en cône ouvert, part des pixels
+  dessinés de 0,42 à 0 vers le bout. Piège : `(négatif) ** 1.4` donne NaN, et un NaN n'est jamais rejeté par la
+  trame : le bout du cône sortait plein. Borner avec `Math.max(0, …)`.
+- **Peinture qui s'use** (bandes ambre de la barrière) : une matière éclairée, pas une lueur ; traverse sombre
+  (−0,3) dessous pour que les bandes se lisent, quelques bandes plus courtes ou absentes.

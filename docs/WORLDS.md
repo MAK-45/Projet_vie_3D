@@ -254,7 +254,7 @@ pendant la marche. Coordonnées testées jusqu'à 5 km de l'origine sans défaut
 ## Le Complexe, monde d'essai (`worlds/interiors/complex-test`)
 
 Monde intérieur de test, en attendant le vrai monde du Complexe (lot 5 de `docs/complexe/PLAN.md`) : les assets des
-lots 1 à 3 assemblés en quatre pièces praticables, à l'échelle de la bible — le Sas (10 × 6 × 5 m), les Archives à
+lots 1 à 4 assemblés en quatre pièces praticables, à l'échelle de la bible — le Sas (10 × 6 × 5 m), les Archives à
 colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m), un tronçon de la Grande Galerie
 (4 × 20 m). Générateur : `src/worlds/complex-test.js` ; outils réutilisables : `src/worlds/kit/interior.js`.
 
@@ -278,8 +278,10 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
   (`setThirdPerson`) ; un crochet là où pend une lampe ; sans ombre portée. La caméra suiveuse reste sous le plafond
   (`ceilingAt`) et sonde les obstacles par pas de 40 cm (un mur ne passe plus entre deux sondes).
 - **Départ** : au milieu du Sas, face au nord (`spawnHeading`), vers la porte des Archives.
-- **Praticable** : collisions en boîtes (murs, piliers, meubles, portes fermées) ; les portes entre deux pièces
-  s'ouvrent à l'approche ; la balade automatique passe de pièce en pièce par les portes (`strollTarget`).
+- **Praticable** : collisions en boîtes (murs, piliers, meubles, portes fermées, segments des rambardes :
+  `userData.blocking`) ; les portes entre deux pièces s'ouvrent à l'approche ; la Porte-Iris de l'entrée aussi
+  (réglage `show` de la liste des portes : elle joue sa séquence de 5,2 s, mais ne mène nulle part) ; la balade automatique passe de pièce en pièce par les portes
+  (`strollTarget`).
 - **Explorateur** : générique (`src/explorer/worlds.js` : une fiche par monde) ; `explorer.html?world=worlds/interiors/complex-test`.
   Intérieur : ni pluie, ni vent, ni papillons, fond sombre.
 - **Mesures** (capture logicielle, téléphone, balade de 60 s) : en vue isométrique 105 à 147 draw calls, 225 000 à

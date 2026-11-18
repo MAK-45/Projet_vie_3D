@@ -67,6 +67,10 @@ import * as equipmentLocker from "./furniture/storage/equipment-locker.js";
 import * as leverDesk from "./props/machines/lever-desk.js";
 import * as ventGrate from "./buildings/structure/vent-grate.js";
 import * as glyphPlaque from "./props/decor/glyph-plaque.js";
+import * as irisDoor from "./buildings/structure/iris-door.js";
+import * as travelTrunk from "./furniture/storage/travel-trunk.js";
+import * as bronzeRailing from "./buildings/structure/bronze-railing.js";
+import * as handLamp from "./props/tools/hand-lamp.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
@@ -78,6 +82,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
   filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
   stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
+  irisDoor, travelTrunk, bronzeRailing, handLamp,
   summerMeadow, complexTest,
 ];
 

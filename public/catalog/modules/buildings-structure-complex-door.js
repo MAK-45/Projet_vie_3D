@@ -107,6 +107,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpol\xE9 puis d\xE9coup\xE9 en paliers
 #endif
+#ifdef DITHER
+  attribute float aCover; // part des pixels dessin\xE9s (0..1), tram\xE9e : faisceau, voile
+  varying float vCover;
+#endif
 varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
@@ -172,6 +176,9 @@ void main() {
   #endif
   #ifdef SHADE
     vShade = aShade;
+  #endif
+  #ifdef DITHER
+    vCover = aCover;
   #endif
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -293,6 +300,9 @@ varying vec3 vWorldPos;
 #ifdef TONE
   varying float vTone;
 #endif
+#ifdef DITHER
+  varying float vCover;
+#endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -382,6 +392,14 @@ vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
 #endif
 
 void main() {
+  #ifdef DITHER
+    // Trame de Bayer 4 \xD7 4 par pixel d'art : seule une part vCover des pixels est dessin\xE9e (faisceau de lumi\xE8re).
+    {
+      const float bayerD[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cellD = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vCover <= (bayerD[cellD.x + cellD.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
   #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     // Effacement tram\xE9 (matrice de Bayer 4 \xD7 4, par pixel d'art) des branches absentes de la version lointaine.
     if (vDrop > 0.0) {
@@ -625,7 +643,8 @@ function createToonMaterial(options) {
     wobble = null,
     shade = false,
     tone = false,
-    emissive = 0
+    emissive = 0,
+    dither = false
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -636,6 +655,7 @@ function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
   if (tone) defines.TONE = "";
+  if (dither) defines.DITHER = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

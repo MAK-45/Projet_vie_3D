@@ -14,7 +14,8 @@ src/assets/
                       drapés, fusion), params, variation (axes partagés : graine, saison, pierre, bois,
                       couverture, métal, lueur), palettes (matières), ground-cover (neige, mousse, terre au sol
                       ou drapées), complex-parts (briques du Complexe : glyphes, rivets, bagues, ampoules,
-                      cadrans, leviers, chaînes, câbles, tons par sommet, matériaux pierre / métal / lueur)
+                      cadrans, leviers, chaînes, câbles, blocs en arc, plaques en biseau, pièces rigides
+                      animées dans un seul maillage, tons par sommet, matériaux pierre / métal / lueur)
   <catégorie>/<sous-catégorie>/<nom>.js     un fichier par asset
 src/engine/           toon-material (matériau à palette), pixel-renderer (basse réso + contours), iso-camera
 src/gallery/          la galerie web (visionneuse, catalogue, fiche, code)

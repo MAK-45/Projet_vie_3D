@@ -192,7 +192,7 @@
     {
       "path": "src/engine/toon-material.js",
       "role": "Matériau toon à palette (déjà inclus dans chaque module autonome).",
-      "bytes": 42953
+      "bytes": 43861
     }
   ],
   "assets": [
@@ -356,7 +356,7 @@
       },
       "bytes": {
         "source": 11898,
-        "standalone": 50837
+        "standalone": 51539
       }
     },
     {
@@ -525,7 +525,7 @@
       },
       "bytes": {
         "source": 10842,
-        "standalone": 51734
+        "standalone": 52436
       }
     },
     {
@@ -697,7 +697,7 @@
       },
       "bytes": {
         "source": 12531,
-        "standalone": 53247
+        "standalone": 53949
       }
     },
     {
@@ -898,7 +898,7 @@
       },
       "bytes": {
         "source": 6490,
-        "standalone": 54630
+        "standalone": 55332
       }
     },
     {
@@ -1101,7 +1101,7 @@
       },
       "bytes": {
         "source": 6458,
-        "standalone": 55692
+        "standalone": 56394
       }
     },
     {
@@ -1235,7 +1235,7 @@
       },
       "bytes": {
         "source": 3031,
-        "standalone": 43517
+        "standalone": 44219
       }
     },
     {
@@ -1398,7 +1398,7 @@
       },
       "bytes": {
         "source": 2834,
-        "standalone": 43423
+        "standalone": 44125
       }
     },
     {
@@ -1555,7 +1555,7 @@
       },
       "bytes": {
         "source": 2920,
-        "standalone": 45669
+        "standalone": 46371
       }
     },
     {
@@ -1738,7 +1738,7 @@
       },
       "bytes": {
         "source": 7116,
-        "standalone": 46818
+        "standalone": 47520
       }
     },
     {
@@ -1937,7 +1937,7 @@
       },
       "bytes": {
         "source": 9275,
-        "standalone": 53118
+        "standalone": 53820
       }
     },
     {
@@ -2176,7 +2176,7 @@
       },
       "bytes": {
         "source": 7608,
-        "standalone": 46602
+        "standalone": 47304
       }
     },
     {
@@ -2382,7 +2382,7 @@
       },
       "bytes": {
         "source": 12523,
-        "standalone": 51397
+        "standalone": 52099
       }
     },
     {
@@ -2530,7 +2530,7 @@
       },
       "bytes": {
         "source": 5804,
-        "standalone": 43733
+        "standalone": 44435
       }
     },
     {
@@ -2690,7 +2690,7 @@
       },
       "bytes": {
         "source": 7599,
-        "standalone": 44743
+        "standalone": 45445
       }
     },
     {
@@ -2833,7 +2833,7 @@
       },
       "bytes": {
         "source": 6556,
-        "standalone": 41585
+        "standalone": 42287
       }
     },
     {
@@ -2996,7 +2996,7 @@
       },
       "bytes": {
         "source": 6720,
-        "standalone": 42463
+        "standalone": 43165
       }
     },
     {
@@ -3474,7 +3474,7 @@
       },
       "bytes": {
         "source": 30141,
-        "standalone": 67460
+        "standalone": 68162
       }
     },
     {
@@ -3664,7 +3664,7 @@
       },
       "bytes": {
         "source": 768,
-        "standalone": 57552
+        "standalone": 58254
       }
     },
     {
@@ -3854,7 +3854,7 @@
       },
       "bytes": {
         "source": 724,
-        "standalone": 57498
+        "standalone": 58200
       }
     },
     {
@@ -4042,7 +4042,7 @@
       },
       "bytes": {
         "source": 756,
-        "standalone": 57512
+        "standalone": 58214
       }
     },
     {
@@ -4375,7 +4375,7 @@
       },
       "bytes": {
         "source": 1533,
-        "standalone": 58091
+        "standalone": 58793
       }
     },
     {
@@ -4564,7 +4564,7 @@
       },
       "bytes": {
         "source": 775,
-        "standalone": 56466
+        "standalone": 57168
       }
     },
     {
@@ -4752,7 +4752,7 @@
       },
       "bytes": {
         "source": 839,
-        "standalone": 56554
+        "standalone": 57256
       }
     },
     {
@@ -4940,7 +4940,7 @@
       },
       "bytes": {
         "source": 817,
-        "standalone": 56514
+        "standalone": 57216
       }
     },
     {
@@ -5128,7 +5128,7 @@
       },
       "bytes": {
         "source": 784,
-        "standalone": 56483
+        "standalone": 57185
       }
     },
     {
@@ -5318,7 +5318,7 @@
       },
       "bytes": {
         "source": 852,
-        "standalone": 56565
+        "standalone": 57267
       }
     },
     {
@@ -5512,7 +5512,7 @@
       },
       "bytes": {
         "source": 1088,
-        "standalone": 56789
+        "standalone": 57491
       }
     },
     {
@@ -5700,7 +5700,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 56474
+        "standalone": 57176
       }
     },
     {
@@ -5888,7 +5888,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 56460
+        "standalone": 57162
       }
     },
     {
@@ -6074,7 +6074,7 @@
       },
       "bytes": {
         "source": 818,
-        "standalone": 56511
+        "standalone": 57213
       }
     },
     {
@@ -6248,7 +6248,7 @@
       },
       "bytes": {
         "source": 767,
-        "standalone": 56446
+        "standalone": 57148
       }
     },
     {
@@ -6422,7 +6422,7 @@
       },
       "bytes": {
         "source": 753,
-        "standalone": 56430
+        "standalone": 57132
       }
     },
     {
@@ -6595,7 +6595,7 @@
       },
       "bytes": {
         "source": 785,
-        "standalone": 56470
+        "standalone": 57172
       }
     },
     {
@@ -6770,7 +6770,7 @@
       },
       "bytes": {
         "source": 801,
-        "standalone": 56482
+        "standalone": 57184
       }
     },
     {
@@ -6967,7 +6967,7 @@
       },
       "bytes": {
         "source": 1313,
-        "standalone": 56994
+        "standalone": 57696
       }
     },
     {
@@ -7138,7 +7138,7 @@
       },
       "bytes": {
         "source": 728,
-        "standalone": 56407
+        "standalone": 57109
       }
     },
     {
@@ -7310,7 +7310,7 @@
       },
       "bytes": {
         "source": 870,
-        "standalone": 56561
+        "standalone": 57263
       }
     },
     {
@@ -7484,7 +7484,7 @@
       },
       "bytes": {
         "source": 717,
-        "standalone": 56398
+        "standalone": 57100
       }
     },
     {
@@ -7658,7 +7658,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 56504
+        "standalone": 57206
       }
     },
     {
@@ -7832,7 +7832,7 @@
       },
       "bytes": {
         "source": 806,
-        "standalone": 56497
+        "standalone": 57199
       }
     },
     {
@@ -8007,7 +8007,7 @@
       },
       "bytes": {
         "source": 815,
-        "standalone": 56514
+        "standalone": 57216
       }
     },
     {
@@ -8196,7 +8196,7 @@
       },
       "bytes": {
         "source": 882,
-        "standalone": 56581
+        "standalone": 57283
       }
     },
     {
@@ -8370,7 +8370,7 @@
       },
       "bytes": {
         "source": 813,
-        "standalone": 56504
+        "standalone": 57206
       }
     },
     {
@@ -8561,7 +8561,7 @@
       },
       "bytes": {
         "source": 923,
-        "standalone": 56610
+        "standalone": 57312
       }
     },
     {
@@ -8766,7 +8766,7 @@
       },
       "bytes": {
         "source": 959,
-        "standalone": 56656
+        "standalone": 57358
       }
     },
     {
@@ -8969,7 +8969,7 @@
       },
       "bytes": {
         "source": 1429,
-        "standalone": 57116
+        "standalone": 57818
       }
     },
     {
@@ -9166,7 +9166,7 @@
       },
       "bytes": {
         "source": 1352,
-        "standalone": 57043
+        "standalone": 57745
       }
     },
     {
@@ -9398,7 +9398,7 @@
       },
       "bytes": {
         "source": 30740,
-        "standalone": 71337
+        "standalone": 72039
       }
     },
     {
@@ -9628,7 +9628,7 @@
       },
       "bytes": {
         "source": 16495,
-        "standalone": 65683
+        "standalone": 66385
       }
     },
     {
@@ -9820,7 +9820,7 @@
       },
       "bytes": {
         "source": 10604,
-        "standalone": 55590
+        "standalone": 56292
       }
     },
     {
@@ -10051,7 +10051,7 @@
       },
       "bytes": {
         "source": 10191,
-        "standalone": 61085
+        "standalone": 61787
       }
     },
     {
@@ -10290,7 +10290,7 @@
       },
       "bytes": {
         "source": 11464,
-        "standalone": 63055
+        "standalone": 63757
       }
     },
     {
@@ -10438,7 +10438,7 @@
       },
       "bytes": {
         "source": 8036,
-        "standalone": 48846
+        "standalone": 49548
       }
     },
     {
@@ -10691,7 +10691,7 @@
       },
       "bytes": {
         "source": 17488,
-        "standalone": 67008
+        "standalone": 67710
       }
     },
     {
@@ -10885,7 +10885,7 @@
       },
       "bytes": {
         "source": 8644,
-        "standalone": 53408
+        "standalone": 54110
       }
     },
     {
@@ -11094,7 +11094,7 @@
       },
       "bytes": {
         "source": 11265,
-        "standalone": 55917
+        "standalone": 56619
       }
     },
     {
@@ -11283,7 +11283,7 @@
       },
       "bytes": {
         "source": 10838,
-        "standalone": 54890
+        "standalone": 55592
       }
     },
     {
@@ -11445,7 +11445,7 @@
       },
       "bytes": {
         "source": 14146,
-        "standalone": 56061
+        "standalone": 56763
       }
     },
     {
@@ -11619,7 +11619,7 @@
       },
       "bytes": {
         "source": 11346,
-        "standalone": 54971
+        "standalone": 55673
       }
     },
     {
@@ -11782,7 +11782,7 @@
       },
       "bytes": {
         "source": 12168,
-        "standalone": 54448
+        "standalone": 55150
       }
     },
     {
@@ -11938,7 +11938,7 @@
       },
       "bytes": {
         "source": 13598,
-        "standalone": 54364
+        "standalone": 55066
       }
     },
     {
@@ -12102,7 +12102,7 @@
       },
       "bytes": {
         "source": 17008,
-        "standalone": 66831
+        "standalone": 67533
       }
     },
     {
@@ -12288,7 +12288,7 @@
       },
       "bytes": {
         "source": 10873,
-        "standalone": 50493
+        "standalone": 51195
       }
     },
     {
@@ -12474,7 +12474,785 @@
       },
       "bytes": {
         "source": 10379,
-        "standalone": 55198
+        "standalone": 55900
+      }
+    },
+    {
+      "id": "buildings/structure/iris-door",
+      "name": "Porte-Iris",
+      "nameEn": "Iris door",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "L'entrée du Sas du Complexe : anneau de basalte à voussoirs gravés encastré dans un pan de mur de 6 m, anneau de bronze crénelé qui tourne, douze lames de bronze en moulinet qui s'écartent en cascade pendant que leurs glyphes s'allument, médaillon de laiton à couronne de points qui respire, quatre verrous. Fermée, ouverte, ou pilotée par le scénario.",
+      "tags": [
+        "porte-iris",
+        "iris",
+        "porte",
+        "diaphragme",
+        "lames",
+        "anneau rotatif",
+        "verrous",
+        "médaillon",
+        "voussoirs",
+        "glyphes",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "entrée",
+        "héros",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "iris door",
+        "aperture",
+        "doorway",
+        "blades",
+        "rotating ring",
+        "bolts",
+        "medallion",
+        "arch stones",
+        "glyph marks",
+        "ancient complex",
+        "ancient-tech",
+        "entrance",
+        "hero asset",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de l'ouverture ; le mur suit l'axe x (6 m), face avant en +z ; centre de l'iris à 1,40 m, seuil à 0,20 m, bas de l'anneau sous le sol",
+      "footprint": {
+        "radius": 3.05,
+        "height": 5
+      },
+      "animated": [
+        "door",
+        "glow"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les glyphes des lames et des voussoirs, l'ordre et le sens de la cascade, l'appareil du mur, les tons des lames et des pierres."
+        },
+        "state": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "open",
+            "cycle"
+          ],
+          "labels": {
+            "closed": "Fermée",
+            "open": "Ouverte",
+            "cycle": "S'ouvre et se ferme en boucle"
+          },
+          "label": "État",
+          "description": "Fermée (glyphes éteints, médaillon qui respire), ouverte (lames repliées en couronne), ou en boucle pour regarder la séquence. Pilotable : group.userData.door."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan"
+          },
+          "label": "Lueur",
+          "description": "Couleur des glyphes et du médaillon."
+        },
+        "wear": {
+          "type": "enum",
+          "default": "patinated",
+          "values": [
+            "patinated",
+            "heavy"
+          ],
+          "labels": {
+            "patinated": "Patinée",
+            "heavy": "Très usée (suie, lames ternies)"
+          },
+          "label": "Usure",
+          "description": "Patinée, ou très usée : plus de suie sur le mur et le cadre, lames plus ternies et inégales."
+        },
+        "wall": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Avec son pan de mur (6 m)",
+            "off": "Cadre seul"
+          },
+          "label": "Mur",
+          "description": "La porte livrée avec son pan de mur de 6 m, ou le seul bloc du cadre (pour l'encastrer ailleurs)."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 4,
+          "max": 8,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur du mur",
+          "description": "Hauteur du pan de mur autour de la porte."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "blackBasalt",
+          "values": [
+            "blackBasalt",
+            "smoked"
+          ],
+          "labels": {
+            "blackBasalt": "Basalte noir-bleu",
+            "smoked": "Pierre fumée"
+          },
+          "label": "Pierre",
+          "description": "Pierre du mur et du cadre."
+        }
+      },
+      "variants": [
+        {
+          "id": "closed",
+          "name": "Fermée",
+          "params": {
+            "state": "closed"
+          }
+        },
+        {
+          "id": "open",
+          "name": "Ouverte",
+          "params": {
+            "state": "open"
+          }
+        },
+        {
+          "id": "cycle",
+          "name": "S'ouvre et se ferme en boucle",
+          "params": {
+            "state": "cycle"
+          }
+        }
+      ],
+      "slug": "buildings-structure-iris-door",
+      "path": "src/assets/buildings/structure/iris-door.js",
+      "module": "public/catalog/modules/buildings-structure-iris-door.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 5048,
+          "vertices": 10284,
+          "drawCalls": 3
+        },
+        "closed": {
+          "triangles": 5048,
+          "vertices": 10284,
+          "drawCalls": 3
+        },
+        "open": {
+          "triangles": 5048,
+          "vertices": 10284,
+          "drawCalls": 3
+        },
+        "cycle": {
+          "triangles": 5048,
+          "vertices": 10284,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 22635,
+        "standalone": 71685
+      }
+    },
+    {
+      "id": "furniture/storage/travel-trunk",
+      "name": "Malle de transport",
+      "nameEn": "Travel trunk",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Malle du Complexe en bois noirci à couvercle bombé, cornières et sangles de laiton, serrure et étiquette gravée. Fermée, entrouverte ou ouverte sur son feutre et son casier, avec des cassettes de verre ou des outils. Coffret, malle ou grande malle. Fiche SAS-13.",
+      "tags": [
+        "malle",
+        "coffre",
+        "bagage",
+        "couvercle",
+        "bois noirci",
+        "laiton",
+        "sangles",
+        "serrure",
+        "étiquette",
+        "cassettes",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "pilotable",
+        "intérieur",
+        "trunk",
+        "chest",
+        "luggage",
+        "lid",
+        "blackened wood",
+        "brass",
+        "straps",
+        "lock",
+        "tag",
+        "data cassettes",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre ; la serrure regarde +z, les charnières sont derrière (−z)",
+      "footprint": {
+        "radius": 0.6,
+        "height": 0.9
+      },
+      "animated": [
+        "trunk"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les planches et leurs tons, l'usure, l'étiquette (place et glyphe), une sangle détachée, ce qui manque dans le contenu."
+        },
+        "state": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "ajar",
+            "open"
+          ],
+          "labels": {
+            "closed": "Fermée",
+            "ajar": "Entrouverte",
+            "open": "Ouverte"
+          },
+          "label": "Couvercle",
+          "description": "Fermé, entrouvert ou ouvert à 110°. Pilotable : group.userData.trunk.setOpen(t)."
+        },
+        "size": {
+          "type": "enum",
+          "default": "standard",
+          "values": [
+            "standard",
+            "small",
+            "large"
+          ],
+          "labels": {
+            "standard": "Malle (0,80 m)",
+            "small": "Coffret (0,50 m)",
+            "large": "Grande malle (1,10 m)"
+          },
+          "label": "Taille",
+          "description": "Coffret (0,50 × 0,32 × 0,30 m), malle (0,80 × 0,50 × 0,45 m) ou grande malle (1,10 × 0,62 × 0,60 m)."
+        },
+        "content": {
+          "type": "enum",
+          "default": "cassettes",
+          "values": [
+            "cassettes",
+            "tools",
+            "empty"
+          ],
+          "labels": {
+            "cassettes": "Cassettes de verre",
+            "tools": "Outils (lampe, clé, toile)",
+            "empty": "Vide"
+          },
+          "label": "Contenu",
+          "description": "Ce qu'on voit quand elle est ouverte : des cassettes de verre rangées, des outils (lampe portative, clé, rouleau de toile), ou rien."
+        }
+      },
+      "variants": [
+        {
+          "id": "closed",
+          "name": "Fermée",
+          "params": {
+            "state": "closed"
+          }
+        },
+        {
+          "id": "ajar",
+          "name": "Entrouverte",
+          "params": {
+            "state": "ajar"
+          }
+        },
+        {
+          "id": "open",
+          "name": "Ouverte",
+          "params": {
+            "state": "open"
+          }
+        }
+      ],
+      "slug": "furniture-storage-travel-trunk",
+      "path": "src/assets/furniture/storage/travel-trunk.js",
+      "module": "public/catalog/modules/furniture-storage-travel-trunk.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1332,
+          "vertices": 2744,
+          "drawCalls": 3
+        },
+        "closed": {
+          "triangles": 1332,
+          "vertices": 2744,
+          "drawCalls": 3
+        },
+        "ajar": {
+          "triangles": 1332,
+          "vertices": 2744,
+          "drawCalls": 3
+        },
+        "open": {
+          "triangles": 1332,
+          "vertices": 2744,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 18282,
+        "standalone": 62449
+      }
+    },
+    {
+      "id": "buildings/structure/bronze-railing",
+      "name": "Rambarde de bronze",
+      "nameEn": "Bronze railing",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Poteaux de bronze du Complexe reliés en ligne ou en cercle : balisage à chaîne pendante sur disques, garde-corps de fosse à lisse de laiton et chaîne lourde, barrière à bandes ambre usées. Passage ouvert possible ; segments bloquants fournis au monde. Fiches SAS-15, ETU-15, COE-03, COE-15.",
+      "tags": [
+        "rambarde",
+        "balisage",
+        "poteau",
+        "chaîne",
+        "garde-corps",
+        "barrière",
+        "lisse",
+        "périmètre",
+        "bronze",
+        "bandes ambre",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "obstacle",
+        "intérieur",
+        "railing",
+        "stanchion",
+        "post",
+        "chain",
+        "guard rail",
+        "barrier",
+        "handrail",
+        "perimeter",
+        "brass",
+        "amber stripes",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "barricade",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu de la ligne ou au centre du cercle",
+      "footprint": {
+        "radius": 3.1,
+        "height": 1
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'affaissement des chaînes, le poteau penché, l'usure des bandes et des lisses, les tons du bronze."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "chain",
+          "values": [
+            "chain",
+            "rail",
+            "barrier"
+          ],
+          "labels": {
+            "chain": "Balisage (poteaux et chaîne)",
+            "rail": "Garde-corps (lisse et chaîne lourde)",
+            "barrier": "Barrière (bandes ambre)"
+          },
+          "label": "Sorte",
+          "description": "Balisage (poteaux de 0,9 m et chaîne pendante), garde-corps de fosse (lisse de laiton et chaîne lourde), ou barrière à bandes ambre."
+        },
+        "layout": {
+          "type": "enum",
+          "default": "line",
+          "values": [
+            "line",
+            "circle"
+          ],
+          "labels": {
+            "line": "En ligne",
+            "circle": "En cercle"
+          },
+          "label": "Tracé",
+          "description": "En ligne droite (centrée sur l'origine, le long de x), ou en cercle autour de l'origine."
+        },
+        "segments": {
+          "type": "int",
+          "default": 3,
+          "min": 1,
+          "max": 16,
+          "label": "Segments",
+          "description": "Nombre d'intervalles entre deux poteaux (en cercle : tout le tour, passage compris)."
+        },
+        "span": {
+          "type": "number",
+          "default": 2,
+          "min": 0.8,
+          "max": 2.5,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Écart des poteaux",
+          "description": "En ligne : la distance entre deux poteaux."
+        },
+        "radius": {
+          "type": "number",
+          "default": 3.2,
+          "min": 1,
+          "max": 8,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Rayon",
+          "description": "En cercle : le rayon du cercle des poteaux (3,2 m autour de la fosse du Cœur, 2,75 m pour un périmètre d'étude)."
+        },
+        "opening": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "open"
+          ],
+          "labels": {
+            "closed": "Fermé",
+            "open": "Un passage ouvert (face à +z)"
+          },
+          "label": "Passage",
+          "description": "En cercle : tout fermé, ou un intervalle laissé ouvert face à +z."
+        }
+      },
+      "variants": [
+        {
+          "id": "chain",
+          "name": "Balisage (poteaux et chaîne)",
+          "params": {
+            "kind": "chain"
+          }
+        },
+        {
+          "id": "rail",
+          "name": "Garde-corps (lisse et chaîne lourde)",
+          "params": {
+            "kind": "rail"
+          }
+        },
+        {
+          "id": "barrier",
+          "name": "Barrière (bandes ambre)",
+          "params": {
+            "kind": "barrier"
+          }
+        }
+      ],
+      "slug": "buildings-structure-bronze-railing",
+      "path": "src/assets/buildings/structure/bronze-railing.js",
+      "module": "public/catalog/modules/buildings-structure-bronze-railing.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1696,
+          "vertices": 3392,
+          "drawCalls": 2
+        },
+        "chain": {
+          "triangles": 1696,
+          "vertices": 3392,
+          "drawCalls": 2
+        },
+        "rail": {
+          "triangles": 948,
+          "vertices": 1896,
+          "drawCalls": 2
+        },
+        "barrier": {
+          "triangles": 528,
+          "vertices": 1056,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 10525,
+        "standalone": 51588
+      }
+    },
+    {
+      "id": "props/tools/hand-lamp",
+      "name": "Lampe portative",
+      "nameEn": "Hand lamp",
+      "category": "props",
+      "subcategory": "tools",
+      "description": "Lampe à main du Complexe : manche gainé de cuir, bague et tête de laiton, lentille qui luit en ambre ou en cyan, crochet au talon. Debout, couchée ou en main (point de prise fourni) ; halo qui éclaire le décor dans le noir, faisceau tramé en option. Fiche SAS-16.",
+      "tags": [
+        "lampe portative",
+        "lampe torche",
+        "lampe",
+        "lanterne de main",
+        "lentille",
+        "faisceau",
+        "cuir",
+        "laiton",
+        "outil",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "objet de main",
+        "lumière",
+        "intérieur",
+        "hand lamp",
+        "flashlight",
+        "lamp",
+        "hand lantern",
+        "lens",
+        "light beam",
+        "leather",
+        "brass",
+        "tool",
+        "ancient complex",
+        "ancient-tech",
+        "handheld",
+        "light source",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; debout et couchée : origine au sol ; en main : origine au milieu du manche, faisceau vers +z",
+      "footprint": {
+        "radius": 0.14,
+        "height": 0.26
+      },
+      "animated": [
+        "glow"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la longueur du manche, les bandes de cuir et leur usure, une bague de plus, le crochet du talon."
+        },
+        "pose": {
+          "type": "enum",
+          "default": "standing",
+          "values": [
+            "standing",
+            "lying",
+            "hand"
+          ],
+          "labels": {
+            "standing": "Debout (lentille en haut)",
+            "lying": "Couchée au sol",
+            "hand": "En main (origine au manche)"
+          },
+          "label": "Pose",
+          "description": "Debout, couchée au sol, ou en main : origine au milieu du manche et faisceau vers +z (userData.grip, userData.beamDirection)."
+        },
+        "state": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "off"
+          ],
+          "labels": {
+            "lit": "Allumée",
+            "off": "Éteinte"
+          },
+          "label": "État",
+          "description": "Allumée (lentille vive) ou éteinte (verre sombre)."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan"
+          },
+          "label": "Lueur",
+          "description": "Couleur de la lentille et de sa lumière."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "Allumée : éclaire le décor devant elle dans le noir (une des lumières de halo du moteur)."
+        },
+        "beam": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans faisceau",
+            "on": "Cône tramé"
+          },
+          "label": "Faisceau",
+          "description": "Allumée : un cône de lumière tramé de 2,6 m, qui s'efface au loin."
+        }
+      },
+      "variants": [
+        {
+          "id": "standing",
+          "name": "Debout (lentille en haut)",
+          "params": {
+            "pose": "standing"
+          }
+        },
+        {
+          "id": "lying",
+          "name": "Couchée au sol",
+          "params": {
+            "pose": "lying"
+          }
+        },
+        {
+          "id": "hand",
+          "name": "En main (origine au manche)",
+          "params": {
+            "pose": "hand"
+          }
+        }
+      ],
+      "slug": "props-tools-hand-lamp",
+      "path": "src/assets/props/tools/hand-lamp.js",
+      "module": "public/catalog/modules/props-tools-hand-lamp.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 688,
+          "vertices": 1376,
+          "drawCalls": 2
+        },
+        "standing": {
+          "triangles": 688,
+          "vertices": 1376,
+          "drawCalls": 2
+        },
+        "lying": {
+          "triangles": 688,
+          "vertices": 1376,
+          "drawCalls": 2
+        },
+        "hand": {
+          "triangles": 688,
+          "vertices": 1376,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 9054,
+        "standalone": 50235
       }
     },
     {
@@ -12683,7 +13461,7 @@
       },
       "bytes": {
         "source": 4223,
-        "standalone": 245841
+        "standalone": 246543
       }
     },
     {
@@ -12692,7 +13470,7 @@
       "nameEn": "Ancient complex (test)",
       "category": "worlds",
       "subcategory": "interiors",
-      "description": "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, lampes, tuyaux, câbles, bancs, casiers, pupitres, grilles, plaques) assemblés en quatre pièces praticables — le Sas, les Archives à colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs entre le personnage et la caméra s'abaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
+      "description": "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, câbles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assemblés en quatre pièces praticables — le Sas, les Archives à colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs entre le personnage et la caméra s'abaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
       "tags": [
         "monde",
         "carte",
@@ -12725,7 +13503,7 @@
       "biomes": [
         "interior"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-18",
       "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 à 6)",
       "footprint": {
@@ -12817,6 +13595,10 @@
         "src/assets/kit/complex-parts.js",
         "src/assets/kit/params.js",
         "src/assets/kit/variation.js",
+        "src/assets/buildings/structure/bronze-railing.js",
+        "src/assets/props/tools/hand-lamp.js",
+        "src/assets/buildings/structure/iris-door.js",
+        "src/assets/furniture/storage/travel-trunk.js",
         "src/assets/props/machines/braided-cable.js",
         "src/assets/buildings/structure/coffered-vault.js",
         "src/assets/buildings/structure/complex-door.js",
@@ -12839,29 +13621,29 @@
       ],
       "stats": {
         "default": {
-          "triangles": 54312,
-          "vertices": 97652,
-          "drawCalls": 122
+          "triangles": 62608,
+          "vertices": 114592,
+          "drawCalls": 135
         },
         "sas": {
-          "triangles": 17836,
-          "vertices": 30262,
-          "drawCalls": 43
+          "triangles": 25832,
+          "vertices": 46602,
+          "drawCalls": 53
         },
         "wing": {
-          "triangles": 31256,
-          "vertices": 55497,
-          "drawCalls": 79
+          "triangles": 39252,
+          "vertices": 71837,
+          "drawCalls": 89
         },
         "full": {
-          "triangles": 54312,
-          "vertices": 97652,
-          "drawCalls": 122
+          "triangles": 62608,
+          "vertices": 114592,
+          "drawCalls": 135
         }
       },
       "bytes": {
-        "source": 3480,
-        "standalone": 250287
+        "source": 3535,
+        "standalone": 302295
       }
     }
   ]

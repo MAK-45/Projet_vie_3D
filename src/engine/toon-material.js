@@ -236,6 +236,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpolé puis découpé en paliers
 #endif
+#ifdef DITHER
+  attribute float aCover; // part des pixels dessinés (0..1), tramée : faisceau, voile
+  varying float vCover;
+#endif
 varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
@@ -301,6 +305,9 @@ void main() {
   #endif
   #ifdef SHADE
     vShade = aShade;
+  #endif
+  #ifdef DITHER
+    vCover = aCover;
   #endif
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -420,6 +427,9 @@ varying vec3 vWorldPos;
 #ifdef TONE
   varying float vTone;
 #endif
+#ifdef DITHER
+  varying float vCover;
+#endif
 uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -509,6 +519,14 @@ vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
 #endif
 
 void main() {
+  #ifdef DITHER
+    // Trame de Bayer 4 × 4 par pixel d'art : seule une part vCover des pixels est dessinée (faisceau de lumière).
+    {
+      const float bayerD[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cellD = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vCover <= (bayerD[cellD.x + cellD.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
   #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     // Effacement tramé (matrice de Bayer 4 × 4, par pixel d'art) des branches absentes de la version lointaine.
     if (vDrop > 0.0) {
@@ -758,6 +776,8 @@ function defaultSteps(count) {
  * @param {boolean} [options.tone] la géométrie porte un attribut `aTone` : décalage de lumière ajouté à chaque sommet
  *   (−0,3 = un cran plus sombre environ), interpolé puis découpé par les paliers. Pour les tons propres à chaque bloc
  *   d'un mur, la suie en haut des volumes, l'usure au centre d'une dalle (le Complexe) ; voir `kit/complex-parts.js`.
+ * @param {boolean} [options.dither] la géométrie porte un attribut `aCover` (0..1) : part des pixels dessinés, en trame
+ *   de Bayer 4 × 4 par pixel d'art (faisceau de lampe, voile) ; sans transparence ni tri.
  * @param {number} [options.emissive] seuil de lumière (0..1, 0 = désactivé) au-dessus duquel la matière garde son éclat
  *   la nuit (vortex, cristaux allumés) : la passe finale ne lui applique pas la teinte de l'heure.
  * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
@@ -807,6 +827,7 @@ export function createToonMaterial(options) {
     shade = false,
     tone = false,
     emissive = 0,
+    dither = false,
   } = options;
 
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
@@ -819,6 +840,7 @@ export function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
   if (tone) defines.TONE = "";
+  if (dither) defines.DITHER = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";

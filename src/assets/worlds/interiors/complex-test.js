@@ -1,5 +1,5 @@
-// Le Complexe, monde d'essai : les assets du Complexe déjà dessinés (lots 1 à 3 : ossature, lumière et réseaux,
-// mobilier du Sas) assemblés en quatre pièces praticables — Sas, Archives, Atelier, tronçon de la Grande Galerie —
+// Le Complexe, monde d'essai : les assets du Complexe déjà dessinés (lots 1 à 4 : ossature, lumière et réseaux,
+// mobilier du Sas, Porte-Iris et balisage) assemblés en quatre pièces praticables — Sas, Archives, Atelier, tronçon de la Grande Galerie —
 // pour juger le rendu d'ensemble avant le vrai monde du Complexe (lot 5). Ici, `create()` rend la maquette entière ;
 // la visite (vue en coupe, portes qui s'ouvrent, lampes dans le noir) se fait dans l'explorateur.
 
@@ -23,8 +23,8 @@ export const meta = {
   category: "worlds",
   subcategory: "interiors",
   description:
-    "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, lampes, tuyaux, câbles, " +
-    "bancs, casiers, pupitres, grilles, plaques) assemblés en quatre pièces praticables — le Sas, les Archives à " +
+    "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, " +
+    "câbles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assemblés en quatre pièces praticables — le Sas, les Archives à " +
     "colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs " +
     "entre le personnage et la caméra s'abaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
   tags: [
@@ -34,7 +34,7 @@ export const meta = {
     "explorable", "composition", "procedural",
   ],
   biomes: ["interior"],
-  version: 1,
+  version: 2,
   added: "2026-11-18",
   units: "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 à 6)",
   footprint: { radius: 36, height: 7 },

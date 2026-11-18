@@ -1,4 +1,4 @@
-// Projet Vie 3D — Complexe (essai) (worlds/interiors/complex-test), version 1
+// Projet Vie 3D — Complexe (essai) (worlds/interiors/complex-test), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 var __defProp = Object.defineProperty;
@@ -8,7 +8,7 @@ var __export = (target, all) => {
 };
 
 // src/worlds/complex-test.js
-import * as THREE22 from "three";
+import * as THREE26 from "three";
 
 // src/engine/toon-material.js
 import * as THREE from "three";
@@ -153,6 +153,10 @@ uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des forme
 #ifdef SHADE
   attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpol\xE9 puis d\xE9coup\xE9 en paliers
 #endif
+#ifdef DITHER
+  attribute float aCover; // part des pixels dessin\xE9s (0..1), tram\xE9e : faisceau, voile
+  varying float vCover;
+#endif
 varying vec3 vNormal;
 varying vec3 vObjPos;
 varying vec3 vWorldPos;
@@ -218,6 +222,9 @@ void main() {
   #endif
   #ifdef SHADE
     vShade = aShade;
+  #endif
+  #ifdef DITHER
+    vCover = aCover;
   #endif
   #ifdef TOON_MAP
     vMapUv = uv;
@@ -339,6 +346,9 @@ varying vec3 vWorldPos;
 #ifdef TONE
   varying float vTone;
 #endif
+#ifdef DITHER
+  varying float vCover;
+#endif
 uniform vec2 uRim; // x : lumi\xE8re ajout\xE9e sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
 
 varying vec3 vNormal;
@@ -428,6 +438,14 @@ vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
 #endif
 
 void main() {
+  #ifdef DITHER
+    // Trame de Bayer 4 \xD7 4 par pixel d'art : seule une part vCover des pixels est dessin\xE9e (faisceau de lumi\xE8re).
+    {
+      const float bayerD[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cellD = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vCover <= (bayerD[cellD.x + cellD.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
   #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
     // Effacement tram\xE9 (matrice de Bayer 4 \xD7 4, par pixel d'art) des branches absentes de la version lointaine.
     if (vDrop > 0.0) {
@@ -671,7 +689,8 @@ function createToonMaterial(options) {
     wobble = null,
     shade = false,
     tone = false,
-    emissive = 0
+    emissive = 0,
+    dither = false
   } = options;
   if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 \xE0 6 couleurs");
   if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
@@ -682,6 +701,7 @@ function createToonMaterial(options) {
   if (unlit) defines.UNLIT = "";
   if (shade) defines.SHADE = "";
   if (tone) defines.TONE = "";
+  if (dither) defines.DITHER = "";
   if (map) defines.TOON_MAP = "";
   if (currents) defines.CURRENTS = "";
   if (wobble) defines.WOBBLE = "";
@@ -887,11 +907,10 @@ function createNoise3(seed) {
   };
 }
 
-// src/assets/props/machines/braided-cable.js
-var braided_cable_exports = {};
-__export(braided_cable_exports, {
+// src/assets/buildings/structure/bronze-railing.js
+var bronze_railing_exports = {};
+__export(bronze_railing_exports, {
   create: () => create,
-  createRoute: () => createRoute,
   dispose: () => disposeObject,
   meta: () => meta,
   setWind: () => setWind,
@@ -1346,6 +1365,22 @@ function beam(a, b, w, h = w, roll = 0, up = new THREE3.Vector3(0, 1, 0)) {
   geometry.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return geometry;
 }
+function arcBlock({ r0, r1, a0, a1, z0, z1, segments = Math.max(1, Math.ceil(Math.abs(a1 - a0) / (Math.PI / 12))) }) {
+  const parts = [];
+  for (let s = 0; s < segments; s++) {
+    const b0 = a0 + (a1 - a0) * s / segments, b1 = a0 + (a1 - a0) * (s + 1) / segments;
+    const pts = [[r0, b0], [r1, b0], [r1, b1], [r0, b1]].map(([r, a]) => [Math.cos(a) * r, -Math.sin(a) * r]);
+    const g = buildPrism(pts, z0, () => z1);
+    g.rotateX(Math.PI / 2);
+    parts.push(g);
+  }
+  return mergeGeometries(parts);
+}
+function slantPlate(outline, back, front) {
+  const g = buildPrism(outline.map(([x, y]) => [x, -y]), back, (x, z) => front(x, -z));
+  g.rotateX(Math.PI / 2);
+  return g;
+}
 function straightGlyphRuns(rng, columns, rows = 2) {
   const grid = Array.from({ length: rows }, () => new Uint8Array(columns));
   let col = rng.int(0, 1);
@@ -1604,6 +1639,42 @@ function createFlicker(geometry, bulbs) {
 function glowLevels(name) {
   return [0, 1, 2, 3].map((level) => [name, level]);
 }
+function createRigidParts(geometry, partOf, count) {
+  const position = geometry.attributes.position;
+  const normal = geometry.attributes.normal;
+  const basePosition = position.array.slice();
+  const baseNormal = normal.array.slice();
+  const matrices = Array.from({ length: count }, () => new THREE3.Matrix4());
+  const apply = () => {
+    const p = position.array, n = normal.array;
+    for (let i = 0; i < position.count; i++) {
+      const k = partOf[i];
+      if (k === 255) continue;
+      const e = matrices[k].elements;
+      const x = basePosition[i * 3], y = basePosition[i * 3 + 1], z = basePosition[i * 3 + 2];
+      p[i * 3] = e[0] * x + e[4] * y + e[8] * z + e[12];
+      p[i * 3 + 1] = e[1] * x + e[5] * y + e[9] * z + e[13];
+      p[i * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+      const nx = baseNormal[i * 3], ny = baseNormal[i * 3 + 1], nz = baseNormal[i * 3 + 2];
+      n[i * 3] = e[0] * nx + e[4] * ny + e[8] * nz;
+      n[i * 3 + 1] = e[1] * nx + e[5] * ny + e[9] * nz;
+      n[i * 3 + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
+    }
+    position.needsUpdate = true;
+    normal.needsUpdate = true;
+    geometry.computeBoundingSphere();
+  };
+  return { matrices, apply };
+}
+function mergeParts(entries) {
+  const partOf = new Uint8Array(entries.reduce((sum, [g]) => sum + g.attributes.position.count, 0));
+  let offset = 0;
+  for (const [g, k] of entries) {
+    partOf.fill(k, offset, offset + g.attributes.position.count);
+    offset += g.attributes.position.count;
+  }
+  return { geometry: mergeToned(entries.map(([g]) => g)), partOf };
+}
 
 // src/assets/kit/params.js
 function resolveParams(schema, given = {}) {
@@ -1653,7 +1724,1062 @@ function pick(table, only) {
   return Object.fromEntries(only.map((key) => [key, table[key]]));
 }
 
+// src/assets/buildings/structure/bronze-railing.js
+var KINDS = {
+  chain: "Balisage (poteaux et cha\xEEne)",
+  rail: "Garde-corps (lisse et cha\xEEne lourde)",
+  barrier: "Barri\xE8re (bandes ambre)"
+};
+var LAYOUTS = { line: "En ligne", circle: "En cercle" };
+var OPENINGS = { closed: "Ferm\xE9", open: "Un passage ouvert (face \xE0 +z)" };
+var HEIGHTS = { chain: 0.9, rail: 1, barrier: 1 };
+var AMBER_PAINT = { ramp: ["#4a2412", "#8a4a1c", "#c8782c", "#eaa850"], ink: "#24120a" };
+var params = {
+  seed: seedParam("Change l'affaissement des cha\xEEnes, le poteau pench\xE9, l'usure des bandes et des lisses, les tons du bronze."),
+  kind: choiceParam("Sorte", KINDS, "Balisage (poteaux de 0,9 m et cha\xEEne pendante), garde-corps de fosse (lisse de laiton et cha\xEEne lourde), ou barri\xE8re \xE0 bandes ambre."),
+  layout: choiceParam("Trac\xE9", LAYOUTS, "En ligne droite (centr\xE9e sur l'origine, le long de x), ou en cercle autour de l'origine."),
+  segments: { type: "int", default: 3, min: 1, max: 16, label: "Segments", description: "Nombre d'intervalles entre deux poteaux (en cercle : tout le tour, passage compris)." },
+  span: numberParam("\xC9cart des poteaux", 2, 0.8, 2.5, "En ligne : la distance entre deux poteaux.", { step: 0.05, unit: "m" }),
+  radius: numberParam("Rayon", 3.2, 1, 8, "En cercle : le rayon du cercle des poteaux (3,2 m autour de la fosse du C\u0153ur, 2,75 m pour un p\xE9rim\xE8tre d'\xE9tude).", { step: 0.05, unit: "m" }),
+  opening: choiceParam("Passage", OPENINGS, "En cercle : tout ferm\xE9, ou un intervalle laiss\xE9 ouvert face \xE0 +z.")
+};
+var meta = {
+  id: "buildings/structure/bronze-railing",
+  name: "Rambarde de bronze",
+  nameEn: "Bronze railing",
+  category: "buildings",
+  subcategory: "structure",
+  description: "Poteaux de bronze du Complexe reli\xE9s en ligne ou en cercle : balisage \xE0 cha\xEEne pendante sur disques, garde-corps de fosse \xE0 lisse de laiton et cha\xEEne lourde, barri\xE8re \xE0 bandes ambre us\xE9es. Passage ouvert possible ; segments bloquants fournis au monde. Fiches SAS-15, ETU-15, COE-03, COE-15.",
+  tags: [
+    "rambarde",
+    "balisage",
+    "poteau",
+    "cha\xEEne",
+    "garde-corps",
+    "barri\xE8re",
+    "lisse",
+    "p\xE9rim\xE8tre",
+    "bronze",
+    "bandes ambre",
+    "le complexe",
+    "complexe",
+    "ancien-tech",
+    "modulaire",
+    "obstacle",
+    "int\xE9rieur",
+    "railing",
+    "stanchion",
+    "post",
+    "chain",
+    "guard rail",
+    "barrier",
+    "handrail",
+    "perimeter",
+    "brass",
+    "amber stripes",
+    "ancient complex",
+    "ancient-tech",
+    "modular",
+    "barricade",
+    "indoor",
+    "procedural"
+  ],
+  biomes: ["interior"],
+  version: 1,
+  added: "2026-11-18",
+  units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au milieu de la ligne ou au centre du cercle",
+  footprint: { radius: 3.1, height: 1 },
+  animated: [],
+  params,
+  variants: variantsOf("kind", params.kind)
+};
+function create(given = {}) {
+  const p = resolveParams(meta.params, given);
+  const rng = createRng(p.seed * 7919 + 61);
+  const H = HEIGHTS[p.kind];
+  const bronze = [];
+  const brass = [];
+  const paint = [];
+  const posts = [];
+  const links = [];
+  if (p.layout === "circle") {
+    const n = Math.max(3, p.segments);
+    for (let i = 0; i < n; i++) {
+      const a = Math.PI / 2 + Math.PI / n + i * Math.PI * 2 / n;
+      posts.push(new THREE4.Vector3(Math.cos(a) * p.radius, 0, Math.sin(a) * p.radius));
+    }
+    for (let i = 0; i < n; i++) if (!(p.opening === "open" && i === n - 1)) links.push([i, (i + 1) % n]);
+  } else {
+    const length = p.segments * p.span;
+    for (let i = 0; i <= p.segments; i++) posts.push(new THREE4.Vector3(-length / 2 + i * p.span, 0, 0));
+    for (let i = 0; i < p.segments; i++) links.push([i, i + 1]);
+  }
+  const leaning = rng.chance(0.6) ? rng.int(0, posts.length - 1) : -1;
+  const tops = posts.map((base, i) => {
+    const top = base.clone().setY(H);
+    if (i === leaning) {
+      const lean = rng.range(0.04, 0.08);
+      const a = rng.range(0, Math.PI * 2);
+      top.x += Math.cos(a) * lean;
+      top.z += Math.sin(a) * lean;
+    }
+    return top;
+  });
+  const at = (i, y) => posts[i].clone().lerp(tops[i], y / H);
+  posts.forEach((base, i) => {
+    const top = tops[i];
+    const tone = rng.range(-0.06, 0.06);
+    if (p.kind === "chain") {
+      const disc = buildLathe([[0, 0], [0.125, 0], [0.12, 0.025], [0.05, 0.05], [0, 0.05]], { segments: 10, facets: true });
+      disc.translate(base.x, 0, base.z);
+      bronze.push(withTone(disc, tone - 0.05));
+      bronze.push(withTone(beam(base.clone().setY(0.04), top, PX * 1.1, PX * 1.1), tone));
+      const knob = buildLathe([[0, 0], [0.04, 0], [0.05, 0.035], [0.03, 0.07], [0, 0.075]], { segments: 6, facets: true });
+      knob.translate(top.x, top.y - 0.01, top.z);
+      brass.push(withTone(knob, 0.15));
+      const ringAt = at(i, H - 0.08);
+      brass.push(withTone(buildBlock([PX * 1.6, PX * 0.8, PX * 1.6], [ringAt.x, ringAt.y, ringAt.z]), 0.05));
+    } else {
+      const w = p.kind === "rail" ? PX * 1.2 : PX * 1.4;
+      const foot = p.kind === "rail" ? [0.16, 0.02, 0.16] : [0.22, 0.05, 0.22];
+      brass.push(withTone(buildBlock(foot, [base.x, foot[1] / 2, base.z], [0, rng.range(0, 0.3), 0]), -0.15));
+      bronze.push(withTone(beam(base.clone().setY(foot[1]), top, w, w), tone));
+      bronze.push(withTone(buildBlock([w + 0.03, 0.03, w + 0.03], [top.x, top.y + 0.01, top.z]), tone + 0.12));
+      const collar = at(i, 0.25);
+      bronze.push(withTone(buildBlock([w + 0.02, PX, w + 0.02], [collar.x, collar.y, collar.z]), tone + 0.05));
+    }
+  });
+  for (const [i, j] of links) {
+    const a = tops[i], b = tops[j];
+    const length = a.distanceTo(b);
+    if (p.kind === "chain") {
+      const sag = length * rng.range(0.07, 0.13);
+      bronze.push(withTone(chain(at(i, H - 0.08), at(j, H - 0.08), { sag, link: 0.075, width: PX * 0.85 }), 0.12));
+    } else if (p.kind === "rail") {
+      const lisse = beam(a.clone().setY(a.y + 0.04), b.clone().setY(b.y + 0.04), PX * 1.4, PX, 0);
+      brass.push(withTone(lisse, (x, y, z, nx, ny) => (ny > 0.5 ? 0.18 : 0) + rng.range(-0.03, 0.03)));
+      const sag = 0.06 + length * rng.range(0.03, 0.06);
+      bronze.push(withTone(chain(at(i, 0.58), at(j, 0.58), { sag, link: 0.1, width: PX * 1.15 }), 0.05));
+    } else {
+      const y0 = H - 0.1;
+      const da = at(i, y0), db = at(j, y0);
+      const dir = db.clone().sub(da);
+      const len = dir.length();
+      dir.normalize();
+      bronze.push(withTone(beam(da, db, 0.035, 0.15), -0.3));
+      const bands = Math.max(2, Math.round(len / 0.12));
+      for (let k = 0; k < bands; k += 2) {
+        if (rng.chance(0.12)) continue;
+        const worn = rng.chance(0.25) ? rng.range(0.55, 0.85) : 1;
+        const c = da.clone().addScaledVector(dir, (k + 0.5) / bands * len);
+        const band = beam(c.clone().addScaledVector(dir, -len / bands / 2), c.clone().addScaledVector(dir, len / bands / 2), 0.042, 0.15 * worn);
+        band.translate(0, -0.075 * (1 - worn), 0);
+        paint.push(withTone(band, rng.range(-0.08, 0.06)));
+      }
+      bronze.push(withTone(beam(at(i, 0.42), at(j, 0.42), PX, PX * 1.2), 0));
+    }
+  }
+  const group = new THREE4.Group();
+  group.name = meta.name;
+  const add = (parts, material, name) => {
+    if (!parts.length) return;
+    const mesh = new THREE4.Mesh(mergeToned(parts), material);
+    mesh.name = name;
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  };
+  add(bronze, metalMaterial(METALS.patinatedBronze, { id: 21, tone: true }), "bronze");
+  add(brass, metalMaterial(METALS.blackenedBrass, { id: 22, tone: true }), "brass");
+  add(paint, createToonMaterial({ ramp: AMBER_PAINT.ramp, ink: AMBER_PAINT.ink, steps: [0.3, 0.52, 0.78], tone: true, crease: true, id: 23 }), "paint");
+  group.userData.blocking = links.map(([i, j]) => [posts[i].x, posts[i].z, posts[j].x, posts[j].z]);
+  group.userData.posts = posts.map((v) => [v.x, v.z]);
+  group.userData.asset = { id: meta.id, params: p };
+  return group;
+}
+
+// src/assets/props/tools/hand-lamp.js
+var hand_lamp_exports = {};
+__export(hand_lamp_exports, {
+  create: () => create2,
+  dispose: () => disposeObject,
+  meta: () => meta2,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE5 from "three";
+var POSES = { standing: "Debout (lentille en haut)", lying: "Couch\xE9e au sol", hand: "En main (origine au manche)" };
+var STATES = { lit: "Allum\xE9e", off: "\xC9teinte" };
+var BEAM_LENGTH = 2.6;
+var params2 = {
+  seed: seedParam("Change la longueur du manche, les bandes de cuir et leur usure, une bague de plus, le crochet du talon."),
+  pose: choiceParam("Pose", POSES, "Debout, couch\xE9e au sol, ou en main : origine au milieu du manche et faisceau vers +z (userData.grip, userData.beamDirection)."),
+  state: choiceParam("\xC9tat", STATES, "Allum\xE9e (lentille vive) ou \xE9teinte (verre sombre)."),
+  glow: glowParam("Couleur de la lentille et de sa lumi\xE8re.", { only: ["amber", "cyan"] }),
+  halo: choiceParam("Halo", { off: "Sans halo", on: "\xC9claire le d\xE9cor (dans le noir)" }, "Allum\xE9e : \xE9claire le d\xE9cor devant elle dans le noir (une des lumi\xE8res de halo du moteur)."),
+  beam: choiceParam("Faisceau", { off: "Sans faisceau", on: "C\xF4ne tram\xE9" }, "Allum\xE9e : un c\xF4ne de lumi\xE8re tram\xE9 de 2,6 m, qui s'efface au loin.")
+};
+var meta2 = {
+  id: "props/tools/hand-lamp",
+  name: "Lampe portative",
+  nameEn: "Hand lamp",
+  category: "props",
+  subcategory: "tools",
+  description: "Lampe \xE0 main du Complexe : manche gain\xE9 de cuir, bague et t\xEAte de laiton, lentille qui luit en ambre ou en cyan, crochet au talon. Debout, couch\xE9e ou en main (point de prise fourni) ; halo qui \xE9claire le d\xE9cor dans le noir, faisceau tram\xE9 en option. Fiche SAS-16.",
+  tags: [
+    "lampe portative",
+    "lampe torche",
+    "lampe",
+    "lanterne de main",
+    "lentille",
+    "faisceau",
+    "cuir",
+    "laiton",
+    "outil",
+    "le complexe",
+    "complexe",
+    "ancien-tech",
+    "objet de main",
+    "lumi\xE8re",
+    "int\xE9rieur",
+    "hand lamp",
+    "flashlight",
+    "lamp",
+    "hand lantern",
+    "lens",
+    "light beam",
+    "leather",
+    "brass",
+    "tool",
+    "ancient complex",
+    "ancient-tech",
+    "handheld",
+    "light source",
+    "indoor",
+    "procedural"
+  ],
+  biomes: ["interior"],
+  version: 1,
+  added: "2026-11-18",
+  units: "1 unit\xE9 = 1 m\xE8tre ; debout et couch\xE9e : origine au sol ; en main : origine au milieu du manche, faisceau vers +z",
+  footprint: { radius: 0.14, height: 0.26 },
+  animated: ["glow"],
+  params: params2,
+  variants: variantsOf("pose", params2.pose)
+};
+function create2(given = {}) {
+  const p = resolveParams(meta2.params, given);
+  const rng = createRng(p.seed * 7919 + 67);
+  const lit = p.state === "lit";
+  const parts = [];
+  const handle = rng.range(0.14, 0.18);
+  const r = 0.02;
+  const tube = (r0, r1, z0, z1, tone, sides = 6) => {
+    const g = buildLathe([[0, z0], [r0, z0], [r1, z1], [0, z1]], { segments: sides, axis: "z", facets: true });
+    parts.push(withTone(g, tone));
+  };
+  tube(0.022, 0.022, 0, 0.016, 0.1);
+  const hook = ring({ radius: 0.012, height: PX * 0.5, thickness: PX * 0.4, segments: 6 });
+  hook.rotateZ(Math.PI / 2);
+  hook.rotateY(rng.range(-0.5, 0.5));
+  hook.translate(0, 0, -0.012);
+  parts.push(withTone(plain(hook), 0.2));
+  const bands = rng.int(5, 7);
+  const leather = -0.62;
+  for (let i = 0; i < bands; i++) {
+    const z0 = 0.016 + handle * i / bands, z1 = 0.016 + handle * (i + 1) / bands;
+    const wear = rng.chance(0.25) ? 0.12 : 0;
+    tube(r, r, z0, z1, leather + (i % 2 ? 0.1 : 0) + wear);
+  }
+  const z = 0.016 + handle;
+  tube(0.026, 0.026, z, z + 0.02, 0.25, 8);
+  if (rng.chance(0.5)) {
+    const zb = 0.016 + handle * rng.range(0.3, 0.6);
+    tube(0.024, 0.024, zb, zb + 0.012, 0.18, 8);
+  }
+  tube(0.028, 0.05, z + 0.02, z + 0.065, 0.05, 8);
+  tube(0.053, 0.053, z + 0.065, z + 0.08, 0.3, 8);
+  const lensZ = z + 0.078;
+  const total = lensZ + 6e-3;
+  const lens = buildLathe([[0, lensZ - 4e-3], [0.042, lensZ - 4e-3], [0.042, lensZ + 4e-3], [0, lensZ + 4e-3]], { segments: 8, axis: "z", facets: true });
+  let beamGeometry = null;
+  if (lit && p.beam === "on") {
+    const g = plain(new THREE5.CylinderGeometry(0.62, 0.045, BEAM_LENGTH, 10, 6, true));
+    g.rotateX(Math.PI / 2);
+    g.translate(0, 0, lensZ + BEAM_LENGTH / 2);
+    const pos = g.attributes.position;
+    const cover = new Float32Array(pos.count);
+    for (let i = 0; i < pos.count; i++) cover[i] = 0.42 * Math.max(0, 1 - (pos.getZ(i) - lensZ) / BEAM_LENGTH) ** 1.4;
+    g.setAttribute("aCover", new THREE5.BufferAttribute(cover, 1));
+    beamGeometry = g;
+  }
+  const place = new THREE5.Matrix4();
+  if (p.pose === "standing") {
+    place.makeRotationX(-Math.PI / 2);
+  } else if (p.pose === "lying") {
+    const tilt = Math.atan2(0.053 - 0.022, total);
+    place.makeRotationX(-tilt).premultiply(new THREE5.Matrix4().makeTranslation(0, 0.022, -total / 2));
+  } else {
+    place.makeTranslation(0, 0, -(0.016 + handle / 2));
+  }
+  const group = new THREE5.Group();
+  group.name = meta2.name;
+  const bodyGeometry = mergeToned(parts);
+  bodyGeometry.applyMatrix4(place);
+  const body = new THREE5.Mesh(bodyGeometry, metalMaterial(METALS.blackenedBrass, { id: 21, tone: true }));
+  body.name = "body";
+  body.castShadow = true;
+  body.receiveShadow = true;
+  group.add(body);
+  lens.applyMatrix4(place);
+  const lensMaterial = glowMaterial(p.glow, { level: lit ? 3 : 0, id: 22 });
+  const lensMesh = new THREE5.Mesh(lens, lensMaterial);
+  lensMesh.name = "lens";
+  group.add(lensMesh);
+  if (beamGeometry) {
+    beamGeometry.applyMatrix4(place);
+    const color = GLOWS[p.glow].ramp[2];
+    const beamMesh = new THREE5.Mesh(beamGeometry, createToonMaterial({ ramp: [color, color], steps: [0.5], unlit: true, emissive: 0.01, glow: false, outline: false, dither: true, id: 23 }));
+    beamMesh.name = "beam";
+    group.add(beamMesh);
+  }
+  const toPlaced = (v) => v.applyMatrix4(place);
+  const lightPoint = toPlaced(new THREE5.Vector3(0, 0, lensZ));
+  const beamDirection = toPlaced(new THREE5.Vector3(0, 0, lensZ + 1)).sub(lightPoint).normalize();
+  group.userData.grip = toPlaced(new THREE5.Vector3(0, 0, 0.016 + handle / 2));
+  group.userData.beamDirection = beamDirection;
+  group.userData.lightPoint = lightPoint;
+  if (lit && p.halo === "on") {
+    const halo = createGlowLight();
+    lensMaterial.addEventListener("dispose", () => halo.release());
+    const color = rgb(GLOWS[p.glow].light);
+    const at = lightPoint.clone().addScaledVector(beamDirection, 0.6);
+    const world = new THREE5.Vector3();
+    const baseUpdate = group.updateMatrixWorld.bind(group);
+    group.updateMatrixWorld = (force) => {
+      baseUpdate(force);
+      halo.set(group.localToWorld(world.copy(at)), color, 2.4, 1.2);
+    };
+  }
+  group.userData.asset = { id: meta2.id, params: p };
+  return group;
+}
+
+// src/assets/buildings/structure/iris-door.js
+import * as THREE6 from "three";
+var DEG = Math.PI / 180;
+var CY = 1.4;
+var R_OPEN = 1.4;
+var R_RING = 1.9;
+var R_BAND = 2.05;
+var R_FRAME = 2.3;
+var HALF = 2.25;
+var TOP = 3.65;
+var SILL = 0.2;
+var WALL = 6;
+var DEPTH = 0.6;
+var BAND = { y0: 1, y1: 1.25 };
+var BLADES = 12;
+var RING = 12;
+var LOCK0 = 13;
+var FIXED = 255;
+var OPEN_ANGLE = -54 * DEG;
+var RING_TURN = 15 * DEG;
+var LOCK_TRAVEL = 0.6;
+var OPEN_TIME = 5.2;
+var CLOSE_TIME = 3.2;
+var STATES2 = { closed: "Ferm\xE9e", open: "Ouverte", cycle: "S'ouvre et se ferme en boucle" };
+var WEAR = { patinated: "Patin\xE9e", heavy: "Tr\xE8s us\xE9e (suie, lames ternies)" };
+var params3 = {
+  seed: seedParam("Change les glyphes des lames et des voussoirs, l'ordre et le sens de la cascade, l'appareil du mur, les tons des lames et des pierres."),
+  state: choiceParam("\xC9tat", STATES2, "Ferm\xE9e (glyphes \xE9teints, m\xE9daillon qui respire), ouverte (lames repli\xE9es en couronne), ou en boucle pour regarder la s\xE9quence. Pilotable : group.userData.door."),
+  glow: glowParam("Couleur des glyphes et du m\xE9daillon.", { only: ["amber", "cyan"] }),
+  wear: choiceParam("Usure", WEAR, "Patin\xE9e, ou tr\xE8s us\xE9e : plus de suie sur le mur et le cadre, lames plus ternies et in\xE9gales."),
+  wall: choiceParam("Mur", { on: "Avec son pan de mur (6 m)", off: "Cadre seul" }, "La porte livr\xE9e avec son pan de mur de 6 m, ou le seul bloc du cadre (pour l'encastrer ailleurs)."),
+  height: numberParam("Hauteur du mur", 5, 4, 8, "Hauteur du pan de mur autour de la porte.", { step: 0.5, unit: "m" }),
+  stone: stoneParam("Pierre du mur et du cadre.", { only: ["blackBasalt", "smoked"] })
+};
+var meta3 = {
+  id: "buildings/structure/iris-door",
+  name: "Porte-Iris",
+  nameEn: "Iris door",
+  category: "buildings",
+  subcategory: "structure",
+  description: "L'entr\xE9e du Sas du Complexe : anneau de basalte \xE0 voussoirs grav\xE9s encastr\xE9 dans un pan de mur de 6 m, anneau de bronze cr\xE9nel\xE9 qui tourne, douze lames de bronze en moulinet qui s'\xE9cartent en cascade pendant que leurs glyphes s'allument, m\xE9daillon de laiton \xE0 couronne de points qui respire, quatre verrous. Ferm\xE9e, ouverte, ou pilot\xE9e par le sc\xE9nario.",
+  tags: [
+    "porte-iris",
+    "iris",
+    "porte",
+    "diaphragme",
+    "lames",
+    "anneau rotatif",
+    "verrous",
+    "m\xE9daillon",
+    "voussoirs",
+    "glyphes",
+    "le complexe",
+    "complexe",
+    "ancien-tech",
+    "entr\xE9e",
+    "h\xE9ros",
+    "anim\xE9",
+    "pilotable",
+    "int\xE9rieur",
+    "iris door",
+    "aperture",
+    "doorway",
+    "blades",
+    "rotating ring",
+    "bolts",
+    "medallion",
+    "arch stones",
+    "glyph marks",
+    "ancient complex",
+    "ancient-tech",
+    "entrance",
+    "hero asset",
+    "animated",
+    "scriptable",
+    "indoor",
+    "procedural"
+  ],
+  biomes: ["interior"],
+  version: 1,
+  added: "2026-11-18",
+  units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au centre de l'ouverture ; le mur suit l'axe x (6 m), face avant en +z ; centre de l'iris \xE0 1,40 m, seuil \xE0 0,20 m, bas de l'anneau sous le sol",
+  footprint: { radius: 3.05, height: 5 },
+  animated: ["door", "glow"],
+  params: params3,
+  variants: variantsOf("state", params3.state)
+};
+var polar = (r, a) => [Math.cos(a) * r, Math.sin(a) * r];
+var clamp01 = (t) => Math.min(1, Math.max(0, t));
+var ease = (t) => t * t * (3 - 2 * t);
+function create3(given = {}) {
+  const p = resolveParams(meta3.params, given);
+  const stone = STONES[p.stone];
+  const rng = createRng(p.seed * 7919 + 23);
+  const masonryRng = createRng(p.seed * 104729 + 41);
+  const glyphRng = createRng(p.seed * 15485863 + 11);
+  const heavy = p.wear === "heavy";
+  const H = Math.max(p.height, TOP + 0.35);
+  const front = DEPTH / 2;
+  const sootAt = soot(H * 0.45, H, heavy ? -0.38 : -0.24);
+  const stoneParts = [];
+  const metal = [];
+  const glow = [];
+  const glowGroups = [];
+  let glowCount = 0;
+  const addGlow = (g, part, kind, index) => {
+    const count = g.attributes.position.count;
+    glow.push([withShade(g, 0, 4), part]);
+    glowGroups.push({ start: glowCount, count, kind, index });
+    glowCount += count;
+  };
+  let bandFace = front - PX;
+  if (p.wall === "on") {
+    const masonry = buildMasonry(masonryRng, {
+      width: WALL,
+      height: H,
+      depth: DEPTH,
+      band: BAND,
+      soot: heavy ? -0.36 : -0.24,
+      holes: [{ x0: -HALF, x1: HALF, y0: 0, y1: TOP }]
+    });
+    stoneParts.push(...masonry.parts);
+    bandFace = masonry.bandFace;
+  }
+  const shape = new THREE6.Shape();
+  shape.moveTo(-HALF, 0);
+  shape.lineTo(HALF, 0);
+  shape.lineTo(HALF, TOP);
+  shape.lineTo(-HALF, TOP);
+  shape.lineTo(-HALF, 0);
+  const hole = new THREE6.Path();
+  const a0 = Math.asin((SILL - CY) / R_RING);
+  const steps = 48;
+  for (let i = 0; i <= steps; i++) {
+    const a = a0 + (Math.PI - 2 * a0) * i / steps;
+    const [x, y] = polar(R_RING, a);
+    if (i === 0) hole.moveTo(x, y + CY);
+    else hole.lineTo(x, y + CY);
+  }
+  hole.closePath();
+  shape.holes.push(hole);
+  const frame = plain(new THREE6.ExtrudeGeometry(shape, { depth: DEPTH, bevelEnabled: false, curveSegments: 1 }));
+  frame.translate(0, 0, -DEPTH / 2);
+  stoneParts.push(withTone(frame, (x, y) => 0.02 + sootAt(x, y)));
+  const chord = Math.sqrt(R_RING * R_RING - (CY - SILL) ** 2);
+  stoneParts.push(withTone(buildBlock([chord * 2 + 0.06, SILL + 0.01, DEPTH + PX * 2], [0, (SILL + 0.01) / 2, 0]), (x, y, z, nx, ny) => ny > 0.9 ? 0.16 - 0.1 * Math.min(1, Math.abs(x) / chord) : 0.04));
+  const VOUSSOIRS = 16;
+  for (let i = 0; i < VOUSSOIRS; i++) {
+    const span = Math.PI * 2 / VOUSSOIRS;
+    const mid = Math.PI / 2 + i * span;
+    if (CY + Math.sin(mid) * (R_BAND + R_FRAME) / 2 < -0.1) continue;
+    const gap = PX / R_FRAME;
+    const g = arcBlock({ r0: R_BAND, r1: R_FRAME, a0: mid - span / 2 + gap / 2, a1: mid + span / 2 - gap / 2, z0: front - 0.02, z1: front + 0.06, segments: 2 });
+    g.translate(0, CY, 0);
+    const tone = 0.3 + rng.range(-0.1, 0.06);
+    stoneParts.push(withTone(g, (x, y) => tone + sootAt(x, y) * 0.6));
+    if (CY + Math.sin(mid) * R_FRAME < 0.35) continue;
+    const strip = glyphStrip(glyphRng, { length: 0.42, rows: 2 });
+    strip.translate(0, -PX, 0);
+    strip.rotateZ(mid - Math.PI / 2);
+    const [gx, gy] = polar((R_BAND + R_FRAME) / 2, mid);
+    strip.translate(gx, gy + CY, front + 0.06);
+    const order = Math.min(i, VOUSSOIRS - i);
+    addGlow(strip, FIXED, "frame", order / (VOUSSOIRS / 2));
+  }
+  if (p.wall === "on") {
+    for (const s of [-1, 1]) {
+      const strip = glyphStrip(glyphRng, { length: WALL / 2 - HALF - 0.16, rows: 2 });
+      strip.translate(s * (WALL / 2 + HALF) / 2, 1.1 - PX, bandFace);
+      addGlow(strip, FIXED, "band", 0);
+    }
+  }
+  const band = arcBlock({ r0: R_RING, r1: R_BAND, a0: 0, a1: Math.PI * 2, z0: front - 0.04, z1: front + 0.03, segments: 40 });
+  band.translate(0, CY, 0);
+  metal.push([withTone(band, 0.2), FIXED]);
+  for (let i = 0; i < 24; i++) {
+    const a = i / 24 * Math.PI * 2 + Math.PI / 24;
+    const [x, y] = polar((R_RING + R_BAND) / 2, a);
+    if (y + CY < 0.05) continue;
+    metal.push([withTone(buildBlock([PX, PX, PX], [x, y + CY, front + 0.03 + PX / 2]), 0.3), FIXED]);
+  }
+  const SEG = 24;
+  for (const [z0, z1] of [[0.09, 0.22], [-0.22, -0.09]]) {
+    const isFront = z0 > 0;
+    for (let i = 0; i < SEG; i++) {
+      const a = i / SEG * Math.PI * 2;
+      const g = arcBlock({ r0: R_OPEN, r1: R_RING, a0: a, a1: a + Math.PI * 2 / SEG, z0, z1, segments: 1 });
+      const tone = (i % 2 ? -0.12 : -0.24) + rng.range(-0.03, 0.03) - (heavy ? 0.06 : 0);
+      withTone(g, (x, y, z, nx, ny) => nx * x + ny * y < -0.8 * Math.hypot(x, y) ? -0.75 : tone);
+      g.translate(0, CY, 0);
+      metal.push([g, RING]);
+      const ta = a + Math.PI * 2 / SEG / 4;
+      const tooth = arcBlock({ r0: R_OPEN - PX, r1: R_OPEN + 0.01, a0: ta, a1: ta + Math.PI * 2 / SEG / 2, z0: z0 + 0.01, z1: z1 - 0.01, segments: 1 });
+      tooth.translate(0, CY, 0);
+      metal.push([withTone(tooth, 0.14), RING]);
+      if (isFront) {
+        const [x, y] = polar(R_RING - 0.1, a + Math.PI / SEG);
+        metal.push([withTone(buildBlock([PX, PX, PX * 0.6], [x, y + CY, z1 + PX * 0.3]), 0.32), RING]);
+      }
+    }
+  }
+  const locks = [];
+  for (let m = 0; m < 4; m++) {
+    const a = Math.PI / 2 - m * Math.PI / 2;
+    const dir = new THREE6.Vector3(Math.cos(a), Math.sin(a), 0);
+    const z = 0.25;
+    const from = new THREE6.Vector3(0, CY, z).addScaledVector(dir, R_OPEN - 0.18);
+    const to = new THREE6.Vector3(0, CY, z).addScaledVector(dir, R_RING + 0.1);
+    metal.push([withTone(beam(from, to, 0.1, 0.06, 0, new THREE6.Vector3(0, 0, 1)), 0.1), LOCK0 + m]);
+    const head = new THREE6.Vector3(0, CY, z + 0.01).addScaledVector(dir, R_OPEN - 0.14);
+    metal.push([withTone(buildBlock([0.14, 0.14, 0.08], [head.x, head.y, head.z]), 0.22), LOCK0 + m]);
+    const box = new THREE6.Vector3(0, CY, front + 0.05).addScaledVector(dir, (R_RING + R_BAND) / 2);
+    metal.push([withTone(beam(box.clone().addScaledVector(dir, -0.09), box.clone().addScaledVector(dir, 0.09), 0.2, 0.06, 0, new THREE6.Vector3(0, 0, 1)), 0), FIXED]);
+    locks.push(dir);
+  }
+  const bladeOutline = [polar(1.62, -18 * DEG), polar(1.62, 0), polar(1.62, 18 * DEG), polar(0.14, 100 * DEG), polar(0.1, 40 * DEG)];
+  const trailA = new THREE6.Vector2(...bladeOutline[0]);
+  const trailB = new THREE6.Vector2(...bladeOutline[4]);
+  const trailDir = trailB.clone().sub(trailA).normalize();
+  const bladeFront = (x, y) => {
+    const d = (x - trailA.x) * -trailDir.y + (y - trailA.y) * trailDir.x;
+    return 0.03 + 0.045 * clamp01(Math.abs(d) / 0.95);
+  };
+  const pivots = [];
+  const bladeTone = Array.from({ length: BLADES }, (_, k) => (k % 2 ? 0.05 : -0.04) + rng.range(-0.05, 0.05) - (heavy ? rng.range(0, 0.12) : 0));
+  for (let k = 0; k < BLADES; k++) {
+    const ak = Math.PI / 2 + k * Math.PI * 2 / BLADES;
+    const place = (g) => {
+      g.rotateZ(ak);
+      g.translate(0, CY, 0);
+      return g;
+    };
+    const back = k % 2 ? -0.045 : -0.035;
+    const plate = slantPlate(bladeOutline, back, bladeFront);
+    const tone = bladeTone[k];
+    withTone(plate, (x, y, z, nx, ny, nz) => tone + (nz > 0.5 ? 0.14 * (1 - Math.min(1, Math.hypot(x, y) / 1.5)) : -0.1));
+    metal.push([place(plate), k]);
+    const la = new THREE6.Vector2(...polar(1.5, 18 * DEG));
+    const lb = new THREE6.Vector2(...polar(0.32, 92 * DEG));
+    const inset = new THREE6.Vector2(...polar(PX * 0.5, 18 * DEG - Math.PI / 2));
+    const a3 = new THREE6.Vector3(la.x + inset.x, la.y + inset.y, 0);
+    const b3 = new THREE6.Vector3(lb.x + inset.x, lb.y + inset.y, 0);
+    a3.z = bladeFront(a3.x, a3.y) + 4e-3;
+    b3.z = bladeFront(b3.x, b3.y) + 4e-3;
+    metal.push([place(withTone(beam(a3, b3, PX, 0.012, 0, new THREE6.Vector3(0, 0, 1)), tone + 0.32)), k]);
+    const runs = straightGlyphRuns(glyphRng, 3, 3);
+    const cells = [];
+    const gc = new THREE6.Vector2(...polar(1.05, 10 * DEG));
+    const radial = gc.clone().normalize();
+    const tangent = new THREE6.Vector2(-radial.y, radial.x);
+    for (const [c, r, n] of runs) {
+      const u = (c + n / 2 - 1.5) * PX, v = (1.5 - r - 0.5) * PX;
+      const x = gc.x + tangent.x * u + radial.x * v, y = gc.y + tangent.y * u + radial.y * v;
+      const cell = buildBlock([n * PX, PX, 0.016], [0, 0, 0]);
+      cell.rotateZ(Math.atan2(tangent.y, tangent.x));
+      cell.translate(x, y, bladeFront(x, y) + 6e-3);
+      cells.push(cell);
+    }
+    if (cells.length) addGlow(place(mergeToned(cells)), k, "blade", k);
+    const sa = 60 * DEG;
+    const sector = slantPlate([[0, 0], polar(0.32, sa - 15 * DEG), polar(0.32, sa), polar(0.32, sa + 15 * DEG)], 0.08, () => 0.125);
+    metal.push([place(withTone(sector, (x, y, z, nx, ny, nz) => nz > 0.5 ? 0.34 : 0.1)), k]);
+    if (k === 0) {
+      const needle = beam(new THREE6.Vector3(...polar(0.07, sa), 0.13), new THREE6.Vector3(...polar(0.28, sa), 0.13), PX * 0.8, 0.012, 0, new THREE6.Vector3(0, 0, 1));
+      metal.push([place(withTone(needle, -0.85)), k]);
+      addGlow(place(buildBlock([PX * 1.6, PX * 1.6, 0.03], [0, 0, 0.135])), k, "crown", k);
+    }
+    const [dx, dy] = polar(0.42, sa);
+    addGlow(place(buildBlock([PX * 1.2, PX * 1.2, 0.02], [dx, dy, bladeFront(dx, dy) + 0.01])), k, "crown", k);
+    pivots.push(new THREE6.Vector3(...polar(1.6, ak - 18 * DEG), 0).add(new THREE6.Vector3(0, CY, 0)));
+  }
+  const group = new THREE6.Group();
+  group.name = meta3.name;
+  const stoneMesh = new THREE6.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: rng.int(0, 96), id: 20, grain: 0.06 }));
+  stoneMesh.name = "stone";
+  stoneMesh.castShadow = true;
+  stoneMesh.receiveShadow = true;
+  group.add(stoneMesh);
+  const metalMerged = mergeParts(metal);
+  const metalMesh = new THREE6.Mesh(metalMerged.geometry, metalMaterial(METALS.patinatedBronze, { id: 21, tone: true }));
+  metalMesh.name = "bronze";
+  metalMesh.castShadow = true;
+  metalMesh.receiveShadow = true;
+  group.add(metalMesh);
+  const glowMerged = mergeParts(glow);
+  const glowMesh = new THREE6.Mesh(glowMerged.geometry, glowMixMaterial(glowLevels(p.glow), { id: 22 }));
+  glowMesh.name = "glow";
+  group.add(glowMesh);
+  const metalRig = createRigidParts(metalMerged.geometry, metalMerged.partOf, LOCK0 + 4);
+  const glowRig = createRigidParts(glowMerged.geometry, glowMerged.partOf, LOCK0 + 4);
+  const shade = glowMerged.geometry.attributes.aShade;
+  const firstBlade = rng.int(0, BLADES - 1);
+  const sense = rng.chance(0.5) ? 1 : -1;
+  const bladeStart = Array.from({ length: BLADES }, (_, k) => 0.24 + ((k - firstBlade) * sense + BLADES) % BLADES * 0.042);
+  const BLADE_SPAN = 0.3;
+  const center = new THREE6.Vector3(0, CY, 0);
+  const tmp = new THREE6.Matrix4();
+  const aroundZ = (m, pivot, angle) => {
+    m.makeTranslation(pivot.x, pivot.y, 0);
+    m.multiply(tmp.makeRotationZ(angle));
+    m.multiply(tmp.makeTranslation(-pivot.x, -pivot.y, 0));
+  };
+  let shownPose = -1;
+  const pose = (s) => {
+    if (Math.abs(s - shownPose) < 1e-4) return;
+    shownPose = s;
+    const lockT = ease(clamp01(s / 0.11));
+    const ringT = ease(clamp01((s - 0.11) / 0.12));
+    for (const rig of [metalRig, glowRig]) {
+      for (let k = 0; k < BLADES; k++) aroundZ(rig.matrices[k], pivots[k], OPEN_ANGLE * ease(clamp01((s - bladeStart[k]) / BLADE_SPAN)));
+      aroundZ(rig.matrices[RING], center, -RING_TURN * ringT);
+      locks.forEach((dir, m) => rig.matrices[LOCK0 + m].makeTranslation(dir.x * LOCK_TRAVEL * lockT, dir.y * LOCK_TRAVEL * lockT, 0));
+      rig.apply();
+    }
+  };
+  const levels = glowGroups.map(() => -1);
+  const light = (s, time) => {
+    const breath = Math.sin(time * Math.PI * 2 / 3.2) > 0.2 ? 2 : 1;
+    let changed = false;
+    glowGroups.forEach((g, i) => {
+      let level;
+      if (g.kind === "band") level = s > 0.5 ? 2 : 1;
+      else if (g.kind === "frame") level = s > 0.01 + 0.2 * g.index ? 2 : 0;
+      else if (g.kind === "blade") level = s > bladeStart[g.index] ? s >= 1 ? 2 : 3 : 0;
+      else level = s <= 0 ? breath : s < 0.24 ? 3 : 2;
+      if (heavy && g.kind === "frame" && g.index > 0.85) level = Math.min(level, 1);
+      if (level === levels[i]) return;
+      levels[i] = level;
+      shade.array.fill((level + 0.5) / 4, g.start, g.start + g.count);
+      changed = true;
+    });
+    if (changed) shade.needsUpdate = true;
+  };
+  let tween = null;
+  let cycling = p.state === "cycle";
+  const door = {
+    opening: { width: 2 * Math.sqrt(R_OPEN * R_OPEN - (CY - SILL) ** 2), height: CY + R_OPEN, x0: -R_OPEN, x1: R_OPEN, sill: SILL, radius: R_OPEN, center: CY },
+    openness: p.state === "open" ? 1 : 0,
+    get blocking() {
+      return this.openness < 0.9;
+    },
+    open() {
+      tween = { from: door.openness, to: 1, start: sharedUniforms.uTime.value };
+    },
+    close() {
+      tween = { from: door.openness, to: 0, start: sharedUniforms.uTime.value };
+    },
+    setOpen(t) {
+      tween = null;
+      cycling = false;
+      door.openness = clamp01(t);
+      pose(door.openness);
+      light(door.openness, sharedUniforms.uTime.value);
+    }
+  };
+  pose(door.openness);
+  light(door.openness, 0);
+  const baseUpdate = group.updateMatrixWorld.bind(group);
+  let lastTime = -1;
+  group.updateMatrixWorld = (force) => {
+    const time = sharedUniforms.uTime.value;
+    if (time !== lastTime) {
+      lastTime = time;
+      if (tween) {
+        cycling = false;
+        const duration = (tween.to > tween.from ? OPEN_TIME : CLOSE_TIME) * Math.abs(tween.to - tween.from) || 1;
+        const k = Math.min(1, (time - tween.start) / duration);
+        door.openness = tween.from + (tween.to - tween.from) * k;
+        if (k >= 1) tween = null;
+      } else if (cycling) {
+        const u = time % 15;
+        door.openness = u < 3 ? 0 : u < 8.2 ? (u - 3) / OPEN_TIME : u < 11.8 ? 1 : 1 - (u - 11.8) / CLOSE_TIME;
+      }
+      pose(door.openness);
+      light(door.openness, time);
+    }
+    baseUpdate(force);
+  };
+  group.userData.door = door;
+  group.userData.asset = { id: meta3.id, params: p };
+  return group;
+}
+
+// src/assets/furniture/storage/travel-trunk.js
+var travel_trunk_exports = {};
+__export(travel_trunk_exports, {
+  create: () => create4,
+  dispose: () => disposeObject,
+  meta: () => meta4,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE7 from "three";
+var SIZES = { standard: "Malle (0,80 m)", small: "Coffret (0,50 m)", large: "Grande malle (1,10 m)" };
+var DIMS = { small: [0.5, 0.32, 0.3], standard: [0.8, 0.5, 0.45], large: [1.1, 0.62, 0.6] };
+var STATES3 = { closed: "Ferm\xE9e", ajar: "Entrouverte", open: "Ouverte" };
+var OPENNESS = { closed: 0, ajar: 0.22, open: 1 };
+var CONTENTS = { cassettes: "Cassettes de verre", tools: "Outils (lampe, cl\xE9, toile)", empty: "Vide" };
+var OPEN_ANGLE2 = 110 * Math.PI / 180;
+var LID = 0;
+var FIXED2 = 255;
+var OILCLOTH = { ramp: ["#2a2117", "#4f3f2a", "#77623f", "#a08756"], ink: "#140f0a" };
+var params4 = {
+  seed: seedParam("Change les planches et leurs tons, l'usure, l'\xE9tiquette (place et glyphe), une sangle d\xE9tach\xE9e, ce qui manque dans le contenu."),
+  state: choiceParam("Couvercle", STATES3, "Ferm\xE9, entrouvert ou ouvert \xE0 110\xB0. Pilotable : group.userData.trunk.setOpen(t)."),
+  size: choiceParam("Taille", SIZES, "Coffret (0,50 \xD7 0,32 \xD7 0,30 m), malle (0,80 \xD7 0,50 \xD7 0,45 m) ou grande malle (1,10 \xD7 0,62 \xD7 0,60 m)."),
+  content: choiceParam("Contenu", CONTENTS, "Ce qu'on voit quand elle est ouverte : des cassettes de verre rang\xE9es, des outils (lampe portative, cl\xE9, rouleau de toile), ou rien.")
+};
+var meta4 = {
+  id: "furniture/storage/travel-trunk",
+  name: "Malle de transport",
+  nameEn: "Travel trunk",
+  category: "furniture",
+  subcategory: "storage",
+  description: "Malle du Complexe en bois noirci \xE0 couvercle bomb\xE9, corni\xE8res et sangles de laiton, serrure et \xE9tiquette grav\xE9e. Ferm\xE9e, entrouverte ou ouverte sur son feutre et son casier, avec des cassettes de verre ou des outils. Coffret, malle ou grande malle. Fiche SAS-13.",
+  tags: [
+    "malle",
+    "coffre",
+    "bagage",
+    "couvercle",
+    "bois noirci",
+    "laiton",
+    "sangles",
+    "serrure",
+    "\xE9tiquette",
+    "cassettes",
+    "le complexe",
+    "complexe",
+    "ancien-tech",
+    "rangement",
+    "pilotable",
+    "int\xE9rieur",
+    "trunk",
+    "chest",
+    "luggage",
+    "lid",
+    "blackened wood",
+    "brass",
+    "straps",
+    "lock",
+    "tag",
+    "data cassettes",
+    "ancient complex",
+    "ancient-tech",
+    "storage",
+    "scriptable",
+    "indoor",
+    "procedural"
+  ],
+  biomes: ["interior"],
+  version: 1,
+  added: "2026-11-18",
+  units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au centre ; la serrure regarde +z, les charni\xE8res sont derri\xE8re (\u2212z)",
+  footprint: { radius: 0.6, height: 0.9 },
+  animated: ["trunk"],
+  params: params4,
+  variants: variantsOf("state", params4.state)
+};
+function create4(given = {}) {
+  const p = resolveParams(meta4.params, given);
+  const rng = createRng(p.seed * 7919 + 59);
+  const [W, D, H] = DIMS[p.size];
+  const bodyH = H * 0.7;
+  const lidH = H - bodyH;
+  const skirt = lidH * rng.range(0.4, 0.62);
+  const rise = lidH - skirt;
+  const t = 0.035;
+  const s = W / 0.8;
+  const wood = [];
+  const metal = [];
+  const content = [];
+  const hinge = new THREE7.Vector3(0, bodyH, -D / 2);
+  const planks = rng.int(3, 4);
+  const inward = (cx, cz) => (x, y, z, nx, ny, nz) => nx * (x - cx) + nz * (z - cz) < -0.01 ? -0.42 : 0;
+  const plankTone = () => rng.range(-0.09, 0.09);
+  for (let i = 0; i < planks; i++) {
+    const y0 = bodyH * i / planks, y1 = bodyH * (i + 1) / planks;
+    const h = y1 - y0 - 6e-3;
+    const y = (y0 + y1) / 2;
+    for (const side of [-1, 1]) {
+      const front = buildBlock([W, h, t], [0, y, side * (D / 2 - t / 2)]);
+      const toneF = plankTone();
+      wood.push([withTone(front, (x, yy, z, nx, ny, nz) => toneF + inward(0, 0)(x, yy, z, nx, ny, nz)), FIXED2]);
+      const end = buildBlock([t, h, D - 2 * t], [side * (W / 2 - t / 2), y, 0]);
+      const toneE = plankTone();
+      wood.push([withTone(end, (x, yy, z, nx, ny, nz) => toneE + inward(0, 0)(x, yy, z, nx, ny, nz)), FIXED2]);
+    }
+  }
+  wood.push([withTone(buildBlock([W - 2 * t, 0.03, D - 2 * t], [0, 0.03, 0]), -0.48), FIXED2]);
+  const wall = -W / 2 + t + (W - 2 * t) * 0.32;
+  wood.push([withTone(buildBlock([0.02, bodyH * 0.55, D - 2 * t], [wall, 0.03 + bodyH * 0.275, 0]), -0.2), FIXED2]);
+  const archY = (z) => bodyH + skirt + rise * (1 - (2 * z / D) ** 2);
+  for (const side of [-1, 1]) {
+    wood.push([withTone(buildBlock([W, skirt, t], [0, bodyH + skirt / 2, side * (D / 2 - t / 2)]), plankTone()), LID]);
+  }
+  const slats = p.size === "small" ? 4 : 6;
+  for (let i = 0; i < slats; i++) {
+    const z0 = -D / 2 + D * i / slats, z1 = -D / 2 + D * (i + 1) / slats;
+    const a = new THREE7.Vector3(0, archY(z0), z0), b = new THREE7.Vector3(0, archY(z1), z1);
+    const dir = b.clone().sub(a);
+    const len = dir.length();
+    const slat = buildBlock([W, t, len + 4e-3], [0, 0, 0], [Math.atan2(-dir.y, dir.z), 0, 0]);
+    const mid = a.clone().add(b).multiplyScalar(0.5);
+    const n = new THREE7.Vector3(0, dir.z, -dir.y).normalize();
+    slat.translate(mid.x, mid.y - n.y * t / 2, mid.z - n.z * t / 2);
+    const tone = plankTone() + (Math.abs(z0 + z1) < D * 0.4 ? 0.05 : 0);
+    wood.push([withTone(slat, (x, y, z, nx, ny) => ny < -0.5 ? -0.45 : tone), LID]);
+  }
+  for (const side of [-1, 1]) {
+    const shape = new THREE7.Shape();
+    shape.moveTo(-D / 2 + t, 0);
+    shape.lineTo(D / 2 - t, 0);
+    for (let k = 0; k <= 8; k++) {
+      const z = D / 2 - t - (D - 2 * t) * k / 8;
+      shape.lineTo(z, archY(z) - bodyH - t * 0.8);
+    }
+    shape.closePath();
+    const cap = plain(new THREE7.ExtrudeGeometry(shape, { depth: t, bevelEnabled: false, curveSegments: 1 }));
+    cap.rotateY(-Math.PI / 2);
+    cap.translate(side > 0 ? W / 2 : -W / 2 + t, bodyH, 0);
+    wood.push([withTone(cap, plankTone()), LID]);
+  }
+  wood.push([withTone(buildBlock([W - 2 * t, 0.012, D - 2 * t], [0, bodyH + 8e-3, 0]), -0.45), LID]);
+  const c = 0.06 * s;
+  const brass = (g, tone, part = FIXED2) => metal.push([withTone(g, tone), part]);
+  for (const sx of [-1, 1]) {
+    for (const sz of [-1, 1]) {
+      brass(buildBlock([c + 0.012, c, c + 0.012], [sx * (W / 2 - c / 2 + 6e-3), c / 2, sz * (D / 2 - c / 2 + 6e-3)]), 0.12);
+      brass(buildBlock([c + 0.012, c, c + 0.012], [sx * (W / 2 - c / 2 + 6e-3), bodyH - c / 2, sz * (D / 2 - c / 2 + 6e-3)]), 0.12);
+      brass(buildBlock([c + 0.012, skirt + 6e-3, c + 0.012], [sx * (W / 2 - c / 2 + 6e-3), bodyH + skirt / 2, sz * (D / 2 - c / 2 + 6e-3)]), 0.18, LID);
+    }
+  }
+  const detached = rng.chance(0.3) ? rng.int(0, 1) : -1;
+  const strapW = 0.05 * s, strapT = 0.012;
+  const strapU = rng.range(0.2, 0.32);
+  [-strapU, strapU].forEach((u, i) => {
+    const x = u * W;
+    brass(buildBlock([strapW, bodyH - 0.02, strapT], [x, bodyH / 2, -D / 2 - strapT / 2]), -0.05);
+    if (i !== detached) {
+      brass(buildBlock([strapW, bodyH - 0.02, strapT], [x, bodyH / 2, D / 2 + strapT / 2]), -0.05);
+      const buckle = ring({ radius: 0.025 * s, height: strapT * 1.5, thickness: PX * 0.6, segments: 4 });
+      buckle.rotateX(Math.PI / 2);
+      buckle.rotateZ(Math.PI / 4);
+      buckle.translate(x, bodyH - 0.07 * s, D / 2 + strapT * 1.2);
+      brass(buckle, 0.3);
+    }
+    const pts = [[-D / 2, bodyH], [-D / 2, bodyH + skirt]];
+    for (let k = 0; k <= 8; k++) {
+      const z = -D / 2 + D * k / 8;
+      pts.push([z, archY(z)]);
+    }
+    pts.push([D / 2, bodyH + skirt]);
+    if (i !== detached) pts.push([D / 2, bodyH]);
+    for (let k = 0; k < pts.length - 1; k++) {
+      const a = pts[k], b = pts[k + 1];
+      const dz = b[0] - a[0], dy = b[1] - a[1];
+      const l = Math.hypot(dz, dy) || 1;
+      const nz = -dy / l, ny = dz / l;
+      const off = (pt) => new THREE7.Vector3(x, pt[1] + ny * strapT / 2, pt[0] + nz * strapT / 2);
+      brass(beam(off(a), off(b), strapT, strapW, 0, new THREE7.Vector3(1, 0, 0)), -0.05, LID);
+    }
+    if (i === detached) {
+      brass(beam(new THREE7.Vector3(x, bodyH + 0.01, D / 2 + strapT), new THREE7.Vector3(x + 0.05, bodyH - 0.16 * s, D / 2 + 0.05), strapT, strapW, 0, new THREE7.Vector3(1, 0, 0)), -0.12, LID);
+    }
+  });
+  brass(buildBlock([0.09 * s, 0.1 * s, 0.014], [0, bodyH - 0.06 * s, D / 2 + 7e-3]), 0.28);
+  brass(buildBlock([PX * 0.6, PX * 1.1, 6e-3], [0, bodyH - 0.07 * s, D / 2 + 0.016]), -0.9);
+  brass(buildBlock([0.045 * s, skirt * 0.9 + 0.03 * s, 0.014], [0, bodyH + skirt * 0.45 - 0.015 * s, D / 2 + 9e-3]), 0.22, LID);
+  const labelAt = rng.pick(["left", "right", "end"]);
+  const lw = 0.13 * s, lh = 0.075 * s;
+  const glyph = straightGlyphRuns(rng, 5, 2);
+  const label = (cx, cy, cz, rotY) => {
+    const m = new THREE7.Matrix4().makeRotationY(rotY).setPosition(cx, cy, cz);
+    brass(buildBlock([lw, lh, 8e-3], [0, 0, 0]).applyMatrix4(m), 0.32);
+    const cell = (lw - 0.02) / 5;
+    for (const [col, row, n] of glyph) {
+      brass(buildBlock([n * cell, cell * 0.8, 4e-3], [-lw / 2 + 0.01 + (col + n / 2) * cell, (0.5 - row) * cell, 5e-3]).applyMatrix4(m), -0.85);
+    }
+  };
+  if (labelAt === "end") label(W / 2 + 5e-3, bodyH * 0.5, 0, Math.PI / 2);
+  else label((labelAt === "left" ? -1 : 1) * W * 0.15, bodyH * 0.5, D / 2 + 5e-3, 0);
+  for (const sx of [-1, 1]) {
+    const x = sx * (W / 2 + 0.012);
+    if (labelAt === "end" && sx > 0) continue;
+    for (const sz of [-1, 1]) brass(buildBlock([0.025, 0.04, 0.025], [x, bodyH * 0.72, sz * 0.07 * s]), 0.1);
+    brass(beam(new THREE7.Vector3(x + sx * 0.02, bodyH * 0.72 - 0.02, -0.08 * s), new THREE7.Vector3(x + sx * 0.02, bodyH * 0.72 - 0.02, 0.08 * s), PX * 0.7, PX * 0.7), 0.25);
+  }
+  if (rng.chance(0.5)) {
+    const y = bodyH * rng.range(0.38, 0.5);
+    for (const side of [-1, 1]) {
+      brass(buildBlock([W + 8e-3, 0.03 * s, 8e-3], [0, y, side * (D / 2 + 4e-3)]), 0.02);
+      brass(buildBlock([8e-3, 0.03 * s, D + 8e-3], [side * (W / 2 + 4e-3), y, 0]), 0.02);
+    }
+  }
+  for (const u of [-0.36, 0.36]) brass(buildBlock([0.07 * s, 0.06, 0.016], [u * W, bodyH, -D / 2 - 9e-3]), 0.05);
+  let contentRamp = null;
+  if (p.content === "cassettes") {
+    contentRamp = GLASSES.cyan;
+    const x0 = wall + 0.02, x1 = W / 2 - t - 0.01;
+    const cw = 0.11 * Math.min(1, s), cd = 0.15 * Math.min(1, s);
+    const cols = Math.max(1, Math.floor((x1 - x0) / (cw + 0.012)));
+    const rows = Math.max(1, Math.floor((D - 2 * t - 0.02) / (cd + 0.012)));
+    for (let r = 0; r < rows; r++) {
+      for (let q = 0; q < cols; q++) {
+        if (rng.chance(0.15)) continue;
+        const x = x0 + (q + 0.5) * ((x1 - x0) / cols);
+        const z = -D / 2 + t + 0.01 + (r + 0.5) * ((D - 2 * t - 0.02) / rows);
+        const stack = rng.int(1, 2);
+        for (let k = 0; k < stack; k++) {
+          content.push([withTone(buildBlock([cw, 0.028, cd], [x, 0.045 + 0.014 + k * 0.03, z]), rng.range(-0.15, 0.15)), FIXED2]);
+          brass(buildBlock([cw * 0.4, 6e-3, PX * 0.8], [x, 0.045 + 0.03 + k * 0.03, z + cd / 2 - PX]), 0.2);
+        }
+      }
+    }
+    for (let k = 0; k < 2; k++) content.push([withTone(buildBlock([0.03, 0.12 * s, cd], [-W / 2 + t + 0.03 + k * 0.045, 0.045 + 0.06 * s, 0]), 0.1 - k * 0.2), FIXED2]);
+  } else if (p.content === "tools") {
+    contentRamp = OILCLOTH;
+    const roll = plain(new THREE7.CylinderGeometry(0.05 * s, 0.05 * s, (W / 2 - wall) * 0.8, 6));
+    roll.rotateZ(Math.PI / 2);
+    roll.translate((wall + W / 2) / 2, 0.045 + 0.05 * s, -D * 0.22);
+    content.push([withTone(roll, (x) => Math.abs(x - (wall + W / 2) / 2) % 0.12 < 0.02 ? -0.4 : 0), FIXED2]);
+    const lamp = plain(new THREE7.CylinderGeometry(0.022, 0.022, 0.2 * s, 6));
+    lamp.rotateZ(Math.PI / 2);
+    lamp.rotateY(rng.range(-0.4, 0.4));
+    lamp.translate((wall + W / 2) / 2, 0.06, D * 0.12);
+    brass(lamp, -0.3);
+    const head = plain(new THREE7.CylinderGeometry(0.045, 0.035, 0.06, 8));
+    head.rotateZ(Math.PI / 2);
+    head.translate((wall + W / 2) / 2 + 0.12 * s, 0.07, D * 0.12);
+    brass(head, 0.3);
+    const wx = -W / 2 + t + 0.06;
+    brass(beam(new THREE7.Vector3(wx, 0.055, -D * 0.25), new THREE7.Vector3(wx + 0.02, 0.055, D * 0.2), PX * 0.8, PX * 0.6), 0.05);
+    const jaw = ring({ radius: 0.025, height: PX * 0.6, thickness: PX * 0.7, segments: 6 });
+    jaw.translate(wx + 0.02, 0.05, D * 0.22);
+    brass(jaw, 0.15);
+  }
+  const group = new THREE7.Group();
+  group.name = meta4.name;
+  const woodMerged = mergeParts(wood);
+  const woodMat = createToonMaterial({ ramp: WOODS.blackenedOak.ramp, ink: WOODS.blackenedOak.ink, steps: [0.3, 0.52, 0.78], tone: true, crease: true, pattern: "speckle", patternParams: [16, 0.05, 0.12, 1], seed: rng.int(0, 96), id: 20 });
+  const woodMesh = new THREE7.Mesh(woodMerged.geometry, woodMat);
+  woodMesh.name = "wood";
+  const metalMerged = mergeParts(metal);
+  const metalMesh = new THREE7.Mesh(metalMerged.geometry, metalMaterial(METALS.blackenedBrass, { id: 21, tone: true }));
+  metalMesh.name = "brass";
+  for (const mesh of [woodMesh, metalMesh]) {
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    group.add(mesh);
+  }
+  if (content.length) {
+    const ramp = contentRamp ?? FABRICS.felt;
+    const contentMesh = new THREE7.Mesh(mergeParts(content).geometry, createToonMaterial({ ramp: ramp.ramp, ink: ramp.ink, tone: true, crease: true, id: 22 }));
+    contentMesh.name = "content";
+    contentMesh.castShadow = true;
+    contentMesh.receiveShadow = true;
+    group.add(contentMesh);
+  }
+  const rigs = [createRigidParts(woodMerged.geometry, woodMerged.partOf, 1), createRigidParts(metalMerged.geometry, metalMerged.partOf, 1)];
+  const tmp = new THREE7.Matrix4();
+  let shown = -1;
+  const pose = (u) => {
+    if (Math.abs(u - shown) < 1e-4) return;
+    shown = u;
+    for (const rig of rigs) {
+      const m = rig.matrices[LID];
+      m.makeTranslation(0, hinge.y, hinge.z);
+      m.multiply(tmp.makeRotationX(-OPEN_ANGLE2 * u));
+      m.multiply(tmp.makeTranslation(0, -hinge.y, -hinge.z));
+      rig.apply();
+    }
+  };
+  const ease2 = (x) => x * x * (3 - 2 * x);
+  let tween = null;
+  const trunk = {
+    openness: OPENNESS[p.state],
+    setOpen(u) {
+      tween = null;
+      trunk.openness = THREE7.MathUtils.clamp(u, 0, 1);
+      pose(trunk.openness);
+    },
+    open() {
+      tween = { from: trunk.openness, to: 1, start: sharedUniforms.uTime.value };
+    },
+    close() {
+      tween = { from: trunk.openness, to: 0, start: sharedUniforms.uTime.value };
+    }
+  };
+  pose(trunk.openness);
+  const baseUpdate = group.updateMatrixWorld.bind(group);
+  group.updateMatrixWorld = (force) => {
+    if (tween) {
+      const k = Math.min(1, (sharedUniforms.uTime.value - tween.start) / (1.2 * Math.abs(tween.to - tween.from) || 1));
+      trunk.openness = tween.from + (tween.to - tween.from) * ease2(k);
+      if (k >= 1) tween = null;
+      pose(trunk.openness);
+    }
+    baseUpdate(force);
+  };
+  group.userData.trunk = trunk;
+  group.userData.asset = { id: meta4.id, params: p };
+  return group;
+}
+
 // src/assets/props/machines/braided-cable.js
+var braided_cable_exports = {};
+__export(braided_cable_exports, {
+  create: () => create5,
+  createRoute: () => createRoute,
+  dispose: () => disposeObject,
+  meta: () => meta5,
+  setWind: () => setWind,
+  tick: () => tick
+});
+import * as THREE8 from "three";
 var GAUGES = {
   fine: "Fin (\xD8 6 cm)",
   study: "D'\xE9tude (\xD8 12 cm, \xE9tiquettes)",
@@ -1666,15 +2792,15 @@ var SPEC = {
   umbilical: { r: 0.09, sides: 6 },
   main: { r: 0.125, sides: 8 }
 };
-var LAYOUTS = { hanging: "Pendu en cha\xEEnette", floor: "Pos\xE9 au sol", bundle: "Faisceau au sol" };
-var params = {
+var LAYOUTS2 = { hanging: "Pendu en cha\xEEnette", floor: "Pos\xE9 au sol", bundle: "Faisceau au sol" };
+var params5 = {
   seed: seedParam("Change le trac\xE9 (serpentin, fl\xE8che), le nombre de c\xE2bles du faisceau, la boucle de rangement, la place des \xE9tiquettes."),
   gauge: choiceParam("Calibre", GAUGES, "C\xE2ble fin du Sas, c\xE2ble d'\xE9tude, c\xE2ble ombilical de l'Oracle ou c\xE2ble principal du C\u0153ur."),
-  layout: choiceParam("Trac\xE9", LAYOUTS, "Pendu entre deux points d'accroche, pos\xE9 au sol, ou faisceau de 3 \xE0 5 c\xE2bles sangl\xE9s."),
+  layout: choiceParam("Trac\xE9", LAYOUTS2, "Pendu entre deux points d'accroche, pos\xE9 au sol, ou faisceau de 3 \xE0 5 c\xE2bles sangl\xE9s."),
   length: numberParam("Longueur", 3, 1, 10, "Distance entre les deux bouts.", { step: 0.5, unit: "m" }),
   height: numberParam("Accroche", 2.2, 0.6, 6, "C\xE2ble pendu : hauteur des deux points d'accroche.", { step: 0.1, unit: "m" })
 };
-var meta = {
+var meta5 = {
   id: "props/machines/braided-cable",
   name: "C\xE2bles tress\xE9s",
   nameEn: "Braided cables",
@@ -1717,8 +2843,8 @@ var meta = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au milieu du trac\xE9 ; les bouts sont en x = \xB1longueur/2",
   footprint: { radius: 1.9, height: 2.6 },
   animated: [],
-  params,
-  variants: variantsOf("layout", params.layout)
+  params: params5,
+  variants: variantsOf("layout", params5.layout)
 };
 function buildCables(paths, p, rng, { coil = false } = {}) {
   const { r, sides } = SPEC[p.gauge];
@@ -1728,8 +2854,8 @@ function buildCables(paths, p, rng, { coil = false } = {}) {
     let pts = points;
     if (coil && index === 0) {
       const end = pts[pts.length - 1];
-      const dir = new THREE4.Vector3().subVectors(end, pts[pts.length - 2]).setY(0).normalize();
-      const side = new THREE4.Vector3(-dir.z, 0, dir.x);
+      const dir = new THREE8.Vector3().subVectors(end, pts[pts.length - 2]).setY(0).normalize();
+      const side = new THREE8.Vector3(-dir.z, 0, dir.x);
       const R = 0.22 + r * 2;
       const center = end.clone().addScaledVector(side, R);
       const a0 = Math.atan2(end.z - center.z, end.x - center.x);
@@ -1737,10 +2863,10 @@ function buildCables(paths, p, rng, { coil = false } = {}) {
       for (let k = 0; k <= 18; k++) {
         const a = a0 + k / 18 * Math.PI * 3;
         const rr = R * (1 - k * 0.012);
-        pts.push(new THREE4.Vector3(center.x + Math.cos(a) * rr, r + (k > 10 ? r * 1.6 : 0), center.z + Math.sin(a) * rr));
+        pts.push(new THREE8.Vector3(center.x + Math.cos(a) * rr, r + (k > 10 ? r * 1.6 : 0), center.z + Math.sin(a) * rr));
       }
     }
-    const curve = new THREE4.CatmullRomCurve3(pts, false, "centripetal");
+    const curve = new THREE8.CatmullRomCurve3(pts, false, "centripetal");
     const length = curve.getLength();
     const samples = Math.max(8, Math.ceil(length / 0.12));
     const along = curve.getSpacedPoints(samples);
@@ -1765,7 +2891,7 @@ function buildCables(paths, p, rng, { coil = false } = {}) {
         const tangent = curve.getTangentAt(t);
         if (p.gauge === "study") {
           const label = buildBlock([PX * 1.6, PX * 2, PX * 0.6], [0, 0, r + PX * 0.3]);
-          label.applyMatrix4(new THREE4.Matrix4().lookAt(new THREE4.Vector3(), tangent, new THREE4.Vector3(0, 1, 0)));
+          label.applyMatrix4(new THREE8.Matrix4().lookAt(new THREE8.Vector3(), tangent, new THREE8.Vector3(0, 1, 0)));
           label.translate(at.x, at.y + r * 0.4, at.z);
           bronzeParts.push(withTone(label, 0.7));
         } else {
@@ -1779,9 +2905,9 @@ function buildCables(paths, p, rng, { coil = false } = {}) {
   return { fabricParts, bronzeParts };
 }
 function assemble(fabricParts, bronzeParts, p) {
-  const group = new THREE4.Group();
-  group.name = meta.name;
-  const fabric = new THREE4.Mesh(
+  const group = new THREE8.Group();
+  group.name = meta5.name;
+  const fabric = new THREE8.Mesh(
     mergeToned(fabricParts),
     createToonMaterial({ ramp: FABRICS.tarredLeather.ramp, ink: FABRICS.tarredLeather.ink, steps: [0.3, 0.55, 0.8], pattern: "speckle", patternParams: [16, 0.06, 0.18, 0.5], tone: true, id: 30 })
   );
@@ -1790,22 +2916,22 @@ function assemble(fabricParts, bronzeParts, p) {
   fabric.receiveShadow = true;
   group.add(fabric);
   if (bronzeParts.length) {
-    const bronze = new THREE4.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 31, tone: true }));
+    const bronze = new THREE8.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 31, tone: true }));
     bronze.name = "fittings";
     bronze.castShadow = true;
     group.add(bronze);
   }
-  group.userData.asset = { id: meta.id, params: p };
+  group.userData.asset = { id: meta5.id, params: p };
   return group;
 }
 function createRoute(points, given = {}) {
-  const p = resolveParams(meta.params, given);
-  const pts = points.map((v) => v.isVector3 ? v.clone() : new THREE4.Vector3(...v));
+  const p = resolveParams(meta5.params, given);
+  const pts = points.map((v) => v.isVector3 ? v.clone() : new THREE8.Vector3(...v));
   const { fabricParts, bronzeParts } = buildCables([pts], p, createRng(p.seed * 104729 + 71));
   return assemble(fabricParts, bronzeParts, p);
 }
-function create(given = {}) {
-  const p = resolveParams(meta.params, given);
+function create5(given = {}) {
+  const p = resolveParams(meta5.params, given);
   const shape = createRng(p.seed * 7919 + 17);
   const fittings = createRng(p.seed * 104729 + 71);
   const { r } = SPEC[p.gauge];
@@ -1819,7 +2945,7 @@ function create(given = {}) {
     const pts = [];
     for (let k = 0; k <= 12; k++) {
       const t = k / 12;
-      pts.push(new THREE4.Vector3(-L / 2 + L * t, p.height + lean * (t - 0.5) - 4 * sag * t * (1 - t), 0));
+      pts.push(new THREE8.Vector3(-L / 2 + L * t, p.height + lean * (t - 0.5) - 4 * sag * t * (1 - t), 0));
     }
     paths.push(pts);
   } else {
@@ -1836,7 +2962,7 @@ function create(given = {}) {
       for (let k = 0; k <= steps; k++) {
         const x = -L / 2 + L * k / steps;
         const lift = c % 2 && count > 3 ? r * 0.8 : 0;
-        pts.push(new THREE4.Vector3(x, r + lift, wave(x) + offset + jitter * Math.sin(x * 3 + c)));
+        pts.push(new THREE8.Vector3(x, r + lift, wave(x) + offset + jitter * Math.sin(x * 3 + c)));
       }
       paths.push(pts);
     }
@@ -1864,25 +2990,25 @@ function create(given = {}) {
 // src/assets/buildings/structure/coffered-vault.js
 var coffered_vault_exports = {};
 __export(coffered_vault_exports, {
-  create: () => create2,
+  create: () => create6,
   dispose: () => disposeObject,
-  meta: () => meta2,
+  meta: () => meta6,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE5 from "three";
+import * as THREE9 from "three";
 var SIZE = 2;
 var HEIGHT = 0.6;
-var DEPTH = 0.4;
+var DEPTH2 = 0.4;
 var DISPLAYS = { inspect: "Retourn\xE9e (pour la regarder)", ceiling: "Au plafond" };
 var HOOKS = { hook: "Avec crochet de lampe", none: "Sans crochet" };
-var params2 = {
+var params6 = {
   seed: seedParam("Change les tons de chaque caisson, les plots manquants ou d\xE9cal\xE9s, les \xE9caillures des nervures."),
   display: choiceParam("Pose", DISPLAYS, "Au plafond (caissons vers le bas, origine sous les nervures) ou retourn\xE9e au sol, pour la regarder."),
   hook: choiceParam("Crochet", HOOKS, "Un crochet de bronze au croisement des nervures, o\xF9 pend une lampe \xE0 filament."),
   stone: stoneParam("Pierre de la vo\xFBte.", { only: ["smoked", "blackBasalt"] })
 };
-var meta2 = {
+var meta6 = {
   id: "buildings/structure/coffered-vault",
   name: "Vo\xFBte \xE0 caissons",
   nameEn: "Coffered vault",
@@ -1923,42 +3049,42 @@ var meta2 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; au plafond : origine sous les nervures, au centre, le module monte de 0,6 m (le monde le pose \xE0 la hauteur du plafond) ; retourn\xE9e : origine au sol",
   footprint: { radius: 1.42, height: 0.78 },
   animated: [],
-  params: params2,
-  variants: variantsOf("display", params2.display)
+  params: params6,
+  variants: variantsOf("display", params6.display)
 };
-function create2(given = {}) {
-  const p = resolveParams(meta2.params, given);
+function create6(given = {}) {
+  const p = resolveParams(meta6.params, given);
   const stone = STONES[p.stone];
   const shape = createRng(p.seed * 7919 + 17);
   const half = (SIZE - PX) / 2;
   const rib = 0.1;
   const cell = (SIZE - PX - rib * 4) / 2;
-  const sootIn = (y) => -0.28 * THREE5.MathUtils.smoothstep(y, 0.05, DEPTH);
+  const sootIn = (y) => -0.28 * THREE9.MathUtils.smoothstep(y, 0.05, DEPTH2);
   const stoneParts = [];
   const add = (g, tone = 0) => stoneParts.push(withTone(g, (x, y) => tone + sootIn(y)));
-  add(buildBlock([half * 2, HEIGHT - DEPTH, half * 2], [0, DEPTH + (HEIGHT - DEPTH) / 2, 0]));
-  add(buildBlock([half * 2, DEPTH, rib], [0, DEPTH / 2, -half + rib / 2]));
-  add(buildBlock([half * 2, DEPTH, rib], [0, DEPTH / 2, half - rib / 2]));
-  add(buildBlock([rib, DEPTH, half * 2 - rib * 2], [-half + rib / 2, DEPTH / 2, 0]));
-  add(buildBlock([rib, DEPTH, half * 2 - rib * 2], [half - rib / 2, DEPTH / 2, 0]));
-  add(buildBlock([rib * 2, DEPTH, half * 2 - rib * 2], [0, DEPTH / 2, 0]));
-  add(buildBlock([cell, DEPTH, rib * 2], [-(rib + cell / 2), DEPTH / 2, 0]));
-  add(buildBlock([cell, DEPTH, rib * 2], [rib + cell / 2, DEPTH / 2, 0]));
+  add(buildBlock([half * 2, HEIGHT - DEPTH2, half * 2], [0, DEPTH2 + (HEIGHT - DEPTH2) / 2, 0]));
+  add(buildBlock([half * 2, DEPTH2, rib], [0, DEPTH2 / 2, -half + rib / 2]));
+  add(buildBlock([half * 2, DEPTH2, rib], [0, DEPTH2 / 2, half - rib / 2]));
+  add(buildBlock([rib, DEPTH2, half * 2 - rib * 2], [-half + rib / 2, DEPTH2 / 2, 0]));
+  add(buildBlock([rib, DEPTH2, half * 2 - rib * 2], [half - rib / 2, DEPTH2 / 2, 0]));
+  add(buildBlock([rib * 2, DEPTH2, half * 2 - rib * 2], [0, DEPTH2 / 2, 0]));
+  add(buildBlock([cell, DEPTH2, rib * 2], [-(rib + cell / 2), DEPTH2 / 2, 0]));
+  add(buildBlock([cell, DEPTH2, rib * 2], [rib + cell / 2, DEPTH2 / 2, 0]));
   const bronzeParts = [];
   const step = 0.07;
   for (const sx of [-1, 1]) {
     for (const sz of [-1, 1]) {
       const cx = sx * (rib + cell / 2), cz = sz * (rib + cell / 2);
       const tone = shape.range(-0.08, 0.06);
-      const y0 = DEPTH * 0.55;
+      const y0 = DEPTH2 * 0.55;
       const inner = cell - step * 2;
-      add(buildBlock([cell, DEPTH - y0, step], [cx, (y0 + DEPTH) / 2, cz - cell / 2 + step / 2]), tone);
-      add(buildBlock([cell, DEPTH - y0, step], [cx, (y0 + DEPTH) / 2, cz + cell / 2 - step / 2]), tone);
-      add(buildBlock([step, DEPTH - y0, inner], [cx - cell / 2 + step / 2, (y0 + DEPTH) / 2, cz]), tone);
-      add(buildBlock([step, DEPTH - y0, inner], [cx + cell / 2 - step / 2, (y0 + DEPTH) / 2, cz]), tone);
+      add(buildBlock([cell, DEPTH2 - y0, step], [cx, (y0 + DEPTH2) / 2, cz - cell / 2 + step / 2]), tone);
+      add(buildBlock([cell, DEPTH2 - y0, step], [cx, (y0 + DEPTH2) / 2, cz + cell / 2 - step / 2]), tone);
+      add(buildBlock([step, DEPTH2 - y0, inner], [cx - cell / 2 + step / 2, (y0 + DEPTH2) / 2, cz]), tone);
+      add(buildBlock([step, DEPTH2 - y0, inner], [cx + cell / 2 - step / 2, (y0 + DEPTH2) / 2, cz]), tone);
       if (shape.chance(0.85)) {
         const ox = shape.chance(0.2) ? shape.range(-0.06, 0.06) : 0;
-        const boss = buildLathe([[0, DEPTH - 0.09], [0.05, DEPTH - 0.07], [0.08, DEPTH - 0.02], [0.08, DEPTH], [0, DEPTH]], { segments: 8, facets: true });
+        const boss = buildLathe([[0, DEPTH2 - 0.09], [0.05, DEPTH2 - 0.07], [0.08, DEPTH2 - 0.02], [0.08, DEPTH2], [0, DEPTH2]], { segments: 8, facets: true });
         boss.translate(cx + ox, 0, cz);
         bronzeParts.push(boss);
       }
@@ -1979,16 +3105,16 @@ function create2(given = {}) {
     loop.translate(0, -0.12, 0);
     bronzeParts.push(loop);
   }
-  const group = new THREE5.Group();
-  group.name = meta2.name;
-  const body = new THREE5.Group();
+  const group = new THREE9.Group();
+  group.name = meta6.name;
+  const body = new THREE9.Group();
   group.add(body);
-  const stoneMesh = new THREE5.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.06 }));
+  const stoneMesh = new THREE9.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.06 }));
   stoneMesh.name = "vault";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   body.add(stoneMesh);
-  const bronze = new THREE5.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 21 }));
+  const bronze = new THREE9.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 21 }));
   bronze.name = "bronze";
   bronze.castShadow = true;
   body.add(bronze);
@@ -1996,15 +3122,15 @@ function create2(given = {}) {
     body.rotation.x = Math.PI;
     body.position.y = HEIGHT;
   }
-  group.userData.asset = { id: meta2.id, params: p };
-  group.userData.hookPoint = new THREE5.Vector3(0, -0.15, 0);
+  group.userData.asset = { id: meta6.id, params: p };
+  group.userData.hookPoint = new THREE9.Vector3(0, -0.15, 0);
   return group;
 }
 
 // src/assets/buildings/structure/complex-door.js
-import * as THREE6 from "three";
-var DEPTH2 = 0.6;
-var BAND = { y0: 1, y1: 1.25 };
+import * as THREE10 from "three";
+var DEPTH3 = 0.6;
+var BAND2 = { y0: 1, y1: 1.25 };
 var MODELS = {
   standard: "Porte standard",
   study: "Porte d'\xE9tude (hublot, voyant)",
@@ -2019,21 +3145,21 @@ var SPECS = {
   double: { w: 3, h: 5, module: 4, leaves: 2 },
   link: { w: 3, h: 5, module: 4, leaves: 2 }
 };
-var STATES = { closed: "Ferm\xE9e", open: "Ouverte", cycle: "S'ouvre et se ferme en boucle" };
+var STATES4 = { closed: "Ferm\xE9e", open: "Ouverte", cycle: "S'ouvre et se ferme en boucle" };
 var GLYPHS = { lit: "Allum\xE9s", dim: "En veille", off: "\xC9teints" };
 var LEVELS = { lit: 2, dim: 1, off: 0 };
 var SWING = 1.4;
-var params3 = {
+var params7 = {
   seed: seedParam("Change l'appareil du mur, les glyphes du chambranle, les tons des panneaux, la gravure de la porte de liaison."),
   model: choiceParam("Mod\xE8le", MODELS, "Standard (1,4 \xD7 2,8 m), d'\xE9tude (hublot, plaque, voyant), grande porte double ou de liaison (3 \xD7 5 m), issue de secours."),
-  state: choiceParam("\xC9tat", STATES, "Ferm\xE9e, ouverte, ou qui s'ouvre et se ferme en boucle (pour la regarder). Pilotable : group.userData.door."),
+  state: choiceParam("\xC9tat", STATES4, "Ferm\xE9e, ouverte, ou qui s'ouvre et se ferme en boucle (pour la regarder). Pilotable : group.userData.door."),
   number: { type: "int", default: 1, min: 1, max: 5, label: "Num\xE9ro", description: "Porte d'\xE9tude : le num\xE9ro de la salle, en traits sur la plaque (1 \xE0 5)." },
   light: choiceParam("Voyant", { auto: "Selon le mod\xE8le", amber: "Ambre", alarm: "Rouge d'alerte", cyan: "Cyan" }, "Couleur du voyant (portes d'\xE9tude, de liaison, de secours) ; \xAB selon le mod\xE8le \xBB : rouge pour l'issue de secours, ambre sinon."),
   glyphs: choiceParam("Glyphes", GLYPHS, "La ligne de glyphes du chambranle et du bandeau : allum\xE9e, en veille ou \xE9teinte."),
   height: numberParam("Hauteur du mur", 5, 4, 8, "Hauteur du module de mur autour de la porte (au moins 5,7 m pour une grande porte).", { step: 0.5, unit: "m" }),
   stone: stoneParam("Pierre du mur et du chambranle.", { only: ["blackBasalt", "smoked"] })
 };
-var meta3 = {
+var meta7 = {
   id: "buildings/structure/complex-door",
   name: "Porte du Complexe",
   nameEn: "Ancient complex door",
@@ -2080,11 +3206,11 @@ var meta3 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au milieu de la baie ; le mur suit l'axe x (2 m de large, 4 m pour les grandes portes), face avant en +z ; les vantaux s'ouvrent vers \u2212z",
   footprint: { radius: 2.15, height: 5.7 },
   animated: ["door", "glow"],
-  params: params3,
-  variants: variantsOf("model", params3.model)
+  params: params7,
+  variants: variantsOf("model", params7.model)
 };
-function create3(given = {}) {
-  const p = resolveParams(meta3.params, given);
+function create7(given = {}) {
+  const p = resolveParams(meta7.params, given);
   const spec = SPECS[p.model];
   const stone = STONES[p.stone];
   const layout = createRng(p.seed * 7919 + 17);
@@ -2095,23 +3221,23 @@ function create3(given = {}) {
   const ow = spec.w, oh = spec.h;
   const jamb = 0.2, lintel = 0.3;
   const fw = ow + jamb * 2, fh = oh + lintel;
-  const front = DEPTH2 / 2;
+  const front = DEPTH3 / 2;
   const big = spec.leaves === 2;
   const level = LEVELS[p.glyphs];
   const masonry = buildMasonry(masonryRng, {
     width: W,
     height: H,
-    depth: DEPTH2,
-    band: BAND,
+    depth: DEPTH3,
+    band: BAND2,
     holes: [{ x0: -fw / 2, x1: fw / 2, y0: 0, y1: fh }]
   });
   const stoneParts = masonry.parts;
   const glowParts = [];
   const frameTone = (x, y) => 0.14 + (y > H * 0.55 ? -0.18 * Math.min(1, (y - H * 0.55) / (H * 0.45)) : 0);
-  const fd = DEPTH2 + 0.06;
+  const fd = DEPTH3 + 0.06;
   for (const s of [-1, 1]) stoneParts.push(withTone(buildBlock([jamb, oh, fd], [s * (ow / 2 + jamb / 2), oh / 2, 0]), frameTone));
   stoneParts.push(withTone(buildBlock([fw + 0.08, lintel, fd + 0.02], [0, oh + lintel / 2, 0]), frameTone));
-  stoneParts.push(withTone(buildBlock([ow, PX * 1.2, DEPTH2], [0, PX * 0.6, 0]), -0.05));
+  stoneParts.push(withTone(buildBlock([ow, PX * 1.2, DEPTH3], [0, PX * 0.6, 0]), -0.05));
   for (const s of [-1, 1]) {
     const a = s < 0 ? -W / 2 : fw / 2, b = s < 0 ? -fw / 2 : W / 2;
     if (b - a < 0.3) continue;
@@ -2185,7 +3311,7 @@ function create3(given = {}) {
       rim.rotateX(Math.PI / 2);
       rim.translate(hx, hy, (thick + 0.04) / 2);
       parts.push(withTone(rim, 0.2));
-      const glass = new THREE6.CylinderGeometry(0.15, 0.15, thick + 0.01, 12);
+      const glass = new THREE10.CylinderGeometry(0.15, 0.15, thick + 0.01, 12);
       glass.deleteAttribute("uv");
       glass.rotateX(Math.PI / 2);
       glass.translate(hx, hy, 0);
@@ -2216,20 +3342,20 @@ function create3(given = {}) {
   }
   const counts = leafGeometries.map((g) => g.attributes.position.count);
   const leafGeometry = mergeToned(leafGeometries);
-  const group = new THREE6.Group();
-  group.name = meta3.name;
-  const wall = new THREE6.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: layout.int(0, 96), id: 20, grain: 0.06 }));
+  const group = new THREE10.Group();
+  group.name = meta7.name;
+  const wall = new THREE10.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: layout.int(0, 96), id: 20, grain: 0.06 }));
   wall.name = "wall";
   wall.castShadow = true;
   wall.receiveShadow = true;
   group.add(wall);
-  const leaves = new THREE6.Mesh(leafGeometry, metalMaterial(metal, { id: 21, tone: true }));
+  const leaves = new THREE10.Mesh(leafGeometry, metalMaterial(metal, { id: 21, tone: true }));
   leaves.name = "leaves";
   leaves.castShadow = true;
   leaves.receiveShadow = true;
   group.add(leaves);
   const light = p.light === "auto" ? p.model === "emergency" ? "alarm" : "amber" : p.light;
-  const glow = new THREE6.Mesh(mergeToned(glowParts), glowMixMaterial([["amber", level], [light, 3]], { id: 22 }));
+  const glow = new THREE10.Mesh(mergeToned(glowParts), glowMixMaterial([["amber", level], [light, 3]], { id: 22 }));
   glow.name = "glow";
   group.add(glow);
   const position = leafGeometry.attributes.position;
@@ -2262,7 +3388,7 @@ function create3(given = {}) {
     normal.needsUpdate = true;
     leafGeometry.computeBoundingSphere();
   };
-  const ease = (t) => t * t * (3 - 2 * t);
+  const ease2 = (t) => t * t * (3 - 2 * t);
   const door = {
     opening: { width: ow, height: oh, x0: -ow / 2, x1: ow / 2 },
     openness: p.state === "open" ? 1 : 0,
@@ -2278,13 +3404,13 @@ function create3(given = {}) {
     setOpen(t) {
       tween = null;
       cycling = false;
-      door.openness = THREE6.MathUtils.clamp(t, 0, 1);
-      pose(ease(door.openness));
+      door.openness = THREE10.MathUtils.clamp(t, 0, 1);
+      pose(ease2(door.openness));
     }
   };
   let tween = null;
   let cycling = p.state === "cycle";
-  pose(ease(door.openness));
+  pose(ease2(door.openness));
   const baseUpdate = group.updateMatrixWorld.bind(group);
   let lastTime = -1;
   group.updateMatrixWorld = (force) => {
@@ -2300,40 +3426,40 @@ function create3(given = {}) {
         const u = time % 6 / 6;
         door.openness = u < 0.25 ? 0 : u < 0.5 ? (u - 0.25) * 4 : u < 0.75 ? 1 : 1 - (u - 0.75) * 4;
       }
-      pose(ease(door.openness));
+      pose(ease2(door.openness));
     }
     baseUpdate(force);
   };
   group.userData.door = door;
-  group.userData.asset = { id: meta3.id, params: p };
+  group.userData.asset = { id: meta7.id, params: p };
   return group;
 }
 
 // src/assets/props/machines/copper-pipe.js
 var copper_pipe_exports = {};
 __export(copper_pipe_exports, {
-  create: () => create4,
+  create: () => create8,
   dispose: () => disposeObject,
-  meta: () => meta4,
+  meta: () => meta8,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE7 from "three";
+import * as THREE11 from "three";
 var PIECES = { straight: "Droit (2 m)", elbow: "Coude \xE0 90\xB0", tee: "Raccord en T", cap: "Bout bouch\xE9" };
-var SIZES = { wall: "Tuyau mural (\xD8 0,12 m)", giant: "Tuyau g\xE9ant (\xD8 0,8 m)" };
+var SIZES2 = { wall: "Tuyau mural (\xD8 0,12 m)", giant: "Tuyau g\xE9ant (\xD8 0,8 m)" };
 var MOUNTS = { wall: "Contre un mur", floor: "Sur des berceaux au sol" };
 var SPEC2 = {
   wall: { r: 0.06, sides: 6, bend: 0.25, gap: 0.08 },
   giant: { r: 0.4, sides: 14, bend: 0.9, gap: 0.12 }
 };
-var params4 = {
+var params8 = {
   seed: seedParam("Change la place des coulures, un collier manquant, un manchon de r\xE9paration, les tons du cuivre."),
   piece: choiceParam("Pi\xE8ce", PIECES, "Droit de 2 m, coude \xE0 90\xB0 (qui monte), raccord en T (branche vers le haut) ou bout bouch\xE9."),
-  size: choiceParam("Taille", SIZES, "Tuyau mural du Sas (colliers de bronze) ou tuyau g\xE9ant de la salle du C\u0153ur (brides de laiton boulonn\xE9es)."),
+  size: choiceParam("Taille", SIZES2, "Tuyau mural du Sas (colliers de bronze) ou tuyau g\xE9ant de la salle du C\u0153ur (brides de laiton boulonn\xE9es)."),
   mount: choiceParam("Pose", MOUNTS, "Contre un mur (pattes de fixation vers z = 0) ou sur des berceaux au sol."),
   height: numberParam("Hauteur", 1.8, 0.2, 6, "Hauteur de l'axe du tuyau.", { step: 0.1, unit: "m" })
 };
-var meta4 = {
+var meta8 = {
   id: "props/machines/copper-pipe",
   name: "Tuyau de cuivre",
   nameEn: "Copper pipe",
@@ -2377,17 +3503,17 @@ var meta4 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol (au pied du mur pour la pose murale : le mur est en z = 0) ; l'axe court selon x de \u22121 \xE0 +1 \xE0 la hauteur `height` ; le coude et le T montent vers +y en x = 0",
   footprint: { radius: 1.4, height: 3.3 },
   animated: [],
-  params: params4,
-  variants: variantsOf("piece", params4.piece)
+  params: params8,
+  variants: variantsOf("piece", params8.piece)
 };
-function create4(given = {}) {
-  const p = resolveParams(meta4.params, given);
+function create8(given = {}) {
+  const p = resolveParams(meta8.params, given);
   const { r, sides, bend, gap } = SPEC2[p.size];
   const giant = p.size === "giant";
   const wear = createRng(p.seed * 7919 + 17);
   const H = Math.max(p.height, r + 0.05);
   const zc = p.mount === "wall" ? r + gap : 0;
-  const at = (x, y) => new THREE7.Vector3(x, H + y, zc);
+  const at = (x, y) => new THREE11.Vector3(x, H + y, zc);
   const runs = [];
   if (p.piece === "straight") runs.push([at(-1, 0), at(1, 0)]);
   else if (p.piece === "cap") runs.push([at(-1, 0), at(0.2, 0)]);
@@ -2408,7 +3534,7 @@ function create4(given = {}) {
     for (let i = 0; i < points.length - 1; i++) {
       const a = points[i], b = points[i + 1];
       const n = Math.max(1, Math.round(a.distanceTo(b) / 0.25));
-      for (let k = 0; k < n; k++) dense.push(new THREE7.Vector3().lerpVectors(a, b, k / n));
+      for (let k = 0; k < n; k++) dense.push(new THREE11.Vector3().lerpVectors(a, b, k / n));
     }
     dense.push(points[points.length - 1]);
     let length = 0;
@@ -2424,15 +3550,15 @@ function create4(given = {}) {
       tone[i] = streak ? -0.3 : 0;
     }
     plain(tube);
-    tube.setAttribute("aTone", new THREE7.BufferAttribute(tone, 1));
+    tube.setAttribute("aTone", new THREE11.BufferAttribute(tone, 1));
     copperParts.push(tube);
   }
   const disc = (center, dir, tone) => {
-    const g = plain(new THREE7.CylinderGeometry(r * 0.98, r * 0.98, PX * 0.4, sides));
+    const g = plain(new THREE11.CylinderGeometry(r * 0.98, r * 0.98, PX * 0.4, sides));
     copperParts.push(withTone(orient(g, center, dir), tone));
   };
   if (p.piece === "cap") {
-    const dome = plain(new THREE7.SphereGeometry(r, sides, 4, 0, Math.PI * 2, 0, Math.PI / 2));
+    const dome = plain(new THREE11.SphereGeometry(r, sides, 4, 0, Math.PI * 2, 0, Math.PI / 2));
     copperParts.push(withTone(orient(dome, at(0.2, 0), [1, 0, 0]), 0.05));
   }
   disc(at(-1 + PX * 0.3, 0), [1, 0, 0], -0.5);
@@ -2455,16 +3581,16 @@ function create4(given = {}) {
   if (giant) {
     const flange = (center, dir) => {
       collar(center, dir, { width: 0.1, thick: 0.07, tone: 0.25 });
-      const d = new THREE7.Vector3(...dir);
-      const u = new THREE7.Vector3(0, 0, 1).cross(d).lengthSq() > 0.01 ? new THREE7.Vector3(0, 0, 1) : new THREE7.Vector3(1, 0, 0);
-      const v = new THREE7.Vector3().crossVectors(d, u);
+      const d = new THREE11.Vector3(...dir);
+      const u = new THREE11.Vector3(0, 0, 1).cross(d).lengthSq() > 0.01 ? new THREE11.Vector3(0, 0, 1) : new THREE11.Vector3(1, 0, 0);
+      const v = new THREE11.Vector3().crossVectors(d, u);
       for (let k = 0; k < 12; k++) {
         const a = k / 12 * Math.PI * 2;
         const pos = center.clone().addScaledVector(u, Math.cos(a) * (r + 0.05)).addScaledVector(v, Math.sin(a) * (r + 0.05));
-        bronzeParts.push(withTone(buildBlock([PX, PX, 0.14], [0, 0, 0]).applyMatrix4(new THREE7.Matrix4().makeBasis(u, v, d).setPosition(pos)), 0.4));
+        bronzeParts.push(withTone(buildBlock([PX, PX, 0.14], [0, 0, 0]).applyMatrix4(new THREE11.Matrix4().makeBasis(u, v, d).setPosition(pos)), 0.4));
       }
     };
-    for (const [c, d] of ends) flange(c.clone().addScaledVector(new THREE7.Vector3(...d), d[0] && c.x < 0 ? 0.05 : -0.05), d);
+    for (const [c, d] of ends) flange(c.clone().addScaledVector(new THREE11.Vector3(...d), d[0] && c.x < 0 ? 0.05 : -0.05), d);
     if (p.piece === "tee") flange(at(0, r + 0.08), [0, 1, 0]);
   } else {
     straightStations.forEach(([c, d], i) => {
@@ -2473,7 +3599,7 @@ function create4(given = {}) {
   }
   if (wear.chance(0.4)) {
     const [c, d] = straightStations[wear.int(0, straightStations.length - 1)];
-    collar(c.clone().add(new THREE7.Vector3(d[1] ? 0 : 0.12, d[1] ? 0.12 : 0, 0)), d, { width: giant ? 0.3 : 0.18, thick: giant ? 0.04 : PX * 0.6, tone: 0.35 });
+    collar(c.clone().add(new THREE11.Vector3(d[1] ? 0 : 0.12, d[1] ? 0.12 : 0, 0)), d, { width: giant ? 0.3 : 0.18, thick: giant ? 0.04 : PX * 0.6, tone: 0.35 });
   }
   const supportXs = p.piece === "elbow" ? [-0.6] : p.piece === "cap" ? [-0.6] : [-0.6, 0.6];
   for (const x of supportXs) {
@@ -2488,44 +3614,44 @@ function create4(given = {}) {
       bronzeParts.push(withTone(buildBlock([w + PX, PX, giant ? r * 1.9 : r * 2.8], [x, PX / 2, zc]), -0.25));
     }
   }
-  const group = new THREE7.Group();
-  group.name = meta4.name;
-  const copper = new THREE7.Mesh(mergeToned(copperParts), metalMaterial(METALS.oxidizedCopper, { id: 30, tone: true, steps: [0.28, 0.46, 0.68, 0.95] }));
+  const group = new THREE11.Group();
+  group.name = meta8.name;
+  const copper = new THREE11.Mesh(mergeToned(copperParts), metalMaterial(METALS.oxidizedCopper, { id: 30, tone: true, steps: [0.28, 0.46, 0.68, 0.95] }));
   copper.name = "pipe";
   copper.castShadow = true;
   copper.receiveShadow = true;
   group.add(copper);
-  const bronze = new THREE7.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 31, tone: true }));
+  const bronze = new THREE11.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 31, tone: true }));
   bronze.name = "fittings";
   bronze.castShadow = true;
   group.add(bronze);
-  group.userData.asset = { id: meta4.id, params: p };
+  group.userData.asset = { id: meta8.id, params: p };
   return group;
 }
 
 // src/assets/furniture/storage/equipment-locker.js
 var equipment_locker_exports = {};
 __export(equipment_locker_exports, {
-  create: () => create5,
+  create: () => create9,
   dispose: () => disposeObject,
-  meta: () => meta5,
+  meta: () => meta9,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE8 from "three";
+import * as THREE12 from "three";
 var MODELS2 = { locker: "Casier (6 compartiments)", "fuse-box": "Armoire \xE0 fusibles (24 fusibles)" };
 var DOORS = { closed: "Ferm\xE9es", ajar: "Une entrouverte", open: "Toutes ouvertes" };
 var SWITCHES = { on: "Sous tension", off: "Coup\xE9e" };
-var SIZES2 = { locker: [1.8, 2.2, 0.4], "fuse-box": [0.8, 1.8, 0.3] };
-var OILCLOTH = { ramp: ["#2a2117", "#4f3f2a", "#77623f", "#a08756"], ink: "#140f0a" };
+var SIZES3 = { locker: [1.8, 2.2, 0.4], "fuse-box": [0.8, 1.8, 0.3] };
+var OILCLOTH2 = { ramp: ["#2a2117", "#4f3f2a", "#77623f", "#a08756"], ink: "#140f0a" };
 var PORCELAIN = { ramp: ["#4f4a44", "#8a8274", "#c4baa6", "#ebe2cf"], ink: "#24201b" };
-var params5 = {
+var params9 = {
   seed: seedParam("Change le mat\xE9riel rang\xE9 et les cases vides, les aiguilles, la patine, la porte entrouverte, les fusibles grill\xE9s."),
   model: choiceParam("Mod\xE8le", MODELS2, "Casier d'\xE9quipement du Sas, ou armoire \xE0 fusibles de la salle du C\u0153ur."),
   doors: choiceParam("Portes", DOORS, "Ferm\xE9es (par d\xE9faut), une entrouverte choisie par la graine, ou toutes ouvertes. Pilotable : group.userData.locker."),
   power: choiceParam("Levier de coupure", SWITCHES, "Armoire \xE0 fusibles : levier lev\xE9 (sous tension) ou abaiss\xE9 (coup\xE9e).")
 };
-var meta5 = {
+var meta9 = {
   id: "furniture/storage/equipment-locker",
   name: "Casier d'\xE9quipement",
   nameEn: "Equipment locker",
@@ -2570,14 +3696,14 @@ var meta5 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au milieu du dos (le mur est en z = 0, les portes regardent +z)",
   footprint: { radius: 1.45, height: 2.2 },
   animated: ["locker"],
-  params: params5,
-  variants: variantsOf("model", params5.model)
+  params: params9,
+  variants: variantsOf("model", params9.model)
 };
-function create5(given = {}) {
-  const p = resolveParams(meta5.params, given);
+function create9(given = {}) {
+  const p = resolveParams(meta9.params, given);
   const fuse = p.model === "fuse-box";
   const rng = createRng(p.seed * 7919 + 43);
-  const [W, H, D] = SIZES2[p.model];
+  const [W, H, D] = SIZES3[p.model];
   const bronzeParts = [];
   const contentParts = [];
   const t = 0.04;
@@ -2610,11 +3736,11 @@ function create5(given = {}) {
         contentParts.push(withTone(buildBlock([w * 0.6, PX * 0.6, 0.11], [x, y + h - 0.16 - h * 0.25, zIn + 0.12]), -0.4));
       } else if (kind === "boots") {
         for (const s of [-1, 1]) contentParts.push(withTone(buildBlock([0.1, 0.24, 0.16], [x + s * 0.08, y + 0.12, zIn + 0.12]), s > 0 ? 0.1 : -0.1));
-        contentParts.push(withTone(orient(plain(new THREE8.CylinderGeometry(0.05, 0.06, 0.16, 6)), [x, y + h * 0.55, zIn + 0.12], [0, 1, 0]), 0.4));
+        contentParts.push(withTone(orient(plain(new THREE12.CylinderGeometry(0.05, 0.06, 0.16, 6)), [x, y + h * 0.55, zIn + 0.12], [0, 1, 0]), 0.4));
       } else if (kind === "coils") {
         const n = rng.int(2, 3);
         for (let i = 0; i < n; i++) {
-          const g = plain(new THREE8.TorusGeometry(0.1, 0.035, 4, 8));
+          const g = plain(new THREE12.TorusGeometry(0.1, 0.035, 4, 8));
           contentParts.push(withTone(orient(g, [x + (i - (n - 1) / 2) * 0.12, y + 0.1 + i * 0.05, zIn + 0.14], [0, 0, 1]), i % 2 ? -0.1 : 0.15));
         }
       }
@@ -2654,7 +3780,7 @@ function create5(given = {}) {
     parts.push(withTone(buildBlock([0.13, 0.2, 0.012], [px, py, zDoor + 0.012]), 0.1));
     const d = dial({ radius: PX * 1.1, position: [px, py + 0.04, zDoor + 0.018], normal: [0, 0, 1], ticks: 6, needle: rng.range(-2, 2), depth: PX * 0.3 });
     parts.push(withTone(d.face, 0.6), withTone(d.marks, -1));
-    parts.push(withTone(orient(plain(new THREE8.CylinderGeometry(PX * 0.6, PX * 0.6, 0.03, 6)), [px, py - 0.05, zDoor + 0.02], [0, 0, 1]), 0.4));
+    parts.push(withTone(orient(plain(new THREE12.CylinderGeometry(PX * 0.6, PX * 0.6, 0.03, 6)), [px, py - 0.05, zDoor + 0.02], [0, 0, 1]), 0.4));
     for (const k of [-1, 1]) parts.push(withTone(buildBlock([PX, PX * 1.6, 0.03], [left, cy + k * dh * 0.36, zDoor]), -0.4));
     const merged = mergeToned(parts.map((g) => g.attributes.aTone ? g : withTone(g, 0)));
     const count = merged.attributes.position.count;
@@ -2668,21 +3794,21 @@ function create5(given = {}) {
     bronzeParts.push(withTone(l.rod, 0.15), withTone(l.knob, -0.5));
     box([0.24, 0.06, 0.01], [0, H - 0.12, D + 0.02], 0.3);
   }
-  const group = new THREE8.Group();
-  group.name = meta5.name;
-  const body = new THREE8.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+  const group = new THREE12.Group();
+  group.name = meta9.name;
+  const body = new THREE12.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
   body.name = "body";
   body.castShadow = true;
   body.receiveShadow = true;
   group.add(body);
   const brassGeometry = mergeToned(brassParts);
-  const doors = new THREE8.Mesh(brassGeometry, metalMaterial(METALS.blackenedBrass, { id: 31, tone: true }));
+  const doors = new THREE12.Mesh(brassGeometry, metalMaterial(METALS.blackenedBrass, { id: 31, tone: true }));
   doors.name = "doors";
   doors.castShadow = true;
   group.add(doors);
   if (contentParts.length) {
-    const entry = fuse ? PORCELAIN : OILCLOTH;
-    const content = new THREE8.Mesh(mergeToned(contentParts), createToonMaterial({ ramp: entry.ramp, ink: entry.ink, steps: [0.3, 0.55, 0.8], tone: true, crease: true, id: 32 }));
+    const entry = fuse ? PORCELAIN : OILCLOTH2;
+    const content = new THREE12.Mesh(mergeToned(contentParts), createToonMaterial({ ramp: entry.ramp, ink: entry.ink, steps: [0.3, 0.55, 0.8], tone: true, crease: true, id: 32 }));
     content.name = "content";
     content.castShadow = true;
     content.receiveShadow = true;
@@ -2692,7 +3818,7 @@ function create5(given = {}) {
   const normal = brassGeometry.attributes.normal;
   const basePos = position.array.slice();
   const baseNormal = normal.array.slice();
-  const MAX = THREE8.MathUtils.degToRad(105);
+  const MAX = THREE12.MathUtils.degToRad(105);
   const open = doorRanges.map(() => 0);
   const pose = (i) => {
     const { start, count, hingeX, hingeZ } = doorRanges[i];
@@ -2713,7 +3839,7 @@ function create5(given = {}) {
     open,
     setOpen(i, value) {
       if (i < 0 || i >= open.length) return;
-      open[i] = THREE8.MathUtils.clamp(value, 0, 1);
+      open[i] = THREE12.MathUtils.clamp(value, 0, 1);
       pose(i);
     },
     setAll(value) {
@@ -2723,35 +3849,35 @@ function create5(given = {}) {
   if (p.doors === "open") locker.setAll(1);
   else if (p.doors === "ajar") locker.setOpen(rng.int(0, open.length - 1), 0.35);
   group.userData.locker = locker;
-  group.userData.asset = { id: meta5.id, params: p };
+  group.userData.asset = { id: meta9.id, params: p };
   return group;
 }
 
 // src/assets/furniture/lighting/filament-chandelier.js
 var filament_chandelier_exports = {};
 __export(filament_chandelier_exports, {
-  create: () => create6,
+  create: () => create10,
   dispose: () => disposeObject,
-  meta: () => meta6,
+  meta: () => meta10,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE9 from "three";
+import * as THREE13 from "three";
 var MODELS3 = { lantern: "Lanterne (Archives)", rotunda: "Grand lustre (Rotonde)", vaultRing: "Anneau de vo\xFBte (Oracle)" };
-var STATES2 = { lit: "Allum\xE9", dim: "En veille", off: "\xC9teint" };
+var STATES5 = { lit: "Allum\xE9", dim: "En veille", off: "\xC9teint" };
 var HALOS = { off: "Sans halo", on: "\xC9claire le d\xE9cor (dans le noir)" };
 var BASE = { lit: 2, dim: 1, off: 0 };
 var REACH = { lantern: 3.5, rotunda: 6.5, vaultRing: 4.5 };
-var params6 = {
+var params10 = {
   seed: seedParam("Change les ampoules faibles ou mortes, le rythme des scintillements, la l\xE9g\xE8re g\xEEte du cercle, les tons du bronze."),
   model: choiceParam("Mod\xE8le", MODELS3, "Lanterne \xE0 6 ampoules et coupelle de verre, grand lustre de 3 m \xE0 24 ampoules, ou anneau de vo\xFBte \xE0 12 ampoules."),
-  state: choiceParam("\xC9tat", STATES2, "Allum\xE9 (scintillement lent), en veille (lueur faible) ou \xE9teint."),
+  state: choiceParam("\xC9tat", STATES5, "Allum\xE9 (scintillement lent), en veille (lueur faible) ou \xE9teint."),
   glow: glowParam("Couleur des filaments."),
   halo: choiceParam("Halo", HALOS, "\xC9claire le d\xE9cor autour de lui dans le noir (lumi\xE8re de halo : 12 pour toute la sc\xE8ne)."),
   height: numberParam("Hauteur", 3, 2, 12, "Hauteur du cercle d'ampoules au-dessus du sol.", { step: 0.1, unit: "m" }),
   chain: numberParam("Cha\xEEne", 1.5, 0.3, 5, "Longueur de la cha\xEEne principale, jusqu'\xE0 la rosace du plafond.", { step: 0.1, unit: "m" })
 };
-var meta6 = {
+var meta10 = {
   id: "furniture/lighting/filament-chandelier",
   name: "Lustre \xE0 filaments",
   nameEn: "Filament chandelier",
@@ -2798,11 +3924,11 @@ var meta6 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, \xE0 l'aplomb du centre ; `height` = hauteur du cercle d'ampoules",
   footprint: { radius: 1.6, height: 6.1 },
   animated: ["flicker", "glow"],
-  params: params6,
-  variants: variantsOf("model", params6.model)
+  params: params10,
+  variants: variantsOf("model", params10.model)
 };
-function create6(given = {}) {
-  const p = resolveParams(meta6.params, given);
+function create10(given = {}) {
+  const p = resolveParams(meta10.params, given);
   const shape = createRng(p.seed * 7919 + 17);
   const bulbsRng = createRng(p.seed * 104729 + 71);
   const h = p.height;
@@ -2824,12 +3950,12 @@ function create6(given = {}) {
       add(beam([dx * 0.37, h, dz * 0.37], [dx * 0.29, yt, dz * 0.29], PX * 0.8, PX * 0.8));
       const by = h + (i % 2 ? 0.05 : -0.05);
       add(beam([0, by - 0.06, 0], [dx * 0.15, by - 0.02, dz * 0.15], PX * 0.6, PX * 0.6));
-      bulbs.push(new THREE9.Vector3(dx * 0.17, by, dz * 0.17));
+      bulbs.push(new THREE13.Vector3(dx * 0.17, by, dz * 0.17));
     }
     add(beam([0, yb, 0], [0, yt, 0], PX, PX), -0.1);
     lathe([[0, yt], [0.32, yt], [0.32, yt + 0.03], [0.1, yt + 0.12], [0, yt + 0.12]], 12, 0.05);
     glassParts.push(buildLathe([[0, yt + 0.12], [0.2, yt + 0.12], [0.2, yt + 0.16], [0.12, yt + 0.27], [0, yt + 0.29]], { segments: 10, facets: true }));
-    hub = new THREE9.Vector3(0, yt + 0.32, 0);
+    hub = new THREE13.Vector3(0, yt + 0.32, 0);
     add(beam([0, yt + 0.12, 0], hub, PX, PX));
   } else {
     const rotunda = p.model === "rotunda";
@@ -2844,10 +3970,10 @@ function create6(given = {}) {
       const rr = R - 0.015;
       if (rotunda) {
         add(buildLathe([[0, 0], [0.03, 0], [0.03, 0.07], [0, 0.07]], { segments: 6, facets: true }).translate(dx * rr, h + 0.05, dz * rr), -0.15);
-        bulbs.push(new THREE9.Vector3(dx * rr, h + 0.17, dz * rr));
+        bulbs.push(new THREE13.Vector3(dx * rr, h + 0.17, dz * rr));
       } else {
         add(beam([dx * rr, h - 0.05, dz * rr], [dx * rr, h - 0.13, dz * rr], PX * 0.7, PX * 0.7));
-        bulbs.push(new THREE9.Vector3(dx * rr, h - 0.21, dz * rr));
+        bulbs.push(new THREE13.Vector3(dx * rr, h - 0.21, dz * rr));
       }
     }
     if (rotunda) {
@@ -2856,7 +3982,7 @@ function create6(given = {}) {
         add(beam([Math.cos(a) * (R - 0.42), h, Math.sin(a) * (R - 0.42)], [Math.cos(a) * (R - 0.05), h, Math.sin(a) * (R - 0.05)], PX, PX));
       }
     }
-    hub = new THREE9.Vector3(0, h + (rotunda ? 1.5 : 0.5), 0);
+    hub = new THREE13.Vector3(0, h + (rotunda ? 1.5 : 0.5), 0);
     for (let k = 0; k < chains; k++) {
       const a = k / chains * Math.PI * 2 + Math.PI / 4;
       add(chain([Math.cos(a) * (R - 0.03), h + 0.05, Math.sin(a) * (R - 0.03)], hub, { sag: 0.02, link: 0.08 }));
@@ -2866,19 +3992,19 @@ function create6(given = {}) {
   const end = hub.y + p.chain;
   add(chain(hub, [0, end, 0], { sag: 0, link: 0.08 }));
   lathe([[0, end], [0.12, end], [0.12, end + 0.03], [0, end + 0.05]], 8, 0.1);
-  const tilt = new THREE9.Matrix4().makeRotationAxis(new THREE9.Vector3(Math.cos(shape.range(0, 6.28)), 0, Math.sin(shape.range(0, 6.28))).normalize(), shape.range(0, 0.035));
-  const pivot = new THREE9.Matrix4().makeTranslation(0, -end, 0);
-  const back = new THREE9.Matrix4().makeTranslation(0, end, 0);
+  const tilt = new THREE13.Matrix4().makeRotationAxis(new THREE13.Vector3(Math.cos(shape.range(0, 6.28)), 0, Math.sin(shape.range(0, 6.28))).normalize(), shape.range(0, 0.035));
+  const pivot = new THREE13.Matrix4().makeTranslation(0, -end, 0);
+  const back = new THREE13.Matrix4().makeTranslation(0, end, 0);
   const lean = back.multiply(tilt).multiply(pivot);
-  const group = new THREE9.Group();
-  group.name = meta6.name;
+  const group = new THREE13.Group();
+  group.name = meta10.name;
   const bronzeGeometry = mergeToned(bronzeParts).applyMatrix4(lean);
-  const bronze = new THREE9.Mesh(bronzeGeometry, metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+  const bronze = new THREE13.Mesh(bronzeGeometry, metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
   bronze.name = "frame";
   bronze.castShadow = true;
   group.add(bronze);
   if (glassParts.length) {
-    const glass = new THREE9.Mesh(mergeToned(glassParts).applyMatrix4(lean), createToonMaterial({ ramp: GLASSES.amber.ramp, ink: GLASSES.amber.ink, steps: [0.3, 0.55, 0.8], crease: true, rim: [0.25, 0.4], id: 32 }));
+    const glass = new THREE13.Mesh(mergeToned(glassParts).applyMatrix4(lean), createToonMaterial({ ramp: GLASSES.amber.ramp, ink: GLASSES.amber.ink, steps: [0.3, 0.55, 0.8], crease: true, rim: [0.25, 0.4], id: 32 }));
     glass.name = "glass-cup";
     group.add(glass);
   }
@@ -2900,15 +4026,15 @@ function create6(given = {}) {
   }
   const glowGeometry = mergeToned(glowParts).applyMatrix4(lean);
   const glowMaterial2 = glowMixMaterial(glowLevels(p.glow), { id: 31 });
-  const lights = new THREE9.Mesh(glowGeometry, glowMaterial2);
+  const lights = new THREE13.Mesh(glowGeometry, glowMaterial2);
   lights.name = "bulbs";
   group.add(lights);
   const flicker = createFlicker(glowGeometry, flickerBulbs);
   const halo = p.halo === "on" && p.state !== "off" ? createGlowLight() : null;
   if (halo) glowMaterial2.addEventListener("dispose", () => halo.release());
   const haloColor = rgb(GLOWS[p.glow].light);
-  const center = new THREE9.Vector3(0, h, 0).applyMatrix4(lean);
-  const haloAt = new THREE9.Vector3();
+  const center = new THREE13.Vector3(0, h, 0).applyMatrix4(lean);
+  const haloAt = new THREE13.Vector3();
   const reach = REACH[p.model] * (p.state === "lit" ? 1 : 0.6);
   const baseUpdate = group.updateMatrixWorld.bind(group);
   let lastTime = -1;
@@ -2921,7 +4047,7 @@ function create6(given = {}) {
     baseUpdate(force);
     if (halo) halo.set(group.localToWorld(haloAt.copy(center)), haloColor, reach, 1.3);
   };
-  group.userData.asset = { id: meta6.id, params: p };
+  group.userData.asset = { id: meta10.id, params: p };
   group.userData.lightPoint = center.clone();
   return group;
 }
@@ -2929,27 +4055,27 @@ function create6(given = {}) {
 // src/assets/furniture/lighting/filament-lamp.js
 var filament_lamp_exports = {};
 __export(filament_lamp_exports, {
-  create: () => create7,
+  create: () => create11,
   dispose: () => disposeObject,
-  meta: () => meta7,
+  meta: () => meta11,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE10 from "three";
+import * as THREE14 from "three";
 var MOUNTS2 = { hanging: "Suspendue (cha\xEEne)", wall: "Applique murale" };
-var STATES3 = { lit: "Allum\xE9e", dim: "En veille", off: "\xC9teinte" };
+var STATES6 = { lit: "Allum\xE9e", dim: "En veille", off: "\xC9teinte" };
 var HALOS2 = { off: "Sans halo", on: "\xC9claire le d\xE9cor (dans le noir)" };
 var BASE2 = { lit: 2, dim: 1, off: 0 };
-var params7 = {
+var params11 = {
   seed: seedParam("Change le galbe de la cage, un barreau tordu ou manquant, le ton du bronze, le rythme du scintillement."),
   mount: choiceParam("Pose", MOUNTS2, "Suspendue \xE0 une cha\xEEne (Sas), ou applique sur une console murale (Galerie, une par trav\xE9e)."),
-  state: choiceParam("\xC9tat", STATES3, "Allum\xE9e (scintillement lent), en veille (lueur faible) ou \xE9teinte (verre ambre sombre)."),
+  state: choiceParam("\xC9tat", STATES6, "Allum\xE9e (scintillement lent), en veille (lueur faible) ou \xE9teinte (verre ambre sombre)."),
   glow: glowParam("Couleur du filament."),
   halo: choiceParam("Halo", HALOS2, "\xC9claire le d\xE9cor autour d'elle dans le noir (lumi\xE8re de halo : 12 pour toute la sc\xE8ne)."),
   height: numberParam("Hauteur", 2.6, 1.2, 12, "Hauteur de l'ampoule au-dessus du sol (2,6 m pour une applique de Galerie).", { step: 0.1, unit: "m" }),
   chain: numberParam("Cha\xEEne", 1.2, 0.2, 4, "Longueur de la cha\xEEne au-dessus de la cage (lampe suspendue).", { step: 0.1, unit: "m" })
 };
-var meta7 = {
+var meta11 = {
   id: "furniture/lighting/filament-lamp",
   name: "Lampe \xE0 filament",
   nameEn: "Filament cage lamp",
@@ -2995,14 +4121,14 @@ var meta7 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, \xE0 l'aplomb de l'ampoule (suspendue) ou au pied du mur (applique : le mur est en z = 0, la lampe avance vers +z) ; `height` = hauteur de l'ampoule",
   footprint: { radius: 0.5, height: 4.2 },
   animated: ["flicker", "glow"],
-  params: params7,
-  variants: variantsOf("mount", params7.mount)
+  params: params11,
+  variants: variantsOf("mount", params11.mount)
 };
-function create7(given = {}) {
-  const p = resolveParams(meta7.params, given);
+function create11(given = {}) {
+  const p = resolveParams(meta11.params, given);
   const shape = createRng(p.seed * 7919 + 17);
   const wall = p.mount === "wall";
-  const c = new THREE10.Vector3(0, p.height, wall ? 0.32 : 0);
+  const c = new THREE14.Vector3(0, p.height, wall ? 0.32 : 0);
   const bronzeParts = [];
   const bars = 8;
   const bulge = shape.range(0.14, 0.17);
@@ -3041,22 +4167,22 @@ function create7(given = {}) {
     bronzeParts.push(chain([c.x, top, c.z], [c.x, end, c.z], { sag: 0, link: 0.07 }));
     bronzeParts.push(withTone(buildLathe([[0, end], [0.09, end], [0.09, end + 0.03], [0, end + 0.05]], { segments: 8, facets: true }), 0.1));
   }
-  const group = new THREE10.Group();
-  group.name = meta7.name;
-  const bronze = new THREE10.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+  const group = new THREE14.Group();
+  group.name = meta11.name;
+  const bronze = new THREE14.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
   bronze.name = "cage";
   bronze.castShadow = true;
   group.add(bronze);
   const glass = withShade(bulb({ radius: PX * 1.35, position: c, segments: 6 }), BASE2[p.state], 4);
   const glowMaterial2 = glowMixMaterial(glowLevels(p.glow), { id: 31 });
-  const light = new THREE10.Mesh(glass, glowMaterial2);
+  const light = new THREE14.Mesh(glass, glowMaterial2);
   light.name = "bulb";
   group.add(light);
   const flicker = createFlicker(glass, [{ start: 0, count: glass.attributes.position.count, base: BASE2[p.state], phase: shape.next() }]);
   const halo = p.halo === "on" && p.state !== "off" ? createGlowLight() : null;
   if (halo) glowMaterial2.addEventListener("dispose", () => halo.release());
   const haloColor = rgb(GLOWS[p.glow].light);
-  const haloAt = new THREE10.Vector3();
+  const haloAt = new THREE14.Vector3();
   const reach = p.state === "lit" ? 3 : 1.8;
   const baseUpdate = group.updateMatrixWorld.bind(group);
   let lastTime = -1;
@@ -3072,7 +4198,7 @@ function create7(given = {}) {
       halo.set(group.localToWorld(haloAt.copy(c)), haloColor, reach * (0.85 + 0.08 * level), 1.1 + 0.15 * level);
     }
   };
-  group.userData.asset = { id: meta7.id, params: p };
+  group.userData.asset = { id: meta11.id, params: p };
   group.userData.lightPoint = c.clone();
   return group;
 }
@@ -3080,20 +4206,20 @@ function create7(given = {}) {
 // src/assets/buildings/structure/glyph-column.js
 var glyph_column_exports = {};
 __export(glyph_column_exports, {
-  create: () => create8,
+  create: () => create12,
   dispose: () => disposeObject,
-  meta: () => meta8,
+  meta: () => meta12,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE11 from "three";
+import * as THREE15 from "three";
 var SHAPES = { square: "Pilier carr\xE9 \xE0 chanfreins", fluted: "Colonne cannel\xE9e", engaged: "Demi-colonne engag\xE9e", pilaster: "Pilastre" };
 var FIBERS = { none: "Sans fibre", cyan: "Fibre cyan" };
 var GLYPHS2 = { lit: "Allum\xE9s", dim: "En veille", off: "\xC9teints" };
 var LEVELS2 = { lit: 2, dim: 1, off: 0 };
 var BASE3 = 0.4;
 var CAPITAL = 0.5;
-var params8 = {
+var params12 = {
   seed: seedParam("Change les glyphes du chapiteau, les tons et les \xE9caillures, la hauteur exacte des bagues, l'usure du pied."),
   shape: choiceParam("Forme", SHAPES, "Pilier carr\xE9 (Sas), colonne ronde cannel\xE9e (Archives, Rotonde), demi-colonne engag\xE9e dans un mur, ou pilastre."),
   height: numberParam("Hauteur", 5, 3, 14, "Du sol au-dessus du chapiteau (5 m au Sas, 7 m aux Archives, 10 m \xE0 l'Oracle).", { step: 0.5, unit: "m" }),
@@ -3104,7 +4230,7 @@ var params8 = {
   glow: glowParam("Couleur des glyphes."),
   stone: stoneParam("Pierre de la colonne.", { only: ["smoked", "blackBasalt"] })
 };
-var meta8 = {
+var meta12 = {
   id: "buildings/structure/glyph-column",
   name: "Colonne \xE0 glyphes",
   nameEn: "Glyph column",
@@ -3148,11 +4274,11 @@ var meta8 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au centre du f\xFBt (pilier, colonne) ou au nu du mur (demi-colonne, pilastre : le mur est en z \u2264 0, la colonne avance vers +z)",
   footprint: { radius: 0.85, height: 5 },
   animated: [],
-  params: params8,
-  variants: variantsOf("shape", params8.shape)
+  params: params12,
+  variants: variantsOf("shape", params12.shape)
 };
-function create8(given = {}) {
-  const p = resolveParams(meta8.params, given);
+function create12(given = {}) {
+  const p = resolveParams(meta12.params, given);
   const stone = STONES[p.stone];
   const shape = createRng(p.seed * 7919 + 17);
   const glyphRng = createRng(p.seed * 104729 + 71);
@@ -3243,45 +4369,45 @@ function create8(given = {}) {
     fiber.rotateY(a);
     glowParts.push(withShade(fiber, 1));
   }
-  const group = new THREE11.Group();
-  group.name = meta8.name;
-  const stoneMesh = new THREE11.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.06 }));
+  const group = new THREE15.Group();
+  group.name = meta12.name;
+  const stoneMesh = new THREE15.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.06 }));
   stoneMesh.name = "column";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
-  const bronze = new THREE11.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 21 }));
+  const bronze = new THREE15.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 21 }));
   bronze.name = "rings";
   bronze.castShadow = true;
   group.add(bronze);
-  const glow = new THREE11.Mesh(mergeToned(glowParts), glowMixMaterial([[p.glow, level], ["cyan", 2]], { id: 22 }));
+  const glow = new THREE15.Mesh(mergeToned(glowParts), glowMixMaterial([[p.glow, level], ["cyan", 2]], { id: 22 }));
   glow.name = "glyphs";
   group.add(glow);
-  group.userData.asset = { id: meta8.id, params: p };
+  group.userData.asset = { id: meta12.id, params: p };
   return group;
 }
 
 // src/assets/buildings/structure/glyph-floor-slab.js
 var glyph_floor_slab_exports = {};
 __export(glyph_floor_slab_exports, {
-  create: () => create9,
+  create: () => create13,
   dispose: () => disposeObject,
-  meta: () => meta9,
+  meta: () => meta13,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE12 from "three";
+import * as THREE16 from "three";
 var SIZE2 = 2;
 var THICK = 0.2;
 var VARIANTS = { intact: "Intacte", cracked: "Fissur\xE9e", worn: "Us\xE9e", trapdoor: "\xC0 trappe", stained: "Tach\xE9e (huile, limaille)" };
 var GROOVES = { dark: "Trait sombre", amber: "Lueur ambre tr\xE8s faible" };
-var params9 = {
+var params13 = {
   seed: seedParam("Change les glyphes de la rainure, le ton de la dalle, le trac\xE9 de la fissure, la place de la trappe, les taches."),
   variant: choiceParam("\xC9tat", VARIANTS, "Intacte, fissur\xE9e, us\xE9e au centre (passage), \xE0 trappe de 0,6 m, ou tach\xE9e (Atelier)."),
   stone: stoneParam("Pierre de la dalle.", { only: ["blackBasalt", "smoked"] }),
   groove: choiceParam("Rainure", GROOVES, "La rainure de glyphes : un trait sombre, ou une lueur ambre \xE0 peine allum\xE9e.")
 };
-var meta9 = {
+var meta13 = {
   id: "buildings/structure/glyph-floor-slab",
   name: "Dalle de sol \xE0 glyphes",
   nameEn: "Glyph floor slab",
@@ -3324,11 +4450,11 @@ var meta9 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol (dessous de la dalle), au centre ; dessus \xE0 0,20 m (le monde la pose \xE0 y = \u22120,20) ; la diagonale va de (\u2212x, \u2212z) vers (+x, +z)",
   footprint: { radius: 1.42, height: 0.24 },
   animated: [],
-  params: params9,
-  variants: variantsOf("variant", params9.variant)
+  params: params13,
+  variants: variantsOf("variant", params13.variant)
 };
-function create9(given = {}) {
-  const p = resolveParams(meta9.params, given);
+function create13(given = {}) {
+  const p = resolveParams(meta13.params, given);
   const stone = STONES[p.stone];
   const glyphRng = createRng(p.seed * 7919 + 17);
   const shape = createRng(p.seed * 104729 + 71);
@@ -3343,11 +4469,11 @@ function create9(given = {}) {
     if (y2 < top - 0.01) return baseTone + 0.07;
     let t = baseTone;
     if (p.variant === "worn") t += 0.5 * Math.max(0, 1 - Math.hypot(x * 1.2, z) / 1.15) ** 0.9;
-    if (p.variant === "stained") t -= 0.4 * THREE12.MathUtils.smoothstep(stain(x, z), 0.56, 0.66);
+    if (p.variant === "stained") t -= 0.4 * THREE16.MathUtils.smoothstep(stain(x, z), 0.56, 0.66);
     return t;
   };
   const body = withTone(buildBlock([half * 2, THICK - 4e-3, half * 2], [0, (THICK - 4e-3) / 2, 0]), tone);
-  const surface = new THREE12.PlaneGeometry(half * 2, half * 2, 12, 12);
+  const surface = new THREE16.PlaneGeometry(half * 2, half * 2, 12, 12);
   surface.deleteAttribute("uv");
   surface.rotateX(-Math.PI / 2);
   surface.translate(0, top, 0);
@@ -3367,8 +4493,8 @@ function create9(given = {}) {
       const c = Math.cos(a), s = Math.sin(a);
       [dx, dz] = [dx * c - dz * s, dx * s + dz * c];
       const len = shape.range(0.15, 0.32);
-      x = THREE12.MathUtils.clamp(x + dx * len, -half + 0.05, half - 0.05);
-      z = THREE12.MathUtils.clamp(z + dz * len, -half + 0.05, half - 0.05);
+      x = THREE16.MathUtils.clamp(x + dx * len, -half + 0.05, half - 0.05);
+      z = THREE16.MathUtils.clamp(z + dz * len, -half + 0.05, half - 0.05);
       points.push([x, z]);
     }
     const crackLine = (pts) => {
@@ -3385,7 +4511,7 @@ function create9(given = {}) {
     for (let i = 0; i < 3; i++) {
       bx += (dx * Math.cos(ba) - dz * Math.sin(ba)) * 0.16;
       bz += (dx * Math.sin(ba) + dz * Math.cos(ba)) * 0.16;
-      branch.push([THREE12.MathUtils.clamp(bx, -half, half), THREE12.MathUtils.clamp(bz, -half, half)]);
+      branch.push([THREE16.MathUtils.clamp(bx, -half, half), THREE16.MathUtils.clamp(bz, -half, half)]);
     }
     crackLine(branch);
   }
@@ -3396,9 +4522,9 @@ function create9(given = {}) {
       stoneParts.push(withTone(buildBlock([PX * 0.7, 6e-3, PX * 0.7], [x, top + 3e-3, z], [0, shape.range(0, 1.5), 0]), 0.6));
     }
   }
-  const group = new THREE12.Group();
-  group.name = meta9.name;
-  const stoneMesh = new THREE12.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.07 }));
+  const group = new THREE16.Group();
+  group.name = meta13.name;
+  const stoneMesh = new THREE16.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: shape.int(0, 96), id: 20, grain: 0.07 }));
   stoneMesh.name = "slab";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
@@ -3436,7 +4562,7 @@ function create9(given = {}) {
   }
   runLine(-edge + 0.1, -edge + 0.1, edge - 0.1, edge - 0.1);
   const grooveMaterial = p.groove === "amber" ? glowMaterial("amber", { level: 1, id: 21 }) : createToonMaterial({ ramp: [stone.ink, stone.ink], steps: [0.5], unlit: true, outline: false, glow: false, id: 21 });
-  const groove = new THREE12.Mesh(mergeGeometries(grooveParts), grooveMaterial);
+  const groove = new THREE16.Mesh(mergeGeometries(grooveParts), grooveMaterial);
   groove.name = "groove";
   group.add(groove);
   if (trap) {
@@ -3455,42 +4581,42 @@ function create9(given = {}) {
     const handle = ring({ radius: 0.05, height: 0.012, thickness: PX * 0.7, segments: 8, y: top + 0.012 });
     handle.translate(x, 0, z + s / 2 - 0.12);
     bronzeParts.push(handle);
-    const bronze = new THREE12.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 22, tone: true }));
+    const bronze = new THREE16.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 22, tone: true }));
     bronze.name = "trapdoor";
     bronze.castShadow = true;
     bronze.receiveShadow = true;
     group.add(bronze);
   }
-  group.userData.asset = { id: meta9.id, params: p };
+  group.userData.asset = { id: meta13.id, params: p };
   return group;
 }
 
 // src/assets/props/decor/glyph-plaque.js
 var glyph_plaque_exports = {};
 __export(glyph_plaque_exports, {
-  create: () => create10,
+  create: () => create14,
   dispose: () => disposeObject,
-  meta: () => meta10,
+  meta: () => meta14,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE13 from "three";
+import * as THREE17 from "three";
 var MODELS4 = {
   inscription: "Inscription (1,2 \xD7 0,8 m)",
   direction: "Direction (fl\xE8che et num\xE9ro de salle)",
   dedication: "D\xE9dicace (inclin\xE9e, au sol)",
   warning: "Avertissement (glyphe rouge)"
 };
-var SIZES3 = { inscription: [1.2, 0.8], direction: [0.6, 0.3], dedication: [1, 0.6], warning: [0.3, 0.2] };
+var SIZES4 = { inscription: [1.2, 0.8], direction: [0.6, 0.3], dedication: [1, 0.6], warning: [0.3, 0.2] };
 var ARROWS = { right: "Vers la droite", left: "Vers la gauche", none: "Sans fl\xE8che" };
-var params10 = {
+var params14 = {
   seed: seedParam("Change le texte en glyphes et la longueur des lignes, l'usure, le plot qui manque."),
   model: choiceParam("Mod\xE8le", MODELS4, "Plaque d'inscription du Sas, de direction (galerie), de d\xE9dicace (Oracle) ou d'avertissement (C\u0153ur)."),
   room: numberParam("Salle", 1, 1, 10, "Plaque de direction : num\xE9ro de la salle d'\xE9tude (traits : couch\xE9 = 5, debout = 1).", { step: 1 }),
   arrow: choiceParam("Fl\xE8che", ARROWS, "Plaque de direction : sens de la fl\xE8che."),
   height: numberParam("Hauteur", 1.6, 0.3, 4, "Plaques murales : hauteur du centre de la plaque.", { step: 0.05, unit: "m" })
 };
-var meta10 = {
+var meta14 = {
   id: "props/decor/glyph-plaque",
   name: "Plaque \xE0 glyphes",
   nameEn: "Glyph plaque",
@@ -3534,19 +4660,19 @@ var meta10 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; plaques murales : origine au sol au pied du mur (mur en z = 0, la plaque regarde +z), centre \xE0 `height` ; d\xE9dicace : origine au sol, au centre du socle, la plaque penche vers +z",
   footprint: { radius: 0.75, height: 2 },
   animated: [],
-  params: params10,
-  variants: variantsOf("model", params10.model)
+  params: params14,
+  variants: variantsOf("model", params14.model)
 };
-function create10(given = {}) {
-  const p = resolveParams(meta10.params, given);
+function create14(given = {}) {
+  const p = resolveParams(meta14.params, given);
   const rng = createRng(p.seed * 7919 + 83);
-  const [W, H] = SIZES3[p.model];
+  const [W, H] = SIZES4[p.model];
   const T = p.model === "warning" || p.model === "direction" ? 0.02 : 0.03;
   const parts = [];
   const glowParts = [];
   const engrave = -0.95;
   parts.push(withTone(buildBlock([W, H, T - 6e-3], [0, 0, (T - 6e-3) / 2]), 0.15));
-  const face = plain(new THREE13.PlaneGeometry(W - PX, H - PX, Math.max(2, Math.round(W / 0.1)), Math.max(2, Math.round(H / 0.1))));
+  const face = plain(new THREE17.PlaneGeometry(W - PX, H - PX, Math.max(2, Math.round(W / 0.1)), Math.max(2, Math.round(H / 0.1))));
   face.translate(0, 0, T - 3e-3);
   const wearX = rng.range(-0.3, 0.3) * W, wearY = rng.range(-0.3, 0.3) * H;
   parts.push(withTone(face, (x, y) => -0.15 + 0.3 * Math.max(0, 1 - Math.hypot((x - wearX) / (W * 0.4), (y - wearY) / (H * 0.5)))));
@@ -3556,7 +4682,7 @@ function create10(given = {}) {
   [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sy], k) => {
     const x = sx * (W / 2 - inset), y = sy * (H / 2 - inset);
     if (k === missing) parts.push(withTone(buildBlock([PX * 0.7, PX * 0.7, 3e-3], [x, y, zf]), -1));
-    else parts.push(withTone(orient(plain(new THREE13.CylinderGeometry(Math.min(PX * 0.6, H * 0.07), Math.min(PX * 0.7, H * 0.08), 0.02, 6)), [x, y, zf + 8e-3], [0, 0, 1]), 0.4));
+    else parts.push(withTone(orient(plain(new THREE17.CylinderGeometry(Math.min(PX * 0.6, H * 0.07), Math.min(PX * 0.7, H * 0.08), 0.02, 6)), [x, y, zf + 8e-3], [0, 0, 1]), 0.4));
   });
   const line = (length, y, pixel) => {
     const strip = glyphStrip(rng, { length, rows: 2, pixel, depth: 2e-3 });
@@ -3609,56 +4735,56 @@ function create10(given = {}) {
     parts.push(withTone(buildBlock([W - inset * 2.4, PX * 0.3, 2e-3], [0, -H / 2 + inset * 0.6, zf]), engrave));
     glowParts.push(...g);
   }
-  const group = new THREE13.Group();
-  group.name = meta10.name;
+  const group = new THREE17.Group();
+  group.name = meta14.name;
   let frame;
   if (p.model === "dedication") {
-    const tilt = THREE13.MathUtils.degToRad(35);
+    const tilt = THREE17.MathUtils.degToRad(35);
     const base = 0.22;
     const c = Math.cos(tilt), s = Math.sin(tilt);
-    frame = faceMatrix(new THREE13.Vector3(0, base + H / 2 * s, 0), new THREE13.Vector3(0, c, s));
+    frame = faceMatrix(new THREE17.Vector3(0, base + H / 2 * s, 0), new THREE17.Vector3(0, c, s));
     for (const g of parts) g.applyMatrix4(frame);
     const hx = W / 2 - 0.02, zf0 = H / 2 * c - 0.02, zb0 = -(H / 2) * c + 0.02;
     const top = (x, z) => base + H / 2 * s - z * Math.tan(tilt) - 0.012 / c;
     parts.push(withTone(plain(buildPrism([[-hx, zb0], [hx, zb0], [hx, zf0], [-hx, zf0]], 0.04, top)), -0.25));
     parts.push(withTone(buildBlock([W + 0.1, 0.04, H * c + 0.1], [0, 0.02, 0]), -0.45));
   } else {
-    frame = new THREE13.Matrix4().makeTranslation(0, p.height, 4e-3);
+    frame = new THREE17.Matrix4().makeTranslation(0, p.height, 4e-3);
     for (const g of parts) g.applyMatrix4(frame);
   }
   for (const g of glowParts) g.applyMatrix4(frame);
   const metalEntry = p.model === "direction" || p.model === "warning" ? METALS.blackenedBrass : METALS.patinatedBronze;
-  const metal = new THREE13.Mesh(mergeToned(parts), metalMaterial(metalEntry, { id: 30, tone: true }));
+  const metal = new THREE17.Mesh(mergeToned(parts), metalMaterial(metalEntry, { id: 30, tone: true }));
   metal.name = "plaque";
   metal.castShadow = true;
   metal.receiveShadow = true;
   group.add(metal);
   if (glowParts.length) {
-    const glow = new THREE13.Mesh(mergeToned(glowParts), glowMaterial("alarm", { level: 3, id: 40 }));
+    const glow = new THREE17.Mesh(mergeToned(glowParts), glowMaterial("alarm", { level: 3, id: 40 }));
     glow.name = "glyph";
     group.add(glow);
   }
-  group.userData.asset = { id: meta10.id, params: p };
+  group.userData.asset = { id: meta14.id, params: p };
   return group;
 }
 
 // src/assets/buildings/structure/glyph-wall.js
 var glyph_wall_exports = {};
 __export(glyph_wall_exports, {
-  create: () => create11,
+  create: () => create15,
   dispose: () => disposeObject,
-  meta: () => meta11,
+  meta: () => meta15,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE14 from "three";
-var DEPTH3 = 0.6;
-var BAND2 = { y0: 1, y1: 1.25 };
+import * as THREE18 from "three";
+var DEPTH4 = 0.6;
+var BAND3 = { y0: 1, y1: 1.25 };
 var VARIANTS2 = { plain: "Plein", niche: "Avec niche", conduit: "Avec conduit encastr\xE9" };
 var LININGS = { stone: "Pierre nue", copper: "Doublage de cuivre" };
 var GLYPHS3 = { lit: "Allum\xE9s", dim: "En veille", off: "\xC9teints" };
 var LEVELS3 = { lit: 2, dim: 1, off: 0 };
-var params11 = {
+var params15 = {
   seed: seedParam("Change l'appareil (hauteur des assises, longueur des blocs, tons), les glyphes du bandeau, la place de la niche ou du conduit."),
   variant: choiceParam("Forme", VARIANTS2, "Plein, avec une niche de 0,6 \xD7 1,2 m, ou avec un conduit vertical o\xF9 passe un tuyau de cuivre."),
   height: numberParam("Hauteur", 5, 4, 14, "Hauteur du mur (5 m dans le Sas, jusqu'\xE0 14 m dans les grandes salles).", { step: 0.5, unit: "m" }),
@@ -3669,7 +4795,7 @@ var params11 = {
   glow: glowParam("Couleur des glyphes (ambre partout ; cyan pr\xE8s des artefacts ; rouge en alerte)."),
   stone: stoneParam("Pierre du mur.", { only: ["blackBasalt", "smoked"] })
 };
-var meta11 = {
+var meta15 = {
   id: "buildings/structure/glyph-wall",
   name: "Mur \xE0 bandeau de glyphes",
   nameEn: "Glyph band wall",
@@ -3717,17 +4843,17 @@ var meta11 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au milieu du mur ; le mur suit l'axe x, la face appareill\xE9e (bandeau, niche) regarde +z ; cintr\xE9, le centre de la salle est en z = +rayon",
   footprint: { radius: 1.05, height: 5 },
   animated: [],
-  params: params11,
-  variants: variantsOf("variant", params11.variant)
+  params: params15,
+  variants: variantsOf("variant", params15.variant)
 };
-function create11(given = {}) {
-  const p = resolveParams(meta11.params, given);
+function create15(given = {}) {
+  const p = resolveParams(meta15.params, given);
   const stone = STONES[p.stone];
   const layout = createRng(p.seed * 7919 + 17);
   const masonryRng = createRng(p.seed * 104729 + 71);
   const glyphRng = createRng(p.seed * 15485863 + 3);
   const W = p.width, H = p.height;
-  const front = DEPTH3 / 2;
+  const front = DEPTH4 / 2;
   const curved = p.curve > 0;
   const copper = p.lining === "copper";
   const holes = [];
@@ -3742,9 +4868,9 @@ function create11(given = {}) {
   const masonry = buildMasonry(masonryRng, {
     width: W,
     height: H,
-    depth: DEPTH3,
+    depth: DEPTH4,
     holes,
-    band: BAND2,
+    band: BAND3,
     split: curved ? 0.5 : Infinity,
     facing: !copper
   });
@@ -3758,7 +4884,7 @@ function create11(given = {}) {
       const cx = (h.x0 + h.x1) / 2, cz = front - h.depth / 2;
       for (let y = 0; y < H - 0.01; y += 0.5) {
         const len = Math.min(0.5, H - y);
-        const pipe = new THREE14.CylinderGeometry(0.06, 0.06, len, 6, 1, true);
+        const pipe = new THREE18.CylinderGeometry(0.06, 0.06, len, 6, 1, true);
         pipe.deleteAttribute("uv");
         pipe.translate(cx, y + len / 2, cz);
         const streak = layout.range(-0.5, 0.5);
@@ -3779,7 +4905,7 @@ function create11(given = {}) {
       }
       return list;
     };
-    const rows = [[0, BAND2.y0], [BAND2.y1, Math.min(H, BAND2.y1 + 2.2)], [Math.min(H, BAND2.y1 + 2.2), H]].filter(([a, b]) => b - a > 0.2);
+    const rows = [[0, BAND3.y0], [BAND3.y1, Math.min(H, BAND3.y1 + 2.2)], [Math.min(H, BAND3.y1 + 2.2), H]].filter(([a, b]) => b - a > 0.2);
     const plates = (a, b, ya, yb) => {
       const n = Math.max(1, Math.round((b - a) / 1));
       for (let k = 0; k < n; k++) {
@@ -3803,7 +4929,7 @@ function create11(given = {}) {
   }
   let bandSpans = [[-W / 2, W / 2]];
   for (const h of holes) {
-    const y = (BAND2.y0 + BAND2.y1) / 2;
+    const y = (BAND3.y0 + BAND3.y1) / 2;
     if (y < h.y0 || y > h.y1) continue;
     bandSpans = bandSpans.flatMap(([a, b]) => h.x1 <= a || h.x0 >= b ? [[a, b]] : [...h.x0 > a ? [[a, h.x0]] : [], ...h.x1 < b ? [[h.x1, b]] : []]);
   }
@@ -3813,49 +4939,49 @@ function create11(given = {}) {
     strip.translate((a + b) / 2, 1.1 - PX, masonry.bandFace);
     glowParts.push(strip);
   }
-  const group = new THREE14.Group();
-  group.name = meta11.name;
+  const group = new THREE18.Group();
+  group.name = meta15.name;
   const bend = (g) => curved ? bendAroundY(g, p.curve, { concave: true }) : g;
-  const stoneMesh = new THREE14.Mesh(bend(mergeToned(stoneParts)), stoneMaterial(stone, { seed: layout.int(0, 96), id: 20, grain: 0.06 }));
+  const stoneMesh = new THREE18.Mesh(bend(mergeToned(stoneParts)), stoneMaterial(stone, { seed: layout.int(0, 96), id: 20, grain: 0.06 }));
   stoneMesh.name = "wall";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
   if (glowParts.length) {
-    const glyphs = new THREE14.Mesh(bend(mergeToned(glowParts)), glowMaterial(p.glow, { level: LEVELS3[p.glyphs], id: 21 }));
+    const glyphs = new THREE18.Mesh(bend(mergeToned(glowParts)), glowMaterial(p.glow, { level: LEVELS3[p.glyphs], id: 21 }));
     glyphs.name = "glyphs";
     group.add(glyphs);
   }
   if (metalParts.length) {
-    const metal = new THREE14.Mesh(bend(mergeToned(metalParts)), metalMaterial(METALS.oxidizedCopper, { id: 22, tone: true }));
+    const metal = new THREE18.Mesh(bend(mergeToned(metalParts)), metalMaterial(METALS.oxidizedCopper, { id: 22, tone: true }));
     metal.name = copper ? "copper-lining" : "pipe";
     metal.castShadow = true;
     metal.receiveShadow = true;
     group.add(metal);
   }
-  group.userData.asset = { id: meta11.id, params: p };
+  group.userData.asset = { id: meta15.id, params: p };
   return group;
 }
 
 // src/assets/props/machines/lever-desk.js
 var lever_desk_exports = {};
 __export(lever_desk_exports, {
-  create: () => create12,
+  create: () => create16,
   dispose: () => disposeObject,
-  meta: () => meta12,
+  meta: () => meta16,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE15 from "three";
+import * as THREE19 from "three";
 var MODELS5 = { check: "V\xE9rification (Sas)", guard: "Poste de garde (galerie)", reader: "Lecteur d'\xE9tude (salle 2)" };
 var CASSETTE = { empty: "Fente vide", loaded: "Cassette engag\xE9e (lueur cyan)" };
-var params12 = {
+var params16 = {
   seed: seedParam("Change les leviers abaiss\xE9s, les aiguilles, les glyphes de la plaque, la page du registre, l'usure."),
   model: choiceParam("Mod\xE8le", MODELS5, "Pupitre de v\xE9rification du Sas, poste de garde de la galerie, ou lecteur de cassette de la salle 2."),
   lights: numberParam("Salles ouvertes", 3, 0, 10, "Poste de garde : nombre de voyants ambre allum\xE9s (un par salle d'\xE9tude ouverte).", { step: 1 }),
   cassette: choiceParam("Cassette", CASSETTE, "Lecteur : fente vide, ou cassette engag\xE9e (la fente luit en cyan).")
 };
-var meta12 = {
+var meta16 = {
   id: "props/machines/lever-desk",
   name: "Pupitre \xE0 leviers",
   nameEn: "Lever desk",
@@ -3901,16 +5027,16 @@ var meta12 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au centre ; l'op\xE9rateur se tient c\xF4t\xE9 +z, face au plan inclin\xE9",
   footprint: { radius: 0.7, height: 1.35 },
   animated: ["desk"],
-  params: params12,
-  variants: variantsOf("model", params12.model)
+  params: params16,
+  variants: variantsOf("model", params16.model)
 };
-function create12(given = {}) {
-  const p = resolveParams(meta12.params, given);
+function create16(given = {}) {
+  const p = resolveParams(meta16.params, given);
   const rng = createRng(p.seed * 7919 + 59);
   const model = p.model;
   const reader = model === "reader";
   const [W, Dp, Ht] = reader ? [0.8, 0.5, 1] : model === "guard" ? [1, 0.5, 1.1] : [1, 0.5, 1.2];
-  const tilt = THREE15.MathUtils.degToRad(reader ? 25 : 20);
+  const tilt = THREE19.MathUtils.degToRad(reader ? 25 : 20);
   const baseParts = [];
   const metalParts = [];
   const glowParts = [];
@@ -3928,10 +5054,10 @@ function create12(given = {}) {
   }
   const deskDepth = Dp + 0.04;
   const backH = deskDepth * Math.sin(tilt) + 0.08;
-  const center = new THREE15.Vector3(0, footH + 0.04 + backH / 2, 0.02);
-  const n = new THREE15.Vector3(0, Math.cos(tilt), Math.sin(tilt));
-  const v = new THREE15.Vector3(0, Math.sin(tilt), -Math.cos(tilt));
-  const at = (u, w, lift = 0) => center.clone().add(new THREE15.Vector3(u, 0, 0)).addScaledVector(v, w).addScaledVector(n, lift);
+  const center = new THREE19.Vector3(0, footH + 0.04 + backH / 2, 0.02);
+  const n = new THREE19.Vector3(0, Math.cos(tilt), Math.sin(tilt));
+  const v = new THREE19.Vector3(0, Math.sin(tilt), -Math.cos(tilt));
+  const at = (u, w, lift = 0) => center.clone().add(new THREE19.Vector3(u, 0, 0)).addScaledVector(v, w).addScaledVector(n, lift);
   metalParts.push(withTone(buildBlock([W, 0.08, deskDepth], [0, footH + 0.04, 0.02]), -0.2));
   const slab = buildBlock([W, 0.04, deskDepth / Math.cos(tilt) * 0.98], [0, 0, 0]);
   slab.rotateX(tilt);
@@ -4020,10 +5146,10 @@ function create12(given = {}) {
       metalParts.push(withTone(beam(c.clone().addScaledVector(n, -0.02), c.clone().addScaledVector(n, 0.03), PX, PX), 0));
     }
     const lens = at(0, -halfV * 0.55, 0.02);
-    metalParts.push(withTone(orient(plain(new THREE15.CylinderGeometry(0.05, 0.06, 0.07, 10)), lens.clone().addScaledVector(n, 0.035), n), -0.1));
-    const lensGlass = orient(plain(new THREE15.CylinderGeometry(0.035, 0.035, 0.01, 10)), lens.clone().addScaledVector(n, 0.072), n);
+    metalParts.push(withTone(orient(plain(new THREE19.CylinderGeometry(0.05, 0.06, 0.07, 10)), lens.clone().addScaledVector(n, 0.035), n), -0.1));
+    const lensGlass = orient(plain(new THREE19.CylinderGeometry(0.035, 0.035, 0.01, 10)), lens.clone().addScaledVector(n, 0.072), n);
     glowParts.push(lensGlass);
-    const boxCenter = at(0, halfV - 0.04, 0).add(new THREE15.Vector3(0, 0.1, 0));
+    const boxCenter = at(0, halfV - 0.04, 0).add(new THREE19.Vector3(0, 0.1, 0));
     metalParts.push(withTone(buildBlock([W * 0.7, 0.22, 0.08], [boxCenter.x, boxCenter.y - 0.02, boxCenter.z - 0.02]), -0.45));
     for (let i = 0; i < 3; i++) {
       const d = dial({ radius: PX * 1.5, position: [boxCenter.x - 0.17 + i * 0.17, boxCenter.y + 0.01, boxCenter.z + 0.021], normal: [0, 0.25, 1], ticks: 5, needle: rng.range(-1.2, 1.2), depth: PX * 0.3 });
@@ -4048,22 +5174,22 @@ function create12(given = {}) {
     for (let k = r.start; k < r.start + r.count; k++) shade.setX(k, (value + 0.5) / glowColors.length);
     shade.needsUpdate = true;
   };
-  const group = new THREE15.Group();
-  group.name = meta12.name;
+  const group = new THREE19.Group();
+  group.name = meta16.name;
   const baseMaterial = reader ? createToonMaterial({ ramp: WOODS.blackenedOak.ramp, ink: WOODS.blackenedOak.ink, steps: [0.32, 0.55, 0.8], tone: true, crease: true, id: 20 }) : stoneMaterial(STONES.smoked, { seed: rng.int(0, 96), id: 20, grain: 0.07 });
-  const base = new THREE15.Mesh(mergeToned(baseParts), baseMaterial);
+  const base = new THREE19.Mesh(mergeToned(baseParts), baseMaterial);
   base.name = "base";
   base.castShadow = true;
   base.receiveShadow = true;
   group.add(base);
   const metalGeometry = mergeToned([...metalParts, ...leverParts]);
-  const metal = new THREE15.Mesh(metalGeometry, metalMaterial(reader ? METALS.patinatedBronze : METALS.blackenedBrass, { id: 30, tone: true }));
+  const metal = new THREE19.Mesh(metalGeometry, metalMaterial(reader ? METALS.patinatedBronze : METALS.blackenedBrass, { id: 30, tone: true }));
   metal.name = "desk";
   metal.castShadow = true;
   metal.receiveShadow = true;
   group.add(metal);
   if (glowGeometry) {
-    const glow = new THREE15.Mesh(glowGeometry, glowMixMaterial(glowColors, { id: 40 }));
+    const glow = new THREE19.Mesh(glowGeometry, glowMixMaterial(glowColors, { id: 40 }));
     glow.name = "lights";
     group.add(glow);
   }
@@ -4072,9 +5198,9 @@ function create12(given = {}) {
   let start = metalParts.reduce((sum, g) => sum + g.attributes.position.count, 0);
   const basePos = position.array.slice();
   const baseNormal = normal.array.slice();
-  const axis = new THREE15.Vector3(1, 0, 0);
-  const rot = new THREE15.Matrix4();
-  const tmp = new THREE15.Vector3();
+  const axis = new THREE19.Vector3(1, 0, 0);
+  const rot = new THREE19.Matrix4();
+  const tmp = new THREE19.Vector3();
   for (const l of levers) {
     l.start = start;
     l.count = l.geometry.attributes.position.count;
@@ -4115,33 +5241,33 @@ function create12(given = {}) {
   if (lights.length) desk.setLights(p.lights);
   if (reader) desk.setCassette(p.cassette === "loaded");
   group.userData.desk = desk;
-  group.userData.asset = { id: meta12.id, params: p };
+  group.userData.asset = { id: meta16.id, params: p };
   return group;
 }
 
 // src/assets/furniture/seating/stone-bench.js
 var stone_bench_exports = {};
 __export(stone_bench_exports, {
-  create: () => create13,
+  create: () => create17,
   dispose: () => disposeObject,
-  meta: () => meta13,
+  meta: () => meta17,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE16 from "three";
+import * as THREE20 from "three";
 var MODELS6 = {
   sas: "Sas (2,2 m, accoudoirs, dossier sangl\xE9)",
   gallery: "Galerie (1,2 m, pieds de bronze)",
   meditation: "M\xE9ditation (1,6 m, coussin de cuir)",
   maintenance: "Maintenance (1,2 m, anneaux, huile)"
 };
-var SIZES4 = { sas: [2.2, 0.55, 0.45], gallery: [1.2, 0.4, 0.45], meditation: [1.6, 0.45, 0.4], maintenance: [1.2, 0.6, 0.45] };
-var params13 = {
+var SIZES5 = { sas: [2.2, 0.55, 0.45], gallery: [1.2, 0.4, 0.45], meditation: [1.6, 0.45, 0.4], maintenance: [1.2, 0.6, 0.45] };
+var params17 = {
   seed: seedParam("Change le d\xE9coupage de l'assise en blocs, l'angle \xE9corn\xE9, la place de l'usure, de la sangle et des taches."),
   model: choiceParam("Mod\xE8le", MODELS6, "Banc du Sas, de galerie, de m\xE9ditation (Oracle) ou de maintenance (salle de l'\xC9veil)."),
   stone: stoneParam("Pierre du banc.", { only: ["smoked", "blackBasalt"] })
 };
-var meta13 = {
+var meta17 = {
   id: "furniture/seating/stone-bench",
   name: "Banc de pierre",
   nameEn: "Stone bench",
@@ -4183,15 +5309,15 @@ var meta13 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol, au centre ; le banc est le long de x, on s'y assoit face \xE0 +z (dossier c\xF4t\xE9 \u2212z)",
   footprint: { radius: 1.2, height: 0.72 },
   animated: [],
-  params: params13,
-  variants: variantsOf("model", params13.model)
+  params: params17,
+  variants: variantsOf("model", params17.model)
 };
-function create13(given = {}) {
-  const p = resolveParams(meta13.params, given);
+function create17(given = {}) {
+  const p = resolveParams(meta17.params, given);
   const stone = STONES[p.stone];
   const rng = createRng(p.seed * 7919 + 31);
   const noise = createNoise3(p.seed + 11);
-  const [L, D, H] = SIZES4[p.model];
+  const [L, D, H] = SIZES5[p.model];
   const stoneParts = [];
   const bronzeParts = [];
   const leatherParts = [];
@@ -4218,7 +5344,7 @@ function create13(given = {}) {
         const u = (x - wearX) / (L * 0.32), v = (z - D * 0.05) / (D * 0.45);
         t += wearForce * Math.max(0, 1 - Math.hypot(u, v)) ** 0.8;
       } else if (y < seatBottom + 0.05) t -= 0.12;
-      if (oily) t -= 0.35 * THREE16.MathUtils.smoothstep(noise(x * 2.6, y * 2.6 + 4, z * 2.6), 0.64, 0.72);
+      if (oily) t -= 0.35 * THREE20.MathUtils.smoothstep(noise(x * 2.6, y * 2.6 + 4, z * 2.6), 0.64, 0.72);
       return t;
     };
     stoneParts.push(withTone(gridBlock([x1 - x0, seatThick + lift, D], [(x0 + x1) / 2, seatBottom + (seatThick + lift) / 2, 0], { cell: 0.11 }), tone));
@@ -4247,7 +5373,7 @@ function create13(given = {}) {
       const x = s * (L / 2 - 0.06);
       bronzeParts.push(withTone(buildBlock([0.08, 0.2, D - 0.08], [x, seatTop + 0.1, 0.02]), -0.05));
       bronzeParts.push(withTone(buildBlock([0.1, 0.04, D - 0.04], [x, seatTop + 0.22, 0.02]), 0.15));
-      const scroll = plain(new THREE16.CylinderGeometry(0.06, 0.06, 0.1, 8));
+      const scroll = plain(new THREE20.CylinderGeometry(0.06, 0.06, 0.1, 8));
       bronzeParts.push(orient(scroll, [x, seatTop + 0.19, D / 2 - 0.02], [1, 0, 0]));
       bronzeParts.push(withTone(buildBlock([0.1, PX, PX * 0.5], [x, seatTop + 0.1, D / 2 - 0.02]), -0.6));
     }
@@ -4284,22 +5410,22 @@ function create13(given = {}) {
     leatherParts.push(withTone(buildBlock([PX, seatTop * 0.6, 4e-3], [ox, seatTop * 0.62, D / 2 + 2e-3]), -0.2));
     leatherParts.push(withTone(buildBlock([0.22, 3e-3, 0.1], [ox + 0.04, 15e-4, D / 2 + 0.06], [0, rng.range(-0.4, 0.4), 0]), -0.2));
   }
-  const group = new THREE16.Group();
-  group.name = meta13.name;
-  const stoneMesh = new THREE16.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: rng.int(0, 96), id: 20, grain: 0.07 }));
+  const group = new THREE20.Group();
+  group.name = meta17.name;
+  const stoneMesh = new THREE20.Mesh(mergeToned(stoneParts), stoneMaterial(stone, { seed: rng.int(0, 96), id: 20, grain: 0.07 }));
   stoneMesh.name = "stone";
   stoneMesh.castShadow = true;
   stoneMesh.receiveShadow = true;
   group.add(stoneMesh);
   if (bronzeParts.length) {
-    const bronze = new THREE16.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+    const bronze = new THREE20.Mesh(mergeToned(bronzeParts), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
     bronze.name = "bronze";
     bronze.castShadow = true;
     bronze.receiveShadow = true;
     group.add(bronze);
   }
   if (leatherParts.length) {
-    const leather = new THREE16.Mesh(
+    const leather = new THREE20.Mesh(
       mergeToned(leatherParts),
       createToonMaterial({ ramp: FABRICS.tarredLeather.ramp, ink: FABRICS.tarredLeather.ink, steps: [0.3, 0.55, 0.8], tone: true, crease: true, id: 31 })
     );
@@ -4311,27 +5437,27 @@ function create13(given = {}) {
   const seatY = p.model === "meditation" ? seatTop + 0.07 : seatTop;
   const places = Math.max(1, Math.floor((L - 0.2) / 0.6));
   group.userData.seats = Array.from({ length: places }, (_, i) => ({
-    position: new THREE16.Vector3(-L / 2 + (i + 0.5) * L / places, seatY, 0.05),
-    facing: new THREE16.Vector3(0, 0, 1)
+    position: new THREE20.Vector3(-L / 2 + (i + 0.5) * L / places, seatY, 0.05),
+    facing: new THREE20.Vector3(0, 0, 1)
   }));
-  group.userData.asset = { id: meta13.id, params: p };
+  group.userData.asset = { id: meta17.id, params: p };
   return group;
 }
 
 // src/assets/buildings/structure/vent-grate.js
 var vent_grate_exports = {};
 __export(vent_grate_exports, {
-  create: () => create14,
+  create: () => create18,
   dispose: () => disposeObject,
-  meta: () => meta14,
+  meta: () => meta18,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE17 from "three";
+import * as THREE21 from "three";
 var MODELS7 = { wall: "Grille murale (0,8 m)", floor: "Caillebotis droit (2 \xD7 2 m)", "floor-curved": "Caillebotis courbe (anneau)" };
 var LIGHTS = { on: "Allum\xE9e", standby: "En veille", off: "\xC9teinte" };
 var LEVELS4 = { on: 2, standby: 1, off: 0 };
-var params14 = {
+var params18 = {
   seed: seedParam("Change la patine barreau par barreau, les barreaux tordus ou noircis, le plot manquant."),
   model: choiceParam("Mod\xE8le", MODELS7, "Grille d'a\xE9ration murale du Sas, ou caillebotis de sol du C\u0153ur (droit ou courbe)."),
   light: choiceParam("Lueur derri\xE8re", LIGHTS, "La lueur vue au travers : allum\xE9e, en veille ou \xE9teinte (fond sombre)."),
@@ -4339,7 +5465,7 @@ var params14 = {
   height: numberParam("Hauteur", 0.6, 0.2, 3, "Grille murale : hauteur de son centre.", { step: 0.05, unit: "m" }),
   radius: numberParam("Rayon", 4, 2, 10, "Caillebotis courbe : rayon int\xE9rieur de l'anneau (le module couvre 2 m de large et environ 2 m d'arc).", { step: 0.25, unit: "m" })
 };
-var meta14 = {
+var meta18 = {
   id: "buildings/structure/vent-grate",
   name: "Grille et caillebotis",
   nameEn: "Vent grate and floor grating",
@@ -4382,11 +5508,11 @@ var meta14 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; murale : origine au sol au pied du mur (mur en z = 0, la grille regarde +z), centre \xE0 `height` ; caillebotis : origine au sol, au centre, dessus \xE0 0,06 m ; courbe : l'anneau a son centre en z = +radius + 1 (c\xF4t\xE9 +z)",
   footprint: { radius: 1.45, height: 1.1 },
   animated: [],
-  params: params14,
-  variants: variantsOf("model", params14.model)
+  params: params18,
+  variants: variantsOf("model", params18.model)
 };
-function create14(given = {}) {
-  const p = resolveParams(meta14.params, given);
+function create18(given = {}) {
+  const p = resolveParams(meta18.params, given);
   const rng = createRng(p.seed * 7919 + 67);
   const bronze = [];
   const glowParts = [];
@@ -4416,7 +5542,7 @@ function create14(given = {}) {
     [[-1, -1], [1, -1], [1, 1], [-1, 1]].forEach(([sx, sy], k) => {
       const pos = [sx * (S / 2 - f / 2), h + sy * (S / 2 - f / 2), zFront];
       if (k === missing) bronze.push(withTone(buildBlock([PX * 0.8, PX * 0.8, 4e-3], [pos[0], pos[1], zFront + 2e-3]), -0.9));
-      else bronze.push(withTone(orient(plain(new THREE17.CylinderGeometry(PX * 0.7, PX * 0.8, 0.03, 6)), [pos[0], pos[1], zFront + 0.015], [0, 0, 1]), 0.35));
+      else bronze.push(withTone(orient(plain(new THREE21.CylinderGeometry(PX * 0.7, PX * 0.8, 0.03, 6)), [pos[0], pos[1], zFront + 0.015], [0, 0, 1]), 0.35));
     });
     glowParts.push(buildBlock([inner, inner, 5e-3], [0, h, 0.03]));
   } else if (p.model === "floor") {
@@ -4447,7 +5573,7 @@ function create14(given = {}) {
     const Rm = (R0 + R1) / 2;
     const span = 2 / Rm;
     const cz = Rm;
-    const point = (r, a, y) => new THREE17.Vector3(Math.sin(a) * r, y, cz - Math.cos(a) * r);
+    const point = (r, a, y) => new THREE21.Vector3(Math.sin(a) * r, y, cz - Math.cos(a) * r);
     const arc = (r, y, w, h, tone, segments) => {
       for (let k = 0; k < segments; k++) {
         const a0 = -span / 2 + k / segments * span, a1 = -span / 2 + (k + 1) / segments * span;
@@ -4477,51 +5603,51 @@ function create14(given = {}) {
       const a = k, b = k + 1, c = 2 * m - 1 - (k + 1), d = 2 * m - 1 - k;
       index.push(a, b, c, a, c, d);
     }
-    const g = new THREE17.BufferGeometry();
-    g.setAttribute("position", new THREE17.Float32BufferAttribute(positions, 3));
-    g.setAttribute("normal", new THREE17.Float32BufferAttribute(normals, 3));
+    const g = new THREE21.BufferGeometry();
+    g.setAttribute("position", new THREE21.Float32BufferAttribute(positions, 3));
+    g.setAttribute("normal", new THREE21.Float32BufferAttribute(normals, 3));
     g.setIndex(index);
     glowParts.push(g);
   }
-  const group = new THREE17.Group();
-  group.name = meta14.name;
-  const metal = new THREE17.Mesh(mergeToned(bronze), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+  const group = new THREE21.Group();
+  group.name = meta18.name;
+  const metal = new THREE21.Mesh(mergeToned(bronze), metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
   metal.name = "grate";
   metal.castShadow = true;
   metal.receiveShadow = true;
   group.add(metal);
   const level = LEVELS4[p.light];
-  const glow = new THREE17.Mesh(mergeToned(glowParts), glowMaterial(p.glow, { level, id: 40 }));
+  const glow = new THREE21.Mesh(mergeToned(glowParts), glowMaterial(p.glow, { level, id: 40 }));
   glow.name = "glow";
   if (level === 0) glow.visible = p.model === "wall";
   group.add(glow);
   if (p.model !== "wall") group.userData.walkable = { top: 0.06 };
-  group.userData.asset = { id: meta14.id, params: p };
+  group.userData.asset = { id: meta18.id, params: p };
   return group;
 }
 
 // src/assets/props/machines/wheel-valve.js
 var wheel_valve_exports = {};
 __export(wheel_valve_exports, {
-  create: () => create15,
+  create: () => create19,
   dispose: () => disposeObject,
-  meta: () => meta15,
+  meta: () => meta19,
   setWind: () => setWind,
   tick: () => tick
 });
-import * as THREE18 from "three";
-var SIZES5 = { wall: "Murale (\xD8 0,22 m)", giant: "G\xE9ante (roue de \xD8 0,9 m)" };
-var STATES4 = { still: "Immobile", cycle: "Tourne en boucle" };
+import * as THREE22 from "three";
+var SIZES6 = { wall: "Murale (\xD8 0,22 m)", giant: "G\xE9ante (roue de \xD8 0,9 m)" };
+var STATES7 = { still: "Immobile", cycle: "Tourne en boucle" };
 var TURNS = 2;
 var NEEDLE = 2.2;
-var params15 = {
+var params19 = {
   seed: seedParam("Change l'angle de repos du volant, l'aiguille, l'usure de la poign\xE9e, le num\xE9ro de la plaque, les tons."),
-  size: choiceParam("Taille", SIZES5, "Valve murale du Sas, ou valve g\xE9ante de la salle du C\u0153ur."),
+  size: choiceParam("Taille", SIZES6, "Valve murale du Sas, ou valve g\xE9ante de la salle du C\u0153ur."),
   turn: numberParam("Ouverture", 0, 0, 1, "0 = ferm\xE9e, 1 = ouverte (deux tours de volant) ; l'aiguille du cadran suit.", { step: 0.05 }),
-  state: choiceParam("Mouvement", STATES4, "Immobile, ou s'ouvre et se ferme en boucle (pour la regarder)."),
+  state: choiceParam("Mouvement", STATES7, "Immobile, ou s'ouvre et se ferme en boucle (pour la regarder)."),
   height: numberParam("Hauteur", 1.2, 0.6, 3, "Valve murale : hauteur de l'axe du tuyau (commandes \xE0 1,10\u20131,30 m).", { step: 0.05, unit: "m" })
 };
-var meta15 = {
+var meta19 = {
   id: "props/machines/wheel-valve",
   name: "Valve \xE0 volant",
   nameEn: "Wheel valve",
@@ -4569,11 +5695,11 @@ var meta15 = {
   units: "1 unit\xE9 = 1 m\xE8tre ; origine au sol ; murale : au pied du mur (le mur est en z = 0, le volant regarde +z) ; g\xE9ante : au centre du socle, le tuyau suit l'axe x",
   footprint: { radius: 0.95, height: 1.85 },
   animated: ["valve"],
-  params: params15,
-  variants: variantsOf("size", params15.size)
+  params: params19,
+  variants: variantsOf("size", params19.size)
 };
-function create15(given = {}) {
-  const p = resolveParams(meta15.params, given);
+function create19(given = {}) {
+  const p = resolveParams(meta19.params, given);
   const giant = p.size === "giant";
   const wear = createRng(p.seed * 7919 + 17);
   const bronzeParts = [];
@@ -4585,7 +5711,7 @@ function create15(given = {}) {
   if (!giant) {
     const h = p.height;
     const zc = 0.12;
-    const pipe = plain(new THREE18.CylinderGeometry(0.06, 0.06, 0.8, 6));
+    const pipe = plain(new THREE22.CylinderGeometry(0.06, 0.06, 0.8, 6));
     copperParts.push(orient(pipe, [0, h, zc], [1, 0, 0]));
     for (const x of [-0.32, 0.32]) {
       bronzeParts.push(beam([x, h, 0], [x, h, zc], PX * 1.2, PX * 1.4));
@@ -4594,21 +5720,21 @@ function create15(given = {}) {
     bronzeParts.push(withTone(buildBlock([0.35, 0.3, 0.2], [0, h, zc]), wear.range(-0.06, 0.04)));
     for (const s of [-1, 1]) bronzeParts.push(orient(ring({ radius: 0.06, height: 0.04, y: -0.02, thickness: 0.03, segments: 8 }), [s * 0.2, h, zc], [1, 0, 0]));
     bronzeParts.push(orient(buildLathe([[0, 0], [0.07, 0], [0.07, 0.05], [0.04, 0.09], [0, 0.09]], { segments: 8, facets: true }), [0, h, zc + 0.1], [0, 0, 1]));
-    stemAxis = new THREE18.Vector3(0, 0, 1);
-    wheelCenter = new THREE18.Vector3(0, h, zc + 0.3);
+    stemAxis = new THREE22.Vector3(0, 0, 1);
+    wheelCenter = new THREE22.Vector3(0, h, zc + 0.3);
     for (let k = 0; k < 5; k++) {
-      const g = plain(new THREE18.CylinderGeometry(0.018, 0.018, 0.022, 6));
+      const g = plain(new THREE22.CylinderGeometry(0.018, 0.018, 0.022, 6));
       bronzeParts.push(withTone(orient(g, [0, h, zc + 0.19 + k * 0.022], [0, 0, 1]), k % 2 ? -0.35 : 0.1));
     }
-    dialAt = new THREE18.Vector3(0.09, h + 0.15 + PX * 0.3, zc);
-    dialNormal = new THREE18.Vector3(0, 1, 0.55).normalize();
+    dialAt = new THREE22.Vector3(0.09, h + 0.15 + PX * 0.3, zc);
+    dialNormal = new THREE22.Vector3(0, 1, 0.55).normalize();
     dialRadius = 0.055;
     bronzeParts.push(withTone(orient(buildLathe([[0, 0], [0.065, 0], [0.065, 0.03], [0, 0.03]], { segments: 10, facets: true }), dialAt.clone().addScaledVector(dialNormal, -0.03), dialNormal), -0.1));
   } else {
     const yPipe = 0.55;
     bronzeParts.push(withTone(buildBlock([0.95, 0.15, 0.75], [0, 0.075, 0]), -0.25));
     bronzeParts.push(withTone(buildBlock([0.7, 0.8, 0.5], [0, 0.15 + 0.4, 0]), wear.range(-0.06, 0.04)));
-    const pipe = plain(new THREE18.CylinderGeometry(0.15, 0.15, 1.8, 12));
+    const pipe = plain(new THREE22.CylinderGeometry(0.15, 0.15, 1.8, 12));
     copperParts.push(orient(pipe, [0, yPipe, 0], [1, 0, 0]));
     for (const s of [-1, 1]) {
       bronzeParts.push(withTone(orient(ring({ radius: 0.15, height: 0.06, y: -0.03, thickness: 0.06, segments: 12 }), [s * 0.4, yPipe, 0], [1, 0, 0]), 0.2));
@@ -4622,18 +5748,18 @@ function create15(given = {}) {
     for (const s of [-1, 1]) bronzeParts.push(beam([s * 0.14, top + 0.1, 0], [s * 0.14, 1.45, 0], 0.06, 0.08));
     bronzeParts.push(withTone(buildBlock([0.4, 0.08, 0.1], [0, 1.45, 0]), 0.1));
     for (let k = 0; k < 14; k++) {
-      const g = plain(new THREE18.CylinderGeometry(0.035, 0.035, 0.03, 8));
+      const g = plain(new THREE22.CylinderGeometry(0.035, 0.035, 0.03, 8));
       bronzeParts.push(withTone(orient(g, [0, top + 0.17 + k * 0.03, 0], [0, 1, 0]), k % 2 ? -0.35 : 0.12));
     }
-    stemAxis = new THREE18.Vector3(0, 1, 0);
-    wheelCenter = new THREE18.Vector3(0, 1.62, 0);
+    stemAxis = new THREE22.Vector3(0, 1, 0);
+    wheelCenter = new THREE22.Vector3(0, 1.62, 0);
     bronzeParts.push(beam([0, 1.45, 0], [0, 1.6, 0], 0.05, 0.05));
     bronzeParts.push(withTone(ring({ radius: wheelR - 0.04, y: wheelCenter.y - 0.035, height: 0.07, thickness: 0.06, segments: 24 }), 0.15));
     bronzeParts.push(withTone(buildBlock([0.3, 0.16, PX * 0.4], [0, 0.35, 0.25 + PX * 0.2]), 0.3));
     const number = wear.int(1, 6);
     for (let i = 0; i < number; i++) bronzeParts.push(withTone(buildBlock([PX, 0.1, 4e-3], [(i - (number - 1) / 2) * PX * 2, 0.35, 0.25 + PX * 0.4]), -0.9));
-    dialAt = new THREE18.Vector3(0.36 + PX * 0.3, 0.75, 0);
-    dialNormal = new THREE18.Vector3(1, 0, 0);
+    dialAt = new THREE22.Vector3(0.36 + PX * 0.3, 0.75, 0);
+    dialNormal = new THREE22.Vector3(1, 0, 0);
     dialRadius = 0.1;
     bronzeParts.push(withTone(orient(buildLathe([[0, 0], [0.12, 0], [0.12, 0.03], [0, 0.03]], { segments: 12, facets: true }), dialAt.clone().addScaledVector(dialNormal, -0.03), dialNormal), -0.1));
   }
@@ -4660,22 +5786,22 @@ function create15(given = {}) {
   knob.translate(Math.cos(knobA) * (wheelR - 0.02), 0, Math.sin(knobA) * (wheelR - 0.02));
   wheelLocal.push(withTone(knob, wear.chance(0.5) ? 0.35 : 0.15));
   const wheelGeometry = mergeToned(wheelLocal.map((g) => g.attributes.aTone ? g : withTone(g, 0)));
-  const group = new THREE18.Group();
-  group.name = meta15.name;
+  const group = new THREE22.Group();
+  group.name = meta19.name;
   const bronzeGeometry = mergeToned(bronzeParts);
-  const body = new THREE18.Mesh(bronzeGeometry, metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
+  const body = new THREE22.Mesh(bronzeGeometry, metalMaterial(METALS.patinatedBronze, { id: 30, tone: true }));
   body.name = "body";
   body.castShadow = true;
   body.receiveShadow = true;
   group.add(body);
-  const copper = new THREE18.Mesh(mergeToned(copperParts), metalMaterial(METALS.oxidizedCopper, { id: 31, steps: [0.28, 0.46, 0.68, 0.95] }));
+  const copper = new THREE22.Mesh(mergeToned(copperParts), metalMaterial(METALS.oxidizedCopper, { id: 31, steps: [0.28, 0.46, 0.68, 0.95] }));
   copper.name = "pipe";
   copper.castShadow = true;
   group.add(copper);
-  const wheelPivot = new THREE18.Group();
+  const wheelPivot = new THREE22.Group();
   wheelPivot.position.copy(wheelCenter);
-  wheelPivot.quaternion.setFromUnitVectors(new THREE18.Vector3(0, 1, 0), stemAxis);
-  const wheel = new THREE18.Mesh(wheelGeometry, metalMaterial(METALS.castIron, { id: 32, tone: true }));
+  wheelPivot.quaternion.setFromUnitVectors(new THREE22.Vector3(0, 1, 0), stemAxis);
+  const wheel = new THREE22.Mesh(wheelGeometry, metalMaterial(METALS.castIron, { id: 32, tone: true }));
   wheel.name = "wheel";
   wheel.castShadow = true;
   wheelPivot.add(wheel);
@@ -4684,15 +5810,15 @@ function create15(given = {}) {
   const position = bronzeGeometry.attributes.position;
   const normal = bronzeGeometry.attributes.normal;
   const first = position.count - needleCount;
-  const m = new THREE18.Matrix4();
-  const nm = new THREE18.Matrix3();
-  const v = new THREE18.Vector3();
+  const m = new THREE22.Matrix4();
+  const nm = new THREE22.Matrix3();
+  const v = new THREE22.Vector3();
   let shown = -1;
   const pose = (t) => {
     if (Math.abs(t - shown) < 1e-4) return;
     shown = t;
     wheel.rotation.y = rest - t * TURNS * Math.PI * 2;
-    m.copy(dialFrame).multiply(new THREE18.Matrix4().makeRotationZ(-(-NEEDLE + 2 * NEEDLE * t)));
+    m.copy(dialFrame).multiply(new THREE22.Matrix4().makeRotationZ(-(-NEEDLE + 2 * NEEDLE * t)));
     nm.getNormalMatrix(m);
     for (let i = 0; i < needleCount; i++) {
       v.fromArray(needleBase, i * 3).applyMatrix4(m);
@@ -4708,11 +5834,11 @@ function create15(given = {}) {
     setTurn(t) {
       tween = null;
       cycling = false;
-      valve.turn = THREE18.MathUtils.clamp(t, 0, 1);
+      valve.turn = THREE22.MathUtils.clamp(t, 0, 1);
       pose(valve.turn);
     },
     turnTo(t, seconds = 3) {
-      tween = { from: valve.turn, to: THREE18.MathUtils.clamp(t, 0, 1), start: sharedUniforms.uTime.value, seconds };
+      tween = { from: valve.turn, to: THREE22.MathUtils.clamp(t, 0, 1), start: sharedUniforms.uTime.value, seconds };
     }
   };
   let tween = null;
@@ -4738,16 +5864,16 @@ function create15(given = {}) {
     baseUpdate(force);
   };
   group.userData.valve = valve;
-  group.userData.asset = { id: meta15.id, params: p };
+  group.userData.asset = { id: meta19.id, params: p };
   return group;
 }
 
 // src/worlds/kit/sky.js
-import * as THREE20 from "three";
+import * as THREE24 from "three";
 
 // src/assets/nature/sky/cloud.js
-import * as THREE19 from "three";
-var KINDS = {
+import * as THREE23 from "three";
+var KINDS2 = {
   cumulus: {
     label: "Cumulus",
     ramp: ["#7f8fbf", "#b0bddd", "#e3e8f4", "#fffdf5"],
@@ -4776,12 +5902,12 @@ var KINDS = {
     depth: 0.85
   }
 };
-var params16 = {
+var params20 = {
   seed: seedParam("Change la silhouette : nombre, taille et place des boules, tours qui montent, longueur du nuage."),
-  kind: choiceParam("Type", KINDS, "Cumulus blanc et bomb\xE9, stratus en long banc plat, ou nuage d'orage sombre et haut."),
+  kind: choiceParam("Type", KINDS2, "Cumulus blanc et bomb\xE9, stratus en long banc plat, ou nuage d'orage sombre et haut."),
   size: numberParam("Longueur", 5, 2.5, 9, "Longueur du nuage ; toute la forme garde ses proportions.", { step: 0.5, unit: "m" })
 };
-var meta16 = {
+var meta20 = {
   id: "nature/sky/cloud",
   name: "Nuage",
   nameEn: "Cloud",
@@ -4814,21 +5940,21 @@ var meta16 = {
   units: "1 unit\xE9 = 1 m\xE8tre (taille de pr\xE9sentation : un monde l'agrandit et le place haut) ; l'origine est au sol, le dessous du nuage flotte \xE0 1,2 m",
   footprint: { radius: 3, height: 4 },
   animated: [],
-  params: params16,
-  variants: variantsOf("kind", params16.kind)
+  params: params20,
+  variants: variantsOf("kind", params20.kind)
 };
 
 // src/worlds/kit/sky.js
-var WORLD_UP = new THREE20.Vector3(0, 1, 0);
-function createDaylight({ azimuth = THREE20.MathUtils.degToRad(-17), elevation = THREE20.MathUtils.degToRad(44), mapSize = 1024 } = {}) {
-  const light = new THREE20.DirectionalLight(16777215, 1);
+var WORLD_UP = new THREE24.Vector3(0, 1, 0);
+function createDaylight({ azimuth = THREE24.MathUtils.degToRad(-17), elevation = THREE24.MathUtils.degToRad(44), mapSize = 1024 } = {}) {
+  const light = new THREE24.DirectionalLight(16777215, 1);
   light.castShadow = true;
   light.shadow.mapSize.set(mapSize, mapSize);
   light.shadow.bias = -15e-4;
   light.shadow.normalBias = 0.05;
-  const direction = new THREE20.Vector3();
-  const right = new THREE20.Vector3();
-  const up = new THREE20.Vector3();
+  const direction = new THREE24.Vector3();
+  const right = new THREE24.Vector3();
+  const up = new THREE24.Vector3();
   const DISTANCE = 140;
   let radius = 0;
   const daylight = {
@@ -4855,7 +5981,7 @@ function createDaylight({ azimuth = THREE20.MathUtils.degToRad(-17), elevation =
      * @param {number} reach rayon à couvrir (m)
      */
     update(target, reach) {
-      const wanted = Math.ceil(THREE20.MathUtils.clamp(reach, 16, 90) / 8) * 8;
+      const wanted = Math.ceil(THREE24.MathUtils.clamp(reach, 16, 90) / 8) * 8;
       const camera = light.shadow.camera;
       if (wanted !== radius) {
         radius = wanted;
@@ -4885,16 +6011,16 @@ function createDaylight({ azimuth = THREE20.MathUtils.degToRad(-17), elevation =
 }
 
 // src/worlds/kit/interior.js
-import * as THREE21 from "three";
-var _matrix = new THREE21.Matrix4();
-var _q = new THREE21.Quaternion();
-var _s = new THREE21.Vector3(1, 1, 1);
-var _p = new THREE21.Vector3();
-var _up = new THREE21.Vector3(0, 1, 0);
-var IDENTITY = new THREE21.Matrix4();
+import * as THREE25 from "three";
+var _matrix = new THREE25.Matrix4();
+var _q = new THREE25.Quaternion();
+var _s = new THREE25.Vector3(1, 1, 1);
+var _p = new THREE25.Vector3();
+var _up = new THREE25.Vector3(0, 1, 0);
+var IDENTITY = new THREE25.Matrix4();
 var InteriorKit = class {
   constructor() {
-    this.group = new THREE21.Group();
+    this.group = new THREE25.Group();
     this.group.name = "interior";
     this.models = /* @__PURE__ */ new Map();
     this.meshes = [];
@@ -4910,9 +6036,9 @@ var InteriorKit = class {
    *   cache avec la coupe (accroché aux murs, lampes) n'en projette pas : elle ne se verrait pas sur le mur
    * @returns {THREE.Group} le modèle (pour lire ses `userData`)
    */
-  model(key, asset, params18, { cut = null, castShadow = !(cut && cut.height < 0) } = {}) {
+  model(key, asset, params22, { cut = null, castShadow = !(cut && cut.height < 0) } = {}) {
     if (this.models.has(key)) return this.models.get(key).prototype;
-    const prototype = asset.create(params18);
+    const prototype = asset.create(params22);
     this.models.set(key, { prototype, matrices: [], cut, castShadow });
     return prototype;
   }
@@ -4937,17 +6063,17 @@ var InteriorKit = class {
         disposeObject(model.prototype);
         continue;
       }
-      const matrices = new THREE21.InstancedBufferAttribute(new Float32Array(model.matrices), 16);
+      const matrices = new THREE25.InstancedBufferAttribute(new Float32Array(model.matrices), 16);
       for (const part of parts) {
         const material = part.material;
         if (model.cut && material.isShaderMaterial && material.uniforms?.uRamp) enableCutaway(material, model.cut.rule, model.cut.height);
-        const mesh = new THREE21.InstancedMesh(part.geometry, material, count);
+        const mesh = new THREE25.InstancedMesh(part.geometry, material, count);
         mesh.name = `${key} / ${part.name}`;
         mesh.instanceMatrix = matrices;
         if (!part.matrixWorld.equals(IDENTITY)) {
           const array = new Float32Array(count * 16);
           for (let i = 0; i < count; i++) _matrix.fromArray(model.matrices, i * 16).multiply(part.matrixWorld).toArray(array, i * 16);
-          mesh.instanceMatrix = new THREE21.InstancedBufferAttribute(array, 16);
+          mesh.instanceMatrix = new THREE25.InstancedBufferAttribute(array, 16);
         }
         mesh.customDepthMaterial = material.userData.depthMaterial ?? part.customDepthMaterial;
         mesh.castShadow = model.castShadow && part.castShadow;
@@ -4984,9 +6110,9 @@ function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
   const colors = sources.map((source) => rgb(source.color));
   const score = new Float32Array(sources.length);
   const order = sources.map((_, i) => i);
-  const frustum = new THREE21.Frustum();
-  const viewProjection = new THREE21.Matrix4();
-  const sphere = new THREE21.Sphere();
+  const frustum = new THREE25.Frustum();
+  const viewProjection = new THREE25.Matrix4();
+  const sphere = new THREE25.Sphere();
   let last = -1;
   return {
     /**
@@ -5031,8 +6157,8 @@ var BoxColliders = class {
     for (let pass = 0; pass < 2; pass++) {
       for (const box of this.boxes) {
         if (box.active && !box.active()) continue;
-        const cx = THREE21.MathUtils.clamp(position.x, box.minX, box.maxX);
-        const cz = THREE21.MathUtils.clamp(position.z, box.minZ, box.maxZ);
+        const cx = THREE25.MathUtils.clamp(position.x, box.minX, box.maxX);
+        const cz = THREE25.MathUtils.clamp(position.z, box.minZ, box.maxZ);
         const dx = position.x - cx;
         const dz = position.z - cz;
         const d2 = dx * dx + dz * dz;
@@ -5070,10 +6196,10 @@ var ROOMS = {
   atelier: { name: "Atelier", x0: 9, x1: 21, z0: -10, z1: 0, h: 6 },
   gallery: { name: "Grande Galerie", x0: 13, x1: 17, z0: -30, z1: -10, h: 6 }
 };
-var LAYOUTS2 = { sas: ["sas"], wing: ["sas", "archives"], full: ["sas", "archives", "atelier", "gallery"] };
+var LAYOUTS3 = { sas: ["sas"], wing: ["sas", "archives"], full: ["sas", "archives", "atelier", "gallery"] };
 var DOORS2 = [
-  { axis: "x", line: 6, at: 0, model: "standard", auto: false, seed: 11 },
-  // entrée (la Porte-Iris viendra au lot 4)
+  { axis: "x", line: 6, at: 0, model: "iris", auto: false, show: true, seed: 11 },
+  // entrée : s'ouvre pour qu'on la voie
   { axis: "x", line: 0, at: 0, model: "standard", auto: true, seed: 12 },
   { axis: "z", line: 9, at: -5, model: "standard", auto: true, seed: 13 },
   { axis: "x", line: -10, at: 15, model: "link", auto: true, seed: 14 },
@@ -5091,13 +6217,13 @@ var VIEW_HIDE = { rule: "view", height: -1 };
 var AMBER = GLOWS.amber.light;
 var HALF_PI = Math.PI / 2;
 function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, diorama = false } = {}) {
-  seed = THREE22.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
-  const roomIds = LAYOUTS2[size] ?? LAYOUTS2.full;
+  seed = THREE26.MathUtils.clamp(Math.round(seed) || 0, 0, 9999);
+  const roomIds = LAYOUTS3[size] ?? LAYOUTS3.full;
   const rooms = roomIds.map((id) => ({ id, ...ROOMS[id] }));
   const rng = createRng(seed * 7919 + 101);
   const kit = new InteriorKit();
   const colliders = new BoxColliders();
-  const group = new THREE22.Group();
+  const group = new THREE26.Group();
   group.name = "Complexe (essai)";
   const counts = { rooms: rooms.length, slabs: 0, walls: 0, doors: 0, furniture: 0, lamps: 0 };
   const lightSources = [];
@@ -5115,7 +6241,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
     trapdoor: { variant: "trapdoor", seed: seed + 5 },
     stained: { variant: "stained", seed: seed + 6 }
   };
-  for (const [key, params18] of Object.entries(slabModels)) kit.model(`slab-${key}`, glyph_floor_slab_exports, params18, { castShadow: false });
+  for (const [key, params22] of Object.entries(slabModels)) kit.model(`slab-${key}`, glyph_floor_slab_exports, params22, { castShadow: false });
   const put = (key, x, z, rotY = 0, box = null, y = 0) => {
     kit.place(key, x, z, rotY, y);
     if (box) {
@@ -5172,8 +6298,8 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   const wallXZ = (axis, line, c) => axis === "x" ? [c, line] : [line, c];
   const doors = [];
   for (const spec of DOORS2) {
-    const width = spec.model === "link" || spec.model === "double" ? 4 : 2;
-    const centers = width === 4 ? [spec.at - 1, spec.at + 1] : [spec.at];
+    const width = spec.model === "iris" ? 6 : spec.model === "link" || spec.model === "double" ? 4 : 2;
+    const centers = width === 6 ? [spec.at - 2, spec.at, spec.at + 2] : width === 4 ? [spec.at - 1, spec.at + 1] : [spec.at];
     const keys = centers.map((c) => `${spec.axis}:${spec.line}:${c}`);
     if (!keys.every((key) => pieces.has(key))) continue;
     const piece = pieces.get(keys[0]);
@@ -5182,7 +6308,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
     const [ax, az] = spec.axis === "x" ? [x, z - 1] : [x - 1, z];
     const [bx, bz] = spec.axis === "x" ? [x, z + 1] : [x + 1, z];
     const both = roomAt(ax, az) && roomAt(bx, bz);
-    const object = create3({ seed: seed * 31 + spec.seed, model: spec.model, number: spec.number ?? 1, height: piece.h, state: "closed" });
+    const object = spec.model === "iris" ? create3({ seed: seed * 31 + spec.seed, height: piece.h, state: "closed" }) : create7({ seed: seed * 31 + spec.seed, model: spec.model, number: spec.number ?? 1, height: piece.h, state: "closed" });
     object.position.set(x, 0, z);
     object.rotation.y = wallTurn(spec.axis, piece.inward);
     object.traverse((child) => {
@@ -5202,7 +6328,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
     }
     if (along) colliders.add(x, z, open / 2, 0.3, () => door.blocking);
     else colliders.add(x, z, 0.3, open / 2, () => door.blocking);
-    doors.push({ object, door, x, z, auto: spec.auto && both });
+    doors.push({ object, door, x, z, auto: spec.auto && both, show: !!spec.show });
     counts.doors += 1;
   }
   const wallModel = (h, variant) => {
@@ -5269,11 +6395,26 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   kit.model("valve-giant", wheel_valve_exports, { seed: seed + 39, size: "giant" });
   kit.model("cables", braided_cable_exports, { seed: seed + 40, layout: "bundle", gauge: "study", length: 3 });
   kit.model("cable-floor", braided_cable_exports, { seed: seed + 41, layout: "floor", gauge: "main", length: 4 });
+  kit.model("trunk-open", travel_trunk_exports, { seed: seed + 42, state: "open", content: "cassettes" });
+  kit.model("trunk-closed", travel_trunk_exports, { seed: seed + 43, state: "closed", size: "large" });
+  kit.model("hand-lamp", hand_lamp_exports, { seed: seed + 44, pose: "lying", state: "lit" });
+  const railings = {
+    "posts-chain": kit.model("posts-chain", bronze_railing_exports, { seed: seed + 45, kind: "chain", segments: 2, span: 1.1 }),
+    barrier: kit.model("barrier", bronze_railing_exports, { seed: seed + 46, kind: "barrier", segments: 2, span: 1.25 })
+  };
+  const railing = (key, x, z, rotY) => {
+    const c = Math.cos(rotY), s = Math.sin(rotY);
+    for (const [x1, z1, x2, z2] of railings[key].userData.blocking) {
+      const ax = x + x1 * c + z1 * s, az = z - x1 * s + z1 * c;
+      const bx = x + x2 * c + z2 * s, bz = z - x2 * s + z2 * c;
+      colliders.add((ax + bx) / 2, (az + bz) / 2, Math.abs(bx - ax) / 2 + 0.08, Math.abs(bz - az) / 2 + 0.08);
+    }
+  };
   if (lots) {
     if (has("sas")) {
       const sas = R.sas;
-      wallItem("bench-sas", sas, "s", -2.9, 0.3, [2.2, 0.55]);
-      wallItem("bench-sas", sas, "s", 2.9, 0.3, [2.2, 0.55]);
+      wallItem("bench-sas", sas, "s", -3.55, 0.3, [2.2, 0.55]);
+      wallItem("bench-sas", sas, "s", 3.55, 0.3, [2.2, 0.55]);
       wallItem("locker", sas, "e", 2, 0, [1.8, 0.4, 0.2]);
       wallItem("locker", sas, "e", 4, 0, [1.8, 0.4, 0.2]);
       wallItem("desk-check", sas, "w", 3, 0.3, [1, 0.55]);
@@ -5283,6 +6424,13 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
       wallItem("valve", sas, "n", -2.6, 0);
       wallItem("plaque-archives", sas, "n", 1.4, 0.01);
       put("cables", -2.6, 2.2, 0.4);
+      put("trunk-open", 3.5, 1.1, -HALF_PI + 0.15, [0.8, 0.5]);
+      put("trunk-closed", 3.55, 2.3, -HALF_PI - 0.1, [0.8, 0.5]);
+      put("hand-lamp", -3.2, 5.35, 0.5, null, 0.45);
+      lightSources.push({ position: new THREE26.Vector3(-3, 0.7, 5), color: AMBER, radius: 1.6, strength: 0.5 });
+      put("posts-chain", -1.7, 3.5, HALF_PI);
+      railing("posts-chain", -1.7, 3.5, HALF_PI);
+      counts.furniture += 4;
     }
     if (has("archives")) {
       const a = R.archives;
@@ -5310,6 +6458,8 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
       wallItem("fuse", w, "s", 11, 0, [0.8, 0.3, 0.15]);
       wallItem("fuse", w, "s", 12.2, 0, [0.8, 0.3, 0.15]);
       wallItem("warning", w, "s", 13.4, 0.01);
+      put("barrier", 11.6, -1.25, 0);
+      railing("barrier", 11.6, -1.25, 0);
       wallItem("bench-maint", w, "n", 11.5, 0.35, [1.2, 0.6]);
       wallItem("desk-check", w, "w", -8, 0.3, [1, 0.55]);
       wallItem("locker", w, "s", 17.5, 0, [1.8, 0.4, 0.2]);
@@ -5336,18 +6486,18 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   }
   const lampOn = lamps >= 0.5;
   const lampMany = lamps >= 1.5;
-  const lampModel = (key, asset, params18, cut) => {
-    const prototype = kit.model(key, asset, params18, { cut });
-    return prototype.userData.lightPoint ?? new THREE22.Vector3(0, 2.5, 0);
+  const lampModel = (key, asset, params22, cut) => {
+    const prototype = kit.model(key, asset, params22, { cut });
+    return prototype.userData.lightPoint ?? new THREE26.Vector3(0, 2.5, 0);
   };
-  const _v = new THREE22.Vector3();
+  const _v = new THREE26.Vector3();
   const hooks = /* @__PURE__ */ new Set();
   const lamp = (key, point, x, z, turn, radius) => {
     put(key, x, z, turn);
     if (key !== "lamp-wall") hooks.add(`${x},${z}`);
-    _v.copy(point).applyAxisAngle(new THREE22.Vector3(0, 1, 0), turn);
+    _v.copy(point).applyAxisAngle(new THREE26.Vector3(0, 1, 0), turn);
     if (key !== "lamp-wall") _v.y -= 0.8;
-    lightSources.push({ position: new THREE22.Vector3(x + _v.x, _v.y, z + _v.z), color: AMBER, radius, strength: 0.62 });
+    lightSources.push({ position: new THREE26.Vector3(x + _v.x, _v.y, z + _v.z), color: AMBER, radius, strength: 0.62 });
     counts.lamps += 1;
   };
   if (lampOn) {
@@ -5398,15 +6548,15 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   let daylight = null;
   let halos = null;
   if (!diorama) {
-    daylight = createDaylight({ azimuth: THREE22.MathUtils.degToRad(160), elevation: THREE22.MathUtils.degToRad(62) });
-    daylight.setSun(THREE22.MathUtils.degToRad(160), THREE22.MathUtils.degToRad(62));
+    daylight = createDaylight({ azimuth: THREE26.MathUtils.degToRad(160), elevation: THREE26.MathUtils.degToRad(62) });
+    daylight.setSun(THREE26.MathUtils.degToRad(160), THREE26.MathUtils.degToRad(62));
     group.add(daylight.light, daylight.light.target);
     if (lightSources.length) halos = createHaloPool(lightSources);
   }
   const first = rooms[0];
-  const spawn = new THREE22.Vector3((first.x0 + first.x1) / 2, 0, (first.z0 + first.z1) / 2 + (first.id === "sas" ? 0.5 : 0));
+  const spawn = new THREE26.Vector3((first.x0 + first.x1) / 2, 0, (first.z0 + first.z1) / 2 + (first.id === "sas" ? 0.5 : 0));
   let time = 0;
-  const _focus = new THREE22.Vector3();
+  const _focus = new THREE26.Vector3();
   const route = [];
   const links = doors.filter((d) => d.auto).map((d) => {
     const axisX = Math.abs(Math.sin(d.object.rotation.y)) < 0.5;
@@ -5420,7 +6570,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
     size,
     meters: COMPLEX_TEST_SIZES[size]?.meters ?? 36,
     bounds,
-    center: new THREE22.Vector3((bounds.minX + bounds.maxX) / 2, 0, (bounds.minZ + bounds.maxZ) / 2),
+    center: new THREE26.Vector3((bounds.minX + bounds.maxX) / 2, 0, (bounds.minZ + bounds.maxZ) / 2),
     spawn,
     counts,
     rooms,
@@ -5442,8 +6592,8 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
       if (!roomAt(position.x, position.z)) {
         let best = null, bestDistance = Infinity;
         for (const room of rooms) {
-          const x = THREE22.MathUtils.clamp(position.x, room.x0 + 0.35, room.x1 - 0.35);
-          const z = THREE22.MathUtils.clamp(position.z, room.z0 + 0.35, room.z1 - 0.35);
+          const x = THREE26.MathUtils.clamp(position.x, room.x0 + 0.35, room.x1 - 0.35);
+          const z = THREE26.MathUtils.clamp(position.z, room.z0 + 0.35, room.z1 - 0.35);
           const d = Math.hypot(x - position.x, z - position.z);
           if (d < bestDistance) [best, bestDistance] = [[x, z], d];
         }
@@ -5480,8 +6630,8 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
       }
       const target = previous.has(destination.id) ? destination : here;
       for (let k = 0; k < 20; k++) {
-        const x = THREE22.MathUtils.lerp(target.x0 + 1.2, target.x1 - 1.2, random());
-        const z = THREE22.MathUtils.lerp(target.z0 + 1.2, target.z1 - 1.2, random());
+        const x = THREE26.MathUtils.lerp(target.x0 + 1.2, target.x1 - 1.2, random());
+        const z = THREE26.MathUtils.lerp(target.z0 + 1.2, target.z1 - 1.2, random());
         if (!colliders.blocked(x, z, 0.6)) {
           route.push({ x, z });
           break;
@@ -5494,7 +6644,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
     update({ camera, target, dt, viewRadius, shadows }) {
       time += dt;
       for (const d of doors) {
-        if (!d.auto) continue;
+        if (!d.auto && !d.show) continue;
         const distance = Math.hypot(target.x - d.x, target.z - d.z);
         if (distance < 2.4 && d.door.openness < 0.99 && !d.opening) {
           d.door.open();
@@ -5536,19 +6686,19 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
 }
 
 // src/assets/worlds/interiors/complex-test.js
-var params17 = {
+var params21 = {
   seed: seedParam("Variantes des dalles (us\xE9es, fissur\xE9es, tach\xE9es), des murs (niches, conduits), des lampes faibles."),
   size: choiceParam("Pi\xE8ces", Object.fromEntries(Object.entries(COMPLEX_TEST_SIZES).map(([id, s]) => [id, s.label])), "Le Sas seul, le Sas et les Archives, ou les quatre pi\xE8ces (Sas, Archives, Atelier, Galerie).", "full"),
   furniture: numberParam("Mobilier", 1, 0, 2, "0 = pi\xE8ces nues, 1 = meubl\xE9es, 2 = encombr\xE9es.", { step: 0.5 }),
   lamps: numberParam("Lampes", 1, 0, 2, "0 = aucune (le noir), 1 = \xE9clairage du plan, 2 = plus d'appliques.", { step: 0.5 })
 };
-var meta17 = {
+var meta21 = {
   id: "worlds/interiors/complex-test",
   name: "Complexe (essai)",
   nameEn: "Ancient complex (test)",
   category: "worlds",
   subcategory: "interiors",
-  description: "Monde d'essai du Complexe : les assets d\xE9j\xE0 dessin\xE9s (dalles, murs, piliers, portes, lampes, tuyaux, c\xE2bles, bancs, casiers, pupitres, grilles, plaques) assembl\xE9s en quatre pi\xE8ces praticables \u2014 le Sas, les Archives \xE0 colonnade, l'Atelier et sa tranch\xE9e sous caillebotis, un tron\xE7on de la Grande Galerie. Vue en coupe (les murs entre le personnage et la cam\xE9ra s'abaissent), portes qui s'ouvrent \xE0 l'approche, lampes qui \xE9clairent le noir.",
+  description: "Monde d'essai du Complexe : les assets d\xE9j\xE0 dessin\xE9s (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, c\xE2bles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assembl\xE9s en quatre pi\xE8ces praticables \u2014 le Sas, les Archives \xE0 colonnade, l'Atelier et sa tranch\xE9e sous caillebotis, un tron\xE7on de la Grande Galerie. Vue en coupe (les murs entre le personnage et la cam\xE9ra s'abaissent), portes qui s'ouvrent \xE0 l'approche, lampes qui \xE9clairent le noir.",
   tags: [
     "monde",
     "carte",
@@ -5579,7 +6729,7 @@ var meta17 = {
     "procedural"
   ],
   biomes: ["interior"],
-  version: 1,
+  version: 2,
   added: "2026-11-18",
   units: "1 unit\xE9 = 1 m\xE8tre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 \xE0 6)",
   footprint: { radius: 36, height: 7 },
@@ -5587,13 +6737,13 @@ var meta17 = {
   pedestal: false,
   composite: true,
   experience: "explorer",
-  params: params17,
+  params: params21,
   variants: Object.entries(COMPLEX_TEST_SIZES).map(([id, size]) => ({ id, name: size.label, params: { size: id } }))
 };
-function create17(given = {}) {
-  const p = resolveParams(meta17.params, given);
+function create21(given = {}) {
+  const p = resolveParams(meta21.params, given);
   const world = createComplexTest({ ...p, diorama: true });
-  world.group.userData.asset = { id: meta17.id, params: p, counts: world.counts };
+  world.group.userData.asset = { id: meta21.id, params: p, counts: world.counts };
   world.group.userData.world = world;
   return world.group;
 }
@@ -5601,9 +6751,9 @@ function dispose(group) {
   group.userData.world?.dispose();
 }
 export {
-  create17 as create,
+  create21 as create,
   dispose,
-  meta17 as meta,
+  meta21 as meta,
   setWind,
   tick
 };

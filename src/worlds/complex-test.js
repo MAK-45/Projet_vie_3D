@@ -2,8 +2,8 @@
 // le rendu d'ensemble avant le vrai monde (`worlds/interiors/ancient-complex`, lot 5 du plan, docs/complexe/PLAN.md).
 //
 // Le plan suit la bible (docs/complexe/README.md), en plus petit :
-// - le Sas (10 × 6 × 5 m) : entrée au sud (en attendant la Porte-Iris, une porte standard), piliers d'angle, bancs,
-//   casiers, pupitre de vérification, tuyau et valve ;
+// - le Sas (10 × 6 × 5 m) : la Porte-Iris au sud (elle joue sa séquence quand on approche), piliers d'angle, bancs,
+//   casiers, pupitre de vérification, tuyau et valve, malles, lampe portative, poteaux de balisage ;
 // - les Archives (18 × 12 × 6 m), au nord du Sas : une colonnade, un lustre, des pupitres de lecture, des casiers
 //   en attendant les meubles à tiroirs ;
 // - l'Atelier (12 × 10 × 6 m), à l'est des Archives : dalles tachées, tranchée de service sous caillebotis éclairé,
@@ -22,6 +22,10 @@ import * as THREE from "three";
 import { enableCutaway } from "../engine/toon-material.js";
 import { GLOWS } from "../assets/kit/palettes.js";
 import { createRng } from "../assets/kit/rng.js";
+import * as bronzeRailing from "../assets/buildings/structure/bronze-railing.js";
+import * as handLamp from "../assets/props/tools/hand-lamp.js";
+import * as irisDoor from "../assets/buildings/structure/iris-door.js";
+import * as travelTrunk from "../assets/furniture/storage/travel-trunk.js";
 import * as braidedCable from "../assets/props/machines/braided-cable.js";
 import * as cofferedVault from "../assets/buildings/structure/coffered-vault.js";
 import * as complexDoor from "../assets/buildings/structure/complex-door.js";
@@ -57,10 +61,11 @@ const LAYOUTS = { sas: ["sas"], wing: ["sas", "archives"], full: ["sas", "archiv
 
 /**
  * Portes : mur (`axis` x : le mur suit l'axe x en z = `line` ; z : il suit z en x = `line`), centre de la baie, modèle.
- * `auto` : s'ouvre à l'approche quand une pièce est de chaque côté.
+ * `auto` : s'ouvre à l'approche quand une pièce est de chaque côté ; `show` : s'ouvre à l'approche sans mener nulle
+ * part (l'entrée : on la regarde s'ouvrir, on ne sort pas).
  */
 const DOORS = [
-  { axis: "x", line: 6, at: 0, model: "standard", auto: false, seed: 11 }, // entrée (la Porte-Iris viendra au lot 4)
+  { axis: "x", line: 6, at: 0, model: "iris", auto: false, show: true, seed: 11 }, // entrée : s'ouvre pour qu'on la voie
   { axis: "x", line: 0, at: 0, model: "standard", auto: true, seed: 12 },
   { axis: "z", line: 9, at: -5, model: "standard", auto: true, seed: 13 },
   { axis: "x", line: -10, at: 15, model: "link", auto: true, seed: 14 },
@@ -184,8 +189,8 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
 
   const doors = [];
   for (const spec of DOORS) {
-    const width = spec.model === "link" || spec.model === "double" ? 4 : 2;
-    const centers = width === 4 ? [spec.at - 1, spec.at + 1] : [spec.at];
+    const width = spec.model === "iris" ? 6 : spec.model === "link" || spec.model === "double" ? 4 : 2;
+    const centers = width === 6 ? [spec.at - 2, spec.at, spec.at + 2] : width === 4 ? [spec.at - 1, spec.at + 1] : [spec.at];
     const keys = centers.map((c) => `${spec.axis}:${spec.line}:${c}`);
     if (!keys.every((key) => pieces.has(key))) continue;
     const piece = pieces.get(keys[0]);
@@ -195,7 +200,9 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     const [ax, az] = spec.axis === "x" ? [x, z - 1] : [x - 1, z];
     const [bx, bz] = spec.axis === "x" ? [x, z + 1] : [x + 1, z];
     const both = roomAt(ax, az) && roomAt(bx, bz);
-    const object = complexDoor.create({ seed: seed * 31 + spec.seed, model: spec.model, number: spec.number ?? 1, height: piece.h, state: "closed" });
+    const object = spec.model === "iris"
+      ? irisDoor.create({ seed: seed * 31 + spec.seed, height: piece.h, state: "closed" })
+      : complexDoor.create({ seed: seed * 31 + spec.seed, model: spec.model, number: spec.number ?? 1, height: piece.h, state: "closed" });
     object.position.set(x, 0, z);
     object.rotation.y = wallTurn(spec.axis, piece.inward);
     object.traverse((child) => {
@@ -216,7 +223,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     }
     if (along) colliders.add(x, z, open / 2, 0.3, () => door.blocking);
     else colliders.add(x, z, 0.3, open / 2, () => door.blocking);
-    doors.push({ object, door, x, z, auto: spec.auto && both });
+    doors.push({ object, door, x, z, auto: spec.auto && both, show: !!spec.show });
     counts.doors += 1;
   }
 
@@ -292,14 +299,31 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
   kit.model("valve-giant", wheelValve, { seed: seed + 39, size: "giant" });
   kit.model("cables", braidedCable, { seed: seed + 40, layout: "bundle", gauge: "study", length: 3 });
   kit.model("cable-floor", braidedCable, { seed: seed + 41, layout: "floor", gauge: "main", length: 4 });
+  kit.model("trunk-open", travelTrunk, { seed: seed + 42, state: "open", content: "cassettes" });
+  kit.model("trunk-closed", travelTrunk, { seed: seed + 43, state: "closed", size: "large" });
+  kit.model("hand-lamp", handLamp, { seed: seed + 44, pose: "lying", state: "lit" });
+  const railings = {
+    "posts-chain": kit.model("posts-chain", bronzeRailing, { seed: seed + 45, kind: "chain", segments: 2, span: 1.1 }),
+    barrier: kit.model("barrier", bronzeRailing, { seed: seed + 46, kind: "barrier", segments: 2, span: 1.25 }),
+  };
+  // Emprise d'une rambarde : une boîte fine par segment (tracés en ligne, tournés d'un quart de tour au plus).
+  const railing = (key, x, z, rotY) => {
+    const c = Math.cos(rotY), s = Math.sin(rotY);
+    for (const [x1, z1, x2, z2] of railings[key].userData.blocking) {
+      const ax = x + x1 * c + z1 * s, az = z - x1 * s + z1 * c;
+      const bx = x + x2 * c + z2 * s, bz = z - x2 * s + z2 * c;
+      colliders.add((ax + bx) / 2, (az + bz) / 2, Math.abs(bx - ax) / 2 + 0.08, Math.abs(bz - az) / 2 + 0.08);
+    }
+  };
 
   if (lots) {
     // Le Sas : deux bancs de part et d'autre de l'entrée, deux casiers à l'est, le pupitre de vérification à l'ouest,
     // l'inscription au-dessus, la grille d'aération basse, le tuyau et sa valve au nord.
     if (has("sas")) {
       const sas = R.sas;
-      wallItem("bench-sas", sas, "s", -2.9, 0.3, [2.2, 0.55]);
-      wallItem("bench-sas", sas, "s", 2.9, 0.3, [2.2, 0.55]);
+      // Les bancs encadrent la Porte-Iris (son cadre fait 4,5 m de large).
+      wallItem("bench-sas", sas, "s", -3.55, 0.3, [2.2, 0.55]);
+      wallItem("bench-sas", sas, "s", 3.55, 0.3, [2.2, 0.55]);
       wallItem("locker", sas, "e", 2, 0, [1.8, 0.4, 0.2]);
       wallItem("locker", sas, "e", 4, 0, [1.8, 0.4, 0.2]);
       wallItem("desk-check", sas, "w", 3, 0.3, [1.0, 0.55]);
@@ -309,6 +333,15 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
       wallItem("valve", sas, "n", -2.6, 0);
       wallItem("plaque-archives", sas, "n", 1.4, 0.01);
       put("cables", -2.6, 2.2, 0.4);
+      // Lot 4 : une malle ouverte (cassettes) et une fermée près des casiers, la lampe portative posée sur le banc
+      // ouest, une ligne de poteaux à chaîne qui mène au pupitre de vérification.
+      put("trunk-open", 3.5, 1.1, -HALF_PI + 0.15, [0.8, 0.5]);
+      put("trunk-closed", 3.55, 2.3, -HALF_PI - 0.1, [0.8, 0.5]);
+      put("hand-lamp", -3.2, 5.35, 0.5, null, 0.45);
+      lightSources.push({ position: new THREE.Vector3(-3.0, 0.7, 5.0), color: AMBER, radius: 1.6, strength: 0.5 });
+      put("posts-chain", -1.7, 3.5, HALF_PI);
+      railing("posts-chain", -1.7, 3.5, HALF_PI);
+      counts.furniture += 4;
     }
     // Les Archives : colonnade de 2 × 3 colonnes, pupitres de lecture contre le mur nord, poste de garde près du Sas,
     // casiers à l'ouest (en attendant les meubles à tiroirs), bancs entre les colonnes.
@@ -340,6 +373,8 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
       wallItem("fuse", w, "s", 11, 0, [0.8, 0.3, 0.15]);
       wallItem("fuse", w, "s", 12.2, 0, [0.8, 0.3, 0.15]);
       wallItem("warning", w, "s", 13.4, 0.01);
+      put("barrier", 11.6, -1.25, 0);
+      railing("barrier", 11.6, -1.25, 0);
       wallItem("bench-maint", w, "n", 11.5, 0.35, [1.2, 0.6]);
       wallItem("desk-check", w, "w", -8, 0.3, [1.0, 0.55]);
       wallItem("locker", w, "s", 17.5, 0, [1.8, 0.4, 0.2]);
@@ -546,7 +581,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
     update({ camera, target, dt, viewRadius, shadows }) {
       time += dt;
       for (const d of doors) {
-        if (!d.auto) continue;
+        if (!d.auto && !d.show) continue;
         const distance = Math.hypot(target.x - d.x, target.z - d.z);
         if (distance < 2.4 && d.door.openness < 0.99 && !d.opening) {
           d.door.open();

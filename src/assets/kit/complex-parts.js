@@ -13,7 +13,7 @@
 
 import * as THREE from "three";
 import { createToonMaterial } from "../../engine/toon-material.js";
-import { buildBlock, buildLathe, buildTube, mergeGeometries } from "./geometry.js";
+import { buildBlock, buildLathe, buildPrism, buildTube, mergeGeometries } from "./geometry.js";
 import { GLOWS } from "./palettes.js";
 
 /** Un pixel d'art au zoom 1, en mètres. */
@@ -322,6 +322,34 @@ export function beam(a, b, w, h = w, roll = 0, up = new THREE.Vector3(0, 1, 0)) 
   geometry.applyMatrix4(basis);
   geometry.translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
   return geometry;
+}
+
+/**
+ * Bloc en arc de cercle, dans le plan xy (face vers +z) : couronne de rayon `r0` à `r1`, de l'angle `a0` à `a1`
+ * (radians, 0 = +x, sens trigonométrique), de z = `z0` à `z1`. Fait de `segments` pans plats (chacun un prisme
+ * convexe) : voussoirs d'un arc, segment d'un anneau, lisse courbe. Indexé, fusionnable.
+ */
+export function arcBlock({ r0, r1, a0, a1, z0, z1, segments = Math.max(1, Math.ceil(Math.abs(a1 - a0) / (Math.PI / 12))) }) {
+  const parts = [];
+  for (let s = 0; s < segments; s++) {
+    const b0 = a0 + ((a1 - a0) * s) / segments, b1 = a0 + ((a1 - a0) * (s + 1)) / segments;
+    const pts = [[r0, b0], [r1, b0], [r1, b1], [r0, b1]].map(([r, a]) => [Math.cos(a) * r, -Math.sin(a) * r]);
+    const g = buildPrism(pts, z0, () => z1);
+    g.rotateX(Math.PI / 2);
+    parts.push(g);
+  }
+  return mergeGeometries(parts);
+}
+
+/**
+ * Plaque à dessus libre dans le plan xy (face vers +z) : contour convexe `outline` [[x, y], ...], dos plat en
+ * z = `back`, face avant à la hauteur `front(x, y)` (un plan incliné donne une plaque en biseau : lame d'iris,
+ * volet). Indexée, fusionnable.
+ */
+export function slantPlate(outline, back, front) {
+  const g = buildPrism(outline.map(([x, y]) => [x, -y]), back, (x, z) => front(x, -z));
+  g.rotateX(Math.PI / 2);
+  return g;
 }
 
 // --- Glyphes ----------------------------------------------------------------------------------------------------
@@ -669,4 +697,55 @@ export function createFlicker(geometry, bulbs) {
 /** Les quatre niveaux (0 éteint à 3 vif) d'une lueur GLOWS, pour `glowMixMaterial` et `createFlicker`. */
 export function glowLevels(name) {
   return [0, 1, 2, 3].map((level) => [name, level]);
+}
+
+/**
+ * Pièces rigides dans un seul maillage (un seul draw call) : chaque sommet appartient à une pièce (`partOf[i]`, de 0
+ * à `count` − 1 ; 255 = fixe). On donne à chaque pièce sa matrice (`matrices[k]`, rotation et translation, depuis la
+ * pose de construction), puis `apply()` réécrit positions et normales. À n'appeler que quand une pièce a bougé (le
+ * temps partagé change de cran, 12 images/s), jamais à chaque image sans raison.
+ * @param {THREE.BufferGeometry} geometry
+ * @param {Uint8Array} partOf
+ * @param {number} count
+ */
+export function createRigidParts(geometry, partOf, count) {
+  const position = geometry.attributes.position;
+  const normal = geometry.attributes.normal;
+  const basePosition = position.array.slice();
+  const baseNormal = normal.array.slice();
+  const matrices = Array.from({ length: count }, () => new THREE.Matrix4());
+  const apply = () => {
+    const p = position.array, n = normal.array;
+    for (let i = 0; i < position.count; i++) {
+      const k = partOf[i];
+      if (k === 255) continue;
+      const e = matrices[k].elements;
+      const x = basePosition[i * 3], y = basePosition[i * 3 + 1], z = basePosition[i * 3 + 2];
+      p[i * 3] = e[0] * x + e[4] * y + e[8] * z + e[12];
+      p[i * 3 + 1] = e[1] * x + e[5] * y + e[9] * z + e[13];
+      p[i * 3 + 2] = e[2] * x + e[6] * y + e[10] * z + e[14];
+      const nx = baseNormal[i * 3], ny = baseNormal[i * 3 + 1], nz = baseNormal[i * 3 + 2];
+      n[i * 3] = e[0] * nx + e[4] * ny + e[8] * nz;
+      n[i * 3 + 1] = e[1] * nx + e[5] * ny + e[9] * nz;
+      n[i * 3 + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
+    }
+    position.needsUpdate = true;
+    normal.needsUpdate = true;
+    geometry.computeBoundingSphere();
+  };
+  return { matrices, apply };
+}
+
+/**
+ * Fusionne des géométries dont chacune appartient à une pièce rigide (`[géométrie, n° de pièce]`, 255 = fixe) :
+ * rend la géométrie fusionnée et le tableau `partOf` pour `createRigidParts`.
+ */
+export function mergeParts(entries) {
+  const partOf = new Uint8Array(entries.reduce((sum, [g]) => sum + g.attributes.position.count, 0));
+  let offset = 0;
+  for (const [g, k] of entries) {
+    partOf.fill(k, offset, offset + g.attributes.position.count);
+    offset += g.attributes.position.count;
+  }
+  return { geometry: mergeToned(entries.map(([g]) => g)), partOf };
 }
