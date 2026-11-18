@@ -1,4 +1,4 @@
-// Projet Vie 3D — Le Complexe (worlds/interiors/ancient-complex), version 1
+// Projet Vie 3D — Le Complexe (worlds/interiors/ancient-complex), version 2
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 var __defProp = Object.defineProperty;
@@ -6170,9 +6170,9 @@ var ROOMS = {
   sas: { name: "Sas de Scellement", x0: -5, x1: 5, z0: 0, z1: 6, h: 5 },
   vestibule: { name: "Vestibule", x0: -3, x1: 3, z0: 6, z1: 10, h: 4 }
 };
-var WALL_CUT = { rule: "wall", height: 1.2 };
+var WALL_CUT = { rule: "wall", height: -1 };
 var HIDE_ON_WALL = { rule: "wall", height: -1 };
-var CORNER_CUT = { rule: "corner", height: 1.2 };
+var CORNER_CUT = { rule: "corner", height: -1 };
 var VIEW_HIDE = { rule: "view", height: -1 };
 var AMBER = GLOWS.amber.light;
 var HALF_PI = Math.PI / 2;
@@ -6324,6 +6324,7 @@ function createAncientComplex({ seed = 1, room = "sas", state = "check", diorama
     const key = `wall-${h}-${variant}-${glyphs}`;
     kit.model(key, glyph_wall_exports, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2, glyphs }, {
       cut: WALL_CUT,
+      castShadow: true,
       reveal: glyphs === "lit" ? { mesh: "glyphs", uniform: reveal, off: GLYPH_OFF } : null
     });
     return key;
@@ -6347,7 +6348,7 @@ function createAncientComplex({ seed = 1, room = "sas", state = "check", diorama
   for (const [key, h] of corners) {
     const [x, z] = key.split(",").map(Number);
     const model = `pillar-${h}`;
-    kit.model(model, glyph_column_exports, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT });
+    kit.model(model, glyph_column_exports, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT, castShadow: true });
     put(model, x, z, 0, [0.9, 0.9]);
   }
   const sas = R.sas;
@@ -6693,7 +6694,7 @@ var meta20 = {
     "procedural"
   ],
   biomes: ["interior"],
-  version: 1,
+  version: 2,
   added: "2026-11-18",
   units: "1 unit\xE9 = 1 m\xE8tre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 \xE0 6, le vestibule de z = 6 \xE0 10",
   footprint: { radius: 8, height: 5 },

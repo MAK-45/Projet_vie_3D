@@ -186,7 +186,8 @@ Le Complexe est un **monde intérieur** (`worlds/interiors/ancient-complex`, ski
 pièce, au fil des lots. Ce que le pixel art et la caméra isométrique imposent :
 
 - **Vue en coupe** : la caméra est au-dessus ; plafonds, voûtes et dômes sont masqués, et les murs tournés vers la
-  caméra sont abaissés (maquette coupée à ~1,2 m) selon l'angle de vue. Les voûtes restent visibles en plan cadré
+  caméra sont masqués en entier (portes et piliers d'angle compris) selon l'angle de vue : la pièce se lit comme
+  une maquette ouverte, sans moignons de mur. Les voûtes restent visibles en plan cadré
   depuis l'intérieur.
 - **Une pièce à la fois** : réglage `room` (une pièce en diorama, ou « parcours »), et pendant la marche seules la
   pièce courante et ses voisines sont montrées (budget de draw calls).
@@ -214,7 +215,7 @@ barre de 1,80 m, et tout personnage ajouté plus tard. C'est l'explorateur du pr
 - **Gabarits** : le blob lévite à 1 m et mesure 0,90 m, les personnages font 1,77 à 1,81 m : tous passent les portes
   de 2,80 m et les couloirs de 2,40 m. Le blob et le mannequin magique éclairent le décor dans le noir : dans le
   Complexe, ils prennent une des lumières de halo, ce qui en fait les meilleures « lampes portatives » du lieu.
-- **Caméra** : la vue en coupe suit le personnage (les murs entre lui et la caméra s'abaissent, la pièce où il entre
+- **Caméra** : la vue en coupe suit le personnage (les murs entre lui et la caméra disparaissent, la pièce où il entre
   apparaît), et la caméra « cadrée » permet de le suivre de près dans les salles d'étude.
 - **Plus tard** : quand le moteur de scénario (`src/script/`) existera, ces mêmes personnages joueront le fil narratif
   (aller chercher les clés, les insérer, traverser la Porte).

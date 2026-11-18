@@ -34,7 +34,7 @@ export const meta = {
     "cutaway", "explorable", "composition", "procedural",
   ],
   biomes: ["interior"],
-  version: 1,
+  version: 2,
   added: "2026-11-18",
   units: "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10",
   footprint: { radius: 8, height: 5 },

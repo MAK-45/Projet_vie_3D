@@ -195,12 +195,14 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-18 | Lot 4 validé tel quel : Porte-Iris centrée à 1,40 m, ouverture Ø 2,80 m (au lieu de 1,5 m et 2,6 m) pour un passage de 1,44 m sur le seuil et un sommet à 2,80 m comme les portes ; livrée avec son pan de mur de 6 m ; glyphes éteints quand elle est fermée. | validé |
 | 2026-11-18 | Lot 5, proposition validée : vestibule de 6 × 4 m au sud de l'Iris (départ dehors), Iris qui se scelle derrière soi, porte nord qui s'ouvre sur le noir, réglage `state` (vérification, éveillé, endormi) avec séquence au pupitre, bancs au nord de part et d'autre de la porte, monde d'essai gardé jusqu'au lot 12. | validé |
 | 2026-11-18 | Lot 5, faits en route : Porte-Iris décorée côté Sas (côté vestibule, on voit son dos sombre) ; rainures allumées ramenées à un ambre sourd ; file d'attente en deux lignes de poteaux ; une lampe sur deux en veille (choisie par la graine) ; fiche de la galerie en état éveillé, explorateur en vérification avec le mannequin. | à confirmer |
+| 2026-11-18 | Vue en coupe : les murs, portes et piliers d'angle entre le personnage et la caméra sont masqués en entier, plus coupés à 1,20 m (le moignon faisait moche en vue isométrique). Aussi dans le monde d'essai. | demandé par l'utilisateur |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-18 | Retour sur le lot 5 (« c'est bon pour la pièce ») : murs côté caméra masqués en entier au lieu d'être coupés à 1,20 m ; Atelier republié. | Validation du lot 5, puis lot 6. |
 | 2026-11-18 | Lot 5 : le monde du Complexe avec le Sas et son vestibule (états, vérification au pupitre, vague de glyphes, lampes qui s'allument, poussière, brume tramée, seuil de l'Iris à 0,20 m) ; traversé par les six personnages en balade auto ; captures mobile, bureau, isométrique et 3e personne ; 81 à 87 draw calls ; Atelier publié. | Validation du lot 5, puis lot 6. |
 | 2026-11-18 | Lot 4 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 5 : propositions à discuter. |
 | 2026-11-18 | Lot 4 : Porte-Iris, malle, rambarde de bronze, lampe portative (kit : blocs en arc, plaques en biseau, pièces rigides dans un maillage ; moteur : trame `dither`), vérifiés en planches, en gros plan, dans le coin du Sas (jour, nuit, mobile) et dans le monde d'essai ; Atelier publié (v43). | Validation du lot 4, puis lot 5. |

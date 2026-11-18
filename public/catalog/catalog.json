@@ -13504,7 +13504,7 @@
       "biomes": [
         "interior"
       ],
-      "version": 1,
+      "version": 2,
       "added": "2026-11-18",
       "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10",
       "footprint": {
@@ -13638,7 +13638,7 @@
       },
       "bytes": {
         "source": 3500,
-        "standalone": 298625
+        "standalone": 298665
       }
     },
     {
@@ -13647,7 +13647,7 @@
       "nameEn": "Ancient complex (test)",
       "category": "worlds",
       "subcategory": "interiors",
-      "description": "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, câbles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assemblés en quatre pièces praticables — le Sas, les Archives à colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs entre le personnage et la caméra s'abaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
+      "description": "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, câbles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assemblés en quatre pièces praticables — le Sas, les Archives à colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs entre le personnage et la caméra disparaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
       "tags": [
         "monde",
         "carte",
@@ -13680,7 +13680,7 @@
       "biomes": [
         "interior"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-18",
       "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 à 6)",
       "footprint": {
@@ -13819,8 +13819,8 @@
         }
       },
       "bytes": {
-        "source": 3535,
-        "standalone": 304374
+        "source": 3537,
+        "standalone": 304410
       }
     }
   ]

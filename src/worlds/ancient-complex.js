@@ -68,9 +68,11 @@ const ROOMS = {
   vestibule: { name: "Vestibule", x0: -3, x1: 3, z0: 6, z1: 10, h: 4 },
 };
 
-const WALL_CUT = { rule: "wall", height: 1.2 };
+// Vue en coupe : les murs, portes et piliers d'angle entre le promeneur et la caméra sont masqués en entier (un mur
+// coupé à mi-hauteur laissait un moignon disgracieux en vue isométrique).
+const WALL_CUT = { rule: "wall", height: -1 };
 const HIDE_ON_WALL = { rule: "wall", height: -1 };
-const CORNER_CUT = { rule: "corner", height: 1.2 };
+const CORNER_CUT = { rule: "corner", height: -1 };
 const VIEW_HIDE = { rule: "view", height: -1 };
 const AMBER = GLOWS.amber.light;
 const HALF_PI = Math.PI / 2;
@@ -255,6 +257,7 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
     const key = `wall-${h}-${variant}-${glyphs}`;
     kit.model(key, glyphWall, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2, glyphs }, {
       cut: WALL_CUT,
+      castShadow: true,
       reveal: glyphs === "lit" ? { mesh: "glyphs", uniform: reveal, off: GLYPH_OFF } : null,
     });
     return key;
@@ -280,7 +283,7 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   for (const [key, h] of corners) {
     const [x, z] = key.split(",").map(Number);
     const model = `pillar-${h}`;
-    kit.model(model, glyphColumn, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT });
+    kit.model(model, glyphColumn, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT, castShadow: true });
     put(model, x, z, 0, [0.9, 0.9]);
   }
 

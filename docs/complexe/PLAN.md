@@ -85,7 +85,7 @@ Légende : ★ artefact ou asset héros (budget élargi, `README.md`). Une étap
 - Le monde `worlds/interiors/ancient-complex` (asset de la catégorie « Mondes »), réglage `room`, avec le Sas seul.
 - Kit d'intérieur dans `src/worlds/kit/` : lumière de service invisible + `setDarkness`, attribution des lumières de
   halo aux sources proches (le moteur en a 4 : étendre à 8 si les pièces le demandent, en mesurant le coût), vue en
-  coupe (plafonds masqués, murs côté caméra abaissés selon l'angle), brouillard tramé, poussière près des lampes.
+  coupe (plafonds masqués, murs côté caméra masqués selon l'angle), brouillard tramé, poussière près des lampes.
 - Explorateur : pas de ciel ni de mer de nuages en intérieur, caméra bornée à la pièce.
 - **Personnages** : le Complexe s'ouvre dans l'explorateur avec le réglage « Personnage » (barre, blob, mannequin,
   mannequin magique, héroïne, héros) ; on s'y promène comme dans la prairie. Le monde fournit `heightAt` avec étages

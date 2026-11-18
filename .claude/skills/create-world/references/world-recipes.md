@@ -162,6 +162,10 @@ dépasser.
 - **Coupe par l'origine, pas par le sommet** : le shader décide pour l'objet entier (origine de la copie
   instanciée) ; une coupe sommet par sommet tranche les modules en biais. Murs : coupés si leur plan est entre le
   promeneur et la caméra (face vue de profil : jamais). Piliers d'angle : coupés si l'un de leurs deux murs l'est.
+- **Masquer plutôt qu'abaisser** : un mur coupé à 1,20 m laisse un moignon qui fait moche en vue isométrique
+  (retour de l'utilisateur sur le Sas) ; murs, portes et piliers d'angle côté caméra sont masqués en entier
+  (`height: -1`), en gardant leur ombre quand ils sont visibles (`castShadow: true`, sinon le kit l'ôte à tout ce
+  qui se cache).
 - **Cacher** = ramener tous les sommets au même point (aucun triangle) ; les aplatir sous le sol ne suffit pas :
   hors des pièces, il n'y a pas de sol et on les voit dans le vide.
 - **Ombres** : le matériau d'ombre doit suivre la coupe (sinon un mur abaissé projette encore son ombre entière) ;

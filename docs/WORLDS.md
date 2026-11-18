@@ -267,8 +267,10 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
 
 - **Pose instanciée** (`InteriorKit`) : un modèle par asset et réglages, un `InstancedMesh` par maillage du modèle.
 - **Vue en coupe** (moteur : `enableCutaway`, `setCutaway`) : règle portée par l'origine de chaque copie. Murs,
-  portes, piliers coupés à 1,20 m quand ils sont entre le promeneur et la caméra ; ce qui y est accroché (casiers,
-  plaques, appliques, tuyaux) et les lampes suspendues disparaissent. Actif en vue isométrique seulement.
+  portes et piliers d'angle masqués en entier quand ils sont entre le promeneur et la caméra (un mur coupé à
+  1,20 m laissait un moignon disgracieux : retour de l'utilisateur), avec ce qui y est accroché (casiers, plaques,
+  appliques, tuyaux) et les lampes suspendues ; les colonnes isolées des Archives restent coupées à 1,20 m.
+  Le Complexe fait de même. Actif en vue isométrique seulement.
 - **Lumière** : lieu clos, donc toujours la nuit (le réglage « Moment » est masqué) : seules les lampes éclairent.
   Le moteur a 12 lumières de halo (`GLOW_LIGHT_COUNT`) ; 11 vont aux lampes près du point regardé (devant la caméra en
   3e personne), d'abord celles dans le champ ; la 12e reste aux personnages qui brillent. La source d'une lampe

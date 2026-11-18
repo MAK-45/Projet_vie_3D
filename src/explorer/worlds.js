@@ -63,7 +63,7 @@ export const WORLD_PROFILES = {
         summary: `graine ${settings.seed} · ${COMPLEX_ROOMS[world.room].label}`,
         note:
           `Sas 10 × 6 × 5 m et son vestibule · ${c.slabs} dalles · ${c.walls} modules de mur · ${c.doors} portes · ` +
-          `${c.furniture} meubles et machines · ${c.lamps} lampes. Les murs entre le personnage et la caméra s'abaissent.`,
+          `${c.furniture} meubles et machines · ${c.lamps} lampes. Les murs entre le personnage et la caméra disparaissent.`,
       };
     },
   },
@@ -87,7 +87,7 @@ export const WORLD_PROFILES = {
         summary: `graine ${settings.seed} · ${c.rooms} pièces`,
         note:
           `${c.rooms} pièces · ${c.slabs} dalles · ${c.walls} modules de mur · ${c.doors} portes · ${c.furniture} meubles et machines · ` +
-          `${c.lamps} lampes. Les murs entre le personnage et la caméra s'abaissent ; les portes s'ouvrent à son approche.`,
+          `${c.lamps} lampes. Les murs entre le personnage et la caméra disparaissent ; les portes s'ouvrent à son approche.`,
       };
     },
   },

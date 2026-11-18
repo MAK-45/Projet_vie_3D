@@ -26,7 +26,7 @@ export const meta = {
     "Monde d'essai du Complexe : les assets déjà dessinés (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, " +
     "câbles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assemblés en quatre pièces praticables — le Sas, les Archives à " +
     "colonnade, l'Atelier et sa tranchée sous caillebotis, un tronçon de la Grande Galerie. Vue en coupe (les murs " +
-    "entre le personnage et la caméra s'abaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
+    "entre le personnage et la caméra disparaissent), portes qui s'ouvrent à l'approche, lampes qui éclairent le noir.",
   tags: [
     "monde", "carte", "intérieur", "le complexe", "complexe", "ancien-tech", "essai", "sas", "archives", "atelier",
     "galerie", "vue en coupe", "à explorer", "assemblage",
@@ -34,7 +34,7 @@ export const meta = {
     "explorable", "composition", "procedural",
   ],
   biomes: ["interior"],
-  version: 2,
+  version: 3,
   added: "2026-11-18",
   units: "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 à 6)",
   footprint: { radius: 36, height: 7 },

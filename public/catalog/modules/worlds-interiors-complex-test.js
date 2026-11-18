@@ -1,4 +1,4 @@
-// Projet Vie 3D — Complexe (essai) (worlds/interiors/complex-test), version 2
+// Projet Vie 3D — Complexe (essai) (worlds/interiors/complex-test), version 3
 // Module autonome : seule dépendance, three@0.186.0 (import "three" et, pour les assets importés, "three/addons/...").
 // Exports : meta, create(params) → THREE.Group, tick(secondes), setWind(force), dispose(objet).
 var __defProp = Object.defineProperty;
@@ -6251,9 +6251,9 @@ var DOORS2 = [
   { axis: "z", line: 17, at: -27, model: "study", number: 5, auto: false, seed: 18 },
   { axis: "x", line: -30, at: 15, model: "link", auto: false, seed: 19 }
 ];
-var WALL_CUT = { rule: "wall", height: 1.2 };
+var WALL_CUT = { rule: "wall", height: -1 };
 var HIDE_ON_WALL = { rule: "wall", height: -1 };
-var CORNER_CUT = { rule: "corner", height: 1.2 };
+var CORNER_CUT = { rule: "corner", height: -1 };
 var VIEW_CUT = { rule: "view", height: 1.2 };
 var VIEW_HIDE = { rule: "view", height: -1 };
 var AMBER = GLOWS.amber.light;
@@ -6375,7 +6375,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   }
   const wallModel = (h, variant) => {
     const key = `wall-${h}-${variant}`;
-    kit.model(key, glyph_wall_exports, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2 }, { cut: WALL_CUT });
+    kit.model(key, glyph_wall_exports, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2 }, { cut: WALL_CUT, castShadow: true });
     return key;
   };
   for (const piece of pieces.values()) {
@@ -6398,7 +6398,7 @@ function createComplexTest({ seed = 1, size = "full", furniture = 1, lamps = 1, 
   for (const [key, h] of corners) {
     const [x, z] = key.split(",").map(Number);
     const model = `pillar-${h}`;
-    kit.model(model, glyph_column_exports, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT });
+    kit.model(model, glyph_column_exports, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT, castShadow: true });
     put(model, x, z, 0, [0.9, 0.9]);
   }
   const onWall = (room, side, t, inset = 0) => {
@@ -6740,7 +6740,7 @@ var meta21 = {
   nameEn: "Ancient complex (test)",
   category: "worlds",
   subcategory: "interiors",
-  description: "Monde d'essai du Complexe : les assets d\xE9j\xE0 dessin\xE9s (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, c\xE2bles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assembl\xE9s en quatre pi\xE8ces praticables \u2014 le Sas, les Archives \xE0 colonnade, l'Atelier et sa tranch\xE9e sous caillebotis, un tron\xE7on de la Grande Galerie. Vue en coupe (les murs entre le personnage et la cam\xE9ra s'abaissent), portes qui s'ouvrent \xE0 l'approche, lampes qui \xE9clairent le noir.",
+  description: "Monde d'essai du Complexe : les assets d\xE9j\xE0 dessin\xE9s (dalles, murs, piliers, portes, Porte-Iris, lampes, tuyaux, c\xE2bles, bancs, casiers, pupitres, grilles, plaques, malles, rambardes) assembl\xE9s en quatre pi\xE8ces praticables \u2014 le Sas, les Archives \xE0 colonnade, l'Atelier et sa tranch\xE9e sous caillebotis, un tron\xE7on de la Grande Galerie. Vue en coupe (les murs entre le personnage et la cam\xE9ra disparaissent), portes qui s'ouvrent \xE0 l'approche, lampes qui \xE9clairent le noir.",
   tags: [
     "monde",
     "carte",
@@ -6771,7 +6771,7 @@ var meta21 = {
     "procedural"
   ],
   biomes: ["interior"],
-  version: 2,
+  version: 3,
   added: "2026-11-18",
   units: "1 unit\xE9 = 1 m\xE8tre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas est au sud (z de 0 \xE0 6)",
   footprint: { radius: 36, height: 7 },

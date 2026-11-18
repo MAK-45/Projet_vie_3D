@@ -12,8 +12,9 @@
 //   (fermées), grande porte de liaison au bout.
 //
 // Murs, dalles, piliers et meubles sont posés en copies instanciées (kit/interior.js) : quelques draw calls par
-// modèle, quel que soit le nombre de copies. Vue en coupe : ce qui est entre le promeneur et la caméra s'abaisse à
-// 1,20 m (murs, portes, piliers) ou disparaît (ce qui est accroché à ces murs, lampes). Les portes entre deux pièces
+// modèle, quel que soit le nombre de copies. Vue en coupe : ce qui est entre le promeneur et la caméra disparaît
+// en entier (murs, portes, piliers d'angle, ce qui est accroché à ces murs, lampes) ; les colonnes isolées sont
+// coupées à 1,20 m. Les portes entre deux pièces
 // s'ouvrent quand on approche ; fermées, elles bloquent.
 //
 // 1 unité = 1 mètre ; le sol est en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; grille de 2 m.
@@ -76,9 +77,11 @@ const DOORS = [
   { axis: "x", line: -30, at: 15, model: "link", auto: false, seed: 19 },
 ];
 
-const WALL_CUT = { rule: "wall", height: 1.2 };
+// Vue en coupe : les murs, portes et piliers d'angle entre le promeneur et la caméra sont masqués en entier (un mur
+// coupé à mi-hauteur laissait un moignon disgracieux en vue isométrique).
+const WALL_CUT = { rule: "wall", height: -1 };
 const HIDE_ON_WALL = { rule: "wall", height: -1 };
-const CORNER_CUT = { rule: "corner", height: 1.2 };
+const CORNER_CUT = { rule: "corner", height: -1 };
 const VIEW_CUT = { rule: "view", height: 1.2 };
 const VIEW_HIDE = { rule: "view", height: -1 };
 const AMBER = GLOWS.amber.light;
@@ -230,7 +233,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
   // Modules de mur : plein surtout, une niche ou un conduit par endroits (pas sur les murs partagés).
   const wallModel = (h, variant) => {
     const key = `wall-${h}-${variant}`;
-    kit.model(key, glyphWall, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2 }, { cut: WALL_CUT });
+    kit.model(key, glyphWall, { seed: seed * 13 + h * 7 + variant.length, variant, height: h, width: 2 }, { cut: WALL_CUT, castShadow: true });
     return key;
   };
   for (const piece of pieces.values()) {
@@ -255,7 +258,7 @@ export function createComplexTest({ seed = 1, size = "full", furniture = 1, lamp
   for (const [key, h] of corners) {
     const [x, z] = key.split(",").map(Number);
     const model = `pillar-${h}`;
-    kit.model(model, glyphColumn, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT });
+    kit.model(model, glyphColumn, { seed: seed + h, shape: "square", height: h, diameter: 0.9 }, { cut: CORNER_CUT, castShadow: true });
     put(model, x, z, 0, [0.9, 0.9]);
   }
 
