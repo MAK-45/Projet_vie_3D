@@ -62,6 +62,11 @@ import * as filamentChandelier from "./furniture/lighting/filament-chandelier.js
 import * as copperPipe from "./props/machines/copper-pipe.js";
 import * as wheelValve from "./props/machines/wheel-valve.js";
 import * as braidedCable from "./props/machines/braided-cable.js";
+import * as stoneBench from "./furniture/seating/stone-bench.js";
+import * as equipmentLocker from "./furniture/storage/equipment-locker.js";
+import * as leverDesk from "./props/machines/lever-desk.js";
+import * as ventGrate from "./buildings/structure/vent-grate.js";
+import * as glyphPlaque from "./props/decor/glyph-plaque.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
@@ -71,6 +76,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   starPortal, starPortalDial,
   glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
   filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
+  stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
   summerMeadow,
 ];
 

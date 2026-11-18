@@ -384,3 +384,24 @@ c'est ce fichier qui fait progresser les assets suivants.
 - **Graine trop discrète** (`check` : « seulement 3 formes pour 5 graines ») : décaler aussi une position (colliers
   posés à la main ± 8 cm), pas seulement des tons.
 - Piège : un commentaire `//` ajouté en bout de ligne par un remplacement automatique avale la fin de l'expression.
+
+### Le Complexe, lot 3 : mobilier du Sas (banc, casier, pupitre, grille, plaque)
+
+- **Joints entre blocs** (banc en 2 ou 3 pierres) : sans cœur derrière, le fond se voit par le joint d'un pixel ;
+  poser un bloc sombre (−0,55) un peu en retrait dans tout le volume, comme le mur.
+- **Dessus quadrillé** : `gridBlock` (kit) — un pavé découpé en cases de ~0,1 m pour que l'usure au centre ou les
+  taches d'huile aient une forme. Dessus un cran plus bas (−0,17) pour que l'usure puisse remonter.
+- **Portes et leviers pilotables sans draw call de plus** : une plage de sommets par pièce dans le maillage du métal,
+  positions et normales réécrites autour d'un pivot (charnière : rotation y ; levier : rotation autour de x passant
+  par son pivot) ; `computeBoundingSphere` après. API dans `userData` (locker, desk).
+- **Plan incliné** : un piège de signe. Pour une normale `n = (0, cos a, sin a)` (face vers +z et le haut), le bloc
+  du plan se tourne avec `rotateX(+a)`. Le coffre dessous : `buildPrism` dont le dessus suit la pente, jamais un
+  bloc droit (il perce le plan et cache tout ce qui y est posé).
+- **Lueurs mêlées pilotées** (`glowMixMaterial`) : la valeur `aShade` d'une couleur n° i sur N est `(i + 0.5) / N`,
+  pas `i` (voir `withShade`). Une couleur « éteinte » par lueur (niveau 0) et une « allumée » suffisent.
+- **Contenu derrière une grille** : le cuir goudronné disparaît sur le fond sombre ; une toile plus claire (rampe
+  ocre) se devine au travers du quadrillage.
+- **Trous pour de vrai** : un damier d'un pixel = des cases pleines une sur deux (12 triangles chacune) ; un
+  quadrillage = des barreaux croisés. La lueur est un plan derrière (ou dessous), en `glowMaterial`.
+- **Petite plaque** (0,3 × 0,2 m = 5 × 3 px) : un glyphe de 4 ou 5 pièces tient, pas un dessin ; plots réduits
+  à la taille de la plaque.

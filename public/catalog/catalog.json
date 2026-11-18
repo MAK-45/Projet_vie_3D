@@ -11623,6 +11623,861 @@
       }
     },
     {
+      "id": "furniture/seating/stone-bench",
+      "name": "Banc de pierre",
+      "nameEn": "Stone bench",
+      "category": "furniture",
+      "subcategory": "seating",
+      "description": "Banc du Complexe taillé dans la pierre fumée, arêtes usées et assise polie au centre. Quatre modèles : le banc du Sas (accoudoirs de bronze, dossier bas sanglé de cuir), le banc de galerie sur pieds de bronze, le banc de méditation à coussin de cuir noir, le banc de maintenance à anneaux d'attache et taches d'huile. Fiches SAS-06, GAL-07, ORA-10, E5-02.",
+      "tags": [
+        "banc",
+        "assise",
+        "siège",
+        "pierre fumée",
+        "bronze",
+        "cuir",
+        "accoudoirs",
+        "coussin",
+        "usure",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "mobilier",
+        "s'asseoir",
+        "intérieur",
+        "bench",
+        "seat",
+        "smoked stone",
+        "armrests",
+        "cushion",
+        "wear",
+        "ancient complex",
+        "ancient-tech",
+        "furniture",
+        "sit",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre ; le banc est le long de x, on s'y assoit face à +z (dossier côté −z)",
+      "footprint": {
+        "radius": 1.2,
+        "height": 0.72
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le découpage de l'assise en blocs, l'angle écorné, la place de l'usure, de la sangle et des taches."
+        },
+        "model": {
+          "type": "enum",
+          "default": "sas",
+          "values": [
+            "sas",
+            "gallery",
+            "meditation",
+            "maintenance"
+          ],
+          "labels": {
+            "sas": "Sas (2,2 m, accoudoirs, dossier sanglé)",
+            "gallery": "Galerie (1,2 m, pieds de bronze)",
+            "meditation": "Méditation (1,6 m, coussin de cuir)",
+            "maintenance": "Maintenance (1,2 m, anneaux, huile)"
+          },
+          "label": "Modèle",
+          "description": "Banc du Sas, de galerie, de méditation (Oracle) ou de maintenance (salle de l'Éveil)."
+        },
+        "stone": {
+          "type": "enum",
+          "default": "smoked",
+          "values": [
+            "smoked",
+            "blackBasalt"
+          ],
+          "labels": {
+            "smoked": "Pierre fumée",
+            "blackBasalt": "Basalte noir-bleu"
+          },
+          "label": "Pierre",
+          "description": "Pierre du banc."
+        }
+      },
+      "variants": [
+        {
+          "id": "sas",
+          "name": "Sas (2,2 m, accoudoirs, dossier sanglé)",
+          "params": {
+            "model": "sas"
+          }
+        },
+        {
+          "id": "gallery",
+          "name": "Galerie (1,2 m, pieds de bronze)",
+          "params": {
+            "model": "gallery"
+          }
+        },
+        {
+          "id": "meditation",
+          "name": "Méditation (1,6 m, coussin de cuir)",
+          "params": {
+            "model": "meditation"
+          }
+        },
+        {
+          "id": "maintenance",
+          "name": "Maintenance (1,2 m, anneaux, huile)",
+          "params": {
+            "model": "maintenance"
+          }
+        }
+      ],
+      "slug": "furniture-seating-stone-bench",
+      "path": "src/assets/furniture/seating/stone-bench.js",
+      "module": "public/catalog/modules/furniture-seating-stone-bench.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1332,
+          "vertices": 1238,
+          "drawCalls": 3
+        },
+        "sas": {
+          "triangles": 1332,
+          "vertices": 1238,
+          "drawCalls": 3
+        },
+        "gallery": {
+          "triangles": 320,
+          "vertices": 356,
+          "drawCalls": 2
+        },
+        "meditation": {
+          "triangles": 904,
+          "vertices": 838,
+          "drawCalls": 3
+        },
+        "maintenance": {
+          "triangles": 732,
+          "vertices": 808,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 12168,
+        "standalone": 52708
+      }
+    },
+    {
+      "id": "furniture/storage/equipment-locker",
+      "name": "Casier d'équipement",
+      "nameEn": "Equipment locker",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Casier mural du Complexe : caisson de bronze à portes grillagées de laiton, cadran et molette sur chaque porte, matériel deviné derrière la grille. Casier du Sas (6 compartiments) ou armoire à fusibles du Cœur (24 fusibles de porcelaine, levier de coupure). Portes fermées par défaut, ouvertes une à une par le scénario. Fiches SAS-07, COE-10.",
+      "tags": [
+        "casier",
+        "armoire",
+        "vestiaire",
+        "fusibles",
+        "grillage",
+        "laiton",
+        "bronze",
+        "cadran",
+        "levier",
+        "porcelaine",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "pilotable",
+        "intérieur",
+        "locker",
+        "cabinet",
+        "fuse box",
+        "mesh door",
+        "brass",
+        "gauge",
+        "switch lever",
+        "porcelain fuses",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu du dos (le mur est en z = 0, les portes regardent +z)",
+      "footprint": {
+        "radius": 1.45,
+        "height": 2.2
+      },
+      "animated": [
+        "locker"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le matériel rangé et les cases vides, les aiguilles, la patine, la porte entrouverte, les fusibles grillés."
+        },
+        "model": {
+          "type": "enum",
+          "default": "locker",
+          "values": [
+            "locker",
+            "fuse-box"
+          ],
+          "labels": {
+            "locker": "Casier (6 compartiments)",
+            "fuse-box": "Armoire à fusibles (24 fusibles)"
+          },
+          "label": "Modèle",
+          "description": "Casier d'équipement du Sas, ou armoire à fusibles de la salle du Cœur."
+        },
+        "doors": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "ajar",
+            "open"
+          ],
+          "labels": {
+            "closed": "Fermées",
+            "ajar": "Une entrouverte",
+            "open": "Toutes ouvertes"
+          },
+          "label": "Portes",
+          "description": "Fermées (par défaut), une entrouverte choisie par la graine, ou toutes ouvertes. Pilotable : group.userData.locker."
+        },
+        "power": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Sous tension",
+            "off": "Coupée"
+          },
+          "label": "Levier de coupure",
+          "description": "Armoire à fusibles : levier levé (sous tension) ou abaissé (coupée)."
+        }
+      },
+      "variants": [
+        {
+          "id": "locker",
+          "name": "Casier (6 compartiments)",
+          "params": {
+            "model": "locker"
+          }
+        },
+        {
+          "id": "fuse-box",
+          "name": "Armoire à fusibles (24 fusibles)",
+          "params": {
+            "model": "fuse-box"
+          }
+        }
+      ],
+      "slug": "furniture-storage-equipment-locker",
+      "path": "src/assets/furniture/storage/equipment-locker.js",
+      "module": "public/catalog/modules/furniture-storage-equipment-locker.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2504,
+          "vertices": 4658,
+          "drawCalls": 3
+        },
+        "locker": {
+          "triangles": 2504,
+          "vertices": 4658,
+          "drawCalls": 3
+        },
+        "fuse-box": {
+          "triangles": 948,
+          "vertices": 1831,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 13598,
+        "standalone": 52624
+      }
+    },
+    {
+      "id": "props/machines/lever-desk",
+      "name": "Pupitre à leviers",
+      "nameEn": "Lever desk",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Pupitre incliné du Complexe : leviers de laiton, cadrans ronds, plaque gravée de glyphes, sur un piètement. Pupitre de vérification du Sas (8 leviers, 4 cadrans), poste de garde de la galerie (registre de cuir, 10 voyants ambre, un par salle ouverte) ou lecteur d'étude de la salle 2 (fente à cassette qui luit en cyan, volants, lentille, galvanomètres). Leviers, voyants et fente pilotables. Fiches SAS-08, GAL-09, E2-01.",
+      "tags": [
+        "pupitre",
+        "console",
+        "leviers",
+        "cadrans",
+        "voyants",
+        "registre",
+        "lecteur",
+        "cassette",
+        "galvanomètre",
+        "laiton",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "machine",
+        "commande",
+        "pilotable",
+        "intérieur",
+        "lever desk",
+        "control desk",
+        "levers",
+        "gauges",
+        "indicator lights",
+        "ledger",
+        "tape reader",
+        "brass",
+        "ancient complex",
+        "ancient-tech",
+        "control",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre ; l'opérateur se tient côté +z, face au plan incliné",
+      "footprint": {
+        "radius": 0.7,
+        "height": 1.35
+      },
+      "animated": [
+        "desk"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les leviers abaissés, les aiguilles, les glyphes de la plaque, la page du registre, l'usure."
+        },
+        "model": {
+          "type": "enum",
+          "default": "check",
+          "values": [
+            "check",
+            "guard",
+            "reader"
+          ],
+          "labels": {
+            "check": "Vérification (Sas)",
+            "guard": "Poste de garde (galerie)",
+            "reader": "Lecteur d'étude (salle 2)"
+          },
+          "label": "Modèle",
+          "description": "Pupitre de vérification du Sas, poste de garde de la galerie, ou lecteur de cassette de la salle 2."
+        },
+        "lights": {
+          "type": "number",
+          "default": 3,
+          "min": 0,
+          "max": 10,
+          "step": 1,
+          "label": "Salles ouvertes",
+          "description": "Poste de garde : nombre de voyants ambre allumés (un par salle d'étude ouverte)."
+        },
+        "cassette": {
+          "type": "enum",
+          "default": "empty",
+          "values": [
+            "empty",
+            "loaded"
+          ],
+          "labels": {
+            "empty": "Fente vide",
+            "loaded": "Cassette engagée (lueur cyan)"
+          },
+          "label": "Cassette",
+          "description": "Lecteur : fente vide, ou cassette engagée (la fente luit en cyan)."
+        }
+      },
+      "variants": [
+        {
+          "id": "check",
+          "name": "Vérification (Sas)",
+          "params": {
+            "model": "check"
+          }
+        },
+        {
+          "id": "guard",
+          "name": "Poste de garde (galerie)",
+          "params": {
+            "model": "guard"
+          }
+        },
+        {
+          "id": "reader",
+          "name": "Lecteur d'étude (salle 2)",
+          "params": {
+            "model": "reader"
+          }
+        }
+      ],
+      "slug": "props-machines-lever-desk",
+      "path": "src/assets/props/machines/lever-desk.js",
+      "module": "public/catalog/modules/props-machines-lever-desk.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1652,
+          "vertices": 2928,
+          "drawCalls": 2
+        },
+        "check": {
+          "triangles": 1652,
+          "vertices": 2928,
+          "drawCalls": 2
+        },
+        "guard": {
+          "triangles": 1264,
+          "vertices": 2260,
+          "drawCalls": 3
+        },
+        "reader": {
+          "triangles": 852,
+          "vertices": 1624,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 17008,
+        "standalone": 65091
+      }
+    },
+    {
+      "id": "buildings/structure/vent-grate",
+      "name": "Grille et caillebotis",
+      "nameEn": "Vent grate and floor grating",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Grilles de bronze du Complexe, percées pour de vrai : grille d'aération murale à damier d'un pixel et lueur ambre derrière (Sas), ou caillebotis de sol de 2 × 2 m à quadrillage, droit ou courbe pour l'anneau autour de la fosse du Cœur, praticable. Lueur ambre ou cyan, allumée, en veille ou éteinte. Fiches SAS-12, COE-12.",
+      "tags": [
+        "grille",
+        "aération",
+        "ventilation",
+        "caillebotis",
+        "damier",
+        "quadrillage",
+        "bronze",
+        "lueur",
+        "anneau",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "praticable",
+        "intérieur",
+        "vent grate",
+        "air vent",
+        "floor grating",
+        "checkerboard",
+        "grid",
+        "glow",
+        "curved ring",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "walkable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; murale : origine au sol au pied du mur (mur en z = 0, la grille regarde +z), centre à `height` ; caillebotis : origine au sol, au centre, dessus à 0,06 m ; courbe : l'anneau a son centre en z = +radius + 1 (côté +z)",
+      "footprint": {
+        "radius": 1.45,
+        "height": 1.1
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la patine barreau par barreau, les barreaux tordus ou noircis, le plot manquant."
+        },
+        "model": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "floor",
+            "floor-curved"
+          ],
+          "labels": {
+            "wall": "Grille murale (0,8 m)",
+            "floor": "Caillebotis droit (2 × 2 m)",
+            "floor-curved": "Caillebotis courbe (anneau)"
+          },
+          "label": "Modèle",
+          "description": "Grille d'aération murale du Sas, ou caillebotis de sol du Cœur (droit ou courbe)."
+        },
+        "light": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "standby",
+            "off"
+          ],
+          "labels": {
+            "on": "Allumée",
+            "standby": "En veille",
+            "off": "Éteinte"
+          },
+          "label": "Lueur derrière",
+          "description": "La lueur vue au travers : allumée, en veille ou éteinte (fond sombre)."
+        },
+        "glow": {
+          "type": "enum",
+          "default": "amber",
+          "values": [
+            "amber",
+            "cyan"
+          ],
+          "labels": {
+            "amber": "Ambre",
+            "cyan": "Cyan"
+          },
+          "label": "Lueur",
+          "description": "Couleur de la lueur : ambre (machines, Sas) ou cyan (fosse d'énergie du Cœur)."
+        },
+        "height": {
+          "type": "number",
+          "default": 0.6,
+          "min": 0.2,
+          "max": 3,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Grille murale : hauteur de son centre."
+        },
+        "radius": {
+          "type": "number",
+          "default": 4,
+          "min": 2,
+          "max": 10,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Rayon",
+          "description": "Caillebotis courbe : rayon intérieur de l'anneau (le module couvre 2 m de large et environ 2 m d'arc)."
+        }
+      },
+      "variants": [
+        {
+          "id": "wall",
+          "name": "Grille murale (0,8 m)",
+          "params": {
+            "model": "wall"
+          }
+        },
+        {
+          "id": "floor",
+          "name": "Caillebotis droit (2 × 2 m)",
+          "params": {
+            "model": "floor"
+          }
+        },
+        {
+          "id": "floor-curved",
+          "name": "Caillebotis courbe (anneau)",
+          "params": {
+            "model": "floor-curved"
+          }
+        }
+      ],
+      "slug": "buildings-structure-vent-grate",
+      "path": "src/assets/buildings/structure/vent-grate.js",
+      "module": "public/catalog/modules/buildings-structure-vent-grate.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 540,
+          "vertices": 1048,
+          "drawCalls": 2
+        },
+        "wall": {
+          "triangles": 540,
+          "vertices": 1048,
+          "drawCalls": 2
+        },
+        "floor": {
+          "triangles": 360,
+          "vertices": 720,
+          "drawCalls": 2
+        },
+        "floor-curved": {
+          "triangles": 1280,
+          "vertices": 2542,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 10873,
+        "standalone": 48751
+      }
+    },
+    {
+      "id": "props/decor/glyph-plaque",
+      "name": "Plaque à glyphes",
+      "nameEn": "Glyph plaque",
+      "category": "props",
+      "subcategory": "decor",
+      "description": "Plaque de métal du Complexe tenue par quatre plots, gravée de glyphes en creux (vert-de-gris au fond des traits). Inscription de bronze du Sas (5 à 7 lignes), plaque de direction en laiton (flèche et numéro de salle en traits), plaque de dédicace inclinée au pied de l'Oracle, ou plaque d'avertissement au glyphe rouge lumineux. Fiches SAS-14, GAL-06, ORA-12, COE-15.",
+      "tags": [
+        "plaque",
+        "inscription",
+        "glyphes",
+        "gravure",
+        "signalétique",
+        "direction",
+        "flèche",
+        "dédicace",
+        "avertissement",
+        "bronze",
+        "laiton",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "décoration",
+        "intérieur",
+        "plaque sign",
+        "engraved glyphs",
+        "signage",
+        "wayfinding",
+        "arrow",
+        "dedication",
+        "warning sign",
+        "brass",
+        "ancient complex",
+        "ancient-tech",
+        "decoration",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-18",
+      "units": "1 unité = 1 mètre ; plaques murales : origine au sol au pied du mur (mur en z = 0, la plaque regarde +z), centre à `height` ; dédicace : origine au sol, au centre du socle, la plaque penche vers +z",
+      "footprint": {
+        "radius": 0.75,
+        "height": 2
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le texte en glyphes et la longueur des lignes, l'usure, le plot qui manque."
+        },
+        "model": {
+          "type": "enum",
+          "default": "inscription",
+          "values": [
+            "inscription",
+            "direction",
+            "dedication",
+            "warning"
+          ],
+          "labels": {
+            "inscription": "Inscription (1,2 × 0,8 m)",
+            "direction": "Direction (flèche et numéro de salle)",
+            "dedication": "Dédicace (inclinée, au sol)",
+            "warning": "Avertissement (glyphe rouge)"
+          },
+          "label": "Modèle",
+          "description": "Plaque d'inscription du Sas, de direction (galerie), de dédicace (Oracle) ou d'avertissement (Cœur)."
+        },
+        "room": {
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "label": "Salle",
+          "description": "Plaque de direction : numéro de la salle d'étude (traits : couché = 5, debout = 1)."
+        },
+        "arrow": {
+          "type": "enum",
+          "default": "right",
+          "values": [
+            "right",
+            "left",
+            "none"
+          ],
+          "labels": {
+            "right": "Vers la droite",
+            "left": "Vers la gauche",
+            "none": "Sans flèche"
+          },
+          "label": "Flèche",
+          "description": "Plaque de direction : sens de la flèche."
+        },
+        "height": {
+          "type": "number",
+          "default": 1.6,
+          "min": 0.3,
+          "max": 4,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Plaques murales : hauteur du centre de la plaque."
+        }
+      },
+      "variants": [
+        {
+          "id": "inscription",
+          "name": "Inscription (1,2 × 0,8 m)",
+          "params": {
+            "model": "inscription"
+          }
+        },
+        {
+          "id": "direction",
+          "name": "Direction (flèche et numéro de salle)",
+          "params": {
+            "model": "direction"
+          }
+        },
+        {
+          "id": "dedication",
+          "name": "Dédicace (inclinée, au sol)",
+          "params": {
+            "model": "dedication"
+          }
+        },
+        {
+          "id": "warning",
+          "name": "Avertissement (glyphe rouge)",
+          "params": {
+            "model": "warning"
+          }
+        }
+      ],
+      "slug": "props-decor-glyph-plaque",
+      "path": "src/assets/props/decor/glyph-plaque.js",
+      "module": "public/catalog/modules/props-decor-glyph-plaque.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1224,
+          "vertices": 2157,
+          "drawCalls": 1
+        },
+        "inscription": {
+          "triangles": 1224,
+          "vertices": 2157,
+          "drawCalls": 1
+        },
+        "direction": {
+          "triangles": 312,
+          "vertices": 556,
+          "drawCalls": 1
+        },
+        "dedication": {
+          "triangles": 696,
+          "vertices": 1205,
+          "drawCalls": 1
+        },
+        "warning": {
+          "triangles": 192,
+          "vertices": 340,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 10379,
+        "standalone": 53456
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",

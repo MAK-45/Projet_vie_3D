@@ -54,6 +54,18 @@ export function withTone(geometry, tone) {
   return geometry;
 }
 
+/**
+ * Bloc quadrillé (pavé de `size` centré en `position`) : dessus et flancs découpés en cases d'environ `cell` m, pour
+ * que des tons par sommet (usure au centre d'une assise, taches d'huile) y prennent une forme. Indexé, fusionnable.
+ */
+export function gridBlock(size, position = [0, 0, 0], { cell = 0.1 } = {}) {
+  const [w, h, d] = size;
+  const seg = (l) => Math.max(1, Math.round(l / cell));
+  const g = plain(new THREE.BoxGeometry(w, h, d, seg(w), seg(h), seg(d)));
+  g.translate(position[0], position[1], position[2]);
+  return g;
+}
+
 /** Fusionne des géométries dont certaines portent un ton (`aTone`) ou une teinte (`aShade`) : les autres reçoivent 0. */
 export function mergeToned(geometries) {
   for (const name of ["aTone", "aShade"]) {
