@@ -118,7 +118,8 @@ export class Walker {
    * @param {number} dirX direction voulue dans le monde (x), longueur 0..1
    * @param {number} dirZ direction voulue dans le monde (z)
    * @param {boolean} run course
-   * @param {object} world monde (heightAt, collide)
+   * @param {object} world monde : `heightAt(x, z, y)` (hauteur du sol sous le corps, `y` sa hauteur actuelle, pour les
+   *   mondes à étages : le sol choisi est celui qu'on peut atteindre d'un pas), `collide(position, rayon, y)`
    */
   update(dt, dirX, dirZ, run, world) {
     if (this.style.glide) this._glide(dt, dirX, dirZ, run, world);
@@ -146,8 +147,8 @@ export class Walker {
       // Se tourne vers la marche, par le plus court chemin.
       this.heading += wrapAngle(Math.atan2(dirX, dirZ) - this.heading) * Math.min(1, dt * 10);
     }
-    world.collide(this.position, this.radius);
-    this.position.y = world.heightAt(this.position.x, this.position.z);
+    world.collide(this.position, this.radius, this.position.y);
+    this.position.y = world.heightAt(this.position.x, this.position.z, this.position.y);
     this.speed = dt > 0 ? Math.hypot(this.position.x - fromX, this.position.z - fromZ) / dt : 0;
   }
 
@@ -170,10 +171,10 @@ export class Walker {
     const fromZ = this.position.z;
     this.position.x += velocity.x * dt;
     this.position.z += velocity.y * dt;
-    world.collide(this.position, this.radius);
+    world.collide(this.position, this.radius, this.position.y);
     velocity.set((this.position.x - fromX) / dt, (this.position.z - fromZ) / dt);
     this.speed = velocity.length();
-    this.position.y = world.heightAt(this.position.x, this.position.z);
+    this.position.y = world.heightAt(this.position.x, this.position.z, this.position.y);
     // Il se tourne vers où il veut aller, même bloqué contre un tronc.
     if (amount > 0.01) this.heading += wrapAngle(Math.atan2(dirX, dirZ) - this.heading) * damp(style.turn, dt);
   }
@@ -200,7 +201,7 @@ export class Walker {
     const fromZ = this.position.z;
     this.position.x += velocity.x * dt;
     this.position.z += velocity.y * dt;
-    world.collide(this.position, this.radius);
+    world.collide(this.position, this.radius, this.position.y);
     // Contre un obstacle, l'élan se réduit à ce qui passe : il glisse le long, sans s'y entasser.
     const movedX = (this.position.x - fromX) / dt;
     const movedZ = (this.position.z - fromZ) / dt;
@@ -219,15 +220,17 @@ export class Walker {
 
     // Le survol : ressort amorti vers le plus haut du sol ici et là où il sera bientôt.
     const ahead = style.anticipate;
+    // (Le monde peut avoir des étages : il choisit le sol d'après la hauteur actuelle du corps.)
+    const y = this.position.y;
     const ground = Math.max(
-      world.heightAt(this.position.x, this.position.z),
-      world.heightAt(this.position.x + velocity.x * ahead, this.position.z + velocity.y * ahead),
+      world.heightAt(this.position.x, this.position.z, y),
+      world.heightAt(this.position.x + velocity.x * ahead, this.position.z + velocity.y * ahead, y),
     );
     const stiffness = style.rise * style.rise;
     this._lift += ((ground - this.position.y) * stiffness - this._lift * 2 * style.rise) * dt;
     this.position.y += this._lift * dt;
     // Jamais le ventre dans la pente : au pire il frôle le sol.
-    const floor = world.heightAt(this.position.x, this.position.z) - 0.25;
+    const floor = world.heightAt(this.position.x, this.position.z, this.position.y) - 0.25;
     if (this.position.y < floor) {
       this.position.y = floor;
       this._lift = Math.max(0, this._lift);

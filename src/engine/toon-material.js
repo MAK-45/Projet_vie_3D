@@ -114,6 +114,23 @@ export function enableCutaway(material, rule, height) {
 }
 
 /**
+ * Lueurs qui s'allument en vague : la matière (une lueur `unlit` : glyphes, rainures, voyants) n'est allumée que dans
+ * une sphère du monde ; au-delà, elle prend la couleur `off` et perd son éclat de nuit. Le monde fait grandir la
+ * sphère (vérification du Sas : les glyphes s'allument depuis le pupitre jusqu'à la porte). Plusieurs matériaux
+ * peuvent partager le même `uniform` (une seule vague pour toute la pièce).
+ * @param {THREE.ShaderMaterial} material matériau de `createToonMaterial`
+ * @param {{value: THREE.Vector4}} uniform xyz centre, w rayon (m) ; rayon 0 : tout éteint
+ * @param {string|number} off couleur éteinte
+ */
+export function enableReveal(material, uniform, off) {
+  material.defines.REVEAL = "";
+  material.uniforms.uReveal = uniform;
+  material.uniforms.uRevealOff = { value: rgb(off) };
+  material.needsUpdate = true;
+  return material;
+}
+
+/**
  * Obscurité ambiante, 0 en plein jour, 1 en pleine nuit : les lumières de halo n'éclairent qu'à proportion.
  * À régler par la scène (explorateur : heure du monde ; galerie : option « Nuit »).
  */
@@ -431,6 +448,10 @@ varying vec3 vWorldPos;
   varying float vCover;
 #endif
 uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
+#ifdef REVEAL
+  uniform vec4 uReveal;   // xyz : centre (monde), w : rayon (m) ; au-delà, la matière prend la couleur éteinte
+  uniform vec3 uRevealOff;
+#endif
 
 varying vec3 vNormal;
 varying vec3 vObjPos;
@@ -673,6 +694,12 @@ void main() {
     color *= texture2D(uMap, vMapUv).rgb;
   #endif
   color = mix(color, uInk, ink);
+  float revealed = 1.0;
+  #ifdef REVEAL
+    // Lueurs qui s'allument en vague (enableReveal) : hors de la sphère, la couleur éteinte, sans éclat propre.
+    revealed = step(distance(vWorldPos, uReveal.xyz), uReveal.w);
+    color = mix(uRevealOff, color, revealed);
+  #endif
 
   // Lumières de halo : dans le noir, le décor proche prend la couleur de la source, en trois paliers nets à
   // frontière tramée. Le palier est écrit dans l'alpha : la passe finale ne l'assombrit pas de la teinte de nuit.
@@ -711,7 +738,7 @@ void main() {
   // (0 = fond, jamais écrit ici) ; moins 0,02 par palier de lumière de halo (0 à 3).
   // Matière qui émet sa propre lumière (vortex, cristaux allumés) : au-dessus du seuil, elle échappe à la teinte de
   // nuit comme ce qu'éclaire une lumière de halo (palier 3).
-  if (uEmissive > 0.0 && lit > uEmissive) glowLevel = 3.0;
+  if (uEmissive > 0.0 && lit > uEmissive && revealed > 0.5) glowLevel = 3.0;
   gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
   gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
 }

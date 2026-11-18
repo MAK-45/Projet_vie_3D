@@ -120,13 +120,14 @@ const PAGES = [
         </div>
         ${choice("size", "Taille de la carte", profile.sizes)}
         <p class="x-note" data-ref="note"></p>`)}
-      ${group("Décor", `
+      ${(profile.choices ?? []).map(([name, label, options, note]) => group(label, `${choice(name, label, options)}${note ? `<p class="x-note">${note}</p>` : ""}`)).join("")}
+      ${profile.amounts.length ? group("Décor", `
         <div class="x-sliders">
           ${profile.amounts.map(([name, label, min, max, step]) => `
             <label class="x-slider"><span>${label}</span>
               <input type="range" min="${min}" max="${max}" step="${step}" data-amount="${name}" />
               <output data-output="${name}"></output></label>`).join("")}
-        </div>`)}`,
+        </div>`) : ""}`,
   },
   {
     id: "sky",
@@ -482,7 +483,8 @@ export class Explorer {
           if (settings[name] === button.dataset.value) return;
           settings[name] = button.dataset.value;
           refresh();
-          onChoice[name]();
+          // Un choix propre au monde (`profile.choices`) le refait, le promeneur à sa place.
+          (onChoice[name] ?? (() => regenerate({ keepPlace: true })))();
         });
       }
       refresh();
@@ -579,6 +581,7 @@ export class Explorer {
     if (this.profile.moment) s.moment = this.profile.moment; // lieu clos : toujours la même lumière
     if (!(s.camera in CAMERAS)) s.camera = d.camera;
     if (!(s.character in CHARACTERS)) s.character = d.character;
+    for (const [name, , options] of this.profile.choices ?? []) if (!(s[name] in options)) s[name] = d[name];
     for (const [name, , min, max] of this.profile.amounts) {
       const value = Number(s[name]);
       s[name] = Number.isFinite(value) ? clamp(value, min, max) : d[name];
@@ -646,8 +649,10 @@ export class Explorer {
   _limitView() {
     const controls = this.iso.controls;
     const endless = Boolean(this.world.endless);
-    controls.minZoom = endless ? ENDLESS_MIN_ZOOM : 0.5;
-    controls.maxPolarAngle = Math.PI / 2 - (endless ? ENDLESS_MIN_ELEVATION : MIN_ELEVATION);
+    // Un monde peut borner la vue lui-même (un intérieur : on ne recule pas jusqu'à voir le vide autour des pièces).
+    const limits = this.world.viewLimits ?? {};
+    controls.minZoom = limits.minZoom ?? (endless ? ENDLESS_MIN_ZOOM : 0.5);
+    controls.maxPolarAngle = Math.PI / 2 - (limits.minElevation ?? (endless ? ENDLESS_MIN_ELEVATION : MIN_ELEVATION));
     const camera = this.iso.camera;
     if (camera.zoom < controls.minZoom) {
       camera.zoom = controls.minZoom;
@@ -811,7 +816,11 @@ export class Explorer {
       setSideView(true);
       const curved = Boolean(this.world.endless);
       setCurvature(camera.position.x, camera.position.z, curved ? THIRD_CURVE_RADIUS : 0, THIRD_CURVE_START);
-      this.pixel.fog.far = curved ? 0 : THIRD_FAR * 0.97; // 0 : pas de brume
+      // Un intérieur donne sa brume (un voile sombre au fond des salles), sinon la brume de lointain des îles.
+      const thirdFog = this.world.fog?.third;
+      this.pixel.fog.near = thirdFog ? thirdFog.near : THIRD_FOG_NEAR;
+      this.pixel.fog.far = thirdFog ? thirdFog.far : curved ? 0 : THIRD_FAR * 0.97; // 0 : pas de brume
+      this.pixel.fog.max = thirdFog ? thirdFog.max : 1;
       // Ombres là où l'on regarde : un disque devant le promeneur, dans le sens de la vue.
       shadowCenter = this._shadowCenter.set(
         look.x - Math.sin(chase.yaw) * THIRD_SHADOW_AHEAD,
@@ -825,6 +834,12 @@ export class Explorer {
       iso.update();
       camera = iso.camera;
       const elevation = Math.PI / 2 - iso.controls.getPolarAngle();
+      // Brume d'un intérieur vu de haut : comptée depuis le point regardé, vers le fond de l'image.
+      const isoFog = this.world.fog?.iso;
+      const focusDepth = camera.position.distanceTo(look) - camera.near; // profondeur lue depuis le plan proche
+      this.pixel.orthoFog.near = isoFog ? focusDepth + isoFog.near : 0;
+      this.pixel.orthoFog.far = isoFog ? focusDepth + isoFog.far : 0;
+      this.pixel.orthoFog.max = isoFog ? isoFog.max : 0;
       const width = view.width / camera.zoom;
       const depth = view.height / camera.zoom / Math.max(0.15, Math.sin(elevation));
       view.area = width * depth;

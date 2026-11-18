@@ -10,7 +10,7 @@
 //   qui ne bloquent que fermées.
 
 import * as THREE from "three";
-import { createGlowLight, disposeObject, enableCutaway, GLOW_LIGHT_COUNT, rgb } from "../../engine/toon-material.js";
+import { createGlowLight, disposeObject, enableCutaway, enableReveal, GLOW_LIGHT_COUNT, rgb } from "../../engine/toon-material.js";
 
 const _matrix = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -23,7 +23,7 @@ export class InteriorKit {
   constructor() {
     this.group = new THREE.Group();
     this.group.name = "interior";
-    /** @type {Map<string, {prototype: THREE.Group, matrices: number[], cut: object|null, castShadow: boolean}>} */
+    /** @type {Map<string, {prototype: THREE.Group, matrices: number[], cut: object|null, castShadow: boolean, reveal: object|null, meshes: THREE.InstancedMesh[]}>} */
     this.models = new Map();
     this.meshes = [];
   }
@@ -37,22 +37,41 @@ export class InteriorKit {
    * @param {{rule: "wall"|"view", height: number}|null} [options.cut] vue en coupe
    * @param {boolean} [options.castShadow] faux : la copie ne projette pas d'ombre (dalles) ; par défaut, ce qui se
    *   cache avec la coupe (accroché aux murs, lampes) n'en projette pas : elle ne se verrait pas sur le mur
+   * @param {{mesh: string, uniform: {value: THREE.Vector4}, off: string}|null} [options.reveal] lueurs qui
+   *   s'allument en vague (`enableReveal`) : le maillage du modèle qui porte ce nom
    * @returns {THREE.Group} le modèle (pour lire ses `userData`)
    */
-  model(key, asset, params, { cut = null, castShadow = !(cut && cut.height < 0) } = {}) {
+  model(key, asset, params, { cut = null, castShadow = !(cut && cut.height < 0), reveal = null } = {}) {
     if (this.models.has(key)) return this.models.get(key).prototype;
     const prototype = asset.create(params);
-    this.models.set(key, { prototype, matrices: [], cut, castShadow });
+    this.models.set(key, { prototype, matrices: [], cut, castShadow, reveal, meshes: [] });
     return prototype;
   }
 
-  /** Pose une copie du modèle `key` en (x, y, z), tournée de `rotY` (radians). */
+  /** Pose une copie du modèle `key` en (x, y, z), tournée de `rotY` (radians). Rend son numéro (`setVisible`). */
   place(key, x, z, rotY = 0, y = 0) {
     const model = this.models.get(key);
     if (!model) throw new Error(`modèle non déclaré : ${key}`);
     _q.setFromAxisAngle(_up, rotY);
     _matrix.compose(_p.set(x, y, z), _q, _s);
     model.matrices.push(..._matrix.elements);
+    return model.matrices.length / 16 - 1;
+  }
+
+  /**
+   * Montre ou cache une copie déjà construite (une lampe éteinte remplacée par la même allumée, posée deux fois :
+   * une copie de chaque modèle, une seule visible). Cachée : réduite à un point, plus aucun triangle.
+   */
+  setVisible(key, index, visible) {
+    const model = this.models.get(key);
+    if (!model?.meshes.length) return;
+    for (const mesh of model.meshes) {
+      _matrix.fromArray(model.matrices, index * 16);
+      if (mesh.userData.offset) _matrix.multiply(mesh.userData.offset);
+      if (!visible) _matrix.scale(_p.set(0, 0, 0));
+      mesh.setMatrixAt(index, _matrix);
+      mesh.instanceMatrix.needsUpdate = true;
+    }
   }
 
   /** Construit les maillages instanciés. À appeler une fois tout posé. */
@@ -72,6 +91,7 @@ export class InteriorKit {
       for (const part of parts) {
         const material = part.material;
         if (model.cut && material.isShaderMaterial && material.uniforms?.uRamp) enableCutaway(material, model.cut.rule, model.cut.height);
+        if (model.reveal && part.name === model.reveal.mesh) enableReveal(material, model.reveal.uniform, model.reveal.off);
         const mesh = new THREE.InstancedMesh(part.geometry, material, count);
         mesh.name = `${key} / ${part.name}`;
         mesh.instanceMatrix = matrices;
@@ -80,6 +100,7 @@ export class InteriorKit {
           const array = new Float32Array(count * 16);
           for (let i = 0; i < count; i++) _matrix.fromArray(model.matrices, i * 16).multiply(part.matrixWorld).toArray(array, i * 16);
           mesh.instanceMatrix = new THREE.InstancedBufferAttribute(array, 16);
+          mesh.userData.offset = part.matrixWorld.clone();
         }
         mesh.customDepthMaterial = material.userData.depthMaterial ?? part.customDepthMaterial;
         mesh.castShadow = model.castShadow && part.castShadow;
@@ -87,6 +108,7 @@ export class InteriorKit {
         mesh.matrixAutoUpdate = false;
         mesh.computeBoundingSphere();
         this.meshes.push(mesh);
+        model.meshes.push(mesh);
         this.group.add(mesh);
       }
     }
@@ -117,7 +139,8 @@ export class InteriorKit {
 /**
  * Prête les lumières de halo du moteur aux lampes les plus utiles : celles près du point regardé (devant la caméra
  * en 3e personne), et, à distance égale, celles qui sont dans le champ.
- * @param {Array<{position: THREE.Vector3, color: string, radius: number, strength?: number}>} sources
+ * @param {Array<{position: THREE.Vector3, color: string, radius: number, strength?: number, on?: boolean}>} sources
+ *   `on` faux : lampe éteinte, qui ne prend pas de place (à changer en route, puis `refresh()`)
  * @param {number} [slots] places prises (en laisser une aux personnages qui brillent)
  */
 export function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
@@ -146,13 +169,17 @@ export function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
       for (let i = 0; i < sources.length; i++) {
         const source = sources[i];
         const seen = !camera || frustum.intersectsSphere(sphere.set(source.position, source.radius));
-        score[i] = source.position.distanceTo(focus) + (seen ? 0 : 30);
+        score[i] = source.on === false ? Infinity : source.position.distanceTo(focus) + (seen ? 0 : 30);
       }
       order.sort((a, b) => score[a] - score[b]);
       lights.forEach((light, k) => {
         const source = sources[order[k]];
-        light.set(source.position, colors[order[k]], source.radius, source.strength ?? 1.1);
+        light.set(source.position, colors[order[k]], source.radius, source.on === false ? 0 : (source.strength ?? 1.1));
       });
+    },
+    /** Une lampe s'est allumée ou éteinte : réattribuer dès la prochaine mise à jour. */
+    refresh() {
+      last = -1;
     },
     dispose() {
       for (const light of lights) light.release();

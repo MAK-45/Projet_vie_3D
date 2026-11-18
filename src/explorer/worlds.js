@@ -2,6 +2,7 @@
 // Chaque fiche dit comment fabriquer le monde, ses tailles, ses curseurs de décor, ses réglages par défaut et s'il
 // est intérieur (pas de pluie, de vent ni de papillons ; vue en coupe ; fond sombre).
 
+import { COMPLEX_ROOMS, createAncientComplex, SAS_STATES } from "../worlds/ancient-complex.js";
 import { createComplexTest, COMPLEX_TEST_SIZES } from "../worlds/complex-test.js";
 import { createSummerMeadow, MEADOW_EXTENTS } from "../worlds/summer-meadow.js";
 
@@ -37,6 +38,32 @@ export const WORLD_PROFILES = {
         note:
           `${world.meters} × ${world.meters} m · ${c.trees} arbres · ${c.rocks} rochers · ${numberFormat.format(c.tufts)} touffes d'herbe · ` +
           `${numberFormat.format(c.flowers)} massifs de fleurs · ${c.lawns} pelouses.`,
+      };
+    },
+  },
+  "worlds/interiors/ancient-complex": {
+    title: "Le Complexe",
+    storageKey: "pv3d-ancient-complex",
+    loading: "Assemblage du Complexe…",
+    // Le réglage « Taille » de l'explorateur choisit la pièce (`room`).
+    create: (settings) => createAncientComplex({ ...settings, room: settings.size }),
+    sizes: COMPLEX_ROOMS,
+    amounts: [],
+    /** Choix propres au monde : nom du réglage, titre, options, note. */
+    choices: [
+      ["state", "État du Sas", SAS_STATES,
+        "Vérification : l'Iris se scelle derrière soi ; devant le pupitre, la lueur gagne le Sas et la porte nord s'ouvre."],
+    ],
+    defaults: { seed: 1, size: "sas", state: "check", moment: "night", character: "mannequin" },
+    interior: true,
+    moment: "night",
+    describe(world, settings) {
+      const c = world.counts;
+      return {
+        summary: `graine ${settings.seed} · ${COMPLEX_ROOMS[world.room].label}`,
+        note:
+          `Sas 10 × 6 × 5 m et son vestibule · ${c.slabs} dalles · ${c.walls} modules de mur · ${c.doors} portes · ` +
+          `${c.furniture} meubles et machines · ${c.lamps} lampes. Les murs entre le personnage et la caméra s'abaissent.`,
       };
     },
   },

@@ -26,7 +26,7 @@ uniform float uDepthThreshold;
 uniform float uPerspective;  // 1 : caméra perspective (profondeur à linéariser, seuil qui grandit avec la distance)
 uniform vec2 uClip;          // near, far de la caméra
 uniform float uTexelPerDepth; // perspective : taille d'un pixel d'art dans le monde, par mètre de profondeur
-uniform vec2 uFog;           // brume de lointain : début, fin (m) ; fin à 0 = pas de brume
+uniform vec3 uFog;           // brume : début, fin (m de la caméra) ; fin à 0 = pas de brume ; z : opacité maximale
 uniform float uOutline;      // 0 ou 1
 uniform float uOutlineDarken;
 uniform vec3 uOutlineTint;
@@ -141,11 +141,11 @@ void main() {
   vec3 graded = mix(vec3(dot(result, vec3(0.3, 0.55, 0.15))), result, uSaturation) * uGrade;
   // Ce qu'éclaire une lumière de halo garde sa couleur dans le noir, à proportion de son palier.
   result = mix(result, graded, inked * (1.0 - glow));
-  // Brume de lointain (caméra perspective) : le décor se fond dans le ciel en quatre paliers tramés, et la fin de
-  // la vue (far) n'est jamais une ligne nette.
+  // Brume de lointain : le décor se fond dans le ciel (le fond) en quatre paliers tramés, et la fin de la vue (far)
+  // n'est jamais une ligne nette. Avec une opacité maximale sous 1 : un voile (intérieurs).
   if (uFog.y > 0.0) {
-    float haze = smoothstep(uFog.x, uFog.y, depth);
-    haze = clamp(floor(haze * 4.0 + bayer4(gl_FragCoord.xy)) / 4.0, 0.0, 1.0);
+    float haze = smoothstep(uFog.x, uFog.y, depth) * uFog.z;
+    haze = clamp(floor(haze * 4.0 + bayer4(gl_FragCoord.xy)) / 4.0, 0.0, uFog.z);
     result = mix(result, skyAt(), haze);
   }
   result = mix(result, vec3(0.86, 0.9, 0.97), 0.3 * rainAt(gl_FragCoord.xy));
@@ -183,8 +183,16 @@ export class PixelRenderer {
     this.width = 1; // taille de l'image rendue, en pixels d'art
     this.height = 1;
     this.info = { calls: 0, triangles: 0 };
-    /** Brume de lointain d'une caméra perspective : début et fin (m). Sans effet en orthographique. */
-    this.fog = { near: 0, far: 0 };
+    /**
+     * Brume de lointain d'une caméra perspective : début et fin (m de la caméra), opacité maximale (1 : le décor
+     * finit dans le fond ; moins : un voile). Sans effet en orthographique.
+     */
+    this.fog = { near: 0, far: 0, max: 1 };
+    /**
+     * Brume d'une caméra orthographique (intérieurs : un voile sombre sur ce qui est loin derrière le point
+     * regardé) : début et fin en m de profondeur depuis la caméra, opacité maximale. `far` à 0 : aucune.
+     */
+    this.orthoFog = { near: 0, far: 0, max: 0 };
 
     this.target = new THREE.WebGLRenderTarget(1, 1, {
       count: 2,
@@ -206,7 +214,7 @@ export class PixelRenderer {
         uPerspective: { value: 0 },
         uClip: { value: new THREE.Vector2(0.1, 100) },
         uTexelPerDepth: { value: 0.01 },
-        uFog: { value: new THREE.Vector2(0, 0) },
+        uFog: { value: new THREE.Vector3(0, 0, 1) },
         uOutline: { value: 1 },
         uOutlineDarken: { value: 0.5 },
         uOutlineTint: { value: rgb("#2a1d3d") },
@@ -304,12 +312,12 @@ export class PixelRenderer {
         uniforms.uPerspective.value = 1;
         uniforms.uTexelPerDepth.value = (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov) / 2)) / camera.zoom / this.height;
         uniforms.uDepthThreshold.value = 0.06;
-        uniforms.uFog.value.set(this.fog.near, this.fog.far);
+        uniforms.uFog.value.set(this.fog.near, this.fog.far, this.fog.max ?? 1);
       } else {
         const texelWorld = (camera.top - camera.bottom) / camera.zoom / this.height;
         uniforms.uPerspective.value = 0;
         uniforms.uDepthThreshold.value = Math.max(0.22, texelWorld * 3.5);
-        uniforms.uFog.value.set(0, 0);
+        uniforms.uFog.value.set(this.orthoFog.near, this.orthoFog.far, this.orthoFog.max);
       }
       uniforms.uOutline.value = this.outline ? 1 : 0;
 
