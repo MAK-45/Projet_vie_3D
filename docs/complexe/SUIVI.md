@@ -23,9 +23,9 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-18
-- **Étape actuelle** : lot 4 fait (Porte-Iris, malle, rambarde de bronze, lampe portative), **à valider** ; ajouté au
-  coin du Sas et au monde d'essai (la Porte-Iris remplace l'entrée du Sas et s'ouvre à l'approche).
-- **Prochaine action** : validation du lot 4, puis lot 5 (Monde : le Sas, avec `create-world`), à discuter d'abord.
+- **Étape actuelle** : lot 4 validé (Porte-Iris, malle, rambarde de bronze, lampe portative) ; ajouté au coin du Sas et
+  au monde d'essai (la Porte-Iris remplace l'entrée du Sas et s'ouvre à l'approche).
+- **Prochaine action** : lot 5 (Monde : le Sas, avec `create-world`), à discuter d'abord.
 
 ## Les lots
 
@@ -36,7 +36,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 1 | Ossature du Sas | 5 | ✅ validé | 2026-11-17 | dalle, mur, colonne, voûte, portes ; scène d'essai `dev/complex-corner.html` |
 | 2 | Lumière et réseaux | 5 | ✅ validé | 2026-11-17 | lampe, lustre, tuyau, valve, câbles ; ajoutés au coin du Sas (jour et nuit) |
 | 3 | Mobilier du Sas | 5 | ✅ validé | 2026-11-18 | banc, casier, pupitre, grille et caillebotis, plaque ; ajoutés au coin du Sas (jour et nuit) ; kit : `gridBlock` |
-| 4 | La Porte-Iris et le balisage | 4 | 👀 à valider | 2026-11-18 | Porte-Iris, malle, rambarde, lampe portative ; ajoutés au coin du Sas et au monde d'essai ; kit : `arcBlock`, `slantPlate`, `createRigidParts`, `mergeParts` ; moteur : option `dither` (trame) |
+| 4 | La Porte-Iris et le balisage | 4 | ✅ validé | 2026-11-18 | Porte-Iris, malle, rambarde, lampe portative ; ajoutés au coin du Sas et au monde d'essai ; kit : `arcBlock`, `slantPlate`, `createRigidParts`, `mergeParts` ; moteur : option `dither` (trame) |
 | 5 | Monde : le Sas | — | ⬜ à faire | | |
 | 6 | Archives : rangement | 5 | ⬜ à faire | | |
 | 7 | Archives : lecture | 5 | ⬜ à faire | | |
@@ -83,10 +83,10 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 3 | `props/machines/lever-desk` | SAS-08, GAL-09, E2-01 | ✅ | vérification, garde (registre, 10 voyants), lecteur (fente cyan) ; `userData.desk` (setLever, setLights, setCassette) |
 | 3 | `buildings/structure/vent-grate` | SAS-12, COE-12 | ✅ | grille murale à damier, caillebotis droit ou courbe (rayon réglable, fait dès ce lot) ; lueur ambre ou cyan ; `userData.walkable` |
 | 3 | `props/decor/glyph-plaque` | SAS-14, GAL-06, ORA-12, plaque de COE-15 | ✅ | inscription, direction (flèche, numéro : couché = 5, debout = 1), dédicace inclinée, avertissement rouge |
-| 4 | `buildings/structure/iris-door` ★ | SAS-17 | 👀 | voussoirs gravés, anneau crénelé qui tourne de 15°, 12 lames en moulinet, médaillon qui respire, 4 verrous ; fermée, ouverte, en boucle ; `userData.door` ; centre 1,40 m, ouverture Ø 2,80 m sur seuil de 0,20 m (bible : 1,5 m et 2,6 m) ; 5 050 triangles, 3 draw calls |
-| 4 | `furniture/storage/travel-trunk` | SAS-13 | 👀 | coffret, malle, grande malle ; fermée, entrouverte, ouverte ; cassettes de verre, outils ou vide ; `userData.trunk` (setOpen, open, close) |
-| 4 | `buildings/structure/bronze-railing` | SAS-15, ETU-15, COE-03, barrière de COE-15 | 👀 | balisage à chaîne, garde-corps à lisse et chaîne lourde, barrière à bandes ambre ; en ligne ou en cercle (passage ouvert possible) ; `userData.blocking` |
-| 4 | `props/tools/hand-lamp` | SAS-16 | 👀 | debout, couchée, en main (`userData.grip`, `beamDirection`) ; allumée ou éteinte ; options halo et faisceau tramé |
+| 4 | `buildings/structure/iris-door` ★ | SAS-17 | ✅ | voussoirs gravés, anneau crénelé qui tourne de 15°, 12 lames en moulinet, médaillon qui respire, 4 verrous ; fermée, ouverte, en boucle ; `userData.door` ; centre 1,40 m, ouverture Ø 2,80 m sur seuil de 0,20 m (bible : 1,5 m et 2,6 m) ; 5 050 triangles, 3 draw calls |
+| 4 | `furniture/storage/travel-trunk` | SAS-13 | ✅ | coffret, malle, grande malle ; fermée, entrouverte, ouverte ; cassettes de verre, outils ou vide ; `userData.trunk` (setOpen, open, close) |
+| 4 | `buildings/structure/bronze-railing` | SAS-15, ETU-15, COE-03, barrière de COE-15 | ✅ | balisage à chaîne, garde-corps à lisse et chaîne lourde, barrière à bandes ambre ; en ligne ou en cercle (passage ouvert possible) ; `userData.blocking` |
+| 4 | `props/tools/hand-lamp` | SAS-16 | ✅ | debout, couchée, en main (`userData.grip`, `beamDirection`) ; allumée ou éteinte ; options halo et faisceau tramé |
 | 6 | `furniture/storage/drawer-archive` | ARC-01, ARC-02 | ⬜ | |
 | 6 | `props/books/data-cassette` | ARC-03, ARC-12 | ⬜ | |
 | 6 | `buildings/structure/rolling-ladder` | ARC-04 | ⬜ | |
@@ -192,13 +192,14 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-17 | Lot 1 validé tel quel : portes pivotantes vers l'arrière livrées avec leur morceau de mur, chambranle dans la pierre du mur (un ton plus clair), dalles posées à y = −0,20. | validé |
 | 2026-11-18 | Lot 3 validé tel quel. | validé |
 | 2026-11-18 | Lot 3 : casier fermé par défaut (portes ouvertes par le scénario) ; caillebotis courbe du Cœur fait dès le lot 3. | demandé par l'utilisateur |
-| 2026-11-18 | Lot 4 : Porte-Iris centrée à 1,40 m, ouverture Ø 2,80 m (au lieu de 1,5 m et 2,6 m) pour un passage de 1,44 m sur le seuil et un sommet à 2,80 m comme les portes ; livrée avec son pan de mur de 6 m. | à confirmer |
+| 2026-11-18 | Lot 4 validé tel quel : Porte-Iris centrée à 1,40 m, ouverture Ø 2,80 m (au lieu de 1,5 m et 2,6 m) pour un passage de 1,44 m sur le seuil et un sommet à 2,80 m comme les portes ; livrée avec son pan de mur de 6 m ; glyphes éteints quand elle est fermée. | validé |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
 
 ## Journal des sessions
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-18 | Lot 4 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 5 : propositions à discuter. |
 | 2026-11-18 | Lot 4 : Porte-Iris, malle, rambarde de bronze, lampe portative (kit : blocs en arc, plaques en biseau, pièces rigides dans un maillage ; moteur : trame `dither`), vérifiés en planches, en gros plan, dans le coin du Sas (jour, nuit, mobile) et dans le monde d'essai ; Atelier publié (v43). | Validation du lot 4, puis lot 5. |
 | 2026-11-18 | Monde d'essai retouché (retours de l'utilisateur) : toujours la nuit, 12 lumières de halo dans le moteur (11 pour les lampes vues, même de loin), plafond à caissons en 3e personne, caméra suiveuse qui ne traverse plus les murs, départ face à la porte des Archives. | Retours sur le monde d'essai, puis lot 4. |
 | 2026-11-18 | Lot 3 validé. Monde d'essai du Complexe (demande de l'utilisateur) : 4 pièces praticables, vue en coupe (moteur), portes automatiques, halos des lampes proches, explorateur rendu générique ; Atelier publié. | Retours sur le monde d'essai, puis lot 4. |
