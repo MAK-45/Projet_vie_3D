@@ -67,6 +67,7 @@ import * as equipmentLocker from "./furniture/storage/equipment-locker.js";
 import * as leverDesk from "./props/machines/lever-desk.js";
 import * as ventGrate from "./buildings/structure/vent-grate.js";
 import * as glyphPlaque from "./props/decor/glyph-plaque.js";
+import * as complexTest from "./worlds/interiors/complex-test.js";
 
 export { taxonomy, biomes } from "./taxonomy.js";
 
@@ -77,7 +78,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
   filamentLamp, filamentChandelier, copperPipe, wheelValve, braidedCable,
   stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
-  summerMeadow,
+  summerMeadow, complexTest,
 ];
 
 /** Retrouve un asset par son identifiant (`nature/trees/birch`). */

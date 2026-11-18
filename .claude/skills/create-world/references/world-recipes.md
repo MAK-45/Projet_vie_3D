@@ -156,3 +156,17 @@ dépasser.
 - **Borner la caméra** (zoom arrière, vue rasante) plutôt que fabriquer jusqu'à l'horizon.
 - Le sol en morceaux coûtait 3 ms par morceau (cinq lectures de la hauteur par sommet) : une grille de hauteurs
   lue une fois (`buildGroundPatch`) le ramène à 0,7 ms.
+
+## Intérieur vu en coupe (Complexe, monde d'essai)
+
+- **Coupe par l'origine, pas par le sommet** : le shader décide pour l'objet entier (origine de la copie
+  instanciée) ; une coupe sommet par sommet tranche les modules en biais. Murs : coupés si leur plan est entre le
+  promeneur et la caméra (face vue de profil : jamais). Piliers d'angle : coupés si l'un de leurs deux murs l'est.
+- **Cacher** = ramener tous les sommets au même point (aucun triangle) ; les aplatir sous le sol ne suffit pas :
+  hors des pièces, il n'y a pas de sol et on les voit dans le vide.
+- **Ombres** : le matériau d'ombre doit suivre la coupe (sinon un mur abaissé projette encore son ombre entière) ;
+  ce qui se cache (accroché aux murs, lampes) ne projette rien.
+- **Balade en intérieur** : un but en ligne droite bute contre les murs ; passer par les portes (parcours en
+  largeur sur les liaisons, deux points de passage par porte, sans halte).
+- **Coût** : beaucoup de modèles utilisés une ou deux fois = beaucoup de draw calls. Fusionner les variantes
+  proches (une seule dalle intacte tournée au hasard, un seul casier).

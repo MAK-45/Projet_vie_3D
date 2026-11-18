@@ -1,4 +1,4 @@
-// Explorateur de monde : on configure la prairie d'été puis on s'y promène avec le personnage choisi (barre rouge de 1,80 m, blob en lévitation ou personnage qui marche), la
+// Explorateur de monde : on configure un monde (la prairie d'été, le Complexe...) puis on s'y promène avec le personnage choisi (barre rouge de 1,80 m, blob en lévitation ou personnage qui marche), la
 // caméra isométrique suit. Un seul objet, montable dans n'importe quel bloc : il vit dans la fiche de l'asset
 // « Prairie d'été » de l'Atelier, et passe en plein écran pour la balade.
 
@@ -6,14 +6,15 @@ import * as THREE from "three";
 import { ChaseCamera } from "../engine/chase-camera.js";
 import { IsoCamera, ISO_ELEVATION } from "../engine/iso-camera.js";
 import { PixelRenderer, PIXELS_PER_UNIT } from "../engine/pixel-renderer.js";
-import { setCurvature, setDarkness, setSideView, setWind, tick } from "../engine/toon-material.js";
+import { setCurvature, setCutaway, setDarkness, setSideView, setWind, tick } from "../engine/toon-material.js";
 import { createAmbientLife } from "../fx/ambient-life.js";
 import { createAtmosphere, MOMENTS, WEATHERS } from "../worlds/kit/atmosphere.js";
-import { createSummerMeadow, MEADOW_EXTENTS } from "../worlds/summer-meadow.js";
 import { WalkInput } from "./input.js";
 import { CHARACTERS, Walker } from "./walker.js";
+import { DEFAULT_WORLD, WORLD_PROFILES } from "./worlds.js";
 
-const STORAGE_KEY = "pv3d-meadow";
+/** Intérieur : fond uni sombre (pas de ciel). */
+const INTERIOR_BACKGROUND = "#0b0910";
 const MIN_ELEVATION = THREE.MathUtils.degToRad(11);
 /**
  * Prairie infinie : la vue ne recule ni ne se couche autant que sur une île, pour que la caméra ne voie jamais
@@ -62,18 +63,17 @@ export const CAMERAS = {
   third: { label: "3e pers." },
 };
 
-/** Curseurs d'abondance : nom du réglage, libellé, bornes. */
-const AMOUNTS = [
-  ["trees", "Arbres", 0, 2, 0.25],
-  ["rocks", "Rochers", 0, 2, 0.25],
-  ["grass", "Herbe", 0, 2, 0.25],
-  ["flowers", "Fleurs", 0, 2, 0.25],
-  ["relief", "Relief", 0.6, 3, 0.2],
-];
+/** Réglages communs à tous les mondes ; chaque monde ajoute les siens (`WORLD_PROFILES`, src/explorer/worlds.js). */
+const COMMON_SETTINGS = { moment: "day", weather: "clear", camera: "fixed", character: "bar" };
 
-export const DEFAULT_SETTINGS = {
-  seed: 1, size: "medium", relief: 1.8, trees: 1, rocks: 1, grass: 1, flowers: 1, moment: "day", weather: "clear", camera: "fixed", character: "bar",
-};
+/** Réglages par défaut d'un monde (communs + propres au monde). */
+export function defaultSettings(worldId = DEFAULT_WORLD) {
+  const profile = WORLD_PROFILES[worldId] ?? WORLD_PROFILES[DEFAULT_WORLD];
+  return { ...COMMON_SETTINGS, ...profile.defaults };
+}
+
+/** Réglages par défaut de la prairie (compatibilité). */
+export const DEFAULT_SETTINGS = defaultSettings();
 
 const SIZE_NOTES = {
   bar: "La barre rouge mesure 1,80 m.",
@@ -111,18 +111,18 @@ const PAGES = [
   {
     id: "world",
     label: "Monde",
-    html: () => `
+    html: (profile) => `
       ${group("Carte", `
         <div class="x-row">
           <label class="x-field"><span>Graine</span>
             <input type="number" min="0" max="9999" step="1" inputmode="numeric" data-ref="seed" /></label>
           <button type="button" class="x-button" data-ref="reroll">Au hasard</button>
         </div>
-        ${choice("size", "Taille de la carte", MEADOW_EXTENTS)}
+        ${choice("size", "Taille de la carte", profile.sizes)}
         <p class="x-note" data-ref="note"></p>`)}
       ${group("Décor", `
         <div class="x-sliders">
-          ${AMOUNTS.map(([name, label, min, max, step]) => `
+          ${profile.amounts.map(([name, label, min, max, step]) => `
             <label class="x-slider"><span>${label}</span>
               <input type="range" min="${min}" max="${max}" step="${step}" data-amount="${name}" />
               <output data-output="${name}"></output></label>`).join("")}
@@ -131,9 +131,9 @@ const PAGES = [
   {
     id: "sky",
     label: "Ciel",
-    html: () => `
+    html: (profile) => `
       ${group("Moment", choice("moment", "Moment de la journée", MOMENTS))}
-      ${group("Météo", choice("weather", "Météo", WEATHERS))}`,
+      ${profile.interior ? `<p class="x-note">Intérieur : le moment règle la lumière de service (jour : allumée ; nuit : les lampes seules).</p>` : group("Météo", choice("weather", "Météo", WEATHERS))}`,
   },
   {
     id: "character",
@@ -164,8 +164,8 @@ const PAGES = [
   },
 ];
 
-const TEMPLATE = `
-  <div class="x-stage" data-ref="stage" aria-label="Vue de la prairie"></div>
+const template = (profile) => `
+  <div class="x-stage" data-ref="stage" aria-label="Vue du monde : ${profile.title}"></div>
 
   <button type="button" class="x-fps" data-ref="fps" aria-label="Images par seconde (toucher pour le détail)">– i/s</button>
 
@@ -178,44 +178,48 @@ const TEMPLATE = `
 
   <section class="x-panel x-drawer" data-ref="drawer" hidden aria-label="Réglages">
     <header class="x-drawer-head">
-      <span class="x-brand">Prairie d'été</span> <span class="x-summary" data-ref="summary"></span>
+      <span class="x-brand">${profile.title}</span> <span class="x-summary" data-ref="summary"></span>
       <button type="button" class="x-icon x-close" data-ref="close" aria-label="Fermer les réglages">${icon("close")}</button>
     </header>
     <nav class="x-tabs" role="tablist">
       ${PAGES.map((page) => `<button type="button" role="tab" data-tab="${page.id}">${page.label}</button>`).join("")}
     </nav>
     <div class="x-pages">
-      ${PAGES.map((page) => `<div class="x-page" role="tabpanel" data-page="${page.id}">${page.html()}</div>`).join("")}
+      ${PAGES.map((page) => `<div class="x-page" role="tabpanel" data-page="${page.id}">${page.html(profile)}</div>`).join("")}
     </div>
   </section>
 
   <div class="x-joystick" data-ref="joystick" aria-hidden="true"><span class="x-knob"></span></div>
 
   <button type="button" class="x-reveal x-icon" data-ref="reveal" aria-label="Afficher l'interface" title="Afficher l'interface">${icon("menu")}</button>
-  <div class="x-loading" data-ref="loading">Génération de la prairie…</div>
+  <div class="x-loading" data-ref="loading">${profile.loading}</div>
 `;
 
 export class Explorer {
   /**
    * @param {HTMLElement} container bloc qui accueille l'explorateur (il en prend toute la place)
    * @param {object} [options]
+   * @param {string} [options.world] identifiant de l'asset du monde (`WORLD_PROFILES`) ; la prairie d'été par défaut
    * @param {object} [options.settings] réglages de départ (complétés par la mémoire locale et les défauts)
    * @param {boolean} [options.remember] retenir les réglages dans le navigateur
    * @param {(immersive: boolean) => void} [options.onImmersive] appelé quand on entre ou sort du plein écran
    */
-  constructor(container, { settings = {}, remember = true, onImmersive } = {}) {
+  constructor(container, { world = DEFAULT_WORLD, settings = {}, remember = true, onImmersive } = {}) {
+    this.profile = WORLD_PROFILES[world] ?? WORLD_PROFILES[DEFAULT_WORLD];
+    this.defaults = defaultSettings(world in WORLD_PROFILES ? world : DEFAULT_WORLD);
     this.root = document.createElement("div");
     this.root.className = "explorer";
-    this.root.innerHTML = TEMPLATE;
+    this.root.classList.toggle("is-interior", this.profile.interior);
+    this.root.innerHTML = template(this.profile);
     container.appendChild(this.root);
     this.onImmersive = onImmersive;
     this.remember = remember;
     this.immersive = false;
 
-    this.settings = { ...DEFAULT_SETTINGS };
+    this.settings = { ...this.defaults };
     if (remember) {
       try {
-        Object.assign(this.settings, JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "{}"));
+        Object.assign(this.settings, JSON.parse(localStorage.getItem(this.profile.storageKey) ?? "{}"));
       } catch {
         // Pas de mémoire locale (navigation privée, aperçu) : réglages par défaut.
       }
@@ -248,6 +252,7 @@ export class Explorer {
     this.pixel.fog.near = THIRD_FOG_NEAR;
     this.pixel.fog.far = THIRD_FAR * 0.97; // remis à 0 (pas de brume) dans un monde courbé : voir _frame
     this._shadowCenter = new THREE.Vector3();
+    this._toCamera = new THREE.Vector3();
 
     this.scene = new THREE.Scene();
     this.walker = new Walker(this.settings.character);
@@ -255,6 +260,7 @@ export class Explorer {
     this.scene.add(this.walker.object);
     this.input = new WalkInput(this.ui.joystick, { mapPoint: (x, y) => this._toLocal(x, y) });
     this.life = createAmbientLife();
+    this.life.group.visible = !this.profile.interior; // pas de papillons sous terre
     this.scene.add(this.life.group);
     this.atmosphere = createAtmosphere();
     this.atmosphere.set(this.settings);
@@ -422,6 +428,7 @@ export class Explorer {
     // Réglages globaux des matériaux : la galerie retrouve un décor plat, vu de haut.
     setCurvature(0, 0, 0);
     setSideView(false);
+    setCutaway(false);
     this.pixel.renderer.setAnimationLoop(null);
     this._resizeObserver.disconnect();
     this._intersectionObserver.disconnect();
@@ -496,7 +503,8 @@ export class Explorer {
     for (const slider of this.root.querySelectorAll("[data-amount]")) {
       const name = slider.dataset.amount;
       const output = this.root.querySelector(`[data-output="${name}"]`);
-      const show = () => (output.textContent = name === "relief" ? `${Number(slider.value).toFixed(1)} m` : `× ${Number(slider.value)}`);
+      const unit = this.profile.amounts.find(([n]) => n === name)?.[5];
+      const show = () => (output.textContent = unit === "m" ? `${Number(slider.value).toFixed(1)} m` : `× ${Number(slider.value)}`);
       slider.value = String(settings[name]);
       show();
       slider.addEventListener("input", show);
@@ -563,21 +571,23 @@ export class Explorer {
     const s = this.settings;
     const clamp = THREE.MathUtils.clamp;
     s.seed = clamp(Math.round(Number(s.seed)) || 0, 0, 9999);
-    if (!(s.size in MEADOW_EXTENTS)) s.size = DEFAULT_SETTINGS.size;
-    if (!(s.moment in MOMENTS)) s.moment = DEFAULT_SETTINGS.moment;
-    if (!(s.weather in WEATHERS)) s.weather = DEFAULT_SETTINGS.weather;
-    if (!(s.camera in CAMERAS)) s.camera = DEFAULT_SETTINGS.camera;
-    if (!(s.character in CHARACTERS)) s.character = DEFAULT_SETTINGS.character;
-    for (const [name, , min, max] of AMOUNTS) {
+    const d = this.defaults;
+    if (!(s.size in this.profile.sizes)) s.size = d.size;
+    if (!(s.moment in MOMENTS)) s.moment = d.moment;
+    if (!(s.weather in WEATHERS)) s.weather = d.weather;
+    if (this.profile.interior) s.weather = "clear";
+    if (!(s.camera in CAMERAS)) s.camera = d.camera;
+    if (!(s.character in CHARACTERS)) s.character = d.character;
+    for (const [name, , min, max] of this.profile.amounts) {
       const value = Number(s[name]);
-      s[name] = Number.isFinite(value) ? clamp(value, min, max) : DEFAULT_SETTINGS[name];
+      s[name] = Number.isFinite(value) ? clamp(value, min, max) : d[name];
     }
   }
 
   _save() {
     if (!this.remember) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.settings));
+      localStorage.setItem(this.profile.storageKey, JSON.stringify(this.settings));
     } catch {
       // Sans mémoire locale, les réglages ne sont simplement pas retenus.
     }
@@ -600,18 +610,9 @@ export class Explorer {
   }
 
   _describe() {
-    const { world, settings, ui } = this;
-    const c = world.counts;
-    if (world.endless) {
-      ui.summary.textContent = `graine ${settings.seed} · infinie`;
-      ui.note.textContent =
-        "Prairie sans bord : elle se fabrique au fil de la marche, et redonne le même pré quand on revient sur ses pas.";
-      return;
-    }
-    ui.summary.textContent = `graine ${settings.seed} · ${world.meters} m`;
-    ui.note.textContent =
-      `${world.meters} × ${world.meters} m · ${c.trees} arbres · ${c.rocks} rochers · ${numberFormat.format(c.tufts)} touffes d'herbe · ` +
-      `${numberFormat.format(c.flowers)} massifs de fleurs · ${c.lawns} pelouses.`;
+    const { summary, note } = this.profile.describe(this.world, this.settings);
+    this.ui.summary.textContent = summary;
+    this.ui.note.textContent = note;
   }
 
   // --- Monde ---------------------------------------------------------------------------------------------------
@@ -624,7 +625,7 @@ export class Explorer {
       this.scene.remove(this.world.group);
       this.world.dispose();
     }
-    this.world = createSummerMeadow(this.settings);
+    this.world = this.profile.create(this.settings);
     this.scene.add(this.world.group);
     this._limitView();
     walker.placeAt(this.world, place?.x ?? this.world.spawn.x, place?.z ?? this.world.spawn.z);
@@ -655,6 +656,15 @@ export class Explorer {
 
   _pickStrollTarget() {
     const { bounds } = this.world;
+    if (this.world.strollTarget) {
+      // Le monde choisit (un intérieur : un point libre d'une pièce, pas un mur).
+      const spot = this.world.strollTarget(Math.random, this.walker.position);
+      this._stroll.x = spot.x;
+      this._stroll.z = spot.z;
+      this._stroll.pass = Boolean(spot.pass); // étape de passage (une porte) : pas de halte
+      this._stroll.stuck = 0;
+      return;
+    }
     if (this.world.endless) {
       // Sans bord : un but à quelques dizaines de mètres, dans une direction proche de la précédente, pour que la
       // balade avance au lieu de tourner en rond.
@@ -769,9 +779,10 @@ export class Explorer {
       if (stroll.pause > 0) {
         stroll.pause -= dt; // halte pour regarder le paysage
         dirX = dirZ = 0;
-      } else if (distance < 1.5 || stroll.stuck > 1.5) {
+      } else if (distance < (stroll.pass ? 0.6 : 1.5) || stroll.stuck > 1.5) {
+        const halt = !stroll.pass;
         this._pickStrollTarget();
-        stroll.pause = 2.5;
+        stroll.pause = halt ? 2.5 : 0;
         dirX = dirZ = 0;
       } else {
         dirX = (dx / distance) * 0.62;
@@ -821,9 +832,13 @@ export class Explorer {
     // Heure et météo.
     atmosphere.update(dt);
     const mood = atmosphere.values;
-    pixel.setMood({ grade: mood.grade, saturation: mood.saturation, rain: mood.rain, time: elapsed });
-    pixel.setBackground(mood.skyBottom, mood.skyTop);
-    setWind(mood.wind);
+    const interior = this.profile.interior;
+    pixel.setMood({ grade: mood.grade, saturation: mood.saturation, rain: interior ? 0 : mood.rain, time: elapsed });
+    if (interior) pixel.setBackground(INTERIOR_BACKGROUND, INTERIOR_BACKGROUND);
+    else pixel.setBackground(mood.skyBottom, mood.skyTop);
+    setWind(interior ? 0 : mood.wind);
+    // Vue en coupe : seulement en vue isométrique (en 3e personne, on est dans la pièce).
+    setCutaway(interior && !third, walker.position, this._toCamera.subVectors(camera.position, look));
     setDarkness(mood.night);
     world.setMood(mood);
     this.life.setMood(mood.night, mood.rain);
@@ -837,7 +852,7 @@ export class Explorer {
       groundReach: third ? THIRD_GROUND_REACH : Infinity, // monde sans bord : tout autour est prêt, la vue peut se retourner
     });
     pixel.renderer.shadowMap.needsUpdate = shadows;
-    this.life.update(dt, elapsed, walker.position, view.radius);
+    if (!interior) this.life.update(dt, elapsed, walker.position, view.radius);
 
     pixel.render(this.scene, camera);
     if (!third) this.canvas.style.transform = `translate(${iso.subPixel.x * this._artPixel}px, ${-iso.subPixel.y * this._artPixel}px)`;

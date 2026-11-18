@@ -154,7 +154,11 @@ var sharedUniforms = {
   // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
   uCurve: { value: new THREE2.Vector4(0, 0, 0, 0) },
   // 1 : le décor est vu de côté (caméra à la 3e personne), voir setSideView.
-  uSideView: { value: 0 }
+  uSideView: { value: 0 },
+  // Vue en coupe (intérieurs, voir setCutaway) : xy position du promeneur (x, z), zw direction horizontale vers la
+  // caméra ; options : x 1 = active, y marge (m).
+  uCutAway: { value: new THREE2.Vector4(0, 0, 0, 1) },
+  uCutOptions: { value: new THREE2.Vector2(0, 0.3) }
 };
 function tick(seconds, fps = 12) {
   sharedUniforms.uTime.value = fps > 0 ? Math.floor(seconds * fps) / fps : seconds;
@@ -181,6 +185,11 @@ uniform float uSideView;
 uniform vec2 uFade; // apparition en douceur : de x \xE0 y m\xE8tres de la cam\xE9ra, la copie rentre dans le sol (0, 0 : rien)
 uniform vec3 uLod;  // FOLIAGE, passage \xE0 la version lointaine : de x \xE0 y m\xE8tres, les feuilles absentes de cette
                     // version (aFar 0) rapetissent jusqu'\xE0 rien, les autres grandissent de z (y \xE0 0 : rien)
+#ifdef CUTAWAY
+  uniform vec4 uCutAway;
+  uniform vec2 uCutOptions;
+  uniform vec2 uCut; // x : r\xE8gle (1 le long d'un mur, 2 isol\xE9, 3 pilier d'angle), y : hauteur de coupe (< 0 : cach\xE9)
+#endif
 uniform vec2 uSway; // x : amplitude du balancement \xE0 la hauteur y (unit\xE9s), y : hauteur de r\xE9f\xE9rence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (\xD7 souplesse de chaque sommet)
 
@@ -264,6 +273,30 @@ void main() {
     // Surtout vers l'ext\xE9rieur : les parties gonflent et d\xE9gonflent sans jamais se creuser (une cheville ou un poignet
     // fin se pincerait jusqu'\xE0 dispara\xEEtre).
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
+  #ifdef CUTAWAY
+    // Vue en coupe : l'objet entier est coup\xE9 ou non selon la place de son origine (voir enableCutaway).
+    if (uCutOptions.x > 0.5) {
+      mat4 cutWorld = modelMatrix;
+      #ifdef USE_INSTANCING
+        cutWorld = modelMatrix * instanceMatrix;
+      #endif
+      vec2 toObject = cutWorld[3].xz - uCutAway.xy;
+      bool cut;
+      if (uCut.x < 1.5) {
+        vec2 n = cutWorld[2].xz;
+        n /= max(length(n), 1e-5);
+        float facing = dot(n, uCutAway.zw);
+        cut = abs(facing) > 0.3 && dot(toObject, n) * sign(facing) > uCutOptions.y;
+      } else if (uCut.x < 2.5) {
+        cut = dot(toObject, uCutAway.zw) > uCutOptions.y;
+      } else {
+        vec2 side = toObject * sign(uCutAway.zw);
+        cut = (abs(uCutAway.z) > 0.3 && side.x > uCutOptions.y) || (abs(uCutAway.w) > 0.3 && side.y > uCutOptions.y);
+      }
+      // Cach\xE9 : tous les sommets au m\xEAme point, plus aucun triangle n'a de surface.
+      if (cut) transformed = uCut.y < 0.0 ? vec3(0.0) : vec3(transformed.x, min(transformed.y, uCut.y), transformed.z);
+    }
   #endif
   vObjPos = transformed;
   #ifdef TONE

@@ -250,3 +250,31 @@ Mesures (navigateur de capture, téléphone 412 × 915, vue de départ, en march
 à 190 000 triangles, comme l'île moyenne ; 60 à 70 morceaux chargés (≈ 5 Mo) ; 1 à 2 ms pour fabriquer un
 morceau (le sol pèse le plus : `buildGroundPatch` le ramène de 3 à 0,7 ms). La part d'herbe dessinée reste fixe
 pendant la marche. Coordonnées testées jusqu'à 5 km de l'origine sans défaut.
+
+## Le Complexe, monde d'essai (`worlds/interiors/complex-test`)
+
+Monde intérieur de test, en attendant le vrai monde du Complexe (lot 5 de `docs/complexe/PLAN.md`) : les assets des
+lots 1 à 3 assemblés en quatre pièces praticables, à l'échelle de la bible — le Sas (10 × 6 × 5 m), les Archives à
+colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m), un tronçon de la Grande Galerie
+(4 × 20 m). Générateur : `src/worlds/complex-test.js` ; outils réutilisables : `src/worlds/kit/interior.js`.
+
+| Réglage | Valeurs |
+|---|---|
+| `seed` | variantes des dalles, niches et conduits des murs, appliques faibles |
+| `size` | `sas` (le Sas seul), `wing` (Sas et Archives), `full` (les quatre pièces) |
+| `furniture` | 0 (pièces nues) à 2 (encombrées) |
+| `lamps` | 0 (aucune lampe : le noir) à 2 |
+
+- **Pose instanciée** (`InteriorKit`) : un modèle par asset et réglages, un `InstancedMesh` par maillage du modèle.
+- **Vue en coupe** (moteur : `enableCutaway`, `setCutaway`) : règle portée par l'origine de chaque copie. Murs,
+  portes, piliers coupés à 1,20 m quand ils sont entre le promeneur et la caméra ; ce qui y est accroché (casiers,
+  plaques, appliques, tuyaux) et les lampes suspendues disparaissent. Actif en vue isométrique seulement.
+- **Lumière** : une lumière de service venue d'en haut (élévation 62°) ; les 3 lampes les plus proches du promeneur
+  prennent une lumière de halo (la 4e reste aux personnages qui brillent). « Nuit » : les lampes seules.
+- **Praticable** : collisions en boîtes (murs, piliers, meubles, portes fermées) ; les portes entre deux pièces
+  s'ouvrent à l'approche ; la balade automatique passe de pièce en pièce par les portes (`strollTarget`).
+- **Explorateur** : générique (`src/explorer/worlds.js` : une fiche par monde) ; `explorer.html?world=worlds/interiors/complex-test`.
+  Intérieur : ni pluie, ni vent, ni papillons, fond sombre.
+- **Mesures** (capture logicielle, téléphone, balade de 60 s) : 105 à 147 draw calls, 225 000 à 275 000 triangles
+  par image (passe d'ombre comprise). Au-dessus de la cible de 100 draw calls : le vrai monde montrera une pièce et
+  ses voisines seulement, et regroupera les petits modèles.

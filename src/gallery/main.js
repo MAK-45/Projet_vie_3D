@@ -279,7 +279,7 @@ function renderWorldSheet(entry, category, subcategory) {
     ),
     h("section", { class: "tabs", id: "tabs" }),
   );
-  explorer = new Explorer(box);
+  explorer = new Explorer(box, { world: entry.id });
   renderTabs();
 }
 

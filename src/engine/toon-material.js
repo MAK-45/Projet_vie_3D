@@ -32,6 +32,10 @@ export const sharedUniforms = {
   uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
   // 1 : le décor est vu de côté (caméra à la 3e personne), voir setSideView.
   uSideView: { value: 0 },
+  // Vue en coupe (intérieurs, voir setCutaway) : xy position du promeneur (x, z), zw direction horizontale vers la
+  // caméra ; options : x 1 = active, y marge (m).
+  uCutAway: { value: new THREE.Vector4(0, 0, 0, 1) },
+  uCutOptions: { value: new THREE.Vector2(0, 0.3) },
 };
 
 /**
@@ -50,6 +54,57 @@ export function setSideView(value) {
 export function setCurvature(x, z, radius, start = 0) {
   const k = radius > 0 && Number.isFinite(radius) ? 1 / (2 * radius) : 0;
   sharedUniforms.uCurve.value.set(x, z, k, start);
+}
+
+/**
+ * Vue en coupe d'un intérieur : ce qui se trouve entre le promeneur et la caméra est abaissé (murs coupés à hauteur
+ * d'appui) ou caché (ce qui est accroché à ces murs). Seuls les matériaux passés à `enableCutaway` sont concernés.
+ * @param {boolean} enabled
+ * @param {THREE.Vector3} [walker] position du promeneur
+ * @param {THREE.Vector3} [toCamera] direction vers la caméra (seule sa partie horizontale compte)
+ * @param {number} [margin] distance au promeneur en deçà de laquelle rien n'est coupé (m)
+ */
+export function setCutaway(enabled, walker, toCamera, margin = 0.3) {
+  sharedUniforms.uCutOptions.value.set(enabled ? 1 : 0, margin);
+  if (!enabled) return;
+  const length = Math.hypot(toCamera.x, toCamera.z) || 1;
+  sharedUniforms.uCutAway.value.set(walker.x, walker.z, toCamera.x / length, toCamera.z / length);
+}
+
+/**
+ * Rend un matériau toon « coupable » (vue en coupe, `setCutaway`). La règle porte sur l'origine de l'objet (ou de
+ * chaque copie d'un `InstancedMesh`), jamais sur un sommet seul : un module se coupe d'un bloc.
+ * - `wall` : objet posé le long d'un mur, face vers son +z local (mur, porte, pilastre) ; coupé quand son plan est
+ *   entre le promeneur et la caméra ; un objet de profil (vu par la tranche) ne l'est jamais.
+ * - `view` : objet isolé (colonne, lustre) ; coupé quand il est entre le promeneur et la caméra.
+ * - `corner` : pilier d'angle, qui appartient à deux murs ; coupé quand l'un des deux l'est (il est du côté de la
+ *   caméra selon x ou selon z).
+ * `height` : hauteur de coupe (m, repère de l'objet) ; négative, l'objet est caché.
+ * Crée aussi le matériau d'ombre qui suit la coupe (`userData.depthMaterial`, à poser en `customDepthMaterial`).
+ * @param {THREE.ShaderMaterial} material matériau de `createToonMaterial`
+ * @param {"wall"|"view"|"corner"} rule
+ * @param {number} height
+ */
+export function enableCutaway(material, rule, height) {
+  material.defines.CUTAWAY = "";
+  material.uniforms.uCut = { value: new THREE.Vector2({ wall: 1, view: 2, corner: 3 }[rule] ?? 1, height) };
+  material.needsUpdate = true;
+  const depth = material.userData.depthMaterial;
+  if (depth) {
+    depth.defines.CUTAWAY = "";
+    depth.uniforms.uCut = material.uniforms.uCut;
+    depth.needsUpdate = true;
+  } else {
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonCutDepth",
+      defines: { CUTAWAY: "", DEPTH_ONLY: "" },
+      side: material.side,
+      uniforms: { ...sharedUniforms, uSway: material.uniforms.uSway, uTwinkle: material.uniforms.uTwinkle, uCut: material.uniforms.uCut },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT,
+    });
+  }
+  return material;
 }
 
 /**
@@ -121,6 +176,11 @@ uniform float uSideView;
 uniform vec2 uFade; // apparition en douceur : de x à y mètres de la caméra, la copie rentre dans le sol (0, 0 : rien)
 uniform vec3 uLod;  // FOLIAGE, passage à la version lointaine : de x à y mètres, les feuilles absentes de cette
                     // version (aFar 0) rapetissent jusqu'à rien, les autres grandissent de z (y à 0 : rien)
+#ifdef CUTAWAY
+  uniform vec4 uCutAway;
+  uniform vec2 uCutOptions;
+  uniform vec2 uCut; // x : règle (1 le long d'un mur, 2 isolé, 3 pilier d'angle), y : hauteur de coupe (< 0 : caché)
+#endif
 uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
 uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (× souplesse de chaque sommet)
 
@@ -204,6 +264,30 @@ void main() {
     // Surtout vers l'extérieur : les parties gonflent et dégonflent sans jamais se creuser (une cheville ou un poignet
     // fin se pincerait jusqu'à disparaître).
     transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
+  #ifdef CUTAWAY
+    // Vue en coupe : l'objet entier est coupé ou non selon la place de son origine (voir enableCutaway).
+    if (uCutOptions.x > 0.5) {
+      mat4 cutWorld = modelMatrix;
+      #ifdef USE_INSTANCING
+        cutWorld = modelMatrix * instanceMatrix;
+      #endif
+      vec2 toObject = cutWorld[3].xz - uCutAway.xy;
+      bool cut;
+      if (uCut.x < 1.5) {
+        vec2 n = cutWorld[2].xz;
+        n /= max(length(n), 1e-5);
+        float facing = dot(n, uCutAway.zw);
+        cut = abs(facing) > 0.3 && dot(toObject, n) * sign(facing) > uCutOptions.y;
+      } else if (uCut.x < 2.5) {
+        cut = dot(toObject, uCutAway.zw) > uCutOptions.y;
+      } else {
+        vec2 side = toObject * sign(uCutAway.zw);
+        cut = (abs(uCutAway.z) > 0.3 && side.x > uCutOptions.y) || (abs(uCutAway.w) > 0.3 && side.y > uCutOptions.y);
+      }
+      // Caché : tous les sommets au même point, plus aucun triangle n'a de surface.
+      if (cut) transformed = uCut.y < 0.0 ? vec3(0.0) : vec3(transformed.x, min(transformed.y, uCut.y), transformed.z);
+    }
   #endif
   vObjPos = transformed;
   #ifdef TONE

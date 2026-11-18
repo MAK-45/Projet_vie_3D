@@ -23,8 +23,8 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-18
-- **Étape actuelle** : lot 3 validé ; monde de test du Complexe (demande de l'utilisateur) avant le lot 4.
-- **Prochaine action** : monde de test avec les assets des lots 1 à 3, puis lot 4 (Porte-Iris, malle de voyage, rambarde de bronze, lampe à
+- **Étape actuelle** : lot 3 validé ; monde d'essai du Complexe fait (`worlds/interiors/complex-test`), à regarder.
+- **Prochaine action** : retours sur le monde d'essai, puis lot 4 (Porte-Iris, malle de voyage, rambarde de bronze, lampe à
   main), à discuter d'abord.
 
 ## Les lots
@@ -169,7 +169,9 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 25 | `props/artifacts/alignment-circle` ★ | E10-A1 (le cercle) | ⬜ | |
 | 26 | `props/artifacts/hex-star-gate` ★ | E10-A1 (l'arche et sa membrane, séquence commune avec stèles et cercle) | ⬜ | |
 
-Monde : `worlds/interiors/ancient-complex` — pièces assemblées : aucune pour l'instant.
+Monde : `worlds/interiors/ancient-complex` — pièces assemblées : aucune pour l'instant. Monde d'essai (hors plan) :
+`worlds/interiors/complex-test` (Sas, Archives, Atelier, tronçon de Galerie, avec les assets des lots 1 à 3) ; son
+kit (`src/worlds/kit/interior.js`, vue en coupe du moteur, explorateur générique) servira au lot 5.
 
 ## Décisions
 
@@ -196,6 +198,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-18 | Lot 3 validé. Monde d'essai du Complexe (demande de l'utilisateur) : 4 pièces praticables, vue en coupe (moteur), portes automatiques, halos des lampes proches, explorateur rendu générique ; Atelier publié. | Retours sur le monde d'essai, puis lot 4. |
 | 2026-11-18 | Lot 3 : banc, casier, pupitre à leviers, grille et caillebotis, plaque à glyphes (kit : `gridBlock`), vérifiés en planches et dans le coin du Sas de jour et de nuit, mobile et bureau, Atelier publié (v40). | Validation du lot 3, puis lot 4. |
 | 2026-11-17 | Lecture de la bible HD (document Claude Docs), adaptation au pixel art dans `docs/complexe/` (README, PIECES, SALLES), plan en 28 lots (PLAN), ce suivi. | Validation de la bible et du plan, puis lots 0 et 1. |
 | 2026-11-17 | Ajout à la bible et au plan : les personnages se déplacent dans le Complexe (README « Les personnages dans le Complexe », PLAN lot 5 et étapes Monde). | Validation de la bible et du plan, puis lots 0 et 1. |
