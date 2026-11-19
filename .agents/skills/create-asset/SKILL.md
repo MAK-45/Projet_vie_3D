@@ -119,12 +119,11 @@ Noter dans `references/recipes.md` ce qui a marché ou raté et qui servira au p
 npm run artifact     # régénère public/catalog/ puis dist-artifact/atelier-vie-3d.html
 ```
 
-Publier `dist-artifact/atelier-vie-3d.html` avec l'outil Artifact **en passant comme `url` le lien de
-l'Artifact « Atelier Vie 3D » noté dans `CLAUDE.md`** : sans lui, un deuxième Artifact est créé au lieu de
-mettre à jour la galerie. Donner le lien à l'utilisateur.
-
 Commit en français : le fichier de l'asset, `src/assets/index.js`, `public/catalog/`, et les outils ajoutés au
 kit. Pour une retouche d'asset existant, augmenter `meta.version` si le dessin change.
+
+Puis suivre le skill `publish-page` : l'Atelier Vie 3D est republié sur GitHub Pages quand l'utilisateur fusionne
+la pull request dans `main`. Donner le lien de la pull request et l'adresse de la page.
 
 ## 5. Compte rendu
 

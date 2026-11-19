@@ -43,7 +43,7 @@ nettes, éléments animés (vent, eau, lumières). On garde ce rendu même quand
 
 Repères chiffrés : 16 pixels d'art par mètre au zoom 1 ; rampes de 4 ou 5 couleurs avec glissement de teinte
 (ombres froides, lumières chaudes) ; animations du décor à 12 images par seconde. Les recettes éprouvées asset
-par asset sont dans `.claude/skills/create-asset/references/recipes.md`.
+par asset sont dans `.agents/skills/create-asset/references/recipes.md`.
 
 ## À éviter
 

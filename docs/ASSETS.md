@@ -2,7 +2,7 @@
 
 Un **asset** est un dessin 3D réutilisable (arbre, meuble, objet, créature...) écrit en JavaScript : pas de fichier
 de modèle, tout est construit par du code à partir d'une graine. Tous les assets sont visibles dans la galerie
-(`npm run dev`, ou l'Artifact « Atelier Vie 3D ») et décrits dans un catalogue lisible par une IA.
+(`npm run dev`, ou la page publiée sur GitHub Pages : https://mak-45.github.io/Projet_vie_3D/) et décrits dans un catalogue lisible par une IA.
 
 ## Où sont les choses
 
@@ -33,7 +33,7 @@ Son **slug** remplace les `/` par des `-` : `nature-trees-birch` (nom du module 
 |---|---|
 | le dépôt | lis `public/catalog/catalog.json`, filtre sur `category`, `subcategory`, `tags`, `biomes` ; le code prêt à l'emploi est à `assets[i].module` (`public/catalog/modules/<slug>.js`) |
 | le code du projet | `import { findAssets, getAsset } from "src/assets/index.js"` puis `findAssets({ category: "nature", text: "arbre" })` |
-| la page de la galerie (Artifact) | lis la balise `<script type="application/json" id="pv3d-catalog">` : même catalogue, avec en plus `source` et `standalone` (le code) pour chaque asset ; en JavaScript : `PV3D.find(...)`, `PV3D.getModule(id)` |
+| la page autonome de la galerie (GitHub Pages, ou `dist-artifact/atelier-vie-3d.html`) | lis la balise `<script type="application/json" id="pv3d-catalog">` : même catalogue, avec en plus `source` et `standalone` (le code) pour chaque asset ; en JavaScript : `PV3D.find(...)`, `PV3D.getModule(id)` |
 
 Utiliser un module :
 
@@ -127,7 +127,7 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
 
 Les rampes de couleurs des matières communes sont dans `src/assets/kit/palettes.js`. Le détail par famille est
-dans `.claude/skills/create-asset/references/variation-axes.md`.
+dans `.agents/skills/create-asset/references/variation-axes.md`.
 
 ## Assets importés : personnages et animations
 
@@ -154,9 +154,9 @@ public/models/
 - Rendu : `createToonMaterial({ map, ramp })` — la rampe devient un filtre de lumière (ombre froide → couleur
   peinte) posé sur la texture ; le skinning est géré par le matériau toon.
 - Fichiers : chargés par `fetch` relativement à la page (`models/...`, réglable par `setModelSource` de
-  `kit/model.js`) ; dans Node (catalogue, `check`), lus sur le disque. Dans l'Artifact, `npm run artifact` les
-  embarque dans la page en base64 (`<script type="text/plain" data-pv3d-model="chemin">`) : rien à publier à côté
-  (les fichiers servis à côté d'un Artifact ne se chargeaient pas).
+  `kit/model.js`) ; dans Node (catalogue, `check`), lus sur le disque. Dans la page autonome, `npm run artifact` les
+  embarque en base64 (`<script type="text/plain" data-pv3d-model="chemin">`) : la page reste un seul fichier,
+  rien à publier à côté.
 
 ## Vérifier un asset
 
@@ -168,12 +168,12 @@ public/models/
 
 ## Ajouter un asset
 
-Avec Claude Code : demander l'asset (« génère un chêne »), le skill `create-asset` déroule toute la marche
-(`.claude/skills/create-asset/SKILL.md`). En résumé :
+Avec Claude Code ou Mistral Vibe : demander l'asset (« génère un chêne »), le skill `create-asset` déroule toute
+la marche (`.agents/skills/create-asset/SKILL.md`). En résumé :
 
 1. choisir le rangement, les traits qui font reconnaître l'objet, ce que change la graine, les axes de variation ;
 2. écrire `src/assets/<catégorie>/<sous-catégorie>/<nom>.js` à partir du modèle du skill, l'inscrire dans
    `src/assets/index.js` ;
 3. `npm run check`, `npm run sheet`, regarder, corriger, recommencer ;
-4. `npm run artifact`, publier la page sur l'Artifact « Atelier Vie 3D » (lien dans `CLAUDE.md`) ;
+4. `npm run artifact`, puis montrer l'Atelier avec le skill `publish-page` (GitHub Pages, après fusion dans `main`) ;
 5. committer le fichier de l'asset, `index.js`, `public/catalog/` et les outils ajoutés au kit.

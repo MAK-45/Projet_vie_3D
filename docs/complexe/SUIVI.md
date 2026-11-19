@@ -3,7 +3,7 @@
 **À lire en premier à chaque session sur le Complexe.** Ce fichier dit où on en est. La bible est dans `README.md`,
 `PIECES.md` et `SALLES.md` ; le découpage en lots et la marche à suivre dans `PLAN.md`.
 
-## Pour Claude : reprendre le travail
+## Pour l'agent (Claude Code ou Mistral Vibe) : reprendre le travail
 
 Quand l'utilisateur demande « on en est où ? », « on continue le Complexe », « on reprend l'environnement des
 artefacts », ou parle d'un lot :
@@ -12,8 +12,8 @@ artefacts », ou parle d'un lot :
 2. Répondre avec un **point d'étape** court : lots validés, lot en cours ou à valider (et ce qui y reste),
    prochain lot avec ses assets et les fiches qu'ils couvrent.
 3. Pour le prochain lot : **discuter d'abord** (proposition par asset : traits reconnaissables en pixels, graine,
-   réglages, rangement), puis réaliser avec `create-asset` / `create-world`, publier l'Atelier, et passer le lot à
-   **👀 à valider** ici, avec la date et les commits.
+   réglages, rangement), puis réaliser avec `create-asset` / `create-world`, publier l'Atelier (skill
+   `publish-page`), et passer le lot à **👀 à valider** ici, avec la date et les commits.
 4. **Ne passer un lot à ✅ validé que sur le feu vert explicite de l'utilisateur** (« je valide », « c'est bon,
    on continue »). Noter alors la date, et les décisions prises dans « Décisions ».
 5. Committer ce fichier à chaque changement d'état (message en français, par exemple « Suivi Complexe : lot 3 validé »).

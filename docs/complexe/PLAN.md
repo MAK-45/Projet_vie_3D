@@ -2,7 +2,7 @@
 
 Le Complexe compte 170 fiches (`PIECES.md`, `SALLES.md`). En pixel art, les fiches voisines partagent un module
 (par exemple les cinq lampes à filament de la bible deviennent deux modules avec des réglages) : on arrive à **une
-centaine de modules**, réalisés par **lots de 4 à 5 assets**, une ou deux sessions Claude Code par lot. L'état de chaque
+centaine de modules**, réalisés par **lots de 4 à 5 assets**, une ou deux sessions d'agent (Claude Code ou Mistral Vibe) par lot. L'état de chaque
 lot est tenu dans `SUIVI.md`.
 
 ## Déroulé d'un lot (à chaque session)
@@ -15,7 +15,8 @@ lot est tenu dans `SUIVI.md`.
    corrige ou valide la proposition.
 4. **Réaliser** chaque asset avec le skill `create-asset` (jusqu'au bout : `npm run check`, `npm run sheet`,
    capture regardée) ; une étape « monde » avec le skill `create-world`.
-5. **Publier** : `npm run artifact`, puis publier sur l'Atelier Vie 3D (lien dans `CLAUDE.md`) et donner le lien.
+5. **Publier** : `npm run artifact`, puis le skill `publish-page` (pull request vers `main`, l'Atelier Vie 3D sur
+   GitHub Pages après fusion) ; donner le lien de la pull request et l'adresse de la page.
 6. **Noter** dans `SUIVI.md` : le lot passe à « à valider », avec la date, les commits et les remarques ; committer et
    pousser.
 7. **Valider** : quand l'utilisateur dit que c'est bon (« je valide »), passer le lot (et ses assets) à « validé » dans
