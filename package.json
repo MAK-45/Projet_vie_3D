@@ -9,7 +9,9 @@
     "preview": "vite preview",
     "catalog": "node scripts/build-catalog.mjs",
     "artifact": "npm run catalog && node scripts/build-artifact.mjs",
+    "site": "npm run artifact && node scripts/build-site.mjs",
     "check": "node scripts/check-assets.mjs",
+    "check:agents": "node scripts/check-agents.mjs",
     "sheet": "node scripts/asset-sheet.mjs"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 // `npm run artifact` : assemble la galerie en une seule page HTML autonome (dist-artifact/atelier-vie-3d.html),
-// publiable comme Artifact. Tout est en ligne (styles, code, catalogue) ; seul three.js vient de
-// cdn.jsdelivr.net, à version exacte. Le fichier n'a ni <html> ni <body> : l'Artifact les ajoute.
+// publiée sur GitHub Pages par `npm run site`. Tout est en ligne (styles, code, catalogue) ; seul three.js vient
+// de cdn.jsdelivr.net, à version exacte. Le fichier n'a ni <html> ni <body> : scripts/build-site.mjs les ajoute.
 // Les modèles importés (personnages, animations) de public/models/ y sont aussi, en base64.
 
 import { build } from "esbuild";
