@@ -295,17 +295,18 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
 
 Le vrai monde du Complexe (`docs/complexe/`), assemblé pièce par pièce au fil des lots. Lot 5 : le **Sas de
 Scellement** (10 × 6 × 5 m, fidèle à `docs/complexe/PIECES.md`) et le **vestibule** d'où l'on arrive (6 × 4 m,
-4 m sous plafond). Générateur : `src/worlds/ancient-complex.js` ; outils : `src/worlds/kit/interior.js`,
-`src/fx/lamp-dust.js`. Le monde d'essai (`complex-test`) reste à part jusqu'au lot 12.
+4 m sous plafond). Lot 8 : les **Archives** (18 × 12 × 7 m) au nord du Sas, avec leur mezzanine praticable.
+Générateur : `src/worlds/ancient-complex.js`, une pièce par fichier ensuite (`ancient-complex-archives.js`) ; outils :
+`src/worlds/kit/interior.js`, `src/fx/lamp-dust.js`. Le monde d'essai (`complex-test`) reste à part jusqu'au lot 12.
 
 | Réglage | Valeurs |
 |---|---|
 | `seed` | trappe et fissure des dalles, niche du mur ouest (au nord ou au sud du pupitre), leviers, lampe de veille, contenu de la malle |
-| `room` (« Taille » dans l'explorateur) | `sas` (les pièces suivantes s'ajouteront) |
+| `room` (« Taille » dans l'explorateur) | `sas` (départ dans le vestibule), `archives` (départ à la porte du Sas, vérification faite) |
 | `state` | `check` (vérification, par défaut dans l'explorateur), `awake` (éveillé, par défaut pour la fiche), `asleep` (endormi) |
 
 - **Plan** : Porte-Iris au centre du mur sud (face décorée vers le Sas), porte standard au centre du mur nord (vers
-  les Archives, pas encore faites : elle s'ouvre sur le noir et on ne la franchit pas), piliers d'angle, bandeau de
+  les Archives, qui se déverrouille après la vérification), piliers d'angle, bandeau de
   glyphes. Dalles de 2 m dont les diagonales forment des chevrons pointés vers la porte nord ; allée usée au milieu.
   Pupitre de vérification à l'ouest sous la plaque gravée, casiers à l'est sous le tuyau, bancs de part et d'autre de
   la porte nord, valve dans l'angle nord-est, malles dans les coins sud, file d'attente de poteaux à chaînes de
@@ -330,11 +331,38 @@ Scellement** (10 × 6 × 5 m, fidèle à `docs/complexe/PIECES.md`) et le **vest
   point suivi), en 3e personne de 3 à 16 m de la caméra (`fog.max`).
 - **Caméra bornée** (`world.viewLimits`) : zoom ≥ 0,8, inclinaison ≥ 22°.
 - **Étages** (`heightAt(x, z, y)`) : le promeneur passe sa hauteur ; le monde rend la plus haute surface de marche
-  atteignable d'un pas (0,40 m). Ici, le seuil de l'Iris (0,20 m). La prairie ignore `y`.
-- **Praticable** : collisions en boîtes ; on reste dans les pièces, et la baie de l'Iris ne se franchit qu'ouverte.
-  La balade automatique joue la scène (`strollTarget` : parcours fixe, étapes gardées qui attendent une porte ou la
-  vérification). Vérifié avec les six personnages : vestibule → Iris → pupitre → porte nord → retour, en boucle.
+  atteignable d'un pas (0,40 m). Ici, le seuil de l'Iris (0,20 m), l'escalier à vis et la mezzanine des Archives.
+  La prairie ignore `y`.
+- **Assets praticables** (`userData.walk`, lot 8 : escalier à vis, escalier droit, passerelle) : chacun donne, dans
+  son repère, `heightAt(x, z, y, up)` (sa surface de marche atteinte d'un pas depuis `y`, sinon −∞) et
+  `occupied(x, z, rayon, y0, y1)` (vrai si quelque chose de lui occupe cette tranche de hauteur dans ce disque :
+  marches, rampes, plancher, consoles). Le monde les pose avec `WalkSurfaces` (`kit/interior.js`) : sol = plus haute
+  surface atteinte ; un pas est refusé si quelque chose occupe la tranche du corps (d'un pas au-dessus des pieds à
+  1,75 m : on passe sous la mezzanine à 3,4 m, pas sous une marche à 1 m) ou s'il ferait descendre de plus de
+  0,45 m (bords de passerelle, palier) ; le pas refusé glisse le long de l'obstacle. Les boîtes (`BoxColliders`)
+  peuvent avoir une hauteur (`top`) : un personnage au-dessus passe.
+- **Escalier à vis** : on y entre sous le palier (assez haut pour passer dessous), puis on monte marche à marche.
+  Les marches ne comptent que sous le pied (un demi-rayon de part et d'autre), le noyau et la rampe avec une emprise
+  réduite : le blob (0,45 m de rayon) passe dans un fût de 2,2 m.
+- **Une pièce à la fois** : chaque pièce a son `InteriorKit` (et sa voûte) ; on montre celle où l'on est, et les
+  deux à moins de 3 m de la porte nord ouverte. Vu du Sas, le côté sud des Archives (mur, rayonnages, échelles) est
+  caché : on n'en verrait que les dos. Les modèles animés sur le processeur (rouages, tiroirs, scintillement) vivent
+  par `kit.update()` à chaque image : toutes leurs copies bougent ensemble.
+- **Praticable** : collisions en boîtes ; on reste dans les pièces, et les baies (Iris, porte nord) ne se franchissent
+  qu'ouvertes. La balade automatique joue la scène (`strollTarget` : parcours fixe, étapes gardées qui attendent une
+  porte ou la vérification ; `reach` : distance à laquelle une étape est atteinte, 0,25 m dans l'escalier pour suivre
+  l'hélice). Vérifié avec les six personnages : vestibule → Iris → pupitre → porte nord → catalogue → escalier à vis
+  → mezzanine → descente → échelle → retour, en boucle (et en simulation : rayons 0,30 et 0,45 m, aucun blocage).
 - **Mesures** (capture logicielle, téléphone, état éveillé) : en vue isométrique 81 à 87 draw calls, environ
   77 000 triangles par image (passe d'ombre comprise) ; en 3e personne 61 à 68 draw calls, 75 000 à 79 000
   triangles. Sous le budget de 100 draw calls ; les pièces suivantes ne montreront que la pièce courante et ses
   voisines.
+- **Les Archives** (lot 8, `ancient-complex-archives.js`) : six rayonnages au nord sous une mezzanine en caillebotis
+  à 3,4 m (17 m, consoles de pierre, trois appliques à 6 m au-dessus), escalier à vis au nord-ouest (palier ouvert
+  sur la mezzanine), cinq rayonnages au sud avec deux échelles roulantes, vitrines et rayonnage bas à l'ouest, porte
+  de l'Atelier à l'est (fermée), meuble-catalogue au centre entre six colonnes cannelées, quatre tables de lecture
+  (lampes, loupes, visionneuse, cassettes, tabourets), deux lanternes, deux chariots. Vie : rouages, un tiroir du
+  rayonnage du milieu qui glisse seul, pupitre du catalogue qui tourne. Mesures (capture logicielle, isométrique,
+  passe d'ombre comprise) : 76 draw calls et 151 000 triangles dans les Archives, 72 dans le Sas ; à la porte (les
+  deux pièces) jusqu'à 190 draw calls, quelques secondes. Les rayonnages et les petits objets des tables ne
+  projettent pas d'ombre (une passe d'ombre de moins par modèle) ; un seul modèle par sorte de meuble.

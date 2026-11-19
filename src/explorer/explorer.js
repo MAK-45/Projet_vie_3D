@@ -399,9 +399,9 @@ export class Explorer {
   }
 
   /** Place la vue à la main (captures). Angles en degrés ; en 3e personne, `zoom` est le recul (m). */
-  setView({ azimuth, elevation, zoom, x, z }) {
+  setView({ azimuth, elevation, zoom, x, z, y }) {
     if (x !== undefined || z !== undefined) {
-      this.walker.placeAt(this.world, x ?? this.walker.position.x, z ?? this.walker.position.z);
+      this.walker.placeAt(this.world, x ?? this.walker.position.x, z ?? this.walker.position.z, y ?? 0);
       this.look.set(this.walker.position.x, this.walker.position.y + this.walker.lookHeight, this.walker.position.z);
       this.iso.follow(this.look);
       this.life.reset(this.world, this.walker.position);
@@ -669,6 +669,7 @@ export class Explorer {
       this._stroll.x = spot.x;
       this._stroll.z = spot.z;
       this._stroll.pass = Boolean(spot.pass); // étape de passage (une porte) : pas de halte
+      this._stroll.reach = spot.reach; // distance à laquelle l'étape est atteinte (marches d'un escalier : courte)
       this._stroll.stuck = 0;
       return;
     }
@@ -786,7 +787,7 @@ export class Explorer {
       if (stroll.pause > 0) {
         stroll.pause -= dt; // halte pour regarder le paysage
         dirX = dirZ = 0;
-      } else if (distance < (stroll.pass ? 0.6 : 1.5) || stroll.stuck > 1.5) {
+      } else if (distance < (stroll.reach ?? (stroll.pass ? 0.6 : 1.5)) || stroll.stuck > 1.5) {
         const halt = !stroll.pass;
         this._pickStrollTarget();
         stroll.pause = halt ? 2.5 : 0;

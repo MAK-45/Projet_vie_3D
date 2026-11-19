@@ -6140,6 +6140,15 @@ var InteriorKit = class {
       }
     }
   }
+  /**
+   * Fait vivre les modèles animés sur le processeur (rouages, tiroirs, scintillement : leur `updateMatrixWorld` réécrit
+   * la géométrie quand le temps partagé change) : toutes leurs copies bougent ensemble. À appeler à chaque image.
+   */
+  update() {
+    for (const model of this.models.values()) {
+      if (model.meshes.length) model.prototype.updateMatrixWorld();
+    }
+  }
   /** Draw calls et triangles si tout était dans le champ. */
   stats() {
     let triangles = 0;
@@ -6207,15 +6216,19 @@ var BoxColliders = class {
   constructor() {
     this.boxes = [];
   }
-  /** Boîte de centre (x, z) et de demi-côtés (hx, hz) ; `active()` : la boîte ne bloque que si vrai. */
-  add(x, z, hx, hz, active = null) {
-    this.boxes.push({ minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, active });
+  /**
+   * Boîte de centre (x, z) et de demi-côtés (hx, hz) ; `active()` : la boîte ne bloque que si vrai ; `top` : hauteur
+   * de l'obstacle (un personnage sur une passerelle au-dessus passe).
+   */
+  add(x, z, hx, hz, active = null, top = Infinity) {
+    this.boxes.push({ minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, active, top });
   }
-  /** Repousse un disque de rayon `radius` hors des boîtes. */
-  collide(position, radius) {
+  /** Repousse un disque de rayon `radius`, dont les pieds sont à `y`, hors des boîtes. */
+  collide(position, radius, y = 0) {
     for (let pass = 0; pass < 2; pass++) {
       for (const box of this.boxes) {
         if (box.active && !box.active()) continue;
+        if (y >= box.top) continue;
         const cx = THREE25.MathUtils.clamp(position.x, box.minX, box.maxX);
         const cz = THREE25.MathUtils.clamp(position.z, box.minZ, box.maxZ);
         const dx = position.x - cx;

@@ -483,3 +483,33 @@ c'est ce fichier qui fait progresser les assets suivants.
 - **Petits objets sur une table** (loupe, visionneuse) : se juger dans la scène (`dev/archive-corner.html`, `zoom=2.2`,
   `ground=0` : avec le socle d'herbe de la visionneuse, les dalles posées à y = −0,2 se battent avec lui).
 - **Tags** : « transport » est le même mot en français et en anglais (doublon refusé par `check`) : « haulage ».
+
+### Le Complexe, lot 8 : Archives, hauteur et catalogue (escaliers, passerelle, meuble-catalogue ★)
+
+- **Escalier à vis** : marches en éventail (`buildPrism` d'un coin de couronne, ≤ 9° par pan) qui passent de 2,5°
+  sous la précédente ; angle d'une marche = min(18°, (360° − palier) / (n − 1)) : 19 marches et un palier de 64° font
+  un tour complet. Le palier est toujours face à +z, le monde tourne l'escalier. Rampe et limon en petits `beam` le
+  long de l'hélice (≤ 8°). La graine change peu la silhouette (bagues, pommeau, pas des barreaux) : c'est de
+  l'architecture.
+- **Limon incliné** : `beam(a, b, w, h, roll, up)` avec `up` = x met la **largeur** dans le plan vertical. Avec
+  (épaisseur, hauteur) dans le mauvais ordre, le limon est couché à plat et tout le dessus prend le ton le plus clair
+  (un escalier jaune vif).
+- **Caillebotis long** (passerelle de 17 m, arcs) : `openBar` (kit) : un barreau sans dessous ni bouts, 6 triangles
+  au lieu de 12. En arc, des traverses en morceaux d'1,2 m et un arc borné à 180° (un balcon de 300° se pose en deux
+  arcs) : 5 000 triangles au plus.
+- **Marche à étages** (`userData.walk`) : `heightAt` et `occupied` dans le repère de l'asset. Pièges vus en
+  simulation : (1) un disque de 0,30 m à 0,6 m du noyau couvre trois marches, et la troisième (plus haute) arrête
+  comme un mur : les marches ne comptent que sous le pied (demi-rayon) ; (2) le blob (0,45 m) ne passe dans un fût de
+  2,2 m que si le noyau et la rampe ont une emprise réduite (×0,7 et ×0,6) ; (3) une balade qui vise des étapes
+  atteintes à 0,6 m coupe l'hélice vers le noyau : une étape par marche, atteinte à 0,25 m (`reach`).
+- **Tester la marche sans navigateur** : un petit script Node qui suit `strollTarget` à 1,3 m/s, appelle `collide`
+  et `heightAt`, `tick(temps)` et `world.group.updateMatrixWorld()` (sinon les portes ne s'ouvrent jamais), et note
+  les blocages et les sauts de plus de 0,45 m. Il a trouvé chaque défaut avant les captures.
+- **Grand plateau rond** (catalogue, Ø 3,4 m) : vu de dessus, un disque de pierre uni est mort. Un anneau de glyphes
+  couché dans le plateau (`glyphStrip` → `rotateX(−π/2)` → `bendAroundY`), des filets de laiton sur les joints des
+  dalles et un cercle de laiton : il se lit de loin. Les glyphes sur la tranche ne se voyaient pas.
+- **Héros composé** : le catalogue embarque la lampe articulée du lot 6 (pose « suspendue ») ; 3 draw calls à lui,
+  2 pour la lampe. Laiton clair des plaques d'index = bronze patiné à +0,4/+0,5 de ton (pas de matériau en plus).
+- **Pièces mobiles nombreuses** : 48 tiroirs et le pupitre = 49 pièces rigides dans le maillage du bronze et celui
+  des lueurs (les tranches des cassettes tournent avec le pupitre). Une « vie » tirée du temps (`floor((t + phase) /
+  période)` haché avec la graine) : déterministe, sans état à sauver.

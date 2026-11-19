@@ -15046,6 +15046,822 @@
       }
     },
     {
+      "id": "buildings/structure/spiral-stair",
+      "name": "Escalier à vis",
+      "nameEn": "Spiral staircase",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Escalier à vis du Complexe, Ø 2,2 m : marches de 0,18 m en éventail autour d'un noyau de bronze, limon qui suit l'hélice, rampe de laiton sur barreaux d'un pixel, palier ouvert face à +z. Marches de pierre fumée à nez de laiton ou en caillebotis de bronze ; hauteur de 2 à 6 m, sens au choix. Praticable (on y monte marche par marche). Fiches ARC-13, E6-05, COE-02.",
+      "tags": [
+        "escalier",
+        "escalier à vis",
+        "colimaçon",
+        "marches",
+        "noyau",
+        "rampe",
+        "limon",
+        "palier",
+        "mezzanine",
+        "bronze",
+        "laiton",
+        "pierre fumée",
+        "caillebotis",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "praticable",
+        "intérieur",
+        "staircase",
+        "spiral staircase",
+        "winding stair",
+        "steps",
+        "newel",
+        "handrail",
+        "stringer",
+        "landing",
+        "brass",
+        "smoked stone",
+        "grating",
+        "ancient complex",
+        "ancient-tech",
+        "walkable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol sur l'axe du noyau ; le palier est en haut (`height`), ouvert vers +z",
+      "footprint": {
+        "radius": 1.15,
+        "height": 4.5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tons des marches, une marche écornée, le pas des barreaux (2 ou 3 marches), un barreau tordu ou manquant, les bagues du noyau et son pommeau."
+        },
+        "model": {
+          "type": "enum",
+          "default": "stone",
+          "values": [
+            "stone",
+            "grating"
+          ],
+          "labels": {
+            "stone": "Pierre (Archives)",
+            "grating": "Caillebotis (salle 6, Cœur)"
+          },
+          "label": "Modèle",
+          "description": "Marches de pierre fumée à nez de laiton (Archives), ou marches en caillebotis de bronze (salle 6, Cœur)."
+        },
+        "height": {
+          "type": "number",
+          "default": 3.4,
+          "min": 2,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du palier (3,4 m : mezzanine des Archives ; 4 m : balcons de la salle 6 et du Cœur). Le nombre de marches en découle (19 pour 3,4 m, 22 pour 4 m)."
+        },
+        "turn": {
+          "type": "enum",
+          "default": "left",
+          "values": [
+            "left",
+            "right"
+          ],
+          "labels": {
+            "left": "Monte vers la gauche",
+            "right": "Monte vers la droite"
+          },
+          "label": "Sens",
+          "description": "En montant, l'escalier tourne vers la gauche (sens trigonométrique vu de dessus) ou vers la droite."
+        }
+      },
+      "variants": [
+        {
+          "id": "stone",
+          "name": "Pierre (Archives)",
+          "params": {
+            "model": "stone"
+          }
+        },
+        {
+          "id": "grating",
+          "name": "Caillebotis (salle 6, Cœur)",
+          "params": {
+            "model": "grating"
+          }
+        },
+        {
+          "id": "tall",
+          "name": "Haute (4 m, vers la droite)",
+          "params": {
+            "height": 4,
+            "turn": "right"
+          }
+        }
+      ],
+      "slug": "buildings-structure-spiral-stair",
+      "path": "src/assets/buildings/structure/spiral-stair.js",
+      "module": "public/catalog/modules/buildings-structure-spiral-stair.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2076,
+          "vertices": 4039,
+          "drawCalls": 3
+        },
+        "stone": {
+          "triangles": 2076,
+          "vertices": 4039,
+          "drawCalls": 3
+        },
+        "grating": {
+          "triangles": 3404,
+          "vertices": 6787,
+          "drawCalls": 3
+        },
+        "tall": {
+          "triangles": 2084,
+          "vertices": 4085,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 16215,
+        "standalone": 59411
+      }
+    },
+    {
+      "id": "buildings/structure/straight-stair",
+      "name": "Escalier droit",
+      "nameEn": "Straight staircase",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Escalier droit du Complexe, marches de 0,18 m : caillebotis de bronze sur limons rivetés, gradins de pierre fumée, ou escalier de service de fonte, étroit et raide. Nez de laiton, rampes d'un côté, des deux ou d'aucun, palier en option. Praticable. Escaliers de E5-06, E10-04 et de E7.",
+      "tags": [
+        "escalier",
+        "escalier droit",
+        "marches",
+        "limon",
+        "rampe",
+        "palier",
+        "rivets",
+        "caillebotis",
+        "fonte",
+        "bronze",
+        "laiton",
+        "pierre fumée",
+        "galerie",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "praticable",
+        "intérieur",
+        "staircase",
+        "straight stair",
+        "steps",
+        "stringer",
+        "handrail",
+        "landing",
+        "riveted",
+        "grating",
+        "cast iron",
+        "brass",
+        "smoked stone",
+        "service stair",
+        "ancient complex",
+        "ancient-tech",
+        "walkable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol au milieu de l'emprise (le nez de la 1re marche est en z = +longueur / 2) ; l'escalier monte vers −z",
+      "footprint": {
+        "radius": 2.4,
+        "height": 3.95
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tons des marches, une plaque de marche remplacée, le pas des barreaux, un barreau tordu, l'usure des nez du bas."
+        },
+        "model": {
+          "type": "enum",
+          "default": "grating",
+          "values": [
+            "grating",
+            "stone",
+            "service"
+          ],
+          "labels": {
+            "grating": "Caillebotis (galeries)",
+            "stone": "Pierre (gradins)",
+            "service": "Service (fonte, raide)"
+          },
+          "label": "Modèle",
+          "description": "Caillebotis de bronze sur limons rivetés (galeries de E5, cabine de E10), marches pleines de pierre fumée, ou escalier de service de fonte, étroit et raide (E7)."
+        },
+        "height": {
+          "type": "number",
+          "default": 3,
+          "min": 1,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur d'arrivée (3 m : galerie de l'Éveil, 17 marches ; 3,5 m : cabine de la Porte, 20 marches)."
+        },
+        "width": {
+          "type": "number",
+          "default": 1,
+          "min": 0.8,
+          "max": 1.6,
+          "step": 0.05,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur des marches (le service est réduit à 0,9 m au plus)."
+        },
+        "rails": {
+          "type": "enum",
+          "default": "both",
+          "values": [
+            "both",
+            "left",
+            "right",
+            "none"
+          ],
+          "labels": {
+            "both": "Des deux côtés",
+            "left": "À gauche",
+            "right": "À droite",
+            "none": "Aucune (entre deux murs)"
+          },
+          "label": "Rampes",
+          "description": "Côtés qui ont une rampe (vu du bas, en montant) ; côté mur, pas de rampe."
+        },
+        "landing": {
+          "type": "number",
+          "default": 0,
+          "min": 0,
+          "max": 2,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Palier",
+          "description": "Longueur du palier en haut (0 : la dernière marche arrive sur la galerie)."
+        }
+      },
+      "variants": [
+        {
+          "id": "grating",
+          "name": "Caillebotis (galeries)",
+          "params": {
+            "model": "grating"
+          }
+        },
+        {
+          "id": "stone",
+          "name": "Pierre (gradins)",
+          "params": {
+            "model": "stone"
+          }
+        },
+        {
+          "id": "service",
+          "name": "Service (fonte, raide)",
+          "params": {
+            "model": "service"
+          }
+        }
+      ],
+      "slug": "buildings-structure-straight-stair",
+      "path": "src/assets/buildings/structure/straight-stair.js",
+      "module": "public/catalog/modules/buildings-structure-straight-stair.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2760,
+          "vertices": 5520,
+          "drawCalls": 3
+        },
+        "grating": {
+          "triangles": 2760,
+          "vertices": 5520,
+          "drawCalls": 3
+        },
+        "stone": {
+          "triangles": 576,
+          "vertices": 1152,
+          "drawCalls": 3
+        },
+        "service": {
+          "triangles": 1368,
+          "vertices": 2736,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 13843,
+        "standalone": 54691
+      }
+    },
+    {
+      "id": "buildings/structure/grating-walkway",
+      "name": "Passerelle en caillebotis",
+      "nameEn": "Grating walkway",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Passerelle du Complexe : plancher de bronze percé d'un quadrillage d'un pixel (on voit au travers), poutrelles, consoles de pierre ancrées au mur ou piliers, garde-corps de 1 m à lisse simple ou double. Droite (mezzanine des Archives, galerie de l'Éveil) ou en arc (balcon de la salle 6, anneau du Cœur), trouées pour les escaliers. Praticable, on passe dessous. Fiches ARC-14, E5-06, E6-04, COE-01.",
+      "tags": [
+        "passerelle",
+        "mezzanine",
+        "balcon",
+        "galerie",
+        "caillebotis",
+        "quadrillage",
+        "garde-corps",
+        "lisse",
+        "console",
+        "poutrelle",
+        "bronze",
+        "laiton",
+        "étage",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "modulaire",
+        "praticable",
+        "intérieur",
+        "walkway",
+        "catwalk",
+        "balcony",
+        "gallery deck",
+        "floor grating",
+        "grid",
+        "guard rail",
+        "handrail",
+        "corbel",
+        "joist",
+        "upper floor",
+        "ancient complex",
+        "ancient-tech",
+        "modular",
+        "walkable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; droite : origine au sol sous le milieu du plancher, longueur le long de x, côté mur en −z ; en arc : origine au sol au centre du cercle, arc centré sur +z, côté mur à l'extérieur",
+      "footprint": {
+        "radius": 5.7,
+        "height": 4.45
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la patine barreau par barreau, une plaque remplacée, un barreau arraché, un poteau penché, le profil des consoles."
+        },
+        "model": {
+          "type": "enum",
+          "default": "mezzanine",
+          "values": [
+            "mezzanine",
+            "ring"
+          ],
+          "labels": {
+            "mezzanine": "Mezzanine (lisse simple, plinthe)",
+            "ring": "Anneau (double lisse)"
+          },
+          "label": "Modèle",
+          "description": "Mezzanine (lisse simple, sous-lisse et plinthe : Archives, Éveil) ou anneau (double lisse : salle 6, Cœur)."
+        },
+        "shape": {
+          "type": "enum",
+          "default": "straight",
+          "values": [
+            "straight",
+            "arc"
+          ],
+          "labels": {
+            "straight": "Droite",
+            "arc": "En arc de cercle"
+          },
+          "label": "Tracé",
+          "description": "Passerelle droite (le long d'un mur) ou en arc de cercle (balcon d'une salle ronde)."
+        },
+        "back": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "free"
+          ],
+          "labels": {
+            "wall": "Adossée à un mur (consoles)",
+            "free": "Libre (piliers, garde-corps des deux côtés)"
+          },
+          "label": "Appui",
+          "description": "Adossée à un mur (côté −z, ou côté extérieur de l'arc) sur des consoles de pierre, ou libre sur des piliers."
+        },
+        "length": {
+          "type": "number",
+          "default": 6,
+          "min": 2,
+          "max": 24,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Longueur",
+          "description": "Passerelle droite : longueur (18 m : mezzanine des Archives ; 12 m : galerie de l'Éveil)."
+        },
+        "width": {
+          "type": "number",
+          "default": 1.2,
+          "min": 0.8,
+          "max": 2,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Largeur",
+          "description": "Largeur du plancher (1,2 m : mezzanine ; 1,5 m : passerelle du Cœur ; 1 m : balcon de la salle 6)."
+        },
+        "radius": {
+          "type": "number",
+          "default": 4.5,
+          "min": 2,
+          "max": 6,
+          "step": 0.25,
+          "unit": "m",
+          "label": "Rayon intérieur",
+          "description": "En arc : rayon du bord intérieur (côté vide)."
+        },
+        "angle": {
+          "type": "number",
+          "default": 150,
+          "min": 30,
+          "max": 180,
+          "step": 10,
+          "unit": "°",
+          "label": "Angle",
+          "description": "En arc : angle couvert, centré sur +z (un balcon de 300° se pose en deux arcs de 150°)."
+        },
+        "height": {
+          "type": "number",
+          "default": 3.4,
+          "min": 1,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du dessus du plancher (3,4 m : Archives ; 3 m : Éveil ; 4 m : salle 6 et Cœur)."
+        },
+        "ends": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "open"
+          ],
+          "labels": {
+            "closed": "Garde-corps aux deux bouts",
+            "open": "Bouts ouverts (contre les murs)"
+          },
+          "label": "Bouts",
+          "description": "Garde-corps en travers des deux bouts, ou bouts ouverts (la passerelle va d'un mur à l'autre)."
+        },
+        "opening": {
+          "type": "enum",
+          "default": "none",
+          "values": [
+            "none",
+            "start",
+            "middle",
+            "end"
+          ],
+          "labels": {
+            "none": "Aucune",
+            "start": "Au début",
+            "middle": "Au milieu",
+            "end": "À la fin"
+          },
+          "label": "Trouée",
+          "description": "Une trouée de 1 m dans le garde-corps côté vide, pour l'arrivée d'un escalier (le monde peut en donner d'autres : `openings`)."
+        }
+      },
+      "variants": [
+        {
+          "id": "mezzanine",
+          "name": "Mezzanine (droite, au mur)",
+          "params": {}
+        },
+        {
+          "id": "free",
+          "name": "Libre, trouée au milieu",
+          "params": {
+            "back": "free",
+            "opening": "middle",
+            "length": 5,
+            "height": 3
+          }
+        },
+        {
+          "id": "ring",
+          "name": "Anneau du Cœur (arc de 150°)",
+          "params": {
+            "model": "ring",
+            "shape": "arc",
+            "width": 1.5,
+            "radius": 3,
+            "height": 3
+          }
+        }
+      ],
+      "slug": "buildings-structure-grating-walkway",
+      "path": "src/assets/buildings/structure/grating-walkway.js",
+      "module": "public/catalog/modules/buildings-structure-grating-walkway.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 678,
+          "vertices": 2016,
+          "drawCalls": 3
+        },
+        "mezzanine": {
+          "triangles": 678,
+          "vertices": 2016,
+          "drawCalls": 3
+        },
+        "free": {
+          "triangles": 858,
+          "vertices": 2280,
+          "drawCalls": 2
+        },
+        "ring": {
+          "triangles": 2088,
+          "vertices": 6240,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 15905,
+        "standalone": 57413
+      }
+    },
+    {
+      "id": "furniture/tables/card-catalogue",
+      "name": "Meuble-catalogue",
+      "nameEn": "Card catalogue",
+      "category": "furniture",
+      "subcategory": "tables",
+      "description": "Le meuble-catalogue central des Archives du Complexe (★) : table ronde de Ø 3,4 m sur socle de pierre fumée, 48 tiroirs plats à plaques d'index de laiton, plateau en 8 dalles à trait de glyphes ambre, pupitre central tournant à 8 casiers de cassettes lumineuses, lampe de lecture articulée suspendue au-dessus. Rangé, consulté ou abandonné ; le pupitre tourne et les tiroirs sortent seuls, ou au gré du scénario. Fiche ARC-17.",
+      "tags": [
+        "catalogue",
+        "meuble-catalogue",
+        "fichier",
+        "tiroirs",
+        "plaques d'index",
+        "pupitre tournant",
+        "casiers",
+        "cassettes",
+        "table ronde",
+        "glyphes",
+        "pierre fumée",
+        "bronze",
+        "archives",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "héros",
+        "pilotable",
+        "animé",
+        "intérieur",
+        "card catalogue",
+        "index drawers",
+        "round table",
+        "rotating lectern",
+        "pigeonholes",
+        "data cassettes",
+        "glyphs",
+        "smoked stone",
+        "archive room",
+        "ancient complex",
+        "ancient-tech",
+        "hero asset",
+        "scriptable",
+        "animated",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol au centre ; plateau à 0,98 m, pupitre à 1,6 m, lampe attachée à 2,8 m",
+      "footprint": {
+        "radius": 2.1,
+        "height": 3.2
+      },
+      "animated": [
+        "life"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tiroirs tirés, le contenu des casiers (couleurs, vides), les tons des dalles et des plaques, les glyphes, la pose de la lampe, le rythme de la vie."
+        },
+        "state": {
+          "type": "enum",
+          "default": "tidy",
+          "values": [
+            "tidy",
+            "consulted",
+            "dusty"
+          ],
+          "labels": {
+            "tidy": "Rangé",
+            "consulted": "Consulté (tiroirs tirés, cassettes sur le plateau)",
+            "dusty": "Abandonné (poussière)"
+          },
+          "label": "État",
+          "description": "Rangé, consulté (deux ou trois tiroirs tirés, cassettes et carnet posés sur le plateau), ou abandonné (poussière, lampe éteinte, glyphes éteints, casiers à moitié vides)."
+        },
+        "lamp": {
+          "type": "enum",
+          "default": "lit",
+          "values": [
+            "lit",
+            "dim",
+            "off",
+            "none"
+          ],
+          "labels": {
+            "lit": "Allumée",
+            "dim": "En veille",
+            "off": "Éteinte",
+            "none": "Sans lampe"
+          },
+          "label": "Lampe",
+          "description": "La lampe de lecture articulée suspendue au-dessus : allumée, en veille, éteinte, ou pas de lampe (le monde en pose une à part)."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "La lampe éclaire le décor autour d'elle dans le noir (une des lumières de halo de la scène)."
+        },
+        "stem": {
+          "type": "number",
+          "default": 0.6,
+          "min": 0.2,
+          "max": 4.2,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Tige",
+          "description": "Longueur de la tige de la lampe, de son attache (2,8 m) au plafond (4,2 m sous la voûte des Archives)."
+        },
+        "life": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Le pupitre tourne, un tiroir sort de temps en temps",
+            "off": "Immobile"
+          },
+          "label": "Vie",
+          "description": "Le pupitre central tourne d'un cran de temps en temps et un tiroir sort puis rentre ; ou immobile (le scénario pilote)."
+        }
+      },
+      "variants": [
+        {
+          "id": "tidy",
+          "name": "Rangé",
+          "params": {
+            "state": "tidy"
+          }
+        },
+        {
+          "id": "consulted",
+          "name": "Consulté (tiroirs tirés, cassettes sur le plateau)",
+          "params": {
+            "state": "consulted"
+          }
+        },
+        {
+          "id": "dusty",
+          "name": "Abandonné (poussière)",
+          "params": {
+            "state": "dusty"
+          }
+        }
+      ],
+      "slug": "furniture-tables-card-catalogue",
+      "path": "src/assets/furniture/tables/card-catalogue.js",
+      "module": "public/catalog/modules/furniture-tables-card-catalogue.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js",
+        "src/assets/furniture/lighting/articulated-lamp.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 5784,
+          "vertices": 11308,
+          "drawCalls": 5
+        },
+        "tidy": {
+          "triangles": 5784,
+          "vertices": 11308,
+          "drawCalls": 5
+        },
+        "consulted": {
+          "triangles": 5868,
+          "vertices": 11476,
+          "drawCalls": 5
+        },
+        "dusty": {
+          "triangles": 5674,
+          "vertices": 11088,
+          "drawCalls": 5
+        }
+      },
+      "bytes": {
+        "source": 21632,
+        "standalone": 86512
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",
@@ -15260,7 +16076,7 @@
       "nameEn": "The Ancient Complex",
       "category": "worlds",
       "subcategory": "interiors",
-      "description": "Le lieu ancien-technologique, vu en coupe : pour l'instant le Sas de Scellement (10 × 6 × 5 m) et son vestibule. Porte-Iris au sud, qui s'ouvre à l'approche puis se scelle derrière soi ; pupitre de vérification à l'ouest : ses leviers basculent, et la lueur ambre part de lui en vague (glyphes des murs, rainures du sol en chevrons, lampes) jusqu'à la porte nord, qui se déverrouille. Casiers, bancs, malles, file d'attente à chaînes, poussière dans la lumière des lampes. Praticable par tous les personnages.",
+      "description": "Le lieu ancien-technologique, vu en coupe, une pièce à la fois. Le Sas de Scellement (10 × 6 × 5 m) et son vestibule : Porte-Iris qui s'ouvre à l'approche puis se scelle derrière soi, pupitre de vérification dont la lueur ambre gagne en vague glyphes, rainures et lampes jusqu'à la porte nord. Derrière elle, les Archives (18 × 12 × 7 m) : rayonnages monumentaux à tiroirs et rouages, mezzanine en caillebotis à 3,4 m qu'on rejoint par un escalier à vis, meuble-catalogue central au pupitre tournant, colonnes cannelées, tables de lecture, échelles roulantes, vitrines, poussière dans la lumière des lampes. Praticable par tous les personnages, étages compris.",
       "tags": [
         "monde",
         "carte",
@@ -15272,6 +16088,10 @@
         "sas de scellement",
         "porte-iris",
         "vérification",
+        "archives",
+        "mezzanine",
+        "escalier à vis",
+        "catalogue",
         "glyphes",
         "vue en coupe",
         "à explorer",
@@ -15285,6 +16105,10 @@
         "airlock",
         "iris door",
         "verification",
+        "archive room",
+        "upper floor",
+        "spiral staircase",
+        "card catalogue",
         "glyphs",
         "cutaway",
         "explorable",
@@ -15294,12 +16118,12 @@
       "biomes": [
         "interior"
       ],
-      "version": 2,
+      "version": 3,
       "added": "2026-11-18",
-      "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10",
+      "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10, les Archives de z = −12 à 0 (x de −3 à 15), mezzanine à 3,4 m",
       "footprint": {
-        "radius": 8,
-        "height": 5
+        "radius": 11,
+        "height": 7
       },
       "animated": [
         "door",
@@ -15321,13 +16145,15 @@
           "type": "enum",
           "default": "sas",
           "values": [
-            "sas"
+            "sas",
+            "archives"
           ],
           "labels": {
-            "sas": "Le Sas"
+            "sas": "Le Sas",
+            "archives": "Les Archives"
           },
           "label": "Pièce",
-          "description": "La pièce montrée (le Sas pour l'instant ; les Archives, l'Atelier et les salles d'étude viendront)."
+          "description": "La pièce montrée (et celle où l'on commence la visite) : le Sas ou les Archives ; l'Atelier et les salles d'étude viendront."
         },
         "state": {
           "type": "enum",
@@ -15349,23 +16175,30 @@
       "variants": [
         {
           "id": "check",
-          "name": "Vérification",
+          "name": "Le Sas : vérification",
           "params": {
             "state": "check"
           }
         },
         {
           "id": "awake",
-          "name": "Éveillé",
+          "name": "Le Sas : éveillé",
           "params": {
             "state": "awake"
           }
         },
         {
           "id": "asleep",
-          "name": "Endormi",
+          "name": "Le Sas : endormi",
           "params": {
             "state": "asleep"
+          }
+        },
+        {
+          "id": "archives",
+          "name": "Les Archives",
+          "params": {
+            "room": "archives"
           }
         }
       ],
@@ -15402,33 +16235,53 @@
         "src/assets/nature/sky/cloud.js",
         "src/worlds/kit/sky.js",
         "src/worlds/kit/interior.js",
+        "src/assets/furniture/lighting/articulated-lamp.js",
+        "src/assets/furniture/tables/card-catalogue.js",
+        "src/assets/buildings/structure/grating-walkway.js",
+        "src/assets/buildings/structure/rolling-ladder.js",
+        "src/assets/buildings/structure/spiral-stair.js",
+        "src/assets/furniture/lighting/filament-chandelier.js",
+        "src/assets/furniture/seating/bronze-stool.js",
+        "src/assets/furniture/storage/display-case.js",
+        "src/assets/furniture/storage/drawer-archive.js",
+        "src/assets/furniture/tables/stone-table.js",
+        "src/assets/props/books/data-cassette.js",
+        "src/assets/props/machines/complex-cart.js",
+        "src/assets/props/machines/crank-recorder.js",
+        "src/assets/props/tools/arm-magnifier.js",
+        "src/worlds/ancient-complex-archives.js",
         "src/worlds/ancient-complex.js"
       ],
       "stats": {
         "default": {
-          "triangles": 30258,
-          "vertices": 55292,
-          "drawCalls": 72
+          "triangles": 74640,
+          "vertices": 142063,
+          "drawCalls": 150
         },
         "check": {
-          "triangles": 30258,
-          "vertices": 55292,
-          "drawCalls": 72
+          "triangles": 74640,
+          "vertices": 142063,
+          "drawCalls": 150
         },
         "awake": {
-          "triangles": 30258,
-          "vertices": 55292,
-          "drawCalls": 72
+          "triangles": 74640,
+          "vertices": 142063,
+          "drawCalls": 150
         },
         "asleep": {
-          "triangles": 30258,
-          "vertices": 55292,
-          "drawCalls": 72
+          "triangles": 74640,
+          "vertices": 142063,
+          "drawCalls": 150
+        },
+        "archives": {
+          "triangles": 74640,
+          "vertices": 142063,
+          "drawCalls": 150
         }
       },
       "bytes": {
-        "source": 3500,
-        "standalone": 299701
+        "source": 4124,
+        "standalone": 497322
       }
     },
     {
@@ -15610,7 +16463,7 @@
       },
       "bytes": {
         "source": 3537,
-        "standalone": 305446
+        "standalone": 306031
       }
     }
   ]

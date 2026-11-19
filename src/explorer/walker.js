@@ -103,11 +103,11 @@ export class Walker {
     this._lift = this._turnRate = this._accel = 0;
   }
 
-  /** Pose le promeneur sur le sol d'un monde. */
-  placeAt(world, x, z) {
-    this.position.set(x, 0, z);
+  /** Pose le promeneur sur le sol d'un monde ; `y` : l'étage visé (un monde à étages pose sur le sol atteint de là). */
+  placeAt(world, x, z, y = 0) {
+    this.position.set(x, y, z);
     world.collide(this.position, this.radius);
-    this.position.y = world.heightAt(this.position.x, this.position.z);
+    this.position.y = world.heightAt(this.position.x, this.position.z, y);
     this.velocity.set(0, 0);
     this._lift = 0;
   }

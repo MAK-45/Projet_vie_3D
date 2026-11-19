@@ -325,6 +325,18 @@ export function beam(a, b, w, h = w, roll = 0, up = new THREE.Vector3(0, 1, 0)) 
 }
 
 /**
+ * Barreau ouvert : comme `beam`, mais sans la face du dessous ni les deux bouts (6 triangles au lieu de 12), pour les
+ * caillebotis faits de centaines de barreaux dont les bouts sont cachés par le cadre. Vu d'en dessous, on voit ses
+ * flancs (le dessous manque, rien ne se voit au travers).
+ */
+export function openBar(a, b, w, h = w) {
+  const geometry = beam(a, b, w, h);
+  // Faces de BoxGeometry dans l'ordre +x, −x, +y, −y, +z, −z (6 indices chacune) : on garde les flancs et le dessus.
+  geometry.setIndex(Array.from(geometry.index.array.slice(0, 18)));
+  return geometry;
+}
+
+/**
  * Bloc en arc de cercle, dans le plan xy (face vers +z) : couronne de rayon `r0` à `r1`, de l'angle `a0` à `a1`
  * (radians, 0 = +x, sens trigonométrique), de z = `z0` à `z1`. Fait de `segments` pans plats (chacun un prisme
  * convexe) : voussoirs d'un arc, segment d'un anneau, lisse courbe. Indexé, fusionnable.

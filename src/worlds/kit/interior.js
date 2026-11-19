@@ -7,7 +7,9 @@
 // - `createHaloPool` : des dizaines de lampes, mais 12 lumières de halo dans le moteur ; on prête les places libres
 //   aux lampes les plus proches du promeneur.
 // - `BoxColliders` : murs, piliers et meubles en boîtes alignées sur les axes (le Complexe est orthogonal), portes
-//   qui ne bloquent que fermées.
+//   qui ne bloquent que fermées, meubles qui ne bloquent qu'au rez-de-chaussée.
+// - `WalkSurfaces` : les étages (escaliers, passerelles) que donnent les assets praticables (`userData.walk`) : la
+//   hauteur du sol selon l'étage du personnage, ce qui bloque à sa hauteur, et pas de chute par-dessus un bord.
 
 import * as THREE from "three";
 import { createGlowLight, disposeObject, enableCutaway, enableReveal, GLOW_LIGHT_COUNT, rgb } from "../../engine/toon-material.js";
@@ -114,6 +116,16 @@ export class InteriorKit {
     }
   }
 
+  /**
+   * Fait vivre les modèles animés sur le processeur (rouages, tiroirs, scintillement : leur `updateMatrixWorld` réécrit
+   * la géométrie quand le temps partagé change) : toutes leurs copies bougent ensemble. À appeler à chaque image.
+   */
+  update() {
+    for (const model of this.models.values()) {
+      if (model.meshes.length) model.prototype.updateMatrixWorld();
+    }
+  }
+
   /** Draw calls et triangles si tout était dans le champ. */
   stats() {
     let triangles = 0;
@@ -193,16 +205,20 @@ export class BoxColliders {
     this.boxes = [];
   }
 
-  /** Boîte de centre (x, z) et de demi-côtés (hx, hz) ; `active()` : la boîte ne bloque que si vrai. */
-  add(x, z, hx, hz, active = null) {
-    this.boxes.push({ minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, active });
+  /**
+   * Boîte de centre (x, z) et de demi-côtés (hx, hz) ; `active()` : la boîte ne bloque que si vrai ; `top` : hauteur
+   * de l'obstacle (un personnage sur une passerelle au-dessus passe).
+   */
+  add(x, z, hx, hz, active = null, top = Infinity) {
+    this.boxes.push({ minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, active, top });
   }
 
-  /** Repousse un disque de rayon `radius` hors des boîtes. */
-  collide(position, radius) {
+  /** Repousse un disque de rayon `radius`, dont les pieds sont à `y`, hors des boîtes. */
+  collide(position, radius, y = 0) {
     for (let pass = 0; pass < 2; pass++) {
       for (const box of this.boxes) {
         if (box.active && !box.active()) continue;
+        if (y >= box.top) continue;
         const cx = THREE.MathUtils.clamp(position.x, box.minX, box.maxX);
         const cz = THREE.MathUtils.clamp(position.z, box.minZ, box.maxZ);
         const dx = position.x - cx;
@@ -229,5 +245,88 @@ export class BoxColliders {
   /** Vrai si le point (x, z), avec une marge, touche une boîte active. */
   blocked(x, z, margin = 0) {
     return this.boxes.some((box) => (!box.active || box.active()) && x > box.minX - margin && x < box.maxX + margin && z > box.minZ - margin && z < box.maxZ + margin);
+  }
+}
+
+/**
+ * Les étages d'un intérieur : chaque asset praticable posé (escalier à vis, escalier droit, passerelle) donne dans son
+ * `userData.walk` la hauteur de sa surface de marche (`heightAt(x, z, y, up)`) et ce qu'il occupe à une hauteur donnée
+ * (`occupied(x, z, rayon, y0, y1)`), dans son repère. Ici, on les pose dans le monde et on les interroge ensemble.
+ *
+ * - Sol : la plus haute surface qu'on atteint d'un pas (`stepUp`) depuis la hauteur des pieds.
+ * - Blocage : rien ne doit occuper la tranche du corps, d'un pas au-dessus des pieds à `headroom` (on passe sous une
+ *   passerelle à 3,4 m, pas sous une marche à 1 m ; une rampe à hauteur de hanche arrête).
+ * - Pas de chute : un pas qui ferait descendre de plus de `drop` est refusé (bord d'une passerelle, d'un palier).
+ * Un pas refusé glisse le long de l'obstacle (on garde x ou z), sinon on reste où l'on était.
+ */
+export class WalkSurfaces {
+  constructor({ stepUp = 0.4, headroom = 1.75, drop = 0.45 } = {}) {
+    this.stepUp = stepUp;
+    this.headroom = headroom;
+    this.drop = drop;
+    this.layers = [];
+    this._last = new WeakMap();
+  }
+
+  /** Pose un asset praticable : son `userData.walk`, en (x, y, z), tourné de `rotY`. */
+  add(walk, x, z, rotY = 0, y = 0) {
+    this.layers.push({ walk, x, y, z, c: Math.cos(rotY), s: Math.sin(rotY) });
+  }
+
+  /** Coordonnées (x, z) du monde dans le repère d'un asset posé. */
+  _local(layer, x, z) {
+    const dx = x - layer.x, dz = z - layer.z;
+    // Rotation inverse de rotY autour de y : x' = c·dx − s·dz, z' = s·dx + c·dz.
+    return [layer.c * dx - layer.s * dz, layer.s * dx + layer.c * dz];
+  }
+
+  /** Hauteur du sol sous (x, z) pour des pieds à `y` : la plus haute surface atteinte d'un pas, au moins `base`. */
+  heightAt(x, z, y = 0, base = 0) {
+    let h = base;
+    for (const layer of this.layers) {
+      const [lx, lz] = this._local(layer, x, z);
+      const top = layer.walk.heightAt(lx, lz, y - layer.y, this.stepUp) + layer.y;
+      if (top > h) h = top;
+    }
+    return h;
+  }
+
+  /** Vrai si quelque chose occupe la tranche du corps d'un personnage de rayon `radius` aux pieds à `y`. */
+  blocked(x, z, radius, y = 0) {
+    for (const layer of this.layers) {
+      const [lx, lz] = this._local(layer, x, z);
+      const y0 = y - layer.y + this.stepUp, y1 = y - layer.y + this.headroom;
+      if (layer.walk.occupied(lx, lz, radius, y0, y1)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Refuse un pas bloqué ou qui ferait tomber : `position` revient le long de l'obstacle, ou à sa place d'avant.
+   * @param {THREE.Vector3} position position voulue (modifiée)
+   * @param {number} radius rayon du personnage
+   * @param {number} y hauteur des pieds avant le pas
+   * @param {(x: number, z: number, y: number) => number} floorAt sol du monde (étages compris)
+   */
+  collide(position, radius, y, floorAt) {
+    const last = this._last.get(position);
+    const ok = (x, z) => !this.blocked(x, z, radius, y) && floorAt(x, z, y) >= y - this.drop;
+    if (last && !ok(position.x, position.z)) {
+      if (ok(position.x, last.z)) position.z = last.z;
+      else if (ok(last.x, position.z)) position.x = last.x;
+      else {
+        position.x = last.x;
+        position.z = last.z;
+      }
+    }
+    if (last) {
+      last.x = position.x;
+      last.z = position.z;
+    } else this._last.set(position, { x: position.x, z: position.z });
+  }
+
+  /** Oublie la dernière place connue (le personnage a été reposé ailleurs). */
+  forget(position) {
+    this._last.delete(position);
   }
 }

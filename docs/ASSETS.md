@@ -98,6 +98,9 @@ Règles :
   `tileZ` et calcule tout en coordonnées du monde (voir `nature/terrain/meadow-ground` et `buildTerrainChunk`).
 - **Ombres** : `castShadow` / `receiveShadow` sur les maillages ; le feuillage a besoin de
   `mesh.customDepthMaterial = material.userData.depthMaterial`.
+- **Praticable** (escaliers, passerelles) : `group.userData.walk = { heightAt(x, z, y, up), occupied(x, z, rayon,
+  y0, y1) }` dans le repère de l'asset : la surface de marche qu'on atteint d'un pas depuis `y` (sinon −∞), et ce qui
+  occupe une tranche de hauteur dans un disque. Le monde les assemble (`WalkSurfaces`, `docs/WORLDS.md`).
 
 ## Tags
 

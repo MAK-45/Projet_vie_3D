@@ -81,6 +81,10 @@ import * as armMagnifier from "./props/tools/arm-magnifier.js";
 import * as complexCart from "./props/machines/complex-cart.js";
 import * as crankRecorder from "./props/machines/crank-recorder.js";
 import * as displayCase from "./furniture/storage/display-case.js";
+import * as spiralStair from "./buildings/structure/spiral-stair.js";
+import * as straightStair from "./buildings/structure/straight-stair.js";
+import * as gratingWalkway from "./buildings/structure/grating-walkway.js";
+import * as cardCatalogue from "./furniture/tables/card-catalogue.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
@@ -96,6 +100,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   irisDoor, travelTrunk, bronzeRailing, handLamp,
   drawerArchive, dataCassette, rollingLadder, stoneTable, articulatedLamp,
   armMagnifier, bronzeStool, complexCart, crankRecorder, displayCase,
+  spiralStair, straightStair, gratingWalkway, cardCatalogue,
   summerMeadow, ancientComplex, complexTest,
 ];
 

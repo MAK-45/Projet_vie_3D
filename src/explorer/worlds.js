@@ -62,8 +62,9 @@ export const WORLD_PROFILES = {
       return {
         summary: `graine ${settings.seed} · ${COMPLEX_ROOMS[world.room].label}`,
         note:
-          `Sas 10 × 6 × 5 m et son vestibule · ${c.slabs} dalles · ${c.walls} modules de mur · ${c.doors} portes · ` +
-          `${c.furniture} meubles et machines · ${c.lamps} lampes. Les murs entre le personnage et la caméra disparaissent.`,
+          `Sas 10 × 6 × 5 m, son vestibule, Archives 18 × 12 × 7 m (mezzanine à 3,4 m, escalier à vis) · ` +
+          `${c.slabs} dalles · ${c.walls} modules de mur · ${c.doors} portes · ${c.furniture} meubles et machines · ` +
+          `${c.lamps} lampes. Une pièce à la fois ; les murs entre le personnage et la caméra disparaissent.`,
       };
     },
   },
