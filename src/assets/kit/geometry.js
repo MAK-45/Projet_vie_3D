@@ -900,6 +900,42 @@ export function buildQuads(quads) {
 }
 
 /**
+ * Ruban plat posé sur une surface (trace d'un stylet sur un tambour, bande peinte, liseré qui suit une courbe) : une
+ * bande de `width` de large qui passe par `points`, couchée sur la surface dont `normals` donne la normale en chaque
+ * point (un Vector3 par point). Sans épaisseur : posé un rien au-dessus de la surface, il ne fait pas de saut de
+ * profondeur, donc pas de contour sur chaque morceau. Attributs : position, normal ; indexée.
+ */
+export function buildRibbon(points, normals, width) {
+  const n = points.length;
+  const position = new Float32Array(n * 6);
+  const normal = new Float32Array(n * 6);
+  const index = [];
+  const T = new THREE.Vector3(), S = new THREE.Vector3();
+  for (let i = 0; i < n; i++) {
+    T.subVectors(points[Math.min(n - 1, i + 1)], points[Math.max(0, i - 1)]);
+    S.crossVectors(normals[i], T).normalize().multiplyScalar(width / 2);
+    for (const [k, s] of [[0, -1], [1, 1]]) {
+      const o = (i * 2 + k) * 3;
+      position[o] = points[i].x + S.x * s;
+      position[o + 1] = points[i].y + S.y * s;
+      position[o + 2] = points[i].z + S.z * s;
+      normal[o] = normals[i].x;
+      normal[o + 1] = normals[i].y;
+      normal[o + 2] = normals[i].z;
+    }
+    if (i < n - 1) {
+      const a = i * 2;
+      index.push(a, a + 2, a + 1, a + 1, a + 2, a + 3);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(position, 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normal, 3));
+  geometry.setIndex(index);
+  return geometry;
+}
+
+/**
  * Bloc (pierre taillée, marche, dalle, griffe) : boîte de taille [x, y, z] posée en `position` (centre), tournée de
  * `rotation` [x, y, z] (radians, ordre XYZ). Attributs : position, normal ; indexée (fusionnable avec `buildLathe`).
  * `taper` rétrécit le dessus (0 : droit, 0,2 : dessus 20 % plus petit en x et z).

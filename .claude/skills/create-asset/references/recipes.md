@@ -460,3 +460,26 @@ c'est ce fichier qui fait progresser les assets suivants.
   autour de x à son pivot) ; `lightPoint` suit l'abat-jour pour le halo. Lampe suspendue = le même bras retourné.
 - **Petits objets sur une table sans matériau de plus** : carnets en bronze patiné, couverture à −0,6 (vert-noir),
   pages à +0,45 (or pâle = papier jauni).
+
+### Le Complexe, lot 7 : Archives, lecture (loupe, tabouret, chariot, appareil à manivelle, vitrine)
+
+- **Verre en trame** (vitrine, cuve) : option `dither` du matériau toon avec `aCover` ≈ 0,36 sur les parois, sur la
+  rampe `GLASSES.clear` (verre clair jauni, ajoutée au kit), **sans contour** (`outline: false`, sinon chaque trou de
+  la trame est cerné) et sans ombre portée. La trame est en espace écran : parois avant et arrière perdent les mêmes
+  pixels, on voit le contenu au travers. Un liquide = même matériau, `aCover` plus haut (0,48) : au-delà de ~0,6, il
+  cache ce qui est dedans (le fruit de cristal disparaissait à 0,72). Les arêtes de bronze dessinent la boîte.
+- **Une trace sur un tambour** : des petits blocs le long d'une hélice se couvrent chacun de leur contour (des taches
+  noires). Un ruban plat collé à la surface (`buildRibbon`, kit/geometry.js), même matériau que le papier, ton −1,2 sur
+  une rampe dont le premier ton est presque noir ; le papier lui-même un cran plus clair (+0,1) pour que son ombre ne
+  tombe pas dans le ton de la trace.
+- **Fenêtre lumineuse qui « défile »** (visionneuse) : 0,22 × 0,09 m au moins (à 0,15 × 0,065 m on ne voyait qu'un
+  pixel orange) ; quatre traits sombres, pièces rigides qui glissent et rebouclent devant la lueur.
+- **Roues qui tournent pour de vrai** : chaque roue est une pièce rigide (rotation autour de son axe = −distance / r),
+  avec un boulon clair décalé pour voir le tour ; roulette pivotante = chape (pièce qui tourne autour de y) × roue
+  (tourne autour de son axe) ; `roll(d)` aligne les chapes dans le sens de la marche. Petites roues (Ø 0,2 m) : toile
+  pleine sombre + jante claire ; grandes (Ø 0,4 m) : 6 rais en bois, jante de fer.
+- **Manivelle sur un autre axe que le rotor** (cylindre de cire) : la manivelle est sa propre pièce, sinon elle tourne
+  autour de l'axe du cylindre. Animation au cran de 12 images/s, l'angle cumulé seulement quand le temps change.
+- **Petits objets sur une table** (loupe, visionneuse) : se juger dans la scène (`dev/archive-corner.html`, `zoom=2.2`,
+  `ground=0` : avec le socle d'herbe de la visionneuse, les dalles posées à y = −0,2 se battent avec lui).
+- **Tags** : « transport » est le même mot en français et en anglais (doublon refusé par `check`) : « haulage ».

@@ -11094,7 +11094,7 @@
       },
       "bytes": {
         "source": 11265,
-        "standalone": 57572
+        "standalone": 57769
       }
     },
     {
@@ -12860,7 +12860,7 @@
       },
       "bytes": {
         "source": 18282,
-        "standalone": 64010
+        "standalone": 64207
       }
     },
     {
@@ -13655,7 +13655,7 @@
       },
       "bytes": {
         "source": 11742,
-        "standalone": 53747
+        "standalone": 53944
       }
     },
     {
@@ -14219,6 +14219,833 @@
       }
     },
     {
+      "id": "props/tools/arm-magnifier",
+      "name": "Loupe sur bras",
+      "nameEn": "Arm magnifier",
+      "category": "props",
+      "subcategory": "tools",
+      "description": "Loupe du Complexe montée sur un bras de laiton à contrepoids : lentille de verre clair jauni à reflet d'un pixel, dans une monture de laiton. Loupe de lecture des Archives, loupe binoculaire de l'horloger (deux lentilles, deux oculaires), ou loupe de table d'observation ; sur socle ou à l'étau ; le bras se règle à la demande. Fiches ARC-07, ATE-14, ETU-10.",
+      "tags": [
+        "loupe",
+        "lentille",
+        "verre",
+        "bras",
+        "contrepoids",
+        "laiton",
+        "binoculaire",
+        "oculaires",
+        "étau",
+        "lecture",
+        "observation",
+        "horloger",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "outil",
+        "pilotable",
+        "intérieur",
+        "magnifier",
+        "magnifying glass",
+        "lens",
+        "glass",
+        "arm",
+        "counterweight",
+        "brass",
+        "binocular",
+        "eyepieces",
+        "clamp",
+        "reading",
+        "inspection",
+        "watchmaker",
+        "ancient complex",
+        "ancient-tech",
+        "tool",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine sous le socle (sur le plateau), ou au ras du bord de la table pour l'étau (le plateau est en y = 0, côté z < 0) ; le bras part vers +z avant la rotation de la graine",
+      "footprint": {
+        "radius": 0.8,
+        "height": 0.5
+      },
+      "animated": [
+        "arm"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'orientation et la plongée du bras, l'inclinaison de la lentille, le jaunissement du verre, la patine de la monture."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "reading",
+          "values": [
+            "reading",
+            "binocular",
+            "observation"
+          ],
+          "labels": {
+            "reading": "Lecture (Ø 0,20 m, bras de 0,6 m)",
+            "binocular": "Binoculaire (horloger, bras de 0,4 m)",
+            "observation": "Observation (Ø 0,15 m, bras court)"
+          },
+          "label": "Modèle",
+          "description": "Loupe de lecture des Archives, loupe binoculaire de l'établi d'horloger, ou loupe de la table d'observation."
+        },
+        "mount": {
+          "type": "enum",
+          "default": "desk",
+          "values": [
+            "desk",
+            "clamp"
+          ],
+          "labels": {
+            "desk": "Posée sur un socle lesté",
+            "clamp": "Serrée par un étau (bord de table)"
+          },
+          "label": "Pose",
+          "description": "Sur un socle lesté, ou serrée par un étau au bord d'une table (origine au ras du plateau, le plateau du côté z < 0)."
+        }
+      },
+      "variants": [
+        {
+          "id": "reading",
+          "name": "Lecture, sur socle",
+          "params": {}
+        },
+        {
+          "id": "binocular",
+          "name": "Binoculaire, à l'étau",
+          "params": {
+            "kind": "binocular",
+            "mount": "clamp"
+          }
+        },
+        {
+          "id": "observation",
+          "name": "Observation, à l'étau",
+          "params": {
+            "kind": "observation",
+            "mount": "clamp"
+          }
+        }
+      ],
+      "slug": "props-tools-arm-magnifier",
+      "path": "src/assets/props/tools/arm-magnifier.js",
+      "module": "public/catalog/modules/props-tools-arm-magnifier.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 498,
+          "vertices": 900,
+          "drawCalls": 2
+        },
+        "reading": {
+          "triangles": 498,
+          "vertices": 900,
+          "drawCalls": 2
+        },
+        "binocular": {
+          "triangles": 640,
+          "vertices": 1140,
+          "drawCalls": 2
+        },
+        "observation": {
+          "triangles": 426,
+          "vertices": 768,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 11760,
+        "standalone": 57254
+      }
+    },
+    {
+      "id": "furniture/seating/bronze-stool",
+      "name": "Tabouret de bronze",
+      "nameEn": "Bronze stool",
+      "category": "furniture",
+      "subcategory": "seating",
+      "description": "Tabouret du Complexe sur trois pieds de bronze : tabouret de lecture des Archives à assise carrée de cuir goudronné bordée de clous de laiton, pieds croisés sous l'assise ; ou tabouret d'atelier, plus haut, à assise ronde de bois noirci et repose-pieds en anneau. Fiches ARC-08, ATE-10.",
+      "tags": [
+        "tabouret",
+        "assise",
+        "siège",
+        "trois pieds",
+        "bronze",
+        "cuir",
+        "clous",
+        "bois noirci",
+        "repose-pieds",
+        "lecture",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "mobilier",
+        "s'asseoir",
+        "intérieur",
+        "stool",
+        "seat",
+        "tripod",
+        "leather",
+        "studs",
+        "blackened wood",
+        "footrest",
+        "reading",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "furniture",
+        "sit",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol, sous le centre de l'assise ; on s'y assoit face à +z",
+      "footprint": {
+        "radius": 0.3,
+        "height": 0.66
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'écart et l'orientation des pieds, la hauteur, l'usure du cuir et les clous qui manquent, ou les planches et la fente du bois."
+        },
+        "model": {
+          "type": "enum",
+          "default": "reading",
+          "values": [
+            "reading",
+            "workshop"
+          ],
+          "labels": {
+            "reading": "Lecture (cuir clouté, pieds croisés)",
+            "workshop": "Atelier (bois, repose-pieds)"
+          },
+          "label": "Modèle",
+          "description": "Tabouret de lecture des Archives (cuir clouté, trois pieds croisés) ou d'atelier (assise ronde de bois, repose-pieds)."
+        }
+      },
+      "variants": [
+        {
+          "id": "reading",
+          "name": "Lecture (cuir clouté, pieds croisés)",
+          "params": {
+            "model": "reading"
+          }
+        },
+        {
+          "id": "workshop",
+          "name": "Atelier (bois, repose-pieds)",
+          "params": {
+            "model": "workshop"
+          }
+        }
+      ],
+      "slug": "furniture-seating-bronze-stool",
+      "path": "src/assets/furniture/seating/bronze-stool.js",
+      "module": "public/catalog/modules/furniture-seating-bronze-stool.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 524,
+          "vertices": 806,
+          "drawCalls": 2
+        },
+        "reading": {
+          "triangles": 524,
+          "vertices": 806,
+          "drawCalls": 2
+        },
+        "workshop": {
+          "triangles": 368,
+          "vertices": 722,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 9876,
+        "standalone": 53388
+      }
+    },
+    {
+      "id": "props/machines/complex-cart",
+      "name": "Chariot du Complexe",
+      "nameEn": "Complex cart",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Chariot à roues cerclées du Complexe : chariot à cassettes des Archives (trois plateaux de bronze, cassettes aux tranches lumineuses, poignée de laiton, roulettes pivotantes), chariot d'instruments de la Galerie (sondes, rouleaux de câble, boîtier à cadran), ou chariot à pièces lourdes de l'Atelier (madriers, roues de bois cerclées de fer, timon). Les roues tournent quand on le pousse. Fiches ARC-10, GAL-08, ATE-11.",
+      "tags": [
+        "chariot",
+        "desserte",
+        "roues",
+        "roulettes",
+        "plateaux",
+        "poignée",
+        "timon",
+        "madriers",
+        "cassettes",
+        "sondes",
+        "câbles",
+        "lingots",
+        "bronze",
+        "fonte",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "transport",
+        "pilotable",
+        "intérieur",
+        "cart",
+        "trolley",
+        "wheels",
+        "casters",
+        "shelves",
+        "handle",
+        "drawbar",
+        "planks",
+        "data cassettes",
+        "probes",
+        "cable coils",
+        "ingots",
+        "cast iron",
+        "ancient complex",
+        "ancient-tech",
+        "haulage",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre ; le chariot roule le long de x (poignée côté −x, timon côté +x)",
+      "footprint": {
+        "radius": 1.9,
+        "height": 1.15
+      },
+      "animated": [
+        "wheels",
+        "drawbar"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la charge (piles, rangées, couleurs des tranches, objets posés), l'orientation des roulettes, l'usure, la place du timon."
+        },
+        "model": {
+          "type": "enum",
+          "default": "cassettes",
+          "values": [
+            "cassettes",
+            "instruments",
+            "heavy"
+          ],
+          "labels": {
+            "cassettes": "À cassettes (Archives, 3 plateaux)",
+            "instruments": "D'instruments (Galerie, 2 plateaux)",
+            "heavy": "À pièces lourdes (Atelier, madriers, timon)"
+          },
+          "label": "Modèle",
+          "description": "Chariot à cassettes des Archives, chariot d'instruments de la Galerie, ou chariot à pièces lourdes de l'Atelier."
+        },
+        "load": {
+          "type": "enum",
+          "default": "full",
+          "values": [
+            "full",
+            "half",
+            "empty"
+          ],
+          "labels": {
+            "full": "Chargé",
+            "half": "À moitié",
+            "empty": "Vide"
+          },
+          "label": "Charge",
+          "description": "Plateaux pleins, à moitié pleins, ou vides."
+        },
+        "drawbar": {
+          "type": "enum",
+          "default": "down",
+          "values": [
+            "down",
+            "up"
+          ],
+          "labels": {
+            "down": "Baissé au sol",
+            "up": "Relevé"
+          },
+          "label": "Timon",
+          "description": "Chariot lourd : timon baissé, posé au sol devant le chariot, ou relevé contre le plateau."
+        }
+      },
+      "variants": [
+        {
+          "id": "cassettes",
+          "name": "À cassettes",
+          "params": {}
+        },
+        {
+          "id": "instruments",
+          "name": "D'instruments",
+          "params": {
+            "model": "instruments"
+          }
+        },
+        {
+          "id": "heavy",
+          "name": "À pièces lourdes",
+          "params": {
+            "model": "heavy"
+          }
+        },
+        {
+          "id": "heavy-up",
+          "name": "Lourd vide, timon relevé",
+          "params": {
+            "model": "heavy",
+            "load": "empty",
+            "drawbar": "up"
+          }
+        }
+      ],
+      "slug": "props-machines-complex-cart",
+      "path": "src/assets/props/machines/complex-cart.js",
+      "module": "public/catalog/modules/props-machines-complex-cart.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2774,
+          "vertices": 5408,
+          "drawCalls": 2
+        },
+        "cassettes": {
+          "triangles": 2774,
+          "vertices": 5408,
+          "drawCalls": 2
+        },
+        "instruments": {
+          "triangles": 1788,
+          "vertices": 2996,
+          "drawCalls": 2
+        },
+        "heavy": {
+          "triangles": 1878,
+          "vertices": 3612,
+          "drawCalls": 2
+        },
+        "heavy-up": {
+          "triangles": 1714,
+          "vertices": 3308,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 24223,
+        "standalone": 70008
+      }
+    },
+    {
+      "id": "props/machines/crank-recorder",
+      "name": "Appareil à manivelle",
+      "nameEn": "Crank recorder",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Petit appareil à manivelle du Complexe, à poser sur une table : visionneuse de bois et de bronze à deux oculaires, dont la fenêtre ambre fait défiler une bande ; enregistreur à tambour de papier enfumé où un stylet trace une ligne sombre ; enregistreur à cylindre de cire sous un pavillon de laiton. En marche, la manivelle et le mécanisme tournent. Fiches ARC-11, ETU-05, E4-06.",
+      "tags": [
+        "visionneuse",
+        "enregistreur",
+        "manivelle",
+        "tambour",
+        "cylindre",
+        "cire",
+        "papier enfumé",
+        "stylet",
+        "pavillon",
+        "oculaires",
+        "bande",
+        "bobines",
+        "bois noirci",
+        "bronze",
+        "laiton",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "instrument",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "viewer",
+        "recorder",
+        "crank",
+        "drum",
+        "wax cylinder",
+        "smoked paper",
+        "stylus",
+        "horn",
+        "eyepieces",
+        "film strip",
+        "reels",
+        "blackened wood",
+        "brass",
+        "ancient complex",
+        "ancient-tech",
+        "device",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au centre du dessous (à poser sur un plateau) ; face avant vers +z, manivelle côté +x",
+      "footprint": {
+        "radius": 0.42,
+        "height": 0.6
+      },
+      "animated": [
+        "crank"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la trace du tambour, les traits de la bande, l'orientation du pavillon, la place du stylet, la manivelle à l'arrêt, les tons du bois."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "viewer",
+          "values": [
+            "viewer",
+            "drum",
+            "cylinder"
+          ],
+          "labels": {
+            "viewer": "Visionneuse (fenêtre ambre, oculaires)",
+            "drum": "Enregistreur à tambour (papier enfumé)",
+            "cylinder": "Enregistreur à cylindre (cire, pavillon)"
+          },
+          "label": "Appareil",
+          "description": "Visionneuse des Archives, enregistreur à tambour du kit d'étude, ou enregistreur à cylindre de la salle 4."
+        },
+        "state": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "running"
+          ],
+          "labels": {
+            "idle": "À l'arrêt",
+            "running": "En marche"
+          },
+          "label": "État",
+          "description": "À l'arrêt, ou en marche : la manivelle tourne, le tambour ou le cylindre aussi, la bande défile."
+        }
+      },
+      "variants": [
+        {
+          "id": "viewer",
+          "name": "Visionneuse",
+          "params": {}
+        },
+        {
+          "id": "drum",
+          "name": "Tambour",
+          "params": {
+            "kind": "drum"
+          }
+        },
+        {
+          "id": "cylinder",
+          "name": "Cylindre",
+          "params": {
+            "kind": "cylinder"
+          }
+        }
+      ],
+      "slug": "props-machines-crank-recorder",
+      "path": "src/assets/props/machines/crank-recorder.js",
+      "module": "public/catalog/modules/props-machines-crank-recorder.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 494,
+          "vertices": 904,
+          "drawCalls": 3
+        },
+        "viewer": {
+          "triangles": 494,
+          "vertices": 904,
+          "drawCalls": 3
+        },
+        "drum": {
+          "triangles": 688,
+          "vertices": 1032,
+          "drawCalls": 2
+        },
+        "cylinder": {
+          "triangles": 798,
+          "vertices": 1085,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 19464,
+        "standalone": 65736
+      }
+    },
+    {
+      "id": "furniture/storage/display-case",
+      "name": "Vitrine",
+      "nameEn": "Display case",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Vitrine du Complexe au verre tramé (on voit au travers) : vitrine de conservation des Archives sur piètement de pierre fumée, caisson au dessus bombé cerclé de bronze, cadran d'hygrométrie, tablette gravée ou rouleaux-bandes sur un feutre ; ou cuve à échantillon de la salle 6, un fruit de cristal qui luit dans un liquide clair, seule ou en rang. Fiches ARC-15, E6-06.",
+      "tags": [
+        "vitrine",
+        "cuve",
+        "bocal",
+        "verre",
+        "verre tramé",
+        "caisson bombé",
+        "pierre fumée",
+        "bronze",
+        "cadran",
+        "hygrométrie",
+        "tablette gravée",
+        "rouleaux",
+        "échantillon",
+        "fruit de cristal",
+        "liquide",
+        "musée",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "lumineux",
+        "intérieur",
+        "display case",
+        "showcase",
+        "specimen jar",
+        "glass",
+        "dithered glass",
+        "domed lid",
+        "smoked stone",
+        "dial",
+        "hygrometer",
+        "engraved tablet",
+        "scrolls",
+        "crystal fruit",
+        "liquid",
+        "museum",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "glowing",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre (vitrine) ou sous le rang de cuves (à poser sur une table) ; face avant vers +z",
+      "footprint": {
+        "radius": 0.75,
+        "height": 1
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le contenu et sa disposition, les glyphes de la tablette, le niveau du liquide, la forme du fruit, l'aiguille du cadran, les tons de la pierre."
+        },
+        "model": {
+          "type": "enum",
+          "default": "conservation",
+          "values": [
+            "conservation",
+            "specimen"
+          ],
+          "labels": {
+            "conservation": "De conservation (Archives, 1,2 m)",
+            "specimen": "Cuve à échantillon (salle 6)"
+          },
+          "label": "Modèle",
+          "description": "Vitrine de conservation des Archives, ou cuve à échantillon de la salle de l'Arbre de Mémoire."
+        },
+        "content": {
+          "type": "enum",
+          "default": "tablet",
+          "values": [
+            "tablet",
+            "rolls",
+            "empty"
+          ],
+          "labels": {
+            "tablet": "Tablette gravée",
+            "rolls": "Rouleaux-bandes",
+            "empty": "Vide"
+          },
+          "label": "Contenu",
+          "description": "Vitrine de conservation : une tablette gravée sur son lutrin, des rouleaux-bandes, ou rien."
+        },
+        "count": {
+          "type": "number",
+          "default": 1,
+          "min": 1,
+          "max": 4,
+          "step": 1,
+          "label": "Cuves",
+          "description": "Cuve à échantillon : nombre de cuves en rang (4 sur la table de la salle 6)."
+        }
+      },
+      "variants": [
+        {
+          "id": "tablet",
+          "name": "Conservation, tablette",
+          "params": {}
+        },
+        {
+          "id": "rolls",
+          "name": "Conservation, rouleaux",
+          "params": {
+            "content": "rolls"
+          }
+        },
+        {
+          "id": "specimen",
+          "name": "Cuve à échantillon",
+          "params": {
+            "model": "specimen"
+          }
+        },
+        {
+          "id": "specimens",
+          "name": "Rang de 4 cuves",
+          "params": {
+            "model": "specimen",
+            "count": 4
+          }
+        }
+      ],
+      "slug": "furniture-storage-display-case",
+      "path": "src/assets/furniture/storage/display-case.js",
+      "module": "public/catalog/modules/furniture-storage-display-case.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1186,
+          "vertices": 1560,
+          "drawCalls": 3
+        },
+        "tablet": {
+          "triangles": 1186,
+          "vertices": 1560,
+          "drawCalls": 3
+        },
+        "rolls": {
+          "triangles": 1654,
+          "vertices": 2336,
+          "drawCalls": 3
+        },
+        "specimen": {
+          "triangles": 222,
+          "vertices": 362,
+          "drawCalls": 3
+        },
+        "specimens": {
+          "triangles": 896,
+          "vertices": 1472,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 16508,
+        "standalone": 62818
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",
@@ -14601,7 +15428,7 @@
       },
       "bytes": {
         "source": 3500,
-        "standalone": 299504
+        "standalone": 299701
       }
     },
     {
@@ -14783,7 +15610,7 @@
       },
       "bytes": {
         "source": 3537,
-        "standalone": 305249
+        "standalone": 305446
       }
     }
   ]

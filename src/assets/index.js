@@ -76,6 +76,11 @@ import * as dataCassette from "./props/books/data-cassette.js";
 import * as rollingLadder from "./buildings/structure/rolling-ladder.js";
 import * as stoneTable from "./furniture/tables/stone-table.js";
 import * as articulatedLamp from "./furniture/lighting/articulated-lamp.js";
+import * as bronzeStool from "./furniture/seating/bronze-stool.js";
+import * as armMagnifier from "./props/tools/arm-magnifier.js";
+import * as complexCart from "./props/machines/complex-cart.js";
+import * as crankRecorder from "./props/machines/crank-recorder.js";
+import * as displayCase from "./furniture/storage/display-case.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
@@ -90,6 +95,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   stoneBench, equipmentLocker, leverDesk, ventGrate, glyphPlaque,
   irisDoor, travelTrunk, bronzeRailing, handLamp,
   drawerArchive, dataCassette, rollingLadder, stoneTable, articulatedLamp,
+  armMagnifier, bronzeStool, complexCart, crankRecorder, displayCase,
   summerMeadow, ancientComplex, complexTest,
 ];
 

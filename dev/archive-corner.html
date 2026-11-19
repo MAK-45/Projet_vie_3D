@@ -63,6 +63,14 @@
         group.add(make("props/books/data-cassette", { seed: 5, pose: "standing", color: "green" }, 0.35, 0.2, 0.2, 0.85));
         group.add(make("props/books/data-cassette", { seed: 9, kind: "roll" }, 0.55, 0.45, 0.2, 0.85));
         group.add(make("furniture/lighting/filament-chandelier", { seed: 2, halo: night ? "on" : "off", height: 3.4, chain: 2.4 }, 0.2, 0.4));
+        // Lot 7 : la lecture. Loupe et visionneuse sur la table, deux tabourets devant, le chariot à cassettes près des
+        // rayonnages, une vitrine de conservation à droite.
+        group.add(make("props/tools/arm-magnifier", { seed: 4 }, -0.75, 0.3, 0.5, 0.85));
+        group.add(make("props/machines/crank-recorder", { seed: 3, state: query.get("run") === "1" ? "running" : "idle" }, 0.85, 0.62, -0.35, 0.85));
+        group.add(make("furniture/seating/bronze-stool", { seed: 2 }, -0.35, 1.2, 0.3));
+        group.add(make("furniture/seating/bronze-stool", { seed: 5 }, 0.75, 1.25, -0.2));
+        group.add(make("props/machines/complex-cart", { seed: 3 }, 2.9, -1.55, -0.35));
+        group.add(make("furniture/storage/display-case", { seed: 2 }, 2.7, 1.5, -Math.PI / 2 + 0.05));
         // Le mannequin de 1,80 m devant la table.
         const mannequin = getAsset("creatures/humanoid/mannequin").create({});
         mannequin.position.set(-1.0, 0, 1.6);

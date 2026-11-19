@@ -915,7 +915,9 @@ var METALS = {
 var GLASSES = {
   amber: { label: "Verre ambre", ramp: ["#4a2410", "#8a4a1c", "#c97a2e", "#f2b764"], ink: "#2a1408" },
   cyan: { label: "Verre cyan", ramp: ["#0e2f38", "#1d6672", "#3fa9b8", "#a6e6ee"], ink: "#071a20" },
-  smoky: { label: "Verre fum\xE9", ramp: ["#1a2026", "#2b363e", "#4a5a64", "#8fa3ac"], ink: "#0d1115" }
+  smoky: { label: "Verre fum\xE9", ramp: ["#1a2026", "#2b363e", "#4a5a64", "#8fa3ac"], ink: "#0d1115" },
+  // Verre clair un peu jauni par l'âge : lentilles des loupes, caissons des vitrines.
+  clear: { label: "Verre clair jauni", ramp: ["#4f5650", "#7f8a78", "#b9bd98", "#ece6c4"], ink: "#262a26" }
 };
 var GLOWS = {
   amber: { label: "Ambre", ramp: ["#5a2a12", "#b8581c", "#ff9a3c", "#ffd796"], light: "#ff9a3c" },
