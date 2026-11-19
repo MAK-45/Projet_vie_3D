@@ -91,6 +91,8 @@ c'est ce fichier qui fait progresser les assets suivants.
   Fleurs : 3e matériau (`foliage`), grappes de 2–3 feuilles de 0,10–0,13 m accrochées aux points de surface
   rendus par `fillClump`, seulement sur le dessus ; à 0,075–0,095 m, le contour les mangeait. Rejets au pied :
   petites touffes de 0,35 m sur tiges collées au tronc.
+- **Cerisier à fleurs** (`nature/trees/cherry`) : fût court (forche à 36–48 % de la hauteur), 4–6 charpentières en arc (port étalé, dôme plus large que haut calé par enveloppe). Floraison de printemps : la masse de la couronne EST la floraison — même `fillClump` avec une rampe de 5 roses ; corolles à 5 pétales (`buildFanGeometry`, `starOutline(5, 0.86)`, 0,09–0,12 m) dans un second matériau au même `id` (11), pas de contour autour de chaque corolle ; nappes de pétales au sol dans ce même matériau ; été = cerises en paires (ellipses rouges, 3e id).
+- Densité : ~100 feuilles × r² par touffe (~2,5 % de pixels de ciel enclos, comme le chêne) ; à 60 × r², confettis troués. Mesurer objectivement (flood fill du ciel enclos dans la couronne) : corolles pâles et ciel clair font surestimer les trous à l'analyse d'image. Écorce : motif `bark` (lenticelles horizontales), pas `furrow`.
 - Outils partagés : `kit/foliage.js` (`fillClump`, `fallenLeaves`, `leafNormal`) ; motif `furrow` (écorce
   crevassée, fissures verticales qui serpentent) dans le matériau : `[16, 3, 0.1, 0.2]` chêne, `[16, 4, 0.05, 0.4]`
   tilleul. Éclat des plaques > 0,08 sur une écorce grise : taches blanches façon bouleau.

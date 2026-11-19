@@ -701,6 +701,178 @@
       }
     },
     {
+      "id": "nature/trees/cherry",
+      "name": "Cerisier à fleurs",
+      "nameEn": "Cherry tree",
+      "category": "nature",
+      "subcategory": "trees",
+      "description": "Cerisier d'ornement au port étalé : couronne en dôme d'un rose vif en fleurs au printemps, corolles de cinq pétales plus claires en surface et pétales tombés au pied ; verdure et petites cerises en été, feu orange en automne, arbre nu en hiver. Forme différente pour chaque graine.",
+      "tags": [
+        "cerisier",
+        "sakura",
+        "arbre",
+        "feuillu",
+        "végétation",
+        "fleurs roses",
+        "floraison",
+        "pétales",
+        "couronne étalée",
+        "vent",
+        "saisons",
+        "jardin",
+        "extérieur",
+        "cherry tree",
+        "sakura tree",
+        "tree",
+        "deciduous",
+        "vegetation",
+        "pink blossom",
+        "bloom",
+        "petals",
+        "crown",
+        "wind",
+        "seasons",
+        "outdoor",
+        "procedural"
+      ],
+      "biomes": [
+        "village",
+        "garden",
+        "meadow",
+        "forest"
+      ],
+      "version": 1,
+      "added": "2026-11-19",
+      "units": "1 unité = 1 mètre ; l'origine est au pied du tronc, au niveau du sol",
+      "footprint": {
+        "radius": 4,
+        "height": 6.8
+      },
+      "animated": [
+        "wind"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la silhouette : inclinaison du fût, nombre et étagement des charpentières, touffes, asymétries."
+        },
+        "season": {
+          "type": "enum",
+          "default": "spring",
+          "values": [
+            "spring",
+            "summer",
+            "autumn",
+            "winter"
+          ],
+          "labels": {
+            "spring": "Printemps",
+            "summer": "Été",
+            "autumn": "Automne",
+            "winter": "Hiver"
+          },
+          "label": "Saison",
+          "description": "Fleurs roses au printemps (par défaut), verdure et petites cerises en été, feu orange à l'automne, nu l'hiver."
+        },
+        "height": {
+          "type": "number",
+          "default": 6,
+          "min": 4.5,
+          "max": 8,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur de l'arbre ; tout l'arbre garde ses proportions."
+        },
+        "fullness": {
+          "type": "number",
+          "default": 1,
+          "min": 0.5,
+          "max": 1.2,
+          "step": 0.1,
+          "label": "Densité de la floraison",
+          "description": "Quantité de fleurs et de feuilles (et de triangles)."
+        }
+      },
+      "variants": [
+        {
+          "id": "spring",
+          "name": "Printemps",
+          "params": {
+            "season": "spring"
+          }
+        },
+        {
+          "id": "summer",
+          "name": "Été",
+          "params": {
+            "season": "summer"
+          }
+        },
+        {
+          "id": "autumn",
+          "name": "Automne",
+          "params": {
+            "season": "autumn"
+          }
+        },
+        {
+          "id": "winter",
+          "name": "Hiver",
+          "params": {
+            "season": "winter"
+          }
+        }
+      ],
+      "slug": "nature-trees-cherry",
+      "path": "src/assets/nature/trees/cherry.js",
+      "module": "public/catalog/modules/nature-trees-cherry.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/foliage.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 4364,
+          "vertices": 9161,
+          "drawCalls": 3
+        },
+        "spring": {
+          "triangles": 4364,
+          "vertices": 9161,
+          "drawCalls": 3
+        },
+        "summer": {
+          "triangles": 3645,
+          "vertices": 8233,
+          "drawCalls": 3
+        },
+        "autumn": {
+          "triangles": 2709,
+          "vertices": 6723,
+          "drawCalls": 2
+        },
+        "winter": {
+          "triangles": 618,
+          "vertices": 450,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 16422,
+        "standalone": 60881
+      }
+    },
+    {
       "id": "nature/rocks/boulder",
       "name": "Rocher posé",
       "nameEn": "Boulder",

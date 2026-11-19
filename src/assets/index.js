@@ -9,6 +9,7 @@ import * as snowPatch from "./nature/terrain/snow-patch.js";
 import * as birch from "./nature/trees/birch.js";
 import * as oak from "./nature/trees/oak.js";
 import * as linden from "./nature/trees/linden.js";
+import * as cherry from "./nature/trees/cherry.js";
 
 import * as flowerClump from "./nature/plants/flower-clump.js";
 import * as grassTuft from "./nature/plants/grass-tuft.js";
@@ -91,7 +92,7 @@ import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 export { taxonomy, biomes } from "./taxonomy.js";
 
 /** @type {Array<{meta: object, create: (params?: object) => import("three").Group}>} */
-export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin, magicMannequin,
+export const assets = [birch, oak, linden, cherry, boulder, buriedRock, snowPatch, mossPatch, dirtMound, grassTuft, lawn, meadowGround, flowerClump, sun, moon, cloud, star, couveuseBlob, heroine, hero, mannequin, magicMannequin,
   animLocomotionWalk, animLocomotionWalkFormal, animLocomotionJog, animLocomotionSprint, animLocomotionCrouchWalk, animLocomotionJump, animLocomotionRoll, animLocomotionPush, animLocomotionSwim, animIdleIdle, animIdleTalk, animIdleTorch, animIdleCrouch, animIdleSit, animIdleDrive, animIdleSwimIdle, animIdleDance, animActionsInteract, animActionsPickUp, animActionsRepair, animActionsHit, animActionsDeath, animCombatPunch, animCombatSword, animCombatPistol, animMagicSpell,
   starPortal, starPortalDial,
   glyphFloorSlab, glyphWall, glyphColumn, cofferedVault, complexDoor,
