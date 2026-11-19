@@ -127,7 +127,7 @@ famille, avec les mêmes noms et les mêmes valeurs partout (`src/assets/kit/var
 | Bâtiments, véhicules, vaisseaux, objets | axes à choix propres (`style`, `roof`, `model`, `paint`, `wear`, `state`...) |
 
 Les rampes de couleurs des matières communes sont dans `src/assets/kit/palettes.js`. Le détail par famille est
-dans `.claude/skills/create-asset/references/variation-axes.md`.
+dans `.agents/skills/create-asset/references/variation-axes.md`.
 
 ## Assets importés : personnages et animations
 
@@ -168,12 +168,12 @@ public/models/
 
 ## Ajouter un asset
 
-Avec Claude Code : demander l'asset (« génère un chêne »), le skill `create-asset` déroule toute la marche
-(`.claude/skills/create-asset/SKILL.md`). En résumé :
+Avec un agent de code (Mistral Vibe, Claude Code...) : demander l'asset (« génère un chêne »), le skill `create-asset` déroule toute la marche
+(`.agents/skills/create-asset/SKILL.md`). En résumé :
 
 1. choisir le rangement, les traits qui font reconnaître l'objet, ce que change la graine, les axes de variation ;
 2. écrire `src/assets/<catégorie>/<sous-catégorie>/<nom>.js` à partir du modèle du skill, l'inscrire dans
    `src/assets/index.js` ;
 3. `npm run check`, `npm run sheet`, regarder, corriger, recommencer ;
-4. `npm run artifact`, publier la page sur l'Artifact « Atelier Vie 3D » (lien dans `CLAUDE.md`) ;
+4. `npm run artifact`, publier la page sur l'Artifact « Atelier Vie 3D » (lien et règle de publication dans `AGENTS.md`) ;
 5. committer le fichier de l'asset, `index.js`, `public/catalog/` et les outils ajoutés au kit.

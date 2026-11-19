@@ -3,7 +3,7 @@
 **À lire en premier à chaque session sur le Complexe.** Ce fichier dit où on en est. La bible est dans `README.md`,
 `PIECES.md` et `SALLES.md` ; le découpage en lots et la marche à suivre dans `PLAN.md`.
 
-## Pour Claude : reprendre le travail
+## Pour l'agent : reprendre le travail
 
 Quand l'utilisateur demande « on en est où ? », « on continue le Complexe », « on reprend l'environnement des
 artefacts », ou parle d'un lot :

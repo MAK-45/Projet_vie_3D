@@ -6,6 +6,6 @@ dist-artifact/
 .env*
 # rendus locaux pixelfx
 vendor/pixelfx/records/
-# réglages perso Claude Code
+# réglages perso des agents de code
 .claude/settings.local.json
 CLAUDE.local.md

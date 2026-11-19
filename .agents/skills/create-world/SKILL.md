@@ -3,15 +3,13 @@ name: create-world
 description: >-
   Crée un monde (une carte entière à parcourir) pour le Projet Vie 3D, assemblé à partir des assets de la
   bibliothèque comme la « Prairie d'été » : générateur procédural piloté par une graine (relief, sol, semis
-  d'arbres, de rochers, d'herbes et de fleurs en bosquets et en nappes crédibles), échelle réelle en mètres, ciel
-  (lumière, ombres de nuages, mer de nuages, heure, météo), vie d'ambiance, réglages de personnalisation, puis
-  rangement comme asset de la catégorie « Mondes », visite dans l'explorateur de l'Atelier, vérification à
-  l'image et publication. À utiliser dès que l'utilisateur demande de créer, générer, assembler ou retoucher un
-  monde, une carte, une île, un biome, un terrain ou un décor à explorer : « crée une forêt enneigée », « fais-moi
-  une carte de désert », « génère un monde de plage », « ajoute un village sur une île », « rends la prairie plus
-  boisée », « un nouveau biome avec des marais », « une version infinie de la forêt ». Monde fini (île) ou
-  infini (généré par morceaux au fil de la marche). Ne pas utiliser pour dessiner un asset isolé (arbre, rocher,
-  maison : skill create-asset), ni pour le moteur de rendu ou le scénario.
+  d'arbres, rochers, herbes et fleurs en bosquets et en nappes), échelle réelle en mètres, ciel (lumière, ombres
+  de nuages, heure, météo), vie d'ambiance, réglages, puis rangement comme asset « Mondes », visite dans
+  l'explorateur, vérification à l'image et publication. À utiliser dès que l'utilisateur demande de créer,
+  générer, assembler ou retoucher un monde, une carte, une île, un biome ou un décor à explorer : « crée une
+  forêt enneigée », « fais-moi une carte de désert », « rends la prairie plus boisée », « une version infinie
+  de la forêt ». Monde fini (île) ou infini (par morceaux). Pas pour un asset isolé (skill create-asset), ni
+  pour le moteur de rendu ou le scénario.
 ---
 
 # Créer un monde
@@ -29,7 +27,7 @@ Ce que l'utilisateur attend d'un monde :
 - le **rendu pixel art** du projet, stable : rien ne clignote, rien n'apparaît au milieu de l'image ;
 - **60 images par seconde sur un vieux téléphone** : c'est une exigence, vérifiée par des mesures ;
 - des **réglages** (graine, taille, abondance de chaque élément) et l'heure et la météo qui varient ;
-- un monde **rangé dans l'Atelier comme un asset**, dont la fiche ouvre l'explorateur. Un seul Artifact.
+- un monde **rangé dans l'Atelier comme un asset**, dont la fiche ouvre l'explorateur. Une seule galerie.
 
 ## Avant de commencer
 
@@ -182,8 +180,11 @@ rendu, et demander à l'utilisateur ce que donne son téléphone.
 npm run artifact     # régénère public/catalog/ puis dist-artifact/atelier-vie-3d.html
 ```
 
-Publier `dist-artifact/atelier-vie-3d.html` avec l'outil Artifact en passant comme `url` le lien de l'Artifact
-« Atelier Vie 3D » noté dans `CLAUDE.md`. Les mondes vivent dans l'Atelier : ne pas créer d'autre Artifact.
+La publication en ligne dépend de l'agent (voir la règle 7 de `AGENTS.md`) : avec l'outil Artifact de
+claude.ai, publier `dist-artifact/atelier-vie-3d.html` **en passant comme `url` le lien de l'Artifact « Atelier
+Vie 3D » noté dans `AGENTS.md`** (sans lui, un deuxième Artifact est créé au lieu de mettre à jour la galerie) et
+donner le lien ; sans cet outil, dire à l'utilisateur que la page est prête dans `dist-artifact/`.
+Les mondes vivent dans l'Atelier : pas d'autre page ni d'autre Artifact.
 
 Mettre à jour `docs/WORLDS.md` (le monde, ses réglages, ses mesures) et noter dans
 `references/world-recipes.md` ce qui a marché ou raté. Commits en français, petits.

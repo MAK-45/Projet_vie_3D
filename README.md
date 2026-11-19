@@ -7,7 +7,7 @@ Mondes isométriques vivants en three.js, rendu pixel art moderne, et une créat
 - Performance et formats : [docs/PERFORMANCE.md](docs/PERFORMANCE.md)
 - Effets pixelfx en 3D : [docs/PIXELFX-3D.md](docs/PIXELFX-3D.md)
 - Assets (dessins 3D en JS, catalogue pour IA) : [docs/ASSETS.md](docs/ASSETS.md)
-- Consignes pour Claude Code : [CLAUDE.md](CLAUDE.md)
+- Consignes pour les agents de code (Mistral Vibe, Claude Code...) : [AGENTS.md](AGENTS.md)
 
 ## Démarrer
 
@@ -19,7 +19,7 @@ npm run sheet -- nature/trees/birch   # planche de contrôle d'un asset (variant
 npm run artifact   # catalogue + page autonome à publier (dist-artifact/atelier-vie-3d.html)
 ```
 
-## Skills Claude Code (`.claude/skills/`)
+## Skills des agents (`.agents/skills/`, format Agent Skills)
 
 | Skill | Usage |
 |---|---|

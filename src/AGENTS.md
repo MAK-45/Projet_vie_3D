@@ -1,12 +1,6 @@
----
-paths:
-  - "src/**"
-  - "dev/**"
-  - "**/*.js"
-  - "**/*.html"
----
+# Code three.js (src/)
 
-# Code three.js
+Règles chargées automatiquement quand l'agent lit un fichier sous `src/` (et valables aussi pour `dev/`).
 
 - Charger les skills `threejs-fundamentals` et `threejs-performance` avant d'écrire ou modifier du rendu, plus le
   skill propre à la tâche (shaders, postprocessing, geometry...).

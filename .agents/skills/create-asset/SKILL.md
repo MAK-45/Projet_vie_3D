@@ -119,9 +119,10 @@ Noter dans `references/recipes.md` ce qui a marché ou raté et qui servira au p
 npm run artifact     # régénère public/catalog/ puis dist-artifact/atelier-vie-3d.html
 ```
 
-Publier `dist-artifact/atelier-vie-3d.html` avec l'outil Artifact **en passant comme `url` le lien de
-l'Artifact « Atelier Vie 3D » noté dans `CLAUDE.md`** : sans lui, un deuxième Artifact est créé au lieu de
-mettre à jour la galerie. Donner le lien à l'utilisateur.
+La publication en ligne dépend de l'agent (voir la règle 7 de `AGENTS.md`) : avec l'outil Artifact de
+claude.ai, publier `dist-artifact/atelier-vie-3d.html` **en passant comme `url` le lien de l'Artifact « Atelier
+Vie 3D » noté dans `AGENTS.md`** (sans lui, un deuxième Artifact est créé au lieu de mettre à jour la galerie) et
+donner le lien ; sans cet outil, dire à l'utilisateur que la page est prête dans `dist-artifact/`.
 
 Commit en français : le fichier de l'asset, `src/assets/index.js`, `public/catalog/`, et les outils ajoutés au
 kit. Pour une retouche d'asset existant, augmenter `meta.version` si le dessin change.

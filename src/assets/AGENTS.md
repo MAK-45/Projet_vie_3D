@@ -1,9 +1,6 @@
----
-paths:
-  - "src/assets/**"
----
+# Assets (src/assets/)
 
-# Assets
+Règles chargées automatiquement quand l'agent lit un fichier sous `src/assets/`, en plus de `src/AGENTS.md`.
 
 - Créer ou retoucher un asset se fait avec le skill `create-asset` ; le contrat d'un module est dans
   `docs/ASSETS.md`.
