@@ -23,9 +23,9 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-19
-- **Étape actuelle** : lot 7 validé : loupe sur bras, tabouret, chariot, appareil à manivelle, vitrine ; ajoutés au
-  coin des Archives `dev/archive-corner.html`.
-- **Prochaine action** : lot 8 (Archives : hauteur et catalogue, puis Monde : les Archives), à discuter d'abord.
+- **Étape actuelle** : lot 8 fait, à valider : escalier à vis, escalier droit, passerelle en caillebotis,
+  meuble-catalogue ★, et les Archives dans le monde du Complexe (mezzanine praticable).
+- **Prochaine action** : validation du lot 8 par l'utilisateur, puis lot 9 (Atelier : établis et forge), à discuter.
 
 ## Les lots
 
@@ -40,7 +40,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 5 | Monde : le Sas | — | ✅ validé | 2026-11-18 | monde `ancient-complex` (Sas + vestibule, états, vérification) ; moteur : `enableReveal`, brume d'intérieur ; kit : lampes allumées ou éteintes, halos `on` ; fx : `lamp-dust` ; marche à étages `heightAt(x, z, y)` |
 | 6 | Archives : rangement | 5 | ✅ validé | 2026-11-18 | e9d217b : rayonnage (rouages demandés par l'utilisateur), cassette, échelle, table, lampe articulée ; kit : `buildQuads`, `gearWheel`, `DATA_GLOWS`, cuivre vif ; pièces rigides : seule la plage mobile part au GPU ; coin d'essai `dev/archive-corner.html` |
 | 7 | Archives : lecture | 5 | ✅ validé | 2026-11-19 | f2c0fc2 : loupe (lecture, binoculaire, observation), tabouret (lecture, atelier), chariot (cassettes, instruments, lourd), appareil à manivelle (visionneuse, tambour, cylindre), vitrine (conservation, cuve) ; kit : `GLASSES.clear`, `buildRibbon` ; verre en trame ; ajoutés au coin des Archives |
-| 8 | Archives : hauteur et catalogue, puis Monde : les Archives | 4 | ⬜ à faire | | |
+| 8 | Archives : hauteur et catalogue, puis Monde : les Archives | 4 | 👀 à valider | 2026-11-19 | b2394be : escalier à vis, escalier droit, passerelle (droite ou arc), meuble-catalogue ★ ; Archives au nord du Sas (`ancient-complex-archives.js`), une pièce à la fois, mezzanine et escalier praticables ; kit : `openBar`, `WalkSurfaces`, boîtes à hauteur, `kit.update()` ; explorateur : `reach`, `y` |
 | 9 | Atelier : établis et forge | 5 | ⬜ à faire | | |
 | 10 | Atelier : outils et réserves | 5 | ⬜ à faire | | |
 | 11 | Atelier : levage, puis Monde : l'Atelier | 3 | ⬜ à faire | | |
@@ -97,10 +97,10 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 7 | `props/machines/complex-cart` | ARC-10, GAL-08, ATE-11 | ✅ | à cassettes (3 plateaux, rangées debout et piles, tranches des 4 couleurs), d'instruments (sondes, rouleaux de câble, boîtier à cadran et voyant), lourd (madriers, roues de bois cerclées de fer, timon baissé ou relevé, caisse, lingots, ébauche de roue) ; chargé, à moitié, vide ; `userData.cart.roll(d)` (roues et roulettes), `setDrawbar`, `handle`, `userData.surfaces` ; ≤ 3 000 triangles, 2 draw calls |
 | 7 | `props/machines/crank-recorder` | ARC-11, ETU-05, E4-06 | ✅ | visionneuse (fenêtre ambre où défile une bande, 2 oculaires, 2 bobines), tambour (papier enfumé, trace en ruban), cylindre (cire à sillons, pavillon de laiton) ; à l'arrêt ou en marche (12 images/s) ; `userData.recorder.setRunning` ; ≤ 800 triangles, 2–3 draw calls |
 | 7 | `furniture/storage/display-case` | ARC-15, E6-06 | ✅ | conservation (piètement de pierre fumée, caisson bombé en 4 pans, cadran d'hygrométrie ; tablette gravée, rouleaux ou vide) ou cuve à échantillon (fruit de cristal cyan dans un liquide, 1 à 4 en rang) ; verre en trame (`dither`) sans contour ; `userData.surface` ; ≤ 1 700 triangles, 3 draw calls |
-| 8 | `buildings/structure/spiral-stair` | ARC-13, E6-05, COE-02 | ⬜ | |
-| 8 | `buildings/structure/straight-stair` | escaliers de E5-06, E10-04, escalier de service de E7 | ⬜ | |
-| 8 | `buildings/structure/grating-walkway` | ARC-14, E5-06, E6-04, COE-01 | ⬜ | |
-| 8 | `furniture/tables/card-catalogue` ★ | ARC-17 | ⬜ | |
+| 8 | `buildings/structure/spiral-stair` | ARC-13, E6-05, COE-02 | 👀 | pierre (nez de laiton) ou caillebotis ; 2–6 m, marches de 0,18 m (19 pour 3,4 m, 22 pour 4 m) en éventail sur un tour au plus, palier de 64° ouvert face à +z ; sens gauche ou droite ; noyau, limon, rampe sur barreaux ; `userData.walk`, `userData.stair` ; 3 400 triangles, 3 draw calls |
+| 8 | `buildings/structure/straight-stair` | escaliers de E5-06, E10-04, escalier de service de E7 | 👀 | caillebotis sur limons rivetés, gradins de pierre, service (fonte, 0,9 m, raide, deux lisses) ; rampes gauche, droite, deux, aucune ; palier en option ; centré sur son emprise ; `userData.walk`, `userData.stair` ; ≤ 5 500 triangles, 3 draw calls |
+| 8 | `buildings/structure/grating-walkway` | ARC-14, E5-06, E6-04, COE-01 | 👀 | droite (2–24 m) ou arc (≤ 180° : un balcon de 300° = deux arcs ; rayon 2–6 m) ; mezzanine (lisse, sous-lisse, plinthe) ou anneau (double lisse) ; consoles de pierre ou piliers ; bouts fermés ou ouverts ; trouées (`openings` pour les mondes) ; on voit au travers ; `userData.walk` ; ≤ 5 000 triangles, 3 draw calls |
+| 8 | `furniture/tables/card-catalogue` ★ | ARC-17 | 👀 | Ø 3,4 m : 48 tiroirs (2 rangs, 8 secteurs) à plaques d'index, plateau en 8 dalles à anneau de glyphes ambre et filets de laiton, pupitre octogonal tournant à 8 casiers de cassettes lumineuses, lampe articulée suspendue (2,8 m) ; rangé, consulté, abandonné ; vie (pupitre d'un cran, tiroir qui sort) ; `userData.catalogue` (setDrawer, slide, turnTo, consult, setLife) ; 5 900 triangles, 5 draw calls |
 | 9 | `furniture/tables/workbench` | ATE-01, ATE-14 | ⬜ | |
 | 9 | `props/machines/metal-lathe` | ATE-02 | ⬜ | |
 | 9 | `props/machines/coil-furnace` | ATE-03 | ⬜ | |
@@ -169,7 +169,7 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 25 | `props/artifacts/alignment-circle` ★ | E10-A1 (le cercle) | ⬜ | |
 | 26 | `props/artifacts/hex-star-gate` ★ | E10-A1 (l'arche et sa membrane, séquence commune avec stèles et cercle) | ⬜ | |
 
-Monde : `worlds/interiors/ancient-complex` — pièces assemblées : le Sas (et son vestibule), lot 5. Monde d'essai (hors plan) :
+Monde : `worlds/interiors/ancient-complex` — pièces assemblées : le Sas (et son vestibule), lot 5 ; les Archives, lot 8. Monde d'essai (hors plan) :
 `worlds/interiors/complex-test` (Sas, Archives, Atelier, tronçon de Galerie, avec les assets des lots 1 à 4) ; son
 kit (`src/worlds/kit/interior.js`, vue en coupe du moteur, explorateur générique) servira au lot 5.
 
@@ -198,6 +198,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-18 | Vue en coupe : les murs, portes et piliers d'angle entre le personnage et la caméra sont masqués en entier, plus coupés à 1,20 m (le moignon faisait moche en vue isométrique). Aussi dans le monde d'essai. | demandé par l'utilisateur |
 | 2026-11-19 | Lot 7, proposition validée telle quelle ; faits en route : verre des vitrines en trame (36 % des pixels), liquide de la cuve à 48 % (au-delà il cachait le fruit) ; trace du tambour en ruban plat ; fenêtre de la visionneuse agrandie à 0,22 × 0,09 m, allumée même à l'arrêt ; le cylindre de cire tourne deux fois plus vite que la manivelle. | validé |
 | 2026-11-19 | Lot 7 validé tel quel. | validé |
+| 2026-11-19 | Lot 8, proposition validée telle quelle ; faits en route : passerelle en arc bornée à 180° (budget), rayon ≤ 6 m ; catalogue : glyphes couchés dans le plateau (pas sur la tranche), lampe attachée à 2,8 m ; Archives : rayonnages de 2,65 m partout, un seul modèle par sorte de meuble, pas d'ombre pour les rayonnages et les petits objets des tables (budget) ; trois appliques à 6 m au-dessus des rayonnages nord pour éclairer la mezzanine ; tables écartées (allée de 1,2 m) ; côté sud des Archives caché vu du Sas ; les deux pièces visibles à moins de 3 m de la porte nord ouverte. | à confirmer |
 | 2026-11-18 | Lot 6 validé tel quel. | validé |
 | 2026-11-18 | Lot 6, proposition validée ; rouages des rayonnages ajoutés dès ce lot (demande de l'utilisateur). | validé |
 | 2026-11-18 | Lot 6, faits en route : façade du rayonnage en faces plates (1 100 triangles pour 276 tiroirs) avec une réserve de 6 vrais tiroirs ; rouages en roues pleines lues en trois anneaux ; vert des cassettes à part des lueurs du Complexe (`DATA_GLOWS`) ; serti des cassettes foncé pour que la tranche ambre ressorte ; carnets de la table en bronze (pas de matériau en plus) ; échelle inclinée de 9 à 12°, pied à ~0,9 m de la façade. | validé |
@@ -207,6 +208,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-19 | Lot 8 (propositions validées telles quelles) : escalier à vis, escalier droit, passerelle, meuble-catalogue ★ ; les Archives dans le monde (une pièce à la fois, mezzanine praticable par escalier à vis, balade jusqu'à la mezzanine, simulée sans blocage aux rayons 0,30 et 0,45 m) ; captures isométriques et 3e personne, bureau et mobile ; 76 draw calls et 151 000 triangles dans les Archives ; assets existants revérifiés ; Atelier publié (v48). | Validation du lot 8, puis lot 9. |
 | 2026-11-19 | Lot 7 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 8 : propositions à discuter. |
 | 2026-11-19 | Lot 7 (propositions validées telles quelles) : loupe, tabouret, chariot, appareil à manivelle, vitrine ; vérifiés en planches, en gros plan et dans le coin des Archives (jour, nuit, mobile, bureau) ; assets existants revérifiés (mêmes avertissements qu'avant) ; Atelier publié (v47). | Validation du lot 7, puis lot 8. |
 | 2026-11-18 | Lot 6 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 7 : propositions à discuter. |
