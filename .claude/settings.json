@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm run sheet:*)",
+      "Bash(npm run catalog)",
+      "Bash(npm run artifact)",
+      "Bash(npm run site)",
+      "Bash(node scripts/capture.cjs:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(rm -fr:*)",
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./.vibe/.env)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR\"/scripts/hooks/guard-bash.mjs --format=claude"
+          }
+        ]
+      }
+    ]
+  }
+}

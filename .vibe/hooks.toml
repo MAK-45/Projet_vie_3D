@@ -1,0 +1,11 @@
+# Hooks de projet pour Mistral Vibe (lus seulement si le dossier est approuvé).
+# Même script que Claude Code (.claude/settings.json, PreToolUse) : scripts/hooks/guard-bash.mjs.
+# Lancer Vibe à la racine du dépôt : le chemin du script est relatif à elle.
+
+[[hooks]]
+name = "guard-bash"
+type = "pre_tool"
+match = "bash"
+command = "node ./scripts/hooks/guard-bash.mjs --format=vibe"
+strict = true
+description = "Refuse les commandes destructrices : rm -rf, git push --force."
