@@ -22,10 +22,11 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 
 ## Point d'étape
 
-- **Dernière mise à jour** : 2026-11-18
-- **Étape actuelle** : lot 6 validé : rayonnage à tiroirs (avec ses rouages), cassette et rouleau-bande, échelle
-  roulante, table de pierre, lampe articulée ; coin d'essai `dev/archive-corner.html`.
-- **Prochaine action** : lot 7 (Archives : lecture), à discuter d'abord.
+- **Dernière mise à jour** : 2026-11-19
+- **Étape actuelle** : lot 7 fait, à valider : loupe sur bras, tabouret, chariot, appareil à manivelle, vitrine ;
+  ajoutés au coin des Archives `dev/archive-corner.html`.
+- **Prochaine action** : validation du lot 7 par l'utilisateur, puis lot 8 (Archives : hauteur et catalogue, puis
+  Monde : les Archives), à discuter d'abord.
 
 ## Les lots
 
@@ -39,7 +40,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 4 | La Porte-Iris et le balisage | 4 | ✅ validé | 2026-11-18 | Porte-Iris, malle, rambarde, lampe portative ; ajoutés au coin du Sas et au monde d'essai ; kit : `arcBlock`, `slantPlate`, `createRigidParts`, `mergeParts` ; moteur : option `dither` (trame) |
 | 5 | Monde : le Sas | — | ✅ validé | 2026-11-18 | monde `ancient-complex` (Sas + vestibule, états, vérification) ; moteur : `enableReveal`, brume d'intérieur ; kit : lampes allumées ou éteintes, halos `on` ; fx : `lamp-dust` ; marche à étages `heightAt(x, z, y)` |
 | 6 | Archives : rangement | 5 | ✅ validé | 2026-11-18 | e9d217b : rayonnage (rouages demandés par l'utilisateur), cassette, échelle, table, lampe articulée ; kit : `buildQuads`, `gearWheel`, `DATA_GLOWS`, cuivre vif ; pièces rigides : seule la plage mobile part au GPU ; coin d'essai `dev/archive-corner.html` |
-| 7 | Archives : lecture | 5 | ⬜ à faire | | |
+| 7 | Archives : lecture | 5 | 👀 à valider | 2026-11-19 | f2c0fc2 : loupe (lecture, binoculaire, observation), tabouret (lecture, atelier), chariot (cassettes, instruments, lourd), appareil à manivelle (visionneuse, tambour, cylindre), vitrine (conservation, cuve) ; kit : `GLASSES.clear`, `buildRibbon` ; verre en trame ; ajoutés au coin des Archives |
 | 8 | Archives : hauteur et catalogue, puis Monde : les Archives | 4 | ⬜ à faire | | |
 | 9 | Atelier : établis et forge | 5 | ⬜ à faire | | |
 | 10 | Atelier : outils et réserves | 5 | ⬜ à faire | | |
@@ -92,11 +93,11 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 6 | `buildings/structure/rolling-ladder` | ARC-04 | ✅ | 2,4–5 m, marches plates au pas de 0,30 m, inclinaison 9–12° ; rail de 3 m à +0,2 m (option) ; origine au pied de la façade ; `userData.ladder` (foot, top, rungs, setSlide) ; 560 triangles, 2 draw calls |
 | 6 | `furniture/tables/stone-table` | ARC-05, ETU-10, E2-04, E5-05, table de E6-06 | ✅ | lecture, observation (feutre, rebord), transcription (bois noirci, carnets, encrier, plume), dissection (rigoles, feutre), support ; plateau en 1 à 3 dalles, angle écorné ; `userData.surface` ; pièces de céladon (E5-05), loupe et gants (ETU-10) à poser avec leurs lots |
 | 6 | `furniture/lighting/articulated-lamp` | ARC-06, ATE-09 | ✅ | lecture (3 segments, cloche ambre) ou atelier (2 bras, contrepoids, cône noir à l'intérieur pâle) ; posée, à l'étau, suspendue ; allumée, en veille, éteinte ; halo ; `userData.arm.setPose` ; 660 triangles, 2 draw calls |
-| 7 | `props/tools/arm-magnifier` | ARC-07 (+ loupes de ATE-14 et ETU-10) | ⬜ | |
-| 7 | `furniture/seating/bronze-stool` | ARC-08, ATE-10 | ⬜ | |
-| 7 | `props/machines/complex-cart` | ARC-10, GAL-08, ATE-11 | ⬜ | |
-| 7 | `props/machines/crank-recorder` | ARC-11, ETU-05, E4-06 | ⬜ | |
-| 7 | `furniture/storage/display-case` | ARC-15, E6-06 | ⬜ | |
+| 7 | `props/tools/arm-magnifier` | ARC-07 (+ loupes de ATE-14 et ETU-10) | 👀 | lecture (Ø 0,20 m, bras 0,6 m), binoculaire (2 lentilles, 2 oculaires, bras 0,4 m), observation (Ø 0,15 m) ; sur socle lesté ou à l'étau ; verre clair jauni à reflet d'1 px ; `userData.arm.setPose({ yaw, pitch, tilt })`, `userData.lens` (centre, axe) ; 710 triangles, 2 draw calls |
+| 7 | `furniture/seating/bronze-stool` | ARC-08, ATE-10 | 👀 | lecture (cuir goudronné, clous de laiton, 3 pieds croisés, bague à la croisée) ou atelier (0,65 m, bois noirci en 2–3 planches, repose-pieds en anneau) ; `userData.seats` ; 570 triangles, 2 draw calls |
+| 7 | `props/machines/complex-cart` | ARC-10, GAL-08, ATE-11 | 👀 | à cassettes (3 plateaux, rangées debout et piles, tranches des 4 couleurs), d'instruments (sondes, rouleaux de câble, boîtier à cadran et voyant), lourd (madriers, roues de bois cerclées de fer, timon baissé ou relevé, caisse, lingots, ébauche de roue) ; chargé, à moitié, vide ; `userData.cart.roll(d)` (roues et roulettes), `setDrawbar`, `handle`, `userData.surfaces` ; ≤ 3 000 triangles, 2 draw calls |
+| 7 | `props/machines/crank-recorder` | ARC-11, ETU-05, E4-06 | 👀 | visionneuse (fenêtre ambre où défile une bande, 2 oculaires, 2 bobines), tambour (papier enfumé, trace en ruban), cylindre (cire à sillons, pavillon de laiton) ; à l'arrêt ou en marche (12 images/s) ; `userData.recorder.setRunning` ; ≤ 800 triangles, 2–3 draw calls |
+| 7 | `furniture/storage/display-case` | ARC-15, E6-06 | 👀 | conservation (piètement de pierre fumée, caisson bombé en 4 pans, cadran d'hygrométrie ; tablette gravée, rouleaux ou vide) ou cuve à échantillon (fruit de cristal cyan dans un liquide, 1 à 4 en rang) ; verre en trame (`dither`) sans contour ; `userData.surface` ; ≤ 1 700 triangles, 3 draw calls |
 | 8 | `buildings/structure/spiral-stair` | ARC-13, E6-05, COE-02 | ⬜ | |
 | 8 | `buildings/structure/straight-stair` | escaliers de E5-06, E10-04, escalier de service de E7 | ⬜ | |
 | 8 | `buildings/structure/grating-walkway` | ARC-14, E5-06, E6-04, COE-01 | ⬜ | |
@@ -196,6 +197,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-18 | Lot 5, proposition validée : vestibule de 6 × 4 m au sud de l'Iris (départ dehors), Iris qui se scelle derrière soi, porte nord qui s'ouvre sur le noir, réglage `state` (vérification, éveillé, endormi) avec séquence au pupitre, bancs au nord de part et d'autre de la porte, monde d'essai gardé jusqu'au lot 12. | validé |
 | 2026-11-18 | Lot 5, faits en route : Porte-Iris décorée côté Sas (côté vestibule, on voit son dos sombre) ; rainures allumées ramenées à un ambre sourd ; file d'attente en deux lignes de poteaux ; une lampe sur deux en veille (choisie par la graine) ; fiche de la galerie en état éveillé, explorateur en vérification avec le mannequin. | validé |
 | 2026-11-18 | Vue en coupe : les murs, portes et piliers d'angle entre le personnage et la caméra sont masqués en entier, plus coupés à 1,20 m (le moignon faisait moche en vue isométrique). Aussi dans le monde d'essai. | demandé par l'utilisateur |
+| 2026-11-19 | Lot 7, proposition validée telle quelle ; faits en route : verre des vitrines en trame (36 % des pixels), liquide de la cuve à 48 % (au-delà il cachait le fruit) ; trace du tambour en ruban plat ; fenêtre de la visionneuse agrandie à 0,22 × 0,09 m, allumée même à l'arrêt ; le cylindre de cire tourne deux fois plus vite que la manivelle. | à confirmer |
 | 2026-11-18 | Lot 6 validé tel quel. | validé |
 | 2026-11-18 | Lot 6, proposition validée ; rouages des rayonnages ajoutés dès ce lot (demande de l'utilisateur). | validé |
 | 2026-11-18 | Lot 6, faits en route : façade du rayonnage en faces plates (1 100 triangles pour 276 tiroirs) avec une réserve de 6 vrais tiroirs ; rouages en roues pleines lues en trois anneaux ; vert des cassettes à part des lueurs du Complexe (`DATA_GLOWS`) ; serti des cassettes foncé pour que la tranche ambre ressorte ; carnets de la table en bronze (pas de matériau en plus) ; échelle inclinée de 9 à 12°, pied à ~0,9 m de la façade. | validé |
@@ -205,6 +207,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-19 | Lot 7 (propositions validées telles quelles) : loupe, tabouret, chariot, appareil à manivelle, vitrine ; vérifiés en planches, en gros plan et dans le coin des Archives (jour, nuit, mobile, bureau) ; assets existants revérifiés (mêmes avertissements qu'avant) ; Atelier publié (v47). | Validation du lot 7, puis lot 8. |
 | 2026-11-18 | Lot 6 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 7 : propositions à discuter. |
 | 2026-11-18 | Lot 6 : rayonnage à tiroirs et ses rouages, cassette et rouleau, échelle roulante, table de pierre (5 modèles), lampe articulée (lecture, atelier) ; vérifiés en planches, en gros plan et dans le coin des Archives (jour, nuit, mobile, bureau) ; assets existants revérifiés après les changements du kit ; Atelier publié (v46). | Validation du lot 6, puis lot 7. |
 | 2026-11-18 | Lot 5 validé (« c'est bon on garde ») ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 6 : propositions à discuter. |
