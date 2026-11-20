@@ -1044,3 +1044,104 @@ export function buildPrism(outline, bottom, top) {
   geometry.setIndex(index);
   return geometry;
 }
+
+/**
+ * Profil tiré le long d'un tracé horizontal (goulottes, chemins de câbles, plinthes, rebords qui suivent un mur) :
+ * `path` est une polyligne [[x, z], ...] dans le plan du sol, `section` un polygone convexe [[u, v], ...] où v est la
+ * hauteur et u le décalage sur le côté, vers n = (−dz, dx) (pour un tracé vers +x, n = +z). Les coudes sont coupés
+ * en onglet (le profil garde sa largeur), les bouts sont fermés (`caps: false` pour les laisser ouverts). Faces
+ * planes, normales nettes. Attributs : position, normal ; indexée.
+ */
+export function buildSweep(path, section, { caps = true } = {}) {
+  const P = path.map(([x, z]) => new THREE.Vector2(x, z));
+  const n = P.length;
+  const dirs = [];
+  for (let i = 0; i < n - 1; i++) dirs.push(new THREE.Vector2().subVectors(P[i + 1], P[i]).normalize());
+  const left = (d) => new THREE.Vector2(-d.y, d.x);
+  // Décalage d'onglet en chaque point : bissectrice des deux normales, allongée pour garder la largeur.
+  const miter = P.map((_, i) => {
+    const a = left(dirs[Math.max(0, i - 1)]), b = left(dirs[Math.min(n - 2, i)]);
+    const m = a.clone().add(b);
+    if (m.lengthSq() < 1e-8) return a;
+    m.normalize();
+    return m.multiplyScalar(1 / Math.max(0.2, m.dot(a)));
+  });
+  const at = (i, [u, v]) => new THREE.Vector3(P[i].x + miter[i].x * u, v, P[i].y + miter[i].y * u);
+  const cu = section.reduce((s, [u]) => s + u, 0) / section.length;
+  const cv = section.reduce((s, [, v]) => s + v, 0) / section.length;
+  const positions = [], normals = [], index = [];
+  const face = (points, normal) => {
+    const first = positions.length / 3;
+    for (const p of points) positions.push(p.x, p.y, p.z), normals.push(normal.x, normal.y, normal.z);
+    const e1 = new THREE.Vector3().subVectors(points[1], points[0]);
+    const e2 = new THREE.Vector3().subVectors(points[2], points[0]);
+    const flip = new THREE.Vector3().crossVectors(e1, e2).dot(normal) < 0;
+    for (let k = 1; k < points.length - 1; k++) {
+      if (flip) index.push(first, first + k + 1, first + k);
+      else index.push(first, first + k, first + k + 1);
+    }
+  };
+  for (let j = 0; j < n - 1; j++) {
+    const side = left(dirs[j]);
+    for (let e = 0; e < section.length; e++) {
+      const a = section[e], b = section[(e + 1) % section.length];
+      // Normale extérieure de l'arête dans le plan (u, v), tournée à l'opposé du centre du profil.
+      let nu = b[1] - a[1], nv = -(b[0] - a[0]);
+      if (nu * ((a[0] + b[0]) / 2 - cu) + nv * ((a[1] + b[1]) / 2 - cv) < 0) nu = -nu, nv = -nv;
+      const normal = new THREE.Vector3(side.x * nu, nv, side.y * nu).normalize();
+      face([at(j, a), at(j, b), at(j + 1, b), at(j + 1, a)], normal);
+    }
+  }
+  if (caps) {
+    face(section.map((s) => at(0, s)), new THREE.Vector3(-dirs[0].x, 0, -dirs[0].y));
+    face(section.map((s) => at(n - 1, s)), new THREE.Vector3(dirs[n - 2].x, 0, dirs[n - 2].y));
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(positions), 3));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(normals), 3));
+  geometry.setIndex(index);
+  return geometry;
+}
+
+/**
+ * Morceau d'une polyligne [[x, z], ...] entre les abscisses curvilignes `s0` et `s1` (en mètres depuis le début) ;
+ * rend aussi `pointAt(s)` et `length` via `measurePath`.
+ */
+export function slicePath(path, s0, s1) {
+  const { pointAt, length } = measurePath(path);
+  s0 = Math.max(0, s0);
+  s1 = Math.min(length, s1);
+  const out = [pointAt(s0).point];
+  let s = 0;
+  for (let i = 1; i < path.length; i++) {
+    s += Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
+    if (s > s0 + 1e-6 && s < s1 - 1e-6) out.push([path[i][0], path[i][1]]);
+  }
+  out.push(pointAt(s1).point);
+  return out;
+}
+
+/** Longueur d'une polyligne [[x, z], ...] et point / direction à une abscisse curviligne : `pointAt(s)`. */
+export function measurePath(path) {
+  const lengths = [];
+  let length = 0;
+  for (let i = 1; i < path.length; i++) {
+    const l = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
+    lengths.push(l);
+    length += l;
+  }
+  const pointAt = (s) => {
+    s = Math.max(0, Math.min(length, s));
+    for (let i = 0; i < lengths.length; i++) {
+      if (s <= lengths[i] || i === lengths.length - 1) {
+        const t = lengths[i] ? Math.min(1, s / lengths[i]) : 0;
+        const [x0, z0] = path[i], [x1, z1] = path[i + 1];
+        const dx = (x1 - x0) / (lengths[i] || 1), dz = (z1 - z0) / (lengths[i] || 1);
+        return { point: [x0 + (x1 - x0) * t, z0 + (z1 - z0) * t], direction: [dx, dz] };
+      }
+      s -= lengths[i];
+    }
+    return { point: path[0], direction: [1, 0] };
+  };
+  return { length, pointAt };
+}

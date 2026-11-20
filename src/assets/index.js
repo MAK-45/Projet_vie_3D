@@ -95,6 +95,9 @@ import * as spiralStair from "./buildings/structure/spiral-stair.js";
 import * as straightStair from "./buildings/structure/straight-stair.js";
 import * as gratingWalkway from "./buildings/structure/grating-walkway.js";
 import * as cardCatalogue from "./furniture/tables/card-catalogue.js";
+import * as rivetedBeam from "./buildings/structure/riveted-beam.js";
+import * as hoistGantry from "./props/machines/hoist-gantry.js";
+import * as cableTray from "./props/machines/cable-tray.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
@@ -113,6 +116,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   spiralStair, straightStair, gratingWalkway, cardCatalogue,
   workbench, metalLathe, coilFurnace, anvil, toolRack,
   artisanTools, partsShelf, cableReel, oilDrum, lightTable,
+  rivetedBeam, hoistGantry, cableTray,
   summerMeadow, ancientComplex, complexTest,
 ];
 
