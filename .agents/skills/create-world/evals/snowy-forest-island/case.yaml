@@ -1,0 +1,10 @@
+schema_version: "1.1"
+name: snowy-forest-island
+expected_outcome: |
+  Un nouveau monde de forêt enneigée existe : un générateur dans src/worlds/, piloté par une graine, qui sème des
+  assets de la bibliothèque avec ScatterField (aucun Mesh par objet) selon des règles de lieu (regroupements,
+  exclusions), à l'échelle réelle. Les assets manquants (conifère) ont été créés avec le skill create-asset
+  avant d'être semés. Le monde est rangé comme asset dans src/assets/worlds/ (composite, experience explorer),
+  inscrit au registre, et l'explorateur a été rendu capable d'ouvrir un autre monde que la prairie sans la
+  casser. Des captures grand écran et téléphone ont été regardées, les draw calls et triangles mesurés, et le
+  compte rendu dit ce qui n'a pas pu être vérifié.

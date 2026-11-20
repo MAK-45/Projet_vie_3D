@@ -1,0 +1,332 @@
+// Outils des mondes intérieurs (le Complexe) : pose instanciée des modules, vue en coupe, halos des lampes,
+// collisions en boîtes.
+//
+// - `InteriorKit` : chaque asset « modèle » (identifiant + réglages) est créé une fois ; ses copies posées deviennent
+//   un `InstancedMesh` par maillage du modèle. Cent dalles ou quarante murs du même modèle coûtent les draw calls
+//   d'une seule. Chaque modèle dit comment il se coupe (vue en coupe : `enableCutaway` du moteur).
+// - `createHaloPool` : des dizaines de lampes, mais 12 lumières de halo dans le moteur ; on prête les places libres
+//   aux lampes les plus proches du promeneur.
+// - `BoxColliders` : murs, piliers et meubles en boîtes alignées sur les axes (le Complexe est orthogonal), portes
+//   qui ne bloquent que fermées, meubles qui ne bloquent qu'au rez-de-chaussée.
+// - `WalkSurfaces` : les étages (escaliers, passerelles) que donnent les assets praticables (`userData.walk`) : la
+//   hauteur du sol selon l'étage du personnage, ce qui bloque à sa hauteur, et pas de chute par-dessus un bord.
+
+import * as THREE from "three";
+import { createGlowLight, disposeObject, enableCutaway, enableReveal, GLOW_LIGHT_COUNT, rgb } from "../../engine/toon-material.js";
+
+const _matrix = new THREE.Matrix4();
+const _q = new THREE.Quaternion();
+const _s = new THREE.Vector3(1, 1, 1);
+const _p = new THREE.Vector3();
+const _up = new THREE.Vector3(0, 1, 0);
+const IDENTITY = new THREE.Matrix4();
+
+export class InteriorKit {
+  constructor() {
+    this.group = new THREE.Group();
+    this.group.name = "interior";
+    /** @type {Map<string, {prototype: THREE.Group, matrices: number[], cut: object|null, castShadow: boolean, reveal: object|null, meshes: THREE.InstancedMesh[]}>} */
+    this.models = new Map();
+    this.meshes = [];
+  }
+
+  /**
+   * Déclare un modèle (créé une seule fois).
+   * @param {string} key nom du modèle dans le monde
+   * @param {{create: (params: object) => THREE.Group}} asset module de l'asset
+   * @param {object} params réglages de l'asset
+   * @param {object} [options]
+   * @param {{rule: "wall"|"view", height: number}|null} [options.cut] vue en coupe
+   * @param {boolean} [options.castShadow] faux : la copie ne projette pas d'ombre (dalles) ; par défaut, ce qui se
+   *   cache avec la coupe (accroché aux murs, lampes) n'en projette pas : elle ne se verrait pas sur le mur
+   * @param {{mesh: string, uniform: {value: THREE.Vector4}, off: string}|null} [options.reveal] lueurs qui
+   *   s'allument en vague (`enableReveal`) : le maillage du modèle qui porte ce nom
+   * @returns {THREE.Group} le modèle (pour lire ses `userData`)
+   */
+  model(key, asset, params, { cut = null, castShadow = !(cut && cut.height < 0), reveal = null } = {}) {
+    if (this.models.has(key)) return this.models.get(key).prototype;
+    const prototype = asset.create(params);
+    this.models.set(key, { prototype, matrices: [], cut, castShadow, reveal, meshes: [] });
+    return prototype;
+  }
+
+  /** Pose une copie du modèle `key` en (x, y, z), tournée de `rotY` (radians). Rend son numéro (`setVisible`). */
+  place(key, x, z, rotY = 0, y = 0) {
+    const model = this.models.get(key);
+    if (!model) throw new Error(`modèle non déclaré : ${key}`);
+    _q.setFromAxisAngle(_up, rotY);
+    _matrix.compose(_p.set(x, y, z), _q, _s);
+    model.matrices.push(..._matrix.elements);
+    return model.matrices.length / 16 - 1;
+  }
+
+  /**
+   * Montre ou cache une copie déjà construite (une lampe éteinte remplacée par la même allumée, posée deux fois :
+   * une copie de chaque modèle, une seule visible). Cachée : réduite à un point, plus aucun triangle.
+   */
+  setVisible(key, index, visible) {
+    const model = this.models.get(key);
+    if (!model?.meshes.length) return;
+    for (const mesh of model.meshes) {
+      _matrix.fromArray(model.matrices, index * 16);
+      if (mesh.userData.offset) _matrix.multiply(mesh.userData.offset);
+      if (!visible) _matrix.scale(_p.set(0, 0, 0));
+      mesh.setMatrixAt(index, _matrix);
+      mesh.instanceMatrix.needsUpdate = true;
+    }
+  }
+
+  /** Construit les maillages instanciés. À appeler une fois tout posé. */
+  build() {
+    for (const [key, model] of this.models) {
+      const count = model.matrices.length / 16;
+      const parts = [];
+      model.prototype.updateMatrixWorld(true);
+      model.prototype.traverse((child) => {
+        if (child.isMesh) parts.push(child);
+      });
+      if (count === 0) {
+        disposeObject(model.prototype);
+        continue;
+      }
+      const matrices = new THREE.InstancedBufferAttribute(new Float32Array(model.matrices), 16);
+      for (const part of parts) {
+        const material = part.material;
+        if (model.cut && material.isShaderMaterial && material.uniforms?.uRamp) enableCutaway(material, model.cut.rule, model.cut.height);
+        if (model.reveal && part.name === model.reveal.mesh) enableReveal(material, model.reveal.uniform, model.reveal.off);
+        const mesh = new THREE.InstancedMesh(part.geometry, material, count);
+        mesh.name = `${key} / ${part.name}`;
+        mesh.instanceMatrix = matrices;
+        // Un maillage décalé dans son modèle garde son décalage.
+        if (!part.matrixWorld.equals(IDENTITY)) {
+          const array = new Float32Array(count * 16);
+          for (let i = 0; i < count; i++) _matrix.fromArray(model.matrices, i * 16).multiply(part.matrixWorld).toArray(array, i * 16);
+          mesh.instanceMatrix = new THREE.InstancedBufferAttribute(array, 16);
+          mesh.userData.offset = part.matrixWorld.clone();
+        }
+        mesh.customDepthMaterial = material.userData.depthMaterial ?? part.customDepthMaterial;
+        mesh.castShadow = model.castShadow && part.castShadow;
+        mesh.receiveShadow = part.receiveShadow;
+        mesh.matrixAutoUpdate = false;
+        mesh.computeBoundingSphere();
+        this.meshes.push(mesh);
+        model.meshes.push(mesh);
+        this.group.add(mesh);
+      }
+    }
+  }
+
+  /**
+   * Fait vivre les modèles animés sur le processeur (rouages, tiroirs, scintillement : leur `updateMatrixWorld` réécrit
+   * la géométrie quand le temps partagé change) : toutes leurs copies bougent ensemble. À appeler à chaque image.
+   */
+  update() {
+    for (const model of this.models.values()) {
+      if (model.meshes.length) model.prototype.updateMatrixWorld();
+    }
+  }
+
+  /** Draw calls et triangles si tout était dans le champ. */
+  stats() {
+    let triangles = 0;
+    for (const mesh of this.meshes) {
+      const g = mesh.geometry;
+      triangles += ((g.index ? g.index.count : g.attributes.position.count) / 3) * mesh.count;
+    }
+    return { meshes: this.meshes.length, triangles, models: this.models.size };
+  }
+
+  dispose() {
+    for (const mesh of this.meshes) {
+      disposeObject(mesh);
+      mesh.dispose();
+    }
+    for (const model of this.models.values()) disposeObject(model.prototype);
+    this.group.clear();
+    this.meshes = [];
+    this.models.clear();
+  }
+}
+
+/**
+ * Prête les lumières de halo du moteur aux lampes les plus utiles : celles près du point regardé (devant la caméra
+ * en 3e personne), et, à distance égale, celles qui sont dans le champ.
+ * @param {Array<{position: THREE.Vector3, color: string, radius: number, strength?: number, on?: boolean}>} sources
+ *   `on` faux : lampe éteinte, qui ne prend pas de place (à changer en route, puis `refresh()`)
+ * @param {number} [slots] places prises (en laisser une aux personnages qui brillent)
+ */
+export function createHaloPool(sources, slots = GLOW_LIGHT_COUNT - 1) {
+  const lights = Array.from({ length: Math.min(slots, sources.length) }, () => createGlowLight());
+  const colors = sources.map((source) => rgb(source.color));
+  const score = new Float32Array(sources.length);
+  const order = sources.map((_, i) => i);
+  const frustum = new THREE.Frustum();
+  const viewProjection = new THREE.Matrix4();
+  const sphere = new THREE.Sphere();
+  let last = -1;
+  return {
+    /**
+     * Réattribue les places (4 fois par seconde) autour de `focus`.
+     * @param {THREE.Vector3} focus point regardé
+     * @param {number} time secondes
+     * @param {THREE.Camera} [camera] pour préférer les lampes dans le champ
+     */
+    update(focus, time, camera) {
+      if (Math.floor(time * 4) === last) return;
+      last = Math.floor(time * 4);
+      if (camera) {
+        viewProjection.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+        frustum.setFromProjectionMatrix(viewProjection);
+      }
+      for (let i = 0; i < sources.length; i++) {
+        const source = sources[i];
+        const seen = !camera || frustum.intersectsSphere(sphere.set(source.position, source.radius));
+        score[i] = source.on === false ? Infinity : source.position.distanceTo(focus) + (seen ? 0 : 30);
+      }
+      order.sort((a, b) => score[a] - score[b]);
+      lights.forEach((light, k) => {
+        const source = sources[order[k]];
+        light.set(source.position, colors[order[k]], source.radius, source.on === false ? 0 : (source.strength ?? 1.1));
+      });
+    },
+    /** Une lampe s'est allumée ou éteinte : réattribuer dès la prochaine mise à jour. */
+    refresh() {
+      last = -1;
+    },
+    dispose() {
+      for (const light of lights) light.release();
+    },
+  };
+}
+
+/** Obstacles en boîtes alignées sur les axes ; une boîte peut dépendre d'une condition (porte fermée). */
+export class BoxColliders {
+  constructor() {
+    this.boxes = [];
+  }
+
+  /**
+   * Boîte de centre (x, z) et de demi-côtés (hx, hz) ; `active()` : la boîte ne bloque que si vrai ; `top` : hauteur
+   * de l'obstacle (un personnage sur une passerelle au-dessus passe).
+   */
+  add(x, z, hx, hz, active = null, top = Infinity) {
+    this.boxes.push({ minX: x - hx, maxX: x + hx, minZ: z - hz, maxZ: z + hz, active, top });
+  }
+
+  /** Repousse un disque de rayon `radius`, dont les pieds sont à `y`, hors des boîtes. */
+  collide(position, radius, y = 0) {
+    for (let pass = 0; pass < 2; pass++) {
+      for (const box of this.boxes) {
+        if (box.active && !box.active()) continue;
+        if (y >= box.top) continue;
+        const cx = THREE.MathUtils.clamp(position.x, box.minX, box.maxX);
+        const cz = THREE.MathUtils.clamp(position.z, box.minZ, box.maxZ);
+        const dx = position.x - cx;
+        const dz = position.z - cz;
+        const d2 = dx * dx + dz * dz;
+        if (d2 >= radius * radius) continue;
+        if (d2 > 1e-8) {
+          const d = Math.sqrt(d2);
+          position.x = cx + (dx / d) * radius;
+          position.z = cz + (dz / d) * radius;
+        } else {
+          // Centre dans la boîte : sortir par le côté le plus proche.
+          const exits = [position.x - box.minX, box.maxX - position.x, position.z - box.minZ, box.maxZ - position.z];
+          const k = exits.indexOf(Math.min(...exits));
+          if (k === 0) position.x = box.minX - radius;
+          else if (k === 1) position.x = box.maxX + radius;
+          else if (k === 2) position.z = box.minZ - radius;
+          else position.z = box.maxZ + radius;
+        }
+      }
+    }
+  }
+
+  /** Vrai si le point (x, z), avec une marge, touche une boîte active. */
+  blocked(x, z, margin = 0) {
+    return this.boxes.some((box) => (!box.active || box.active()) && x > box.minX - margin && x < box.maxX + margin && z > box.minZ - margin && z < box.maxZ + margin);
+  }
+}
+
+/**
+ * Les étages d'un intérieur : chaque asset praticable posé (escalier à vis, escalier droit, passerelle) donne dans son
+ * `userData.walk` la hauteur de sa surface de marche (`heightAt(x, z, y, up)`) et ce qu'il occupe à une hauteur donnée
+ * (`occupied(x, z, rayon, y0, y1)`), dans son repère. Ici, on les pose dans le monde et on les interroge ensemble.
+ *
+ * - Sol : la plus haute surface qu'on atteint d'un pas (`stepUp`) depuis la hauteur des pieds.
+ * - Blocage : rien ne doit occuper la tranche du corps, d'un pas au-dessus des pieds à `headroom` (on passe sous une
+ *   passerelle à 3,4 m, pas sous une marche à 1 m ; une rampe à hauteur de hanche arrête).
+ * - Pas de chute : un pas qui ferait descendre de plus de `drop` est refusé (bord d'une passerelle, d'un palier).
+ * Un pas refusé glisse le long de l'obstacle (on garde x ou z), sinon on reste où l'on était.
+ */
+export class WalkSurfaces {
+  constructor({ stepUp = 0.4, headroom = 1.75, drop = 0.45 } = {}) {
+    this.stepUp = stepUp;
+    this.headroom = headroom;
+    this.drop = drop;
+    this.layers = [];
+    this._last = new WeakMap();
+  }
+
+  /** Pose un asset praticable : son `userData.walk`, en (x, y, z), tourné de `rotY`. */
+  add(walk, x, z, rotY = 0, y = 0) {
+    this.layers.push({ walk, x, y, z, c: Math.cos(rotY), s: Math.sin(rotY) });
+  }
+
+  /** Coordonnées (x, z) du monde dans le repère d'un asset posé. */
+  _local(layer, x, z) {
+    const dx = x - layer.x, dz = z - layer.z;
+    // Rotation inverse de rotY autour de y : x' = c·dx − s·dz, z' = s·dx + c·dz.
+    return [layer.c * dx - layer.s * dz, layer.s * dx + layer.c * dz];
+  }
+
+  /** Hauteur du sol sous (x, z) pour des pieds à `y` : la plus haute surface atteinte d'un pas, au moins `base`. */
+  heightAt(x, z, y = 0, base = 0) {
+    let h = base;
+    for (const layer of this.layers) {
+      const [lx, lz] = this._local(layer, x, z);
+      const top = layer.walk.heightAt(lx, lz, y - layer.y, this.stepUp) + layer.y;
+      if (top > h) h = top;
+    }
+    return h;
+  }
+
+  /** Vrai si quelque chose occupe la tranche du corps d'un personnage de rayon `radius` aux pieds à `y`. */
+  blocked(x, z, radius, y = 0) {
+    for (const layer of this.layers) {
+      const [lx, lz] = this._local(layer, x, z);
+      const y0 = y - layer.y + this.stepUp, y1 = y - layer.y + this.headroom;
+      if (layer.walk.occupied(lx, lz, radius, y0, y1)) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Refuse un pas bloqué ou qui ferait tomber : `position` revient le long de l'obstacle, ou à sa place d'avant.
+   * @param {THREE.Vector3} position position voulue (modifiée)
+   * @param {number} radius rayon du personnage
+   * @param {number} y hauteur des pieds avant le pas
+   * @param {(x: number, z: number, y: number) => number} floorAt sol du monde (étages compris)
+   */
+  collide(position, radius, y, floorAt) {
+    const last = this._last.get(position);
+    const ok = (x, z) => !this.blocked(x, z, radius, y) && floorAt(x, z, y) >= y - this.drop;
+    if (last && !ok(position.x, position.z)) {
+      if (ok(position.x, last.z)) position.z = last.z;
+      else if (ok(last.x, position.z)) position.x = last.x;
+      else {
+        position.x = last.x;
+        position.z = last.z;
+      }
+    }
+    if (last) {
+      last.x = position.x;
+      last.z = position.z;
+    } else this._last.set(position, { x: position.x, z: position.z });
+  }
+
+  /** Oublie la dernière place connue (le personnage a été reposé ailleurs). */
+  forget(position) {
+    this._last.delete(position);
+  }
+}

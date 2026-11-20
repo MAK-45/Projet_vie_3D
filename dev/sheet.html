@@ -1,0 +1,69 @@
+<!doctype html>
+<!-- Planche de contrôle d'un asset : chaque variante × plusieurs graines, plus les vues de face et de dessus.
+     /dev/sheet.html?asset=nature/trees/birch&seeds=1,2,3 — utilisée par `npm run sheet`. -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Planche d'asset</title>
+    <style>
+      body { margin: 0; padding: 12px; background: #15111e; color: #ece7f6; font: 13px/1.3 system-ui, sans-serif; }
+      h1 { margin: 0 0 8px; font-size: 16px; }
+      table { border-collapse: collapse; }
+      th { padding: 4px 8px; font-weight: 600; text-align: left; color: #a99fc2; }
+      td { padding: 2px; }
+      img { display: block; image-rendering: pixelated; border: 1px solid #3d3358; }
+    </style>
+  </head>
+  <body>
+    <h1 id="title"></h1>
+    <table id="sheet"></table>
+    <script type="module">
+      import { assets, getAsset } from "/src/assets/index.js";
+      import { setModelSource } from "/src/assets/kit/model.js";
+      import { Viewer } from "/src/gallery/viewer.js";
+
+      setModelSource({ base: "/models/" }); // personnages : fichiers de public/models/
+
+      const query = new URLSearchParams(location.search);
+      const module = getAsset(query.get("asset")) ?? assets[0];
+      const seeds = (query.get("seeds") ?? "1,2,3").split(",").map(Number);
+      const scale = Number(query.get("scale") ?? 2);
+      const WIDTH = 150;
+      const HEIGHT = 190;
+      const variants = module.meta.variants?.length ? module.meta.variants : [{ id: "default", name: "Par défaut", params: {} }];
+
+      // Colonnes : une par graine en vue iso, puis face et dessus pour la première graine.
+      const columns = [
+        ...seeds.map((seed) => ({ label: `graine ${seed}`, seed, view: "iso" })),
+        { label: `face (graine ${seeds[0]})`, seed: seeds[0], view: "front" },
+        { label: `dessus (graine ${seeds[0]})`, seed: seeds[0], view: "top" },
+      ];
+
+      document.getElementById("title").textContent = `${module.meta.name} — ${module.meta.id}`;
+      const table = document.getElementById("sheet");
+      const head = table.insertRow();
+      head.append(document.createElement("th"), ...columns.map((column) => Object.assign(document.createElement("th"), { textContent: column.label })));
+
+      const viewer = new Viewer(document.createElement("div"), { interactive: false });
+      viewer.setOption("pixelSize", 1);
+      viewer.resize(WIDTH, HEIGHT, 1);
+
+      for (const variant of variants) {
+        const row = table.insertRow();
+        row.append(Object.assign(document.createElement("th"), { textContent: variant.name }));
+        for (const column of columns) {
+          viewer.setAsset(module, { ...variant.params, seed: column.seed });
+          await viewer.ready;
+          viewer.resetView(column.view);
+          viewer.renderOnce(0);
+          const image = new Image(WIDTH * scale, HEIGHT * scale);
+          image.src = viewer.canvas.toDataURL("image/png");
+          row.insertCell().append(image);
+        }
+      }
+      viewer.dispose();
+      window.sheetReady = true;
+    </script>
+  </body>
+</html>

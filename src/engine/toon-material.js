@@ -1,0 +1,976 @@
+// Matériau « toon à palette » : le cœur du rendu pixel art.
+//
+// Au lieu d'éclairer une couleur, on choisit une couleur dans une rampe (de l'ombre vers la lumière) selon
+// l'orientation de la surface par rapport au soleil. On obtient des aplats nets avec glissement de teinte
+// (ombres froides, lumières chaudes), comme en pixel art dessiné à la main.
+//
+// - Les couleurs sont écrites telles quelles (sRGB brut) : la palette affichée est exactement celle du code.
+// - Sortie 0 : couleur. Sortie 1 : normale + identifiant de contour, lus par la passe de contours
+//   (src/engine/pixel-renderer.js).
+// - Variante `foliage` : chaque feuille est un petit triangle toujours face à la caméra, animé par le vent.
+// - Variante `unlit` : lumineux par lui-même (astres), ni soleil ni ombre ; avec `foliage`, formes face caméra qui
+//   peuvent pulser (`twinkle`).
+// - Motifs procéduraux (`pattern`) : `bark` (tirets d'écorce), `furrow` (écorce crevassée) et `speckle` (grain de pixels), sans texture.
+// - Texture de couleur (`map`, modèles importés) : la rampe sert alors de filtre de lumière posé sur la texture.
+// - Modèles à squelette (SkinnedMesh) : le shader inclut les étapes de skinning de three.js, actives d'elles-mêmes.
+// - Motif `ground` (sols) : couches de taches (herbe grasse, herbe sèche, terre...) calculées en coordonnées du monde
+//   (attribut `aGround`), donc continues d'un morceau de terrain au suivant ; en aplats nets ou en dégradés lisses.
+
+import * as THREE from "three";
+
+/**
+ * Lumières de halo partagées par toute la scène (`createGlowLight`). 12 places : un intérieur garde allumées les
+ * lampes qu'on voit au loin ; chaque pixel les parcourt toutes, à la résolution basse du pixel art (peu coûteux).
+ */
+export const GLOW_LIGHT_COUNT = 12;
+
+/** Uniforms partagés par tous les matériaux (vent, temps). Mis à jour par `tick()`. */
+export const sharedUniforms = {
+  uTime: { value: 0 },
+  uWindDir: { value: new THREE.Vector2(0.92, 0.38) },
+  uWindStrength: { value: 1 },
+  // Lumières de halo (créatures qui brillent, lanternes...) : xyz position dans le monde, w portée (m) ; couleur
+  // rgb + force. Elles ne comptent que dans le noir (`uDarkness`).
+  uGlowLights: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) }, // w = 0 : place libre
+  uGlowColors: { value: Array.from({ length: GLOW_LIGHT_COUNT }, () => new THREE.Vector4(0, 0, 0, 0)) },
+  uDarkness: { value: 0 },
+  // Monde courbé : xy centre (x, z du monde, la caméra), z courbure (1 / 2R), w distance où la courbure commence (m).
+  uCurve: { value: new THREE.Vector4(0, 0, 0, 0) },
+  // 1 : le décor est vu de côté (caméra à la 3e personne), voir setSideView.
+  uSideView: { value: 0 },
+  // Vue en coupe (intérieurs, voir setCutaway) : xy position du promeneur (x, z), zw direction horizontale vers la
+  // caméra ; options : x 1 = active, y marge (m).
+  uCutAway: { value: new THREE.Vector4(0, 0, 0, 1) },
+  uCutOptions: { value: new THREE.Vector2(0, 0.3) },
+};
+
+/**
+ * Le décor est-il vu de côté (caméra à la 3e personne) ? Les couronnes des arbres, faites pour la vue de haut,
+ * rapetissent alors leurs feuilles sombres du cœur, qui se verraient entre les autres comme des étoiles noires.
+ */
+export function setSideView(value) {
+  sharedUniforms.uSideView.value = value ? 1 : 0;
+}
+
+/**
+ * Courbe le monde à l'affichage, comme une petite planète : au-delà de `start` mètres du centre (la caméra), le
+ * décor descend de (d − start)² / 2R. Le lointain passe derrière l'horizon : la vue n'a plus besoin de brume
+ * pour finir. Les ombres et les motifs restent calculés sur le monde plat. `radius` 0 ou Infinity : monde plat.
+ */
+export function setCurvature(x, z, radius, start = 0) {
+  const k = radius > 0 && Number.isFinite(radius) ? 1 / (2 * radius) : 0;
+  sharedUniforms.uCurve.value.set(x, z, k, start);
+}
+
+/**
+ * Vue en coupe d'un intérieur : ce qui se trouve entre le promeneur et la caméra est abaissé (murs coupés à hauteur
+ * d'appui) ou caché (ce qui est accroché à ces murs). Seuls les matériaux passés à `enableCutaway` sont concernés.
+ * @param {boolean} enabled
+ * @param {THREE.Vector3} [walker] position du promeneur
+ * @param {THREE.Vector3} [toCamera] direction vers la caméra (seule sa partie horizontale compte)
+ * @param {number} [margin] distance au promeneur en deçà de laquelle rien n'est coupé (m)
+ */
+export function setCutaway(enabled, walker, toCamera, margin = 0.3) {
+  sharedUniforms.uCutOptions.value.set(enabled ? 1 : 0, margin);
+  if (!enabled) return;
+  const length = Math.hypot(toCamera.x, toCamera.z) || 1;
+  sharedUniforms.uCutAway.value.set(walker.x, walker.z, toCamera.x / length, toCamera.z / length);
+}
+
+/**
+ * Rend un matériau toon « coupable » (vue en coupe, `setCutaway`). La règle porte sur l'origine de l'objet (ou de
+ * chaque copie d'un `InstancedMesh`), jamais sur un sommet seul : un module se coupe d'un bloc.
+ * - `wall` : objet posé le long d'un mur, face vers son +z local (mur, porte, pilastre) ; coupé quand son plan est
+ *   entre le promeneur et la caméra ; un objet de profil (vu par la tranche) ne l'est jamais.
+ * - `view` : objet isolé (colonne, lustre) ; coupé quand il est entre le promeneur et la caméra.
+ * - `corner` : pilier d'angle, qui appartient à deux murs ; coupé quand l'un des deux l'est (il est du côté de la
+ *   caméra selon x ou selon z).
+ * `height` : hauteur de coupe (m, repère de l'objet) ; négative, l'objet est caché.
+ * Crée aussi le matériau d'ombre qui suit la coupe (`userData.depthMaterial`, à poser en `customDepthMaterial`).
+ * @param {THREE.ShaderMaterial} material matériau de `createToonMaterial`
+ * @param {"wall"|"view"|"corner"} rule
+ * @param {number} height
+ */
+export function enableCutaway(material, rule, height) {
+  material.defines.CUTAWAY = "";
+  material.uniforms.uCut = { value: new THREE.Vector2({ wall: 1, view: 2, corner: 3 }[rule] ?? 1, height) };
+  material.needsUpdate = true;
+  const depth = material.userData.depthMaterial;
+  if (depth) {
+    depth.defines.CUTAWAY = "";
+    depth.uniforms.uCut = material.uniforms.uCut;
+    depth.needsUpdate = true;
+  } else {
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonCutDepth",
+      defines: { CUTAWAY: "", DEPTH_ONLY: "" },
+      side: material.side,
+      uniforms: { ...sharedUniforms, uSway: material.uniforms.uSway, uTwinkle: material.uniforms.uTwinkle, uCut: material.uniforms.uCut },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT,
+    });
+  }
+  return material;
+}
+
+/**
+ * Lueurs qui s'allument en vague : la matière (une lueur `unlit` : glyphes, rainures, voyants) n'est allumée que dans
+ * une sphère du monde ; au-delà, elle prend la couleur `off` et perd son éclat de nuit. Le monde fait grandir la
+ * sphère (vérification du Sas : les glyphes s'allument depuis le pupitre jusqu'à la porte). Plusieurs matériaux
+ * peuvent partager le même `uniform` (une seule vague pour toute la pièce).
+ * @param {THREE.ShaderMaterial} material matériau de `createToonMaterial`
+ * @param {{value: THREE.Vector4}} uniform xyz centre, w rayon (m) ; rayon 0 : tout éteint
+ * @param {string|number} off couleur éteinte
+ */
+export function enableReveal(material, uniform, off) {
+  material.defines.REVEAL = "";
+  material.uniforms.uReveal = uniform;
+  material.uniforms.uRevealOff = { value: rgb(off) };
+  material.needsUpdate = true;
+  return material;
+}
+
+/**
+ * Obscurité ambiante, 0 en plein jour, 1 en pleine nuit : les lumières de halo n'éclairent qu'à proportion.
+ * À régler par la scène (explorateur : heure du monde ; galerie : option « Nuit »).
+ */
+export function setDarkness(value) {
+  sharedUniforms.uDarkness.value = THREE.MathUtils.clamp(value, 0, 1);
+}
+
+const glowSlots = Array.from({ length: GLOW_LIGHT_COUNT }, () => false);
+
+/**
+ * Réserve une des lumières de halo partagées (GLOW_LIGHT_COUNT) : une source qui éclaire le décor autour d'elle, dans sa couleur, en
+ * paliers nets, et qui échappe à la teinte de nuit (un îlot de lumière dans le noir). Sans place libre, la poignée
+ * rendue ne fait rien.
+ * @returns {{set: (position: THREE.Vector3, color: THREE.Vector3, radius: number, strength?: number) => void,
+ *   release: () => void}}
+ */
+export function createGlowLight() {
+  const slot = glowSlots.indexOf(false);
+  if (slot < 0) return { set() {}, release() {} };
+  glowSlots[slot] = true;
+  const light = sharedUniforms.uGlowLights.value[slot];
+  const color = sharedUniforms.uGlowColors.value[slot];
+  return {
+    set(position, rgbColor, radius, strength = 1) {
+      light.set(position.x, position.y, position.z, radius);
+      color.set(rgbColor.x, rgbColor.y, rgbColor.z, strength);
+    },
+    release() {
+      light.set(0, 0, 0, 0);
+      color.set(0, 0, 0, 0);
+      glowSlots[slot] = false;
+    },
+  };
+}
+
+/**
+ * Avance le temps des animations de décor (vent). À appeler une fois par image.
+ * @param {number} seconds temps écoulé
+ * @param {number} fps cadence « sprite » : 12 par défaut pour un mouvement saccadé façon pixel art, 0 = fluide
+ */
+export function tick(seconds, fps = 12) {
+  sharedUniforms.uTime.value = fps > 0 ? Math.floor(seconds * fps) / fps : seconds;
+}
+
+/** Règle la force du vent (0 = immobile, 1 = brise). */
+export function setWind(strength) {
+  sharedUniforms.uWindStrength.value = strength;
+}
+
+/** Couleur hex (#rrggbb ou nombre) → Vector3 sRGB brut 0..1. */
+export function rgb(hex) {
+  const c = typeof hex === "string" ? parseInt(hex.replace("#", ""), 16) : hex;
+  return new THREE.Vector3(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255);
+}
+
+const VERTEX = /* glsl */ `
+#include <common>
+#include <skinning_pars_vertex>
+#include <shadowmap_pars_vertex>
+
+uniform float uTime;
+uniform vec2 uWindDir;
+uniform float uWindStrength;
+uniform vec4 uCurve;
+uniform float uSideView;
+uniform vec2 uFade; // apparition en douceur : de x à y mètres de la caméra, la copie rentre dans le sol (0, 0 : rien)
+uniform vec3 uLod;  // FOLIAGE, passage à la version lointaine : de x à y mètres, les feuilles absentes de cette
+                    // version (aFar 0) rapetissent jusqu'à rien, les autres grandissent de z (y à 0 : rien)
+#ifdef CUTAWAY
+  uniform vec4 uCutAway;
+  uniform vec2 uCutOptions;
+  uniform vec2 uCut; // x : règle (1 le long d'un mur, 2 isolé, 3 pilier d'angle), y : hauteur de coupe (< 0 : caché)
+#endif
+uniform vec2 uSway; // x : amplitude du balancement à la hauteur y (unités), y : hauteur de référence
+uniform float uTwinkle; // UNLIT + FOLIAGE : amplitude de la pulsation des formes (× souplesse de chaque sommet)
+
+#ifdef WOBBLE
+  uniform vec3 uWobble; // x : amplitude (unités), y : fréquence des vagues (1/unité), z : vitesse
+  float wobbleHash(vec3 p3) {
+    p3 = fract(p3 * 0.1031);
+    p3 += dot(p3, p3.zyx + 31.32);
+    return fract((p3.x + p3.y) * p3.z);
+  }
+  float wobbleNoise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    f = f * f * (3.0 - 2.0 * f);
+    float a = mix(wobbleHash(i), wobbleHash(i + vec3(1.0, 0.0, 0.0)), f.x);
+    float b = mix(wobbleHash(i + vec3(0.0, 1.0, 0.0)), wobbleHash(i + vec3(1.0, 1.0, 0.0)), f.x);
+    float c = mix(wobbleHash(i + vec3(0.0, 0.0, 1.0)), wobbleHash(i + vec3(1.0, 0.0, 1.0)), f.x);
+    float d = mix(wobbleHash(i + vec3(0.0, 1.0, 1.0)), wobbleHash(i + vec3(1.0, 1.0, 1.0)), f.x);
+    return mix(mix(a, b, f.y), mix(c, d, f.y), f.z) * 2.0 - 1.0;
+  }
+#endif
+
+#ifdef FOLIAGE
+  attribute vec3 aCorner; // xy : coin de la feuille dans le plan de l'écran ; z : avancée vers la caméra (unités monde, 0 si absent)
+  attribute vec4 aLeaf;   // x : phase, y : occlusion (0 cœur, 1 extérieur), z : variation, w : souplesse au vent
+  attribute float aFar;   // 1 : feuille gardée dans la version lointaine (kit/far-tree.js), 0 sinon ou absent
+  varying vec3 vLeaf;
+#endif
+
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+  attribute float aRadius;
+  attribute float aFar; // 1 : sommet gardé dans la version lointaine (kit/far-tree.js), 0 sinon ou absent
+  varying float vRadius;
+  varying float vDrop;
+  varying vec2 vUv;
+#endif
+
+#ifdef PATTERN_GROUND
+  attribute vec2 aGround; // coordonnées du point dans le monde (mètres), communes à tous les morceaux de terrain
+  varying vec2 vGround;
+#endif
+
+#ifdef TONE
+  attribute float aTone; // décalage de lumière par sommet (suie, tons d'un bloc de pierre), en crans de la rampe
+  varying float vTone;
+#endif
+#ifdef SHADE
+  attribute float aShade; // UNLIT : ton de chaque sommet (0 sombre .. 1 clair), interpolé puis découpé en paliers
+#endif
+#ifdef DITHER
+  attribute float aCover; // part des pixels dessinés (0..1), tramée : faisceau, voile
+  varying float vCover;
+#endif
+varying vec3 vNormal;
+varying vec3 vObjPos;
+varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
+
+#ifdef TOON_MAP
+  varying vec2 vMapUv;
+#endif
+
+void main() {
+  #ifdef PATTERN_GROUND
+    vGround = aGround;
+  #endif
+  #include <skinbase_vertex>
+  #include <beginnormal_vertex>
+  #include <skinnormal_vertex>
+  #include <defaultnormal_vertex>
+  vNormal = transformedNormal;
+
+  #include <begin_vertex>
+  #include <skinning_vertex>
+  #ifdef WOBBLE
+    // Ondulation (matières vivantes : le mannequin magique) : chaque sommet glisse le long de sa normale, poussé par
+    // deux bruits lus sur la pose de repos (les vagues restent attachées à leur partie du corps quand elle bouge) et
+    // qui dérivent dans le temps, comme le corps du blob. Après le squelette : toutes les animations restent justes.
+    vec3 wq = position * uWobble.y;
+    float wt = uTime * uWobble.z;
+    float wave = wobbleNoise(wq + vec3(cos(wt), sin(wt), wt * 0.5) * 1.3) * 0.75
+      + wobbleNoise(wq * 2.3 + vec3(40.0 + sin(wt * 2.0), cos(wt * 2.0), 11.0) * 1.3) * 0.35;
+    // Surtout vers l'extérieur : les parties gonflent et dégonflent sans jamais se creuser (une cheville ou un poignet
+    // fin se pincerait jusqu'à disparaître).
+    transformed += normalize(objectNormal) * (wave * 0.6 + 0.4) * uWobble.x;
+  #endif
+  #ifdef CUTAWAY
+    // Vue en coupe : l'objet entier est coupé ou non selon la place de son origine (voir enableCutaway).
+    if (uCutOptions.x > 0.5) {
+      mat4 cutWorld = modelMatrix;
+      #ifdef USE_INSTANCING
+        cutWorld = modelMatrix * instanceMatrix;
+      #endif
+      vec2 toObject = cutWorld[3].xz - uCutAway.xy;
+      bool cut;
+      if (uCut.x < 1.5) {
+        vec2 n = cutWorld[2].xz;
+        n /= max(length(n), 1e-5);
+        float facing = dot(n, uCutAway.zw);
+        cut = abs(facing) > 0.3 && dot(toObject, n) * sign(facing) > uCutOptions.y;
+      } else if (uCut.x < 2.5) {
+        cut = dot(toObject, uCutAway.zw) > uCutOptions.y;
+      } else {
+        vec2 side = toObject * sign(uCutAway.zw);
+        cut = (abs(uCutAway.z) > 0.3 && side.x > uCutOptions.y) || (abs(uCutAway.w) > 0.3 && side.y > uCutOptions.y);
+      }
+      // Caché : tous les sommets au même point, plus aucun triangle n'a de surface.
+      if (cut) transformed = uCut.y < 0.0 ? vec3(0.0) : vec3(transformed.x, min(transformed.y, uCut.y), transformed.z);
+    }
+  #endif
+  vObjPos = transformed;
+  #ifdef TONE
+    vTone = aTone;
+  #endif
+  #ifdef SHADE
+    vShade = aShade;
+  #endif
+  #ifdef DITHER
+    vCover = aCover;
+  #endif
+  #ifdef TOON_MAP
+    vMapUv = uv;
+  #endif
+
+  mat4 toWorld = modelMatrix;
+  #ifdef USE_INSTANCING
+    toWorld = modelMatrix * instanceMatrix;
+  #endif
+  vec3 origin = toWorld[3].xyz;
+
+  // Semis à portée limitée (vue à la 3e personne) : près de la limite, la copie rentre dans le sol au lieu de
+  // disparaître d'un coup ; à l'approche, elle en sort.
+  float fade = 1.0;
+  if (uFade.y > 0.0) {
+    fade = 1.0 - smoothstep(uFade.x, uFade.y, distance(origin.xz, cameraPosition.xz));
+    transformed *= fade;
+  }
+
+  // Balancement de l'ensemble (tronc, branches, feuilles) : nul au sol, maximal en haut.
+  float phase = origin.x * 0.37 + origin.z * 0.23;
+  float gust = sin(uTime * 1.1 + phase) * 0.6 + sin(uTime * 2.3 + phase * 1.7) * 0.4;
+  float h = clamp(transformed.y / max(uSway.y, 0.001), 0.0, 1.2);
+  transformed.xz += uWindDir * ((0.3 + 0.7 * gust) * uSway.x * uWindStrength * h * h);
+
+  #if defined(FOLIAGE) && defined(UNLIT)
+    vLeaf = aLeaf.xyz;
+  #elif defined(FOLIAGE)
+    vLeaf = aLeaf.xyz;
+    // Frémissement propre à chaque feuille, porté par une vague qui traverse le feuillage.
+    float wave = sin(uTime * 2.4 - dot(transformed.xz + origin.xz, uWindDir) * 1.6 + aLeaf.x * 2.0);
+    float flutter = sin(uTime * 5.0 + aLeaf.x * 6.2831);
+    float bendLeaf = aLeaf.w * uWindStrength;
+    transformed.xz += uWindDir * (wave * 0.05 + flutter * 0.03) * bendLeaf;
+    transformed.y += flutter * 0.025 * bendLeaf;
+  #endif
+
+  vWorldPos = (toWorld * vec4(transformed, 1.0)).xyz;
+
+  #ifdef DEPTH_ONLY
+    #include <project_vertex>
+  #else
+    // Monde courbé (setCurvature) : seul l'affichage descend ; la passe d'ombre reste sur le monde plat.
+    vec4 bentWorld = vec4(vWorldPos, 1.0);
+    float bendDistance = max(distance(bentWorld.xz, uCurve.xy) - uCurve.w, 0.0);
+    bentWorld.y -= uCurve.z * bendDistance * bendDistance;
+    vec4 mvPosition = viewMatrix * bentWorld;
+    gl_Position = projectionMatrix * mvPosition;
+  #endif
+
+  #ifdef FOLIAGE
+    float cornerScale = length(toWorld[0].xyz) * fade;
+    #ifndef UNLIT
+      // Vue de côté (3e personne, setSideView) : les feuilles sombres du cœur de la couronne (aLeaf.y petit), faites
+      // pour remplir l'arbre vu de haut, se verraient entre les feuilles du bord comme des étoiles noires (deux
+      // triangles sombres qui se croisent) : elles rapetissent d'autant plus qu'elles sont profondes.
+      // Les feuilles du bord grandissent un peu pour garder une couronne aussi pleine.
+      cornerScale *= mix(1.0, mix(0.2, 1.15, smoothstep(0.15, 0.75, aLeaf.y)), uSideView);
+      if (uLod.y > 0.0) {
+        float lod = smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition));
+        // Seules les feuilles du bord grandissent (aLeaf.y : 0 cœur, 1 dehors) : un cœur sombre agrandi ferait une
+        // étoile noire dans la couronne.
+        cornerScale *= mix(1.0, aFar * mix(1.0, uLod.z, aLeaf.y), lod);
+      }
+    #endif
+    #ifdef UNLIT
+      // Astres : pas de vent ; flex devient le poids de la pulsation (rayons, scintillement d'étoile).
+      cornerScale *= 1.0 + uTwinkle * aLeaf.w * sin(uTime * 2.7 + aLeaf.x * 6.2831);
+    #endif
+    mvPosition.xyz += aCorner * cornerScale;
+    gl_Position = projectionMatrix * mvPosition;
+  #endif
+
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+    vRadius = aRadius;
+    vUv = uv;
+    // Passage à la version lointaine (uLod) : le bois qu'elle n'a pas s'efface par trame entre x et y mètres.
+    vDrop = uLod.y > 0.0 ? (1.0 - aFar) * smoothstep(uLod.x, uLod.y, distance(origin, cameraPosition)) : 0.0;
+  #endif
+
+  #ifndef DEPTH_ONLY
+    #include <worldpos_vertex>
+    #include <shadowmap_vertex>
+  #endif
+}
+`;
+
+const FRAGMENT = /* glsl */ `
+#include <common>
+#include <packing>
+#include <bsdfs>
+#include <lights_pars_begin>
+#include <shadowmap_pars_fragment>
+#include <shadowmask_pars_fragment>
+
+layout(location = 1) out highp vec4 gAux; // xy : normale vue, z : seuil de contour interne, w : identifiant de contour
+
+uniform vec3 uRamp[RAMP_SIZE];
+uniform float uSteps[RAMP_SIZE - 1];
+uniform vec3 uInk;
+uniform float uId;
+uniform float uCrease;
+uniform float uInked;
+uniform float uSelfEdge;
+uniform float uShadowLit;
+uniform vec4 uPattern; // sens selon le motif (voir createToonMaterial)
+uniform float uSeed;
+uniform vec4 uGlowLights[${GLOW_LIGHT_COUNT}];
+uniform vec4 uGlowColors[${GLOW_LIGHT_COUNT}];
+uniform float uDarkness;
+uniform float uEmissive; // > 0 : seuil de lumière (lit) au-dessus duquel la couleur garde son éclat la nuit
+uniform float uGlowReceive;
+varying vec3 vWorldPos;
+#ifdef SHADE
+  varying float vShade;
+#endif
+#ifdef TONE
+  varying float vTone;
+#endif
+#ifdef DITHER
+  varying float vCover;
+#endif
+uniform vec2 uRim; // x : lumière ajoutée sur le bord de la silhouette, y : largeur de la frange (0..1, en 1 - normale.z)
+#ifdef REVEAL
+  uniform vec4 uReveal;   // xyz : centre (monde), w : rayon (m) ; au-delà, la matière prend la couleur éteinte
+  uniform vec3 uRevealOff;
+#endif
+
+varying vec3 vNormal;
+varying vec3 vObjPos;
+
+#ifdef FOLIAGE
+  varying vec3 vLeaf;
+  uniform vec2 uLeafShade; // x : éclat aléatoire par feuille, y : assombrissement du cœur
+#endif
+
+#if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+  varying float vRadius;
+  varying float vDrop;
+  varying vec2 vUv;
+#endif
+
+#ifdef PATTERN_GROUND
+  varying vec2 vGround;
+  uniform vec3 uLayerRamp[12]; // 3 couches × 4 couleurs (ombre → lumière)
+  uniform vec4 uLayers[3];     // x : échelle des taches (1/m), y : seuil (0..1), z : graine, w : poids de la modulation lente (±)
+  uniform vec3 uFlowers[2];    // deux couleurs de fleurs semées en pixels
+  uniform vec4 uGround;        // x : lisse (0/1), y : densité des fleurs, z : échelle de la modulation lente (1/m), w : frange tramée
+#endif
+
+#ifdef TOON_MAP
+  uniform sampler2D uMap;
+  varying vec2 vMapUv;
+#endif
+
+#ifdef CURRENTS
+  uniform float uTime;
+  uniform vec2 uCurrents; // x : force des courants (dérive des normales), y : fréquence (1/unité)
+#endif
+
+float hash12(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+float hash13(vec3 p3) {
+  p3 = fract(p3 * 0.1031);
+  p3 += dot(p3, p3.zyx + 31.32);
+  return fract((p3.x + p3.y) * p3.z);
+}
+
+#ifdef CURRENTS
+float valueNoise3(vec3 p) {
+  vec3 i = floor(p);
+  vec3 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = mix(hash13(i), hash13(i + vec3(1.0, 0.0, 0.0)), f.x);
+  float b = mix(hash13(i + vec3(0.0, 1.0, 0.0)), hash13(i + vec3(1.0, 1.0, 0.0)), f.x);
+  float c = mix(hash13(i + vec3(0.0, 0.0, 1.0)), hash13(i + vec3(1.0, 0.0, 1.0)), f.x);
+  float d = mix(hash13(i + vec3(0.0, 1.0, 1.0)), hash13(i + vec3(1.0, 1.0, 1.0)), f.x);
+  return mix(mix(a, b, f.y), mix(c, d, f.y), f.z);
+}
+#endif
+
+#ifdef PATTERN_GROUND
+float valueNoise(vec2 p) {
+  vec2 i = floor(p);
+  vec2 f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  float a = hash12(i), b = hash12(i + vec2(1.0, 0.0)), c = hash12(i + vec2(0.0, 1.0)), d = hash12(i + vec2(1.0, 1.0));
+  return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+}
+
+float patchNoise(vec2 p) {
+  return valueNoise(p) * 0.62 + valueNoise(p * 2.63 + 17.3) * 0.28 + valueNoise(p * 6.1 - 5.1) * 0.1;
+}
+
+// Couleur dans une rampe de 4 : par paliers nets (soft = 0) ou en dégradé (soft > 0, demi-largeur de la transition).
+vec3 shade4(vec3 c0, vec3 c1, vec3 c2, vec3 c3, float lit, float soft) {
+  vec3 color = c0;
+  if (soft > 0.0) {
+    color = mix(color, c1, smoothstep(uSteps[0] - soft, uSteps[0] + soft, lit));
+    color = mix(color, c2, smoothstep(uSteps[1] - soft, uSteps[1] + soft, lit));
+    color = mix(color, c3, smoothstep(uSteps[2] - soft, uSteps[2] + soft, lit));
+  } else {
+    if (lit > uSteps[0]) color = c1;
+    if (lit > uSteps[1]) color = c2;
+    if (lit > uSteps[2]) color = c3;
+  }
+  return color;
+}
+#endif
+
+void main() {
+  #ifdef DITHER
+    // Trame de Bayer 4 × 4 par pixel d'art : seule une part vCover des pixels est dessinée (faisceau de lumière).
+    {
+      const float bayerD[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cellD = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vCover <= (bayerD[cellD.x + cellD.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
+  #if defined(PATTERN_BARK) || defined(PATTERN_FURROW)
+    // Effacement tramé (matrice de Bayer 4 × 4, par pixel d'art) des branches absentes de la version lointaine.
+    if (vDrop > 0.0) {
+      const float bayer[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+      ivec2 cell = ivec2(mod(gl_FragCoord.xy, 4.0));
+      if (vDrop > (bayer[cell.x + cell.y * 4] + 0.5) / 16.0) discard;
+    }
+  #endif
+  vec3 N = normalize(vNormal);
+  #if defined(DOUBLE_SIDED) && !defined(FOLIAGE)
+    if (!gl_FrontFacing) N = -N;
+  #endif
+
+  #if NUM_DIR_LIGHTS > 0
+    vec3 L = directionalLights[0].direction;
+  #else
+    vec3 L = normalize(vec3(-0.45, 0.75, 0.5));
+  #endif
+
+  #ifdef CURRENTS
+    // Courants de lumière (matières magiques) : un bruit qui dérive dans le temps fait glisser les normales, donc
+    // les paliers de lumière et le liseré ; la cadence du temps partagé (12 images/s) les fait avancer par à-coups.
+    vec3 cq = vObjPos * uCurrents.y + vec3(cos(uTime * 0.7), sin(uTime * 0.7), uTime * 0.25) * 1.4;
+    vec3 drift = vec3(valueNoise3(cq), valueNoise3(cq + vec3(31.0, 0.0, 0.0)), valueNoise3(cq + vec3(0.0, 57.0, 0.0))) - 0.5;
+    N = normalize(N + drift * uCurrents.x);
+  #endif
+
+  #ifdef UNLIT
+    float lit = 1.0; // lumineux par lui-même : la couleur ne dépend que de la géométrie (occlusion des formes)
+    #ifdef SHADE
+      lit = vShade; // ton porté par chaque sommet (surfaces d'énergie animées : vortex d'un portail, cristaux)
+    #endif
+  #else
+    float lit = dot(N, L) * 0.5 + 0.5;
+  #endif
+  float ink = 0.0;
+
+  #ifdef FOLIAGE
+    lit += (vLeaf.z - 0.5) * uLeafShade.x;
+    lit *= mix(1.0 - uLeafShade.y, 1.0, vLeaf.y);
+  #endif
+
+  #ifdef PATTERN_BARK
+    // Tirets horizontaux d'un « pixel » de haut, de taille constante dans le monde quel que soit le diamètre.
+    float density = uPattern.x;
+    float row = floor(vUv.y * density);
+    float cols = max(4.0, floor(6.2832 * vRadius * density));
+    float col = floor(fract(vUv.x) * cols);
+    float start = floor(hash12(vec2(row, uSeed + 1.3)) * cols);
+    float len = 1.0 + floor(hash12(vec2(row, uSeed + 2.7)) * 0.45 * cols);
+    float dcol = mod(col - start + cols, cols);
+    ink = step(hash12(vec2(row, uSeed)), uPattern.y) * step(dcol, len - 0.5);
+    // Nœuds plus épais, rares.
+    float row2 = floor(row / 2.0);
+    float start2 = floor(hash12(vec2(row2, uSeed + 5.1)) * cols);
+    float dcol2 = mod(col - start2 + cols, cols);
+    ink = max(ink, step(hash12(vec2(row2, uSeed + 7.9)), uPattern.y * 0.22) * step(dcol2, 1.5));
+    // Pied du tronc : écorce sombre et crevassée.
+    float foot = 1.0 - smoothstep(0.0, uPattern.z, vObjPos.y);
+    ink = max(ink, step(hash12(vec2(col * 3.0 + uSeed, floor(row / 3.0))), foot * uPattern.w));
+    // Plaques grisées.
+    lit -= 0.14 * step(0.82, hash12(vec2(floor(col / 2.0) + uSeed, floor(row / 4.0))));
+  #endif
+
+  #ifdef PATTERN_FURROW
+    // Écorce crevassée (chêne, tilleul) : fissures verticales d'un pixel de large qui serpentent, séparées par
+    // des plaques dont certaines sont un cran plus claires. Taille constante dans le monde.
+    float density = uPattern.x;
+    float spacing = uPattern.y;
+    float row = floor(vUv.y * density);
+    float lanes = max(2.0, floor(6.2832 * vRadius * density / spacing));
+    float col = floor(fract(vUv.x) * lanes * spacing);
+    float lane = floor(col / spacing);
+    float seg = floor(row / 3.0 + hash12(vec2(lane, uSeed + 4.2)) * 3.0);
+    float crackAt = floor(hash12(vec2(lane + uSeed, seg)) * spacing);
+    float bridge = step(hash12(vec2(lane + uSeed * 3.1, floor(row / 2.0))), uPattern.w);
+    ink = step(abs(mod(col, spacing) - crackAt), 0.5) * (1.0 - bridge);
+    lit += uPattern.z * step(hash12(vec2(lane + uSeed * 1.7, floor(row / 5.0))), 0.3);
+  #endif
+
+  #ifdef PATTERN_SPECKLE
+    // Grain : quelques cellules d'un pixel décalées d'un cran de lumière.
+    vec3 cell = floor(vObjPos * uPattern.x + 0.001);
+    float r = hash13(cell + uSeed);
+    lit += uPattern.z * step(r, uPattern.y) - uPattern.z * step(1.0 - uPattern.y * uPattern.w, r);
+  #endif
+
+  #ifdef TONE
+    lit += vTone;
+  #endif
+
+  #ifndef UNLIT
+    float shadow = getShadowMask();
+    lit = mix(min(lit, uShadowLit), lit, shadow);
+  #endif
+
+  // Liseré lumineux : la frange de la silhouette (normale presque perpendiculaire à la vue) gagne un ou deux crans,
+  // même à l'ombre. Matières qui brillent par elles-mêmes ou translucides (glace, gelée, esprits de lumière).
+  lit += uRim.x * step(1.0 - uRim.y, 1.0 - N.z) * step(0.0001, uRim.y);
+
+  vec3 color = uRamp[0];
+  for (int i = 0; i < RAMP_SIZE - 1; i++) {
+    if (lit > uSteps[i]) color = uRamp[i + 1];
+  }
+  #ifdef PATTERN_GROUND
+    // Sol : rampe de base puis couches de taches, toutes calculées sur la position dans le monde. En mode net,
+    // chaque cellule d'un pixel prend une seule couleur et la frontière des taches est tramée ; en mode lisse,
+    // les couleurs se fondent.
+    float smoothMode = uGround.x;
+    vec2 cell = floor(vGround * uPattern.x);
+    vec2 q = mix((cell + 0.5) / uPattern.x, vGround, smoothMode);
+    float cellRand = hash12(cell + uSeed * 7.31);
+    float soft = smoothMode * 0.035;
+    float grain = (1.0 - smoothMode) * uPattern.z * (step(1.0 - uPattern.y, cellRand) - step(cellRand, uPattern.y * uPattern.w));
+    // Lisse : marbrure douce de la lumière, pour que l'herbe ne soit pas un aplat uni de près.
+    float mottle = smoothMode * (patchNoise(q * 0.9 + uSeed * 0.71) - 0.5) * 0.09;
+    float gl = lit + grain + mottle;
+    color = shade4(uRamp[0], uRamp[1], uRamp[2], uRamp[3], gl, soft);
+    float slow = valueNoise(q * uGround.z + uSeed * vec2(3.7, 1.3));
+    for (int k = 0; k < 3; k++) {
+      vec4 layer = uLayers[k];
+      if (k == 1 && uGround.y > 0.0) {
+        // Fleurs semées en pixels dans les zones fleuries, avant l'herbe sèche et la terre.
+        float zone = smoothstep(0.5, 0.78, patchNoise(q * 0.22 + uSeed * 1.9 + 41.0));
+        float pick = hash12(cell * 1.37 + uSeed + 3.3);
+        float flower = step(pick, uGround.y * zone) * (1.0 - smoothMode);
+        vec3 petal = pick < uGround.y * zone * 0.55 ? uFlowers[0] : uFlowers[1];
+        color = mix(color, mix(petal, color, 0.45 * step(lit, uSteps[1])), flower);
+      }
+      if (layer.x <= 0.0) continue;
+      float m = patchNoise(q * layer.x + layer.z * 13.7 + uSeed * vec2(5.31, 2.87));
+      float threshold = layer.y - (slow - 0.5) * layer.w;
+      float jitter = (hash12(cell * 0.73 + layer.z * 5.1) - 0.5) * uGround.w;
+      float weight = smoothMode > 0.5
+        ? smoothstep(threshold - 0.045, threshold + 0.045, m)
+        : step(threshold, m + jitter);
+      vec3 layerColor = shade4(uLayerRamp[k * 4], uLayerRamp[k * 4 + 1], uLayerRamp[k * 4 + 2], uLayerRamp[k * 4 + 3], gl, soft);
+      color = mix(color, layerColor, weight);
+    }
+  #endif
+  #ifdef TOON_MAP
+    // Texture de couleur (personnages importés) : la rampe devient un filtre de lumière, de l'ombre froide à la
+    // pleine lumière, posé sur la couleur peinte.
+    color *= texture2D(uMap, vMapUv).rgb;
+  #endif
+  color = mix(color, uInk, ink);
+  float revealed = 1.0;
+  #ifdef REVEAL
+    // Lueurs qui s'allument en vague (enableReveal) : hors de la sphère, la couleur éteinte, sans éclat propre.
+    revealed = step(distance(vWorldPos, uReveal.xyz), uReveal.w);
+    color = mix(uRevealOff, color, revealed);
+  #endif
+
+  // Lumières de halo : dans le noir, le décor proche prend la couleur de la source, en trois paliers nets à
+  // frontière tramée. Le palier est écrit dans l'alpha : la passe finale ne l'assombrit pas de la teinte de nuit.
+  float glowLevel = 0.0;
+  if (uGlowReceive > 0.5 && uDarkness > 0.001) {
+    vec3 glowTint = vec3(0.0);
+    float glowSum = 0.0;
+    for (int i = 0; i < ${GLOW_LIGHT_COUNT}; i++) {
+      vec4 source = uGlowLights[i];
+      vec4 tint = uGlowColors[i];
+      if (source.w <= 0.0 || tint.w <= 0.0) continue;
+      vec3 toLight = source.xyz - vWorldPos;
+      float d = length(toLight) / source.w;
+      if (d >= 1.0) continue;
+      vec3 Lv = normalize((viewMatrix * vec4(toLight, 0.0)).xyz);
+      float k = (1.0 - d) * (0.4 + 0.6 * max(dot(N, Lv), 0.0)) * tint.w;
+      glowTint += tint.rgb * k;
+      glowSum += k;
+    }
+    // Trame de Bayer 4×4 : 4 × B2(p mod 2) + B2(p / 2), avec B2(x, y) = (2x + 3y) mod 4.
+    vec2 bp = mod(floor(gl_FragCoord.xy), 4.0);
+    vec2 lo = mod(bp, 2.0), hi = floor(bp / 2.0);
+    float bayer = (4.0 * mod(lo.x * 2.0 + lo.y * 3.0, 4.0) + mod(hi.x * 2.0 + hi.y * 3.0, 4.0) + 0.5) / 16.0;
+    glowLevel = clamp(floor(glowSum * uDarkness * 3.0 + 0.45 + (bayer - 0.5) * 0.2), 0.0, 3.0);
+    if (glowLevel > 0.0) {
+      // La surface prend la teinte de la lumière et ne garde que sa clarté (et un soupçon de sa couleur).
+      vec3 L = glowTint / max(glowSum, 1e-4);
+      // Clarté plancher : la source éclaire aussi ce que le soleil laisse dans l'ombre (sous elle-même).
+      float luma = max(dot(color, vec3(0.3, 0.55, 0.15)), 0.32 + 0.06 * glowLevel);
+      vec3 lit = min(L * (0.35 + 0.95 * luma) + color * 0.1 + L * 0.1 * glowLevel, vec3(1.0));
+      color = mix(color, lit, 0.4 + 0.2 * glowLevel);
+    }
+  }
+
+  // Alpha : 1 = surface, 0.75 = surface avec liseré clair sur les arêtes vives, 0.6 = surface sans contour
+  // (0 = fond, jamais écrit ici) ; moins 0,02 par palier de lumière de halo (0 à 3).
+  // Matière qui émet sa propre lumière (vortex, cristaux allumés) : au-dessus du seuil, elle échappe à la teinte de
+  // nuit comme ce qu'éclaire une lumière de halo (palier 3).
+  if (uEmissive > 0.0 && lit > uEmissive && revealed > 0.5) glowLevel = 3.0;
+  gl_FragColor = vec4(color, (uInked > 0.5 ? 1.0 - 0.25 * uCrease : 0.6) - glowLevel * 0.02);
+  gAux = vec4(N.xy * 0.5 + 0.5, uSelfEdge * 0.25, uId / 255.0);
+}
+`;
+
+const DEPTH_FRAGMENT = /* glsl */ `
+void main() {
+  gl_FragColor = vec4(1.0);
+}
+`;
+
+const PATTERNS = {
+  none: { define: null, value: [0, 0, 0, 0] },
+  // density (pixels par unité), fréquence des tirets (0..1), hauteur du pied sombre (unités), densité du pied (0..1)
+  bark: { define: "PATTERN_BARK", value: [16, 0.3, 1.0, 0.8] },
+  // density (pixels par unité), écart entre deux fissures (pixels), éclat des plaques claires (en lumière),
+  // part de fissures interrompues (0..1)
+  furrow: { define: "PATTERN_FURROW", value: [16, 3, 0.1, 0.25] },
+  // density (cellules par unité), probabilité (0..1), amplitude (en lumière), part de grains sombres (0..1)
+  speckle: { define: "PATTERN_SPECKLE", value: [16, 0.08, 0.2, 1] },
+  // sols (options.ground) : density (pixels par unité), probabilité du grain (0..1), amplitude du grain (en
+  // lumière), part de grains sombres (0..1)
+  ground: { define: "PATTERN_GROUND", value: [16, 0.06, 0.06, 1] },
+};
+
+function defaultSteps(count) {
+  const steps = [];
+  for (let i = 1; i < count; i++) steps.push(0.3 + (0.5 * (i - 1)) / Math.max(1, count - 2));
+  return steps;
+}
+
+/**
+ * Crée un matériau toon à palette.
+ *
+ * @param {object} options
+ * @param {Array<string|number>} options.ramp couleurs de l'ombre vers la lumière (2 à 6)
+ * @param {number[]} [options.steps] seuils de lumière (0..1) entre deux couleurs ; `ramp.length - 1` valeurs
+ * @param {string|number} [options.ink] couleur des marques du motif (écorce)
+ * @param {"none"|"bark"|"furrow"|"speckle"|"ground"} [options.pattern]
+ * @param {number[]} [options.patternParams] 4 nombres, voir PATTERNS
+ * @param {number} [options.seed] graine du motif
+ * @param {boolean} [options.foliage] feuilles en triangles face caméra (géométrie de `buildLeafGeometry`)
+ * @param {number[]} [options.leafShade] [éclat aléatoire par feuille, assombrissement du cœur]
+ * @param {number} [options.id] identifiant de contour 1..255 : un contour sépare deux identifiants différents
+ * @param {boolean} [options.crease] liseré clair sur les arêtes vives (meubles, murs, socles)
+ * @param {boolean} [options.outline] faux : aucun contour sombre sur cette matière (poussières, pollen, papillons :
+ *   des formes de quelques pixels que leur contour mangerait entièrement)
+ * @param {number} [options.selfEdge] écart de profondeur (unités, 0..4) à partir duquel un contour est tracé
+ *   entre deux parties du même objet ; 0 = seuil général. Le feuillage en a besoin pour ne pas cerner chaque feuille.
+ * @param {number} [options.shadowLit] lumière maximale dans une ombre portée (0..1)
+ * @param {{amplitude:number,height:number}} [options.sway] balancement au vent
+ * @param {number} [options.side] THREE.FrontSide par défaut (DoubleSide pour le feuillage)
+ * @param {boolean} [options.unlit] lumineux par lui-même (soleil, lune, étoiles) : ni soleil ni ombre portée.
+ *   Avec `foliage` et `leafShade: [0, 1]`, l'occlusion de chaque forme choisit directement sa couleur dans la rampe.
+ * @param {number} [options.twinkle] avec `unlit` + `foliage` : amplitude de la pulsation des formes, pondérée par
+ *   le `flex` de chaque sommet (le vent n'agit pas sur un astre)
+ * @param {number[]} [options.rim] [lumière ajoutée, largeur] : liseré clair sur le bord de la silhouette, côté ombre
+ *   compris (largeur 0..1 mesurée en 1 − normale.z : 0,5 ≈ un pixel sur une boule de 8 pixels de rayon)
+ * @param {boolean} [options.shade] avec `unlit` : la géométrie porte un attribut `aShade` (0..1) qui choisit la couleur
+ *   dans la rampe à chaque sommet ; interpolé puis découpé en paliers nets. Pour des surfaces lumineuses animées depuis
+ *   le CPU (vortex d'un portail, cristaux qui s'allument).
+ * @param {boolean} [options.tone] la géométrie porte un attribut `aTone` : décalage de lumière ajouté à chaque sommet
+ *   (−0,3 = un cran plus sombre environ), interpolé puis découpé par les paliers. Pour les tons propres à chaque bloc
+ *   d'un mur, la suie en haut des volumes, l'usure au centre d'une dalle (le Complexe) ; voir `kit/complex-parts.js`.
+ * @param {boolean} [options.dither] la géométrie porte un attribut `aCover` (0..1) : part des pixels dessinés, en trame
+ *   de Bayer 4 × 4 par pixel d'art (faisceau de lampe, voile) ; sans transparence ni tri.
+ * @param {number} [options.emissive] seuil de lumière (0..1, 0 = désactivé) au-dessus duquel la matière garde son éclat
+ *   la nuit (vortex, cristaux allumés) : la passe finale ne lui applique pas la teinte de l'heure.
+ * @param {boolean} [options.glow] faux : ne reçoit pas les lumières de halo (la source elle-même, qui a déjà sa couleur)
+ * @param {number[]} [options.currents] [force, fréquence (1/unité)] : courants de lumière qui passent dans la matière
+ *   (dérive animée des normales ; matières magiques : le mannequin magique). Le blob, lui, les calcule sur le CPU.
+ * @param {number[]} [options.wobble] [amplitude (unités), fréquence (1/unité), vitesse] : la surface ondule le long
+ *   de ses normales, après le squelette (corps vivants : le mannequin magique). Ombre portée comprise
+ *   (`userData.depthMaterial` à poser en `customDepthMaterial`).
+ * @param {THREE.Texture} [options.map] texture de couleur (sRGB brut : `colorSpace = NoColorSpace`) : la rampe
+ *   devient un filtre multiplié à la couleur peinte (blanc = couleur de la texture). Pour les modèles importés.
+ * @param {object} [options.ground] avec `pattern: "ground"` (rampe de 4 couleurs, géométrie avec l'attribut
+ *   `aGround`, voir `buildTerrainChunk`) : jusqu'à 3 couches de taches posées dans l'ordre sur la rampe de base.
+ * @param {Array<{ramp: string[], scale: number, threshold: number, seed?: number, drift?: number}>} [options.ground.layers]
+ *   `scale` : fréquence des taches (1/m) ; `threshold` : plus haut = moins de taches ; `drift` : la tache gagne
+ *   (> 0) ou recule (< 0) là où la modulation lente est forte (grandes zones plus sèches ou plus grasses)
+ * @param {boolean} [options.ground.smooth] dégradés lisses au lieu d'aplats nets tramés
+ * @param {string[]} [options.ground.flowers] deux couleurs de fleurs semées en pixels (avant la 2e couche)
+ * @param {number} [options.ground.flowerDensity] part des pixels fleuris dans une zone fleurie (0..0,3)
+ * @param {number} [options.ground.driftScale] fréquence de la modulation lente (1/m)
+ * @param {number} [options.ground.fringe] largeur de la frange tramée au bord des taches (0..0,3)
+ */
+export function createToonMaterial(options) {
+  const {
+    ramp,
+    steps = defaultSteps(ramp.length),
+    ink = "#241c2e",
+    pattern = "none",
+    patternParams,
+    seed = 0,
+    foliage = false,
+    leafShade = [0.12, 0.45],
+    id = 1,
+    crease = false,
+    outline = true,
+    selfEdge = foliage ? 1.1 : 0,
+    shadowLit = 0.36,
+    sway = { amplitude: 0, height: 1 },
+    side = foliage ? THREE.DoubleSide : THREE.FrontSide,
+    unlit = false,
+    twinkle = 0,
+    rim = [0, 0],
+    glow = true,
+    ground,
+    map = null,
+    currents = null,
+    wobble = null,
+    shade = false,
+    tone = false,
+    emissive = 0,
+    dither = false,
+  } = options;
+
+  if (ramp.length < 2 || ramp.length > 6) throw new Error("ramp : 2 à 6 couleurs");
+  if (steps.length !== ramp.length - 1) throw new Error("steps : ramp.length - 1 valeurs");
+
+  const patternInfo = PATTERNS[pattern];
+  const defines = { RAMP_SIZE: ramp.length };
+  if (foliage) defines.FOLIAGE = "";
+  if (patternInfo.define) defines[patternInfo.define] = "";
+  if (unlit) defines.UNLIT = "";
+  if (shade) defines.SHADE = "";
+  if (tone) defines.TONE = "";
+  if (dither) defines.DITHER = "";
+  if (map) defines.TOON_MAP = "";
+  if (currents) defines.CURRENTS = "";
+  if (wobble) defines.WOBBLE = "";
+  const wobbleUniform = { value: new THREE.Vector3(...(wobble ?? [0, 1, 1])) };
+
+  const swayUniform = { value: new THREE.Vector2(sway.amplitude, sway.height) };
+  const twinkleUniform = { value: twinkle };
+
+  const groundUniforms = {};
+  if (pattern === "ground") {
+    if (ramp.length !== 4) throw new Error("pattern ground : rampe de 4 couleurs");
+    const g = ground ?? {};
+    const layers = (g.layers ?? []).slice(0, 3);
+    const layerRamps = [];
+    const layerInfo = [];
+    for (let k = 0; k < 3; k++) {
+      const layer = layers[k];
+      const colors = layer?.ramp ?? ramp;
+      if (colors.length !== 4) throw new Error("pattern ground : chaque couche a une rampe de 4 couleurs");
+      layerRamps.push(...colors.map(rgb));
+      layerInfo.push(new THREE.Vector4(layer?.scale ?? 0, layer?.threshold ?? 1, layer?.seed ?? k + 1, layer?.drift ?? 0));
+    }
+    const flowers = g.flowers ?? ["#ffffff", "#ffffff"];
+    groundUniforms.uLayerRamp = { value: layerRamps };
+    groundUniforms.uLayers = { value: layerInfo };
+    groundUniforms.uFlowers = { value: flowers.map(rgb) };
+    groundUniforms.uGround = {
+      value: new THREE.Vector4(g.smooth ? 1 : 0, g.flowers ? (g.flowerDensity ?? 0.06) : 0, g.driftScale ?? 0.025, g.fringe ?? 0.12),
+    };
+  }
+
+  const material = new THREE.ShaderMaterial({
+    name: foliage ? "ToonFoliage" : pattern === "ground" ? "ToonGround" : "Toon",
+    defines,
+    lights: true,
+    side,
+    uniforms: {
+      ...THREE.UniformsUtils.clone(THREE.UniformsLib.lights),
+      ...sharedUniforms,
+      uSway: swayUniform,
+      uTwinkle: twinkleUniform,
+      uFade: { value: new THREE.Vector2(0, 0) },
+      uLod: { value: new THREE.Vector3(0, 0, 1) },
+      uRamp: { value: ramp.map(rgb) },
+      uSteps: { value: steps.slice() },
+      uInk: { value: rgb(ink) },
+      uId: { value: id },
+      uCrease: { value: crease ? 1 : 0 },
+      uInked: { value: outline ? 1 : 0 },
+      uSelfEdge: { value: selfEdge },
+      uShadowLit: { value: shadowLit },
+      uPattern: { value: new THREE.Vector4(...(patternParams ?? patternInfo.value)) },
+      uSeed: { value: seed },
+      uRim: { value: new THREE.Vector2(...rim) },
+      uGlowReceive: { value: glow ? 1 : 0 },
+      uEmissive: { value: emissive },
+      uLeafShade: { value: new THREE.Vector2(...leafShade) },
+      uMap: { value: map },
+      uWobble: wobbleUniform,
+      uCurrents: { value: new THREE.Vector2(...(currents ?? [0, 1])) },
+      ...groundUniforms,
+    },
+    vertexShader: VERTEX,
+    fragmentShader: FRAGMENT,
+  });
+
+  if (wobble && !foliage) {
+    // La surface ondule dans le vertex shader : la passe d'ombre a besoin du même déplacement.
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonWobbleDepth",
+      defines: { WOBBLE: "", DEPTH_ONLY: "" },
+      side,
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform, uWobble: wobbleUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT,
+    });
+  }
+
+  if (foliage) {
+    // Les feuilles sont déplacées dans le vertex shader : la passe d'ombre a besoin du même déplacement.
+    const depthDefines = { FOLIAGE: "", DEPTH_ONLY: "" };
+    if (unlit) depthDefines.UNLIT = "";
+    material.userData.depthMaterial = new THREE.ShaderMaterial({
+      name: "ToonFoliageDepth",
+      defines: depthDefines,
+      side: THREE.DoubleSide,
+      uniforms: { ...sharedUniforms, uSway: swayUniform, uTwinkle: twinkleUniform },
+      vertexShader: VERTEX,
+      fragmentShader: DEPTH_FRAGMENT,
+    });
+  }
+
+  return material;
+}
+
+/** Libère géométries et matériaux d'un objet créé avec ces matériaux (et tout son sous-arbre). */
+export function disposeObject(root) {
+  root.traverse((child) => {
+    child.geometry?.dispose();
+    for (const material of [child.material ?? []].flat()) {
+      material.userData.depthMaterial?.dispose();
+      material.dispose();
+    }
+    child.customDepthMaterial?.dispose();
+  });
+}

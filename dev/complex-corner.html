@@ -1,0 +1,110 @@
+<!doctype html>
+<!-- Coin du Sas : les modules de l'ossature du Complexe assemblés sur la grille de 2 m, avec le mannequin de 1,80 m
+     pour l'échelle. Options : night=1, zoom, view, px, door (iris par défaut ; standard, study, double...), open=1
+     (portes, casier, malle ouvertes ; la Porte-Iris ouverte), cycle=1 (la Porte-Iris en boucle).
+     /dev/complex-corner.html?night=1 -->
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Coin du Sas</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #15111e; }
+      #viewer { position: relative; overflow: hidden; width: 100vw; height: 100vh; }
+    </style>
+  </head>
+  <body>
+    <div id="viewer"></div>
+    <script type="module">
+      import * as THREE from "three";
+      import { Viewer } from "/src/gallery/viewer.js";
+      import { disposeObject } from "/src/engine/toon-material.js";
+      import { getAsset } from "/src/assets/index.js";
+      import { setModelSource } from "/src/assets/kit/model.js";
+
+      setModelSource({ base: "/models/" });
+      const query = new URLSearchParams(location.search);
+      const make = (id, params, x, z, rotY = 0, y = 0) => {
+        const object = getAsset(id).create(params);
+        object.position.set(x, y, z);
+        object.rotation.y = rotY;
+        return object;
+      };
+
+      function create() {
+        const group = new THREE.Group();
+        // Sol : 3 × 2 dalles (6 × 4 m), posées à y = −0,20 (dessus au niveau 0).
+        const variants = ["intact", "worn", "intact", "cracked", "trapdoor", "intact"];
+        for (let i = 0; i < 3; i++) {
+          for (let j = 0; j < 2; j++) {
+            group.add(make("buildings/structure/glyph-floor-slab", { seed: i * 7 + j, variant: variants[i * 2 + j] }, -2 + i * 2, -1 + j * 2, 0, -0.2));
+          }
+        }
+        // Mur du fond (z = −2,3) : mur, porte, mur ; mur de gauche (x = −3,3) : plein, niche.
+        // Mur du fond : la Porte-Iris (6 m, lot 4), ou un mur, une porte et un mur.
+        const door = query.get("door") ?? "iris";
+        const iris = door === "iris";
+        const open = query.get("open") === "1";
+        if (iris) {
+          group.add(make("buildings/structure/iris-door", { seed: 2, state: query.get("cycle") === "1" ? "cycle" : open ? "open" : "closed" }, 0, -2.3));
+        } else {
+          group.add(make("buildings/structure/glyph-wall", { seed: 1 }, -2, -2.3));
+          group.add(make("buildings/structure/complex-door", { seed: 2, model: door, state: open ? "open" : "closed" }, 0, -2.3));
+          group.add(make("buildings/structure/glyph-wall", { seed: 3, variant: "conduit" }, 2, -2.3));
+        }
+        group.add(make("buildings/structure/glyph-wall", { seed: 4 }, -3.3, -1, Math.PI / 2));
+        group.add(make("buildings/structure/glyph-wall", { seed: 5, variant: "niche" }, -3.3, 1, Math.PI / 2));
+        // Pilier d'angle et voûte retournée posée à côté (pour la voir).
+        group.add(make("buildings/structure/glyph-column", { seed: 6, shape: "square" }, -2.6, -1.6));
+        if (!iris) group.add(make("buildings/structure/glyph-column", { seed: 7, shape: "fluted", height: 5 }, 2.2, 1.2));
+        // Lumière et réseaux (lot 2) : tuyau et valve sur le mur du fond, applique sur le mur de gauche, lampe
+        // suspendue, faisceau de câbles au sol. Les deux lampes prennent une lumière de halo (visible avec night=1).
+        if (!iris) {
+          group.add(make("props/machines/copper-pipe", { seed: 1, height: 3.4 }, -2, -2.0));
+          group.add(make("props/machines/copper-pipe", { seed: 2, piece: "elbow", height: 3.4 }, 0.4, -2.0, 0));
+          group.add(make("props/machines/wheel-valve", { seed: 3, height: 1.2 }, -1.9, -2.0));
+        }
+        group.add(make("furniture/lighting/filament-lamp", { seed: 4, mount: "wall", halo: "on", height: 2.6 }, -3.0, -0.2, Math.PI / 2));
+        group.add(make("furniture/lighting/filament-lamp", { seed: 5, halo: "on", height: 3.0, chain: 1.5 }, 1.2, -0.6));
+        group.add(make("props/machines/braided-cable", { seed: 6, layout: "bundle", gauge: "study", length: 3 }, 0.6, 1.3, 0.3));
+        // Mobilier du Sas (lot 3) : banc contre le mur de gauche, casier et plaque de direction au fond à droite,
+        // inscription et grille d'aération sur le mur de gauche, pupitre de vérification sous la lampe.
+        group.add(make("furniture/seating/stone-bench", { seed: 3 }, -2.7, 0.95, Math.PI / 2));
+        if (!iris) {
+          group.add(make("furniture/storage/equipment-locker", { seed: 4, doors: open ? "ajar" : "closed" }, 2.05, -2.0));
+          group.add(make("props/decor/glyph-plaque", { seed: 5, model: "direction", room: 3, height: 2.55 }, 2.05, -2.0));
+        }
+        group.add(make("props/decor/glyph-plaque", { seed: 6, height: 1.8 }, -3.0, -0.8, Math.PI / 2));
+        group.add(make("buildings/structure/vent-grate", { seed: 7, height: 0.5, light: query.get("night") === "1" ? "on" : "standby" }, -3.0, -0.6, Math.PI / 2));
+        group.add(make("props/machines/lever-desk", { seed: 8 }, iris ? 2.6 : 1.0, iris ? 0.6 : -1.05, iris ? -Math.PI / 2 : 0));
+        // La Porte-Iris et le balisage (lot 4) : malles, lampe portative posée sur le banc, poteaux à chaîne.
+        group.add(make("furniture/storage/travel-trunk", { seed: 9, state: open ? "open" : "ajar", content: "cassettes" }, -1.75, -1.35, 0.3));
+        group.add(make("furniture/storage/travel-trunk", { seed: 10, size: "small", content: "tools" }, 1.5, 1.55, -0.8));
+        group.add(make("props/tools/hand-lamp", { seed: 11, pose: "lying", halo: query.get("night") === "1" ? "on" : "off", beam: query.get("night") === "1" ? "on" : "off" }, -2.75, 0.55, 2.4, 0.45));
+        group.add(make("buildings/structure/bronze-railing", { seed: 12, kind: "chain", segments: 2, span: 1.3 }, 0.4, 0.9, 0.35));
+        // Le mannequin de 1,80 m devant la porte.
+        const mannequin = getAsset("creatures/humanoid/mannequin").create({});
+        mannequin.position.set(-0.6, 0, 0.2);
+        group.add(mannequin);
+        group.userData.ready = mannequin.userData.ready;
+        return group;
+      }
+
+      const module = { meta: { footprint: { radius: 4.5, height: 5 } }, create, dispose: disposeObject };
+      const viewer = new Viewer(document.getElementById("viewer"));
+      for (const name of ["pixelArt", "outline", "ground", "night"]) {
+        if (query.has(name)) viewer.setOption(name, query.get(name) === "1");
+      }
+      if (query.has("px")) viewer.setOption("pixelSize", Number(query.get("px")));
+      viewer.resize();
+      viewer.setAsset(module, {});
+      if (query.has("view")) viewer.resetView(query.get("view"));
+      if (query.has("zoom")) {
+        viewer.iso.camera.zoom = Number(query.get("zoom"));
+        viewer.iso.camera.updateProjectionMatrix();
+      }
+      viewer.start();
+      window.viewer = viewer;
+    </script>
+  </body>
+</html>

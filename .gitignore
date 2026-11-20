@@ -1,10 +1,14 @@
 node_modules/
 dist/
+dist-artifact/
+dist-site/
 .DS_Store
 *.log
 .env*
 # rendus locaux pixelfx
 vendor/pixelfx/records/
-# réglages perso Claude Code
+# réglages perso des agents (Claude Code ; côté Vibe, ~/.vibe/ hors du dépôt)
 .claude/settings.local.json
 CLAUDE.local.md
+# secrets (aussi couverts par .env*)
+.vibe/.env

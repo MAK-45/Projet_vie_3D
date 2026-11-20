@@ -1,0 +1,25 @@
+# Réglages de projet pour Mistral Vibe. Lus seulement si le dossier est approuvé (« Trust folder » au premier
+# lancement, ou `vibe --trust` pour une exécution ponctuelle).
+# À garder aligné avec .claude/settings.json (mêmes commandes permises, mêmes interdits), dans le même commit ;
+# `npm run check:agents` compare les deux.
+# Clé d'API Mistral : dans ~/.vibe/.env ou la variable MISTRAL_API_KEY, jamais dans le dépôt.
+# Serveurs MCP : aucun pour l'instant (sinon : blocs [[mcp_servers]] ici, et les mêmes dans .mcp.json).
+
+[tools.bash]
+permission = "ask"
+allowlist = [
+  "npm run dev",
+  "npm run check",
+  "npm run sheet",
+  "npm run catalog",
+  "npm run artifact",
+  "npm run site",
+  "node scripts/capture.cjs",
+  "git status",
+  "git diff",
+  "git log",
+]
+denylist = ["rm -rf", "rm -fr"]
+
+[tools.read_file]
+denylist = ["**/.env", "**/.env.*", "**/.vibe/.env"]

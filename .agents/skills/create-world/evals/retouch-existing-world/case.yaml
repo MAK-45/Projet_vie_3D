@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: retouch-existing-world
+expected_outcome: |
+  La Prairie d'été est retouchée dans src/worlds/summer-meadow.js sans créer de nouveau monde ni de nouvel
+  Artifact : davantage de bouleaux et des nappes de coquelicots plus grandes, par les règles de placement
+  existantes. La version de l'asset est augmentée, des captures avant de conclure ont été regardées, et les
+  triangles par image ont été remesurés et comparés à la référence.

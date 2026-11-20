@@ -1,0 +1,7 @@
+schema_version: "1.1"
+name: small-vehicle
+expected_outcome: |
+  La taxonomie (src/assets/taxonomy.js) ne contenant pas de catégorie pour les véhicules, une catégorie ou
+  sous-catégorie adaptée y est ajoutée avec son libellé français, puis la charrette est créée dedans. Elle a un
+  paramètre seed et un axe d'essence de bois (wood) partagé ; pas de saison. `npm run check` passe, une planche a
+  été regardée, le catalogue est régénéré et le compte rendu dit ce qui a été décidé pour le rangement.

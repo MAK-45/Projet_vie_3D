@@ -1,0 +1,24 @@
+{
+  "name": "projet-vie-3d",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run catalog && vite build",
+    "preview": "vite preview",
+    "catalog": "node scripts/build-catalog.mjs",
+    "artifact": "npm run catalog && node scripts/build-artifact.mjs",
+    "site": "npm run artifact && node scripts/build-site.mjs",
+    "check": "node scripts/check-assets.mjs",
+    "check:agents": "node scripts/check-agents.mjs",
+    "sheet": "node scripts/asset-sheet.mjs"
+  },
+  "dependencies": {
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "vite": "^8.3.8"
+  }
+}
