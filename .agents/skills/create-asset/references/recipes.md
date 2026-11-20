@@ -513,3 +513,26 @@ c'est ce fichier qui fait progresser les assets suivants.
 - **Pièces mobiles nombreuses** : 48 tiroirs et le pupitre = 49 pièces rigides dans le maillage du bronze et celui
   des lueurs (les tranches des cassettes tournent avec le pupitre). Une « vie » tirée du temps (`floor((t + phase) /
   période)` haché avec la graine) : déterministe, sans état à sauver.
+
+### Le Complexe, lot 9 : Atelier, établis et forge
+
+- **Fonction de ton dans `mergeParts`/`mergeToned`** : une entrée mal formée (`push(withTone(...), FIXED)` au lieu de
+  `push([withTone(...), FIXED])`) met un nombre dans le tableau et fait exploser le merge loin plus tard
+  (attributs `undefined`), avec un message qui ne dit pas où. Vérifier les trois formats : `[g, pièce]` (rigide),
+  `g` seul (fusionnée), jamais `push(a, b)` par accident.
+- **`dial()` rend `{ face, marks }`**, pas une géométrie : les deux morceaux se poussent séparément, `needle` est un
+  angle en radians (sin/cos), pas un niveau de 0 à 1.
+- **`soot(from, to)` est une fonction de ton** : elle se passe *à l'intérieur* de `withTone` (`withTone(g, (x, y) => t +
+  sootAt(x, y))`), elle n'enveloppe pas une géométrie.
+- **Tourner les pièces construites sur place autour d'un axe décalé** : `T(pivot)·R·T(−pivot)` (mandrin du tour) ;
+  une rotation brute autour de l'origine envoie les mors faire le tour du monde (emprise 2,9 m, sous le sol).
+- **Bouche du four** : un aplat de lueur (`buildQuads` + `withShade(g, 1, 4)` + `glowMixMaterial`) et le niveau qu'on
+  remplit dans `aShade` au cran de 12 images/s (comme la fenêtre de la visionneuse) ; les briques de la bouche
+  plutôt rendues très sombres par le ton (`−1,5`) : la lueur les découpe d'elle-même.
+- **Silhouettes peintes du râtelier** : des quads en ton clair (+0,75) sur le même matériau que le laiton — la rampe
+  montée jusqu'au dernier ton suffit, pas besoin d'un matériau de peinture ; l'outil pendu est en ton plus sombre
+  que sa silhouette, le vide se lit.
+- **Sans navigateur dans l'environnement** : un rasterizer de contrôle en Node pur (orthographique, rampe du
+  matériau selon la normale, PNG via zlib) vérifie silhouette, emprise et pièces flottantes ; il ne remplace pas la
+  planche Playwright (pas de contours, pas la passe pixel), mais il attrape les erreurs de placement. `uRamp` est un
+  tableau de `Vector3`, pas de simples tableaux.

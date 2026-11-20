@@ -85,6 +85,11 @@ import * as spiralStair from "./buildings/structure/spiral-stair.js";
 import * as straightStair from "./buildings/structure/straight-stair.js";
 import * as gratingWalkway from "./buildings/structure/grating-walkway.js";
 import * as cardCatalogue from "./furniture/tables/card-catalogue.js";
+import * as workbench from "./furniture/tables/workbench.js";
+import * as metalLathe from "./props/machines/metal-lathe.js";
+import * as coilFurnace from "./props/machines/coil-furnace.js";
+import * as anvil from "./props/tools/anvil.js";
+import * as toolRack from "./furniture/storage/tool-rack.js";
 import * as complexTest from "./worlds/interiors/complex-test.js";
 import * as ancientComplex from "./worlds/interiors/ancient-complex.js";
 
@@ -100,7 +105,8 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   irisDoor, travelTrunk, bronzeRailing, handLamp,
   drawerArchive, dataCassette, rollingLadder, stoneTable, articulatedLamp,
   armMagnifier, bronzeStool, complexCart, crankRecorder, displayCase,
-  spiralStair, straightStair, gratingWalkway, cardCatalogue,
+  spiralStair, straightStair, gratingWalkway, cardCatalogue, workbench,
+  metalLathe, coilFurnace, anvil, toolRack,
   summerMeadow, ancientComplex, complexTest,
 ];
 
