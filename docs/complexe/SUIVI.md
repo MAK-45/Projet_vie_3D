@@ -23,9 +23,10 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 ## Point d'étape
 
 - **Dernière mise à jour** : 2026-11-20
-- **Étape actuelle** : lot 9 validé : établi (central, horloger), tour à métaux, four à bobines, enclume (souche, bloc
-  d'essai), râtelier à outils ; coin d'essai `dev/atelier-corner.html`.
-- **Prochaine action** : lot 10 (Atelier : outils et réserves), à discuter d'abord.
+- **Étape actuelle** : lot 10 fait, à valider : outils d'artisan (12 outils, mire, règle, sonde, trousse), étagère à
+  pièces (pièces, tirages, étalons), touret de câble, fût (huile, électrolyte ; debout, couché, trio sur palette),
+  table à calques ; ajoutés au coin d'essai `dev/atelier-corner.html`.
+- **Prochaine action** : validation du lot 10 par l'utilisateur, puis lot 11 (Atelier : levage, puis Monde : l'Atelier).
 
 ## Les lots
 
@@ -42,7 +43,7 @@ Légende des états : ⬜ à faire · 🔄 en cours · 👀 fait, à valider par
 | 7 | Archives : lecture | 5 | ✅ validé | 2026-11-19 | f2c0fc2 : loupe (lecture, binoculaire, observation), tabouret (lecture, atelier), chariot (cassettes, instruments, lourd), appareil à manivelle (visionneuse, tambour, cylindre), vitrine (conservation, cuve) ; kit : `GLASSES.clear`, `buildRibbon` ; verre en trame ; ajoutés au coin des Archives |
 | 8 | Archives : hauteur et catalogue, puis Monde : les Archives | 4 | ✅ validé | 2026-11-19 | b2394be : escalier à vis, escalier droit, passerelle (droite ou arc), meuble-catalogue ★ ; Archives au nord du Sas (`ancient-complex-archives.js`), une pièce à la fois, mezzanine et escalier praticables ; kit : `openBar`, `WalkSurfaces`, boîtes à hauteur, `kit.update()` ; explorateur : `reach`, `y` |
 | 9 | Atelier : établis et forge | 5 | ✅ validé | 2026-11-20 | bdf8474 : établi (central, horloger avec la loupe du lot 7), tour à métaux, four à bobines, enclume (souche, bloc d'essai), râtelier ; palette : `FORGE_GLOW` ; coin d'essai `dev/atelier-corner.html` |
-| 10 | Atelier : outils et réserves | 5 | ⬜ à faire | | |
+| 10 | Atelier : outils et réserves | 5 | 👀 à valider | 2026-11-20 | 09f6190 : outils d'artisan (12 outils, mire, règle, sonde, trousse), étagère à pièces (pièces, tirages, étalons), touret, fût (huile, électrolyte ; debout, couché, palette), table à calques ; ajoutés au coin de l'Atelier |
 | 11 | Atelier : levage, puis Monde : l'Atelier | 3 | ⬜ à faire | | |
 | 12 | Galerie et Rotonde, puis Monde : la circulation | 4 | ⬜ à faire | | |
 | 13 | Kit d'étude : capteurs et consoles | 5 | ⬜ à faire | | |
@@ -106,11 +107,11 @@ colonne « Remarques » garde ce qui a été décidé pour lui (réglages, versi
 | 9 | `props/machines/coil-furnace` | ATE-03 | ✅ | cuve de brique réfractaire (une façade par brique), bouche orange qui palpite, chambre rouge vue entre 12 spires de cuivre, hotte noircie sur 4 montants, cadran à aiguille, creuset, pince, lingots ; plein feu, veille, éteint ; option halo orange ; `userData.furnace.setHeat` ; 2 900 triangles, 3 draw calls |
 | 9 | `props/tools/anvil` | ATE-04, E4-01 | ✅ | sur souche (bec, talon à trou carré, table polie, souche fendue à 2 cercles de fer, marteau appuyé selon la graine) ou bloc d'essai (acier sur dalle de pierre fumée, marques de coups, 8 capteurs de quartz, bouquet de câbles) ; `userData.strike`, `userData.sensors` ; ≤ 1 700 triangles, 2–3 draw calls |
 | 9 | `furniture/storage/tool-rack` | ATE-05 | ✅ | 2 × 1,2 m, bas à 1,0 m ; 12 outils sur 2 rangs (marteau, maillet, clé, pince, scie, tournevis, lime, burin, compas, équerre, cisaille, pied à coulisse), silhouette peinte en blanc usé (liseré autour de l'outil, forme pleine quand il manque) ; plein, quelques-uns pris, presque vide ; tablette basse ; `userData.rack.slots` ; 1 300 triangles, 3 draw calls |
-| 10 | `props/tools/artisan-tools` | ATE-06, ETU-12, E6-07 | ⬜ | |
-| 10 | `furniture/storage/parts-shelf` | ATE-07, E2-05, ETU-14 | ⬜ | |
-| 10 | `props/machines/cable-reel` | ATE-08 | ⬜ | |
-| 10 | `props/machines/oil-drum` | ATE-13 | ⬜ | |
-| 10 | `furniture/tables/light-table` | ATE-15 | ⬜ | |
+| 10 | `props/tools/artisan-tools` | ATE-06, ETU-12, E6-07 | 👀 | 12 outils (marteau de ciselage, pince coupante, tournevis, clé à molette, fer à souder, burin, lime, mètre pliant, compas, calibre à lames, scie à métaux, pince à dénuder), 1,2× la taille réelle ; mire de 2 m (bandes de 2 px, trépied de laiton), règle de laiton de 1 m, sonde d'écoute de 2 m à pavillon ; trousse de cuir (les 12 rangés, 0 à 2 manquants) ; couché, debout, en main (`userData.grip`, `tip`) ; ≤ 1 650 triangles, 2–3 draw calls |
+| 10 | `furniture/storage/parts-shelf` | ATE-07, E2-05, ETU-14 | 👀 | pièces (2 × 0,5 × 2,2 m, 35 bacs étiquetés : rouages, ressorts, bobines, cristaux cyan ; bacs tirés, `slide`), tirages (cadres couchés en piles, tirage à traits ambre, cadres appuyés au pied), étalons (armoire de noyer, porte vitrée en trame, poids, diapasons, cristaux, tiroir ; `setDoor`) ; plein, entamé, presque vide ; ≤ 3 650 triangles, 3 draw calls |
+| 10 | `props/machines/cable-reel` | ATE-08 | 👀 | joues en 8 planches cerclées de fer, plaque à trou carré, 12 spires de cuivre ; plein, à moitié, presque vide ; debout ou couché ; cuivre nu ou gainé ; bout libre de 1,5 m ; `userData.reel.setTurn` ; 1 950 triangles, 3 draw calls |
+| 10 | `props/machines/oil-drum` | ATE-13 | 👀 | tôle bosselée, 3 cercles de cuivre, bonde, évent, plaque de laiton à glyphe ; huile (coulures noires) ou électrolyte (vert-de-gris, croûtes pâles, bandeau rouge) ; debout, couché sur cales avec robinet et bac, trio sur palette ; ≤ 3 600 triangles, 3 draw calls |
+| 10 | `furniture/tables/light-table` | ATE-15 | 👀 | caisson de bronze, plateau inclinable 0–20° (charnière avant, jambes de force), verre ambre pâle, fentes lumineuses, 1–4 feuilles de cuivre gravées (plan, rouage, coupe), 4 pinces, règle, compas ; allumée ou éteinte (verre laiteux) ; halo ; 1 300 triangles, 3 draw calls |
 | 11 | `buildings/structure/riveted-beam` | ATE-16 (+ rails de E10-05 et de ETU-08) | ⬜ | |
 | 11 | `props/machines/hoist-gantry` | ATE-12, E10-05 | ⬜ | |
 | 11 | `props/machines/cable-tray` | GAL-04, ETU-06 | ⬜ | |
@@ -203,6 +204,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 | 2026-11-18 | Lot 6 validé tel quel. | validé |
 | 2026-11-18 | Lot 6, proposition validée ; rouages des rayonnages ajoutés dès ce lot (demande de l'utilisateur). | validé |
 | 2026-11-18 | Lot 6, faits en route : façade du rayonnage en faces plates (1 100 triangles pour 276 tiroirs) avec une réserve de 6 vrais tiroirs ; rouages en roues pleines lues en trois anneaux ; vert des cassettes à part des lueurs du Complexe (`DATA_GLOWS`) ; serti des cassettes foncé pour que la tranche ambre ressorte ; carnets de la table en bronze (pas de matériau en plus) ; échelle inclinée de 9 à 12°, pied à ~0,9 m de la façade. | validé |
+| 2026-11-20 | Lot 10, proposition validée ; trousse de cuir et trio de fûts sur palette gardés (choix laissés à Claude). Faits en route : outils à 1,2× la taille réelle ; armoire d'étalons en noyer (le chêne noirci cachait le contenu) ; verre de porte en trame à 24 % ; bandeau rouge de l'électrolyte dans la rampe de la tôle (pas de draw call en plus) ; règle et compas de la table dessinés dans son bronze (pas l'asset outils, qui ajoutait 3 draw calls). | à confirmer |
 | 2026-11-20 | Lot 9 validé tel quel. | validé |
 | 2026-11-20 | Lot 9, proposition validée telle quelle (lueur de forge `FORGE_GLOW` à part des lueurs du Complexe, loupe binoculaire du lot 7 dans l'établi d'horloger, tour et four animés dès ce lot) ; faits en route : étau plus gros qui dépasse du bord avant (mors mobile debout devant la tranche) ; mini-tiroirs de l'horloger en caisson au fond du plateau ; courroie du tour vers un petit moteur à bobine au sol (pas d'arbre au plafond) ; four ramené à 1,8 m (cuve de 0,8 m, bobine de 0,6 m, hotte au-dessus) ; bas du râtelier à 1,0 m. | validé |
 | 2026-11-17 | Les personnages du projet (blob, mannequin, mannequin magique, héroïne, héros, barre) peuvent être mis dans le Complexe et s'y déplacer dans toute la carte : chaque pièce est praticable (étages, escaliers, obstacles, portes qui s'ouvrent). | demandé par l'utilisateur |
@@ -211,6 +213,7 @@ Choix validés par l'utilisateur (ou faits en route et à confirmer), à respect
 
 | Date | Ce qui a été fait | Prochaine étape |
 |---|---|---|
+| 2026-11-20 | Lot 10 (propositions validées, trousse et trio sur palette gardés : « je te laisse trancher ») : outils d'artisan, étagère à pièces, touret, fût, table à calques ; vérifiés en planches, en gros plan et dans le coin de l'Atelier (jour, nuit avec le halo de la table, mobile, bureau) ; Atelier publié. | Validation du lot 10, puis lot 11. |
 | 2026-11-20 | Lot 9 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 10 : propositions à discuter. |
 | 2026-11-20 | Lot 9 (propositions validées telles quelles, avec lueur de forge à part, loupe du lot 7 reprise, tour et four animés) : établi, tour à métaux, four à bobines, enclume, râtelier ; vérifiés en planches, en gros plan et dans le coin de l'Atelier (jour, nuit avec le halo du four, mobile, bureau) ; 90 assets revérifiés sans erreur ; Atelier publié (v49). | Validation du lot 9, puis lot 10. |
 | 2026-11-19 | Lot 8 validé ; travail poussé aussi sur la branche `complexe` (demande de l'utilisateur). | Lot 9 : propositions à discuter. |
