@@ -16661,6 +16661,1106 @@
       }
     },
     {
+      "id": "props/tools/artisan-tools",
+      "name": "Outils d'artisan",
+      "nameEn": "Artisan tools",
+      "category": "props",
+      "subcategory": "tools",
+      "description": "Outils à main de l'Atelier du Complexe : marteau de ciselage, pinces, tournevis, clé à molette, fer à souder, burin, lime, mètre pliant, compas, calibre à lames, scie à métaux, un par un ou rangés dans une trousse de cuir ; et la mire à bandes, la règle de laiton, la sonde d'écoute à pavillon. Couchés, debout ou en main. Fiches ATE-06, ETU-12, E6-07.",
+      "tags": [
+        "outils",
+        "outil à main",
+        "trousse",
+        "marteau",
+        "pince",
+        "tournevis",
+        "clé à molette",
+        "fer à souder",
+        "burin",
+        "lime",
+        "mètre pliant",
+        "compas",
+        "calibre",
+        "scie à métaux",
+        "pince à dénuder",
+        "mire",
+        "règle",
+        "sonde d'écoute",
+        "pavillon",
+        "acier",
+        "laiton",
+        "cuir",
+        "objet de main",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "intérieur",
+        "tools",
+        "hand tool",
+        "tool roll",
+        "hammer",
+        "pliers",
+        "screwdriver",
+        "adjustable wrench",
+        "soldering iron",
+        "cold chisel",
+        "metal file",
+        "folding rule",
+        "drafting compass",
+        "feeler gauge",
+        "hacksaw",
+        "wire stripper",
+        "survey staff",
+        "ruler",
+        "listening rod",
+        "ear trumpet",
+        "steel",
+        "brass",
+        "leather",
+        "handheld",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; couché : origine au sol, au milieu de l'outil (ou de la trousse) ; debout : origine au pied ; en main : origine au point de prise, l'outil vers +y, sa face vers +z",
+      "footprint": {
+        "radius": 1,
+        "height": 0.2
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'usure et les tons, l'ouverture des pinces, du compas et du calibre, les plis du mètre, l'angle de pose ; dans la trousse, l'ordre des outils et ceux qui manquent."
+        },
+        "tool": {
+          "type": "enum",
+          "default": "kit",
+          "values": [
+            "kit",
+            "chasing-hammer",
+            "side-cutters",
+            "screwdriver",
+            "adjustable-wrench",
+            "soldering-iron",
+            "chisel",
+            "file",
+            "folding-rule",
+            "compass",
+            "feeler-gauge",
+            "hacksaw",
+            "wire-stripper",
+            "survey-staff",
+            "brass-rule",
+            "listening-rod"
+          ],
+          "labels": {
+            "kit": "Trousse de cuir (les 12 outils)",
+            "chasing-hammer": "Marteau de ciselage",
+            "side-cutters": "Pince coupante",
+            "screwdriver": "Tournevis",
+            "adjustable-wrench": "Clé à molette",
+            "soldering-iron": "Fer à souder",
+            "chisel": "Burin",
+            "file": "Lime",
+            "folding-rule": "Mètre pliant",
+            "compass": "Compas",
+            "feeler-gauge": "Calibre à lames",
+            "hacksaw": "Scie à métaux",
+            "wire-stripper": "Pince à dénuder",
+            "survey-staff": "Mire de 2 m (kit d'étude)",
+            "brass-rule": "Règle de laiton (kit d'étude)",
+            "listening-rod": "Sonde d'écoute à tige (salle 6)"
+          },
+          "label": "Outil",
+          "description": "Un des 12 outils de l'Atelier, la mire, la règle ou la sonde d'écoute, ou la trousse qui range les 12 outils."
+        },
+        "pose": {
+          "type": "enum",
+          "default": "lying",
+          "values": [
+            "lying",
+            "upright",
+            "hand"
+          ],
+          "labels": {
+            "lying": "Couché (sur une surface)",
+            "upright": "Debout (mire sur trépied ; règle et sonde appuyées au mur)",
+            "hand": "En main (origine au point de prise)"
+          },
+          "label": "Pose",
+          "description": "Couché, debout (mire, règle et sonde ; les petits outils restent couchés) ou en main : origine au point de prise, outil vers +y (userData.grip, userData.tip)."
+        }
+      },
+      "variants": [
+        {
+          "id": "kit",
+          "name": "Trousse de cuir (les 12 outils)",
+          "params": {
+            "tool": "kit"
+          }
+        },
+        {
+          "id": "chasing-hammer",
+          "name": "Marteau de ciselage",
+          "params": {
+            "tool": "chasing-hammer"
+          }
+        },
+        {
+          "id": "side-cutters",
+          "name": "Pince coupante",
+          "params": {
+            "tool": "side-cutters"
+          }
+        },
+        {
+          "id": "screwdriver",
+          "name": "Tournevis",
+          "params": {
+            "tool": "screwdriver"
+          }
+        },
+        {
+          "id": "adjustable-wrench",
+          "name": "Clé à molette",
+          "params": {
+            "tool": "adjustable-wrench"
+          }
+        },
+        {
+          "id": "soldering-iron",
+          "name": "Fer à souder",
+          "params": {
+            "tool": "soldering-iron"
+          }
+        },
+        {
+          "id": "chisel",
+          "name": "Burin",
+          "params": {
+            "tool": "chisel"
+          }
+        },
+        {
+          "id": "file",
+          "name": "Lime",
+          "params": {
+            "tool": "file"
+          }
+        },
+        {
+          "id": "folding-rule",
+          "name": "Mètre pliant",
+          "params": {
+            "tool": "folding-rule"
+          }
+        },
+        {
+          "id": "compass",
+          "name": "Compas",
+          "params": {
+            "tool": "compass"
+          }
+        },
+        {
+          "id": "feeler-gauge",
+          "name": "Calibre à lames",
+          "params": {
+            "tool": "feeler-gauge"
+          }
+        },
+        {
+          "id": "hacksaw",
+          "name": "Scie à métaux",
+          "params": {
+            "tool": "hacksaw"
+          }
+        },
+        {
+          "id": "wire-stripper",
+          "name": "Pince à dénuder",
+          "params": {
+            "tool": "wire-stripper"
+          }
+        },
+        {
+          "id": "survey-staff",
+          "name": "Mire de 2 m (kit d'étude)",
+          "params": {
+            "tool": "survey-staff"
+          }
+        },
+        {
+          "id": "brass-rule",
+          "name": "Règle de laiton (kit d'étude)",
+          "params": {
+            "tool": "brass-rule"
+          }
+        },
+        {
+          "id": "listening-rod",
+          "name": "Sonde d'écoute à tige (salle 6)",
+          "params": {
+            "tool": "listening-rod"
+          }
+        }
+      ],
+      "slug": "props-tools-artisan-tools",
+      "path": "src/assets/props/tools/artisan-tools.js",
+      "module": "public/catalog/modules/props-tools-artisan-tools.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1616,
+          "vertices": 2999,
+          "drawCalls": 3
+        },
+        "kit": {
+          "triangles": 1616,
+          "vertices": 2999,
+          "drawCalls": 3
+        },
+        "chasing-hammer": {
+          "triangles": 128,
+          "vertices": 191,
+          "drawCalls": 2
+        },
+        "side-cutters": {
+          "triangles": 104,
+          "vertices": 196,
+          "drawCalls": 3
+        },
+        "screwdriver": {
+          "triangles": 84,
+          "vertices": 144,
+          "drawCalls": 3
+        },
+        "adjustable-wrench": {
+          "triangles": 84,
+          "vertices": 160,
+          "drawCalls": 2
+        },
+        "soldering-iron": {
+          "triangles": 92,
+          "vertices": 162,
+          "drawCalls": 3
+        },
+        "chisel": {
+          "triangles": 76,
+          "vertices": 128,
+          "drawCalls": 1
+        },
+        "file": {
+          "triangles": 168,
+          "vertices": 320,
+          "drawCalls": 3
+        },
+        "folding-rule": {
+          "triangles": 264,
+          "vertices": 504,
+          "drawCalls": 2
+        },
+        "compass": {
+          "triangles": 116,
+          "vertices": 212,
+          "drawCalls": 2
+        },
+        "feeler-gauge": {
+          "triangles": 120,
+          "vertices": 232,
+          "drawCalls": 2
+        },
+        "hacksaw": {
+          "triangles": 72,
+          "vertices": 144,
+          "drawCalls": 3
+        },
+        "wire-stripper": {
+          "triangles": 128,
+          "vertices": 244,
+          "drawCalls": 3
+        },
+        "survey-staff": {
+          "triangles": 264,
+          "vertices": 500,
+          "drawCalls": 2
+        },
+        "brass-rule": {
+          "triangles": 288,
+          "vertices": 576,
+          "drawCalls": 1
+        },
+        "listening-rod": {
+          "triangles": 212,
+          "vertices": 386,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 24572,
+        "standalone": 64709
+      }
+    },
+    {
+      "id": "furniture/storage/parts-shelf",
+      "name": "Étagère à pièces",
+      "nameEn": "Parts shelf",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Réserves du Complexe : grande étagère de l'Atelier à bacs de bois étiquetés (rouages, ressorts, bobines de cuivre, cristaux bruts) ; étagère de tirages en cadres de verre couchés en piles ; armoire vitrée d'étalons (poids de laiton, diapasons, cristaux de référence). Plein, entamé, presque vide. Fiches ATE-07, E2-05, ETU-14.",
+      "tags": [
+        "étagère",
+        "bacs",
+        "pièces détachées",
+        "rouages",
+        "ressorts",
+        "bobines",
+        "cuivre",
+        "cristaux",
+        "étiquettes",
+        "tirages",
+        "cadres",
+        "verre",
+        "armoire",
+        "étalons",
+        "poids",
+        "diapasons",
+        "porte vitrée",
+        "tiroir",
+        "bronze",
+        "chêne noirci",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "intérieur",
+        "shelf",
+        "bins",
+        "spare parts",
+        "gears",
+        "springs",
+        "coils",
+        "copper wire",
+        "crystals",
+        "labels",
+        "prints",
+        "picture frames",
+        "glass",
+        "cabinet",
+        "standards",
+        "brass weights",
+        "tuning forks",
+        "glass door",
+        "drawer",
+        "bronze fittings",
+        "blackened oak",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au milieu du dos (contre le mur, z = 0), la façade vers +z",
+      "footprint": {
+        "radius": 1.1,
+        "height": 2.5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les bacs tirés ou manquants et leur contenu, les piles de cadres, les rangs de poids et de diapasons, les tons du bois."
+        },
+        "model": {
+          "type": "enum",
+          "default": "parts",
+          "values": [
+            "parts",
+            "prints",
+            "standards"
+          ],
+          "labels": {
+            "parts": "Pièces détachées (Atelier, 2 m)",
+            "prints": "Tirages (salle 2, 0,9 m)",
+            "standards": "Armoire d'étalons (kit d'étude)"
+          },
+          "label": "Modèle",
+          "description": "Grande étagère à bacs de l'Atelier, étagère de tirages encadrés, ou armoire vitrée d'étalons."
+        },
+        "fill": {
+          "type": "enum",
+          "default": "full",
+          "values": [
+            "full",
+            "some",
+            "empty"
+          ],
+          "labels": {
+            "full": "Plein",
+            "some": "Entamé",
+            "empty": "Presque vide"
+          },
+          "label": "Garni",
+          "description": "Tout est en place, une partie a servi, ou presque tout a été pris."
+        },
+        "door": {
+          "type": "enum",
+          "default": "closed",
+          "values": [
+            "closed",
+            "open"
+          ],
+          "labels": {
+            "closed": "Fermée",
+            "open": "Ouverte"
+          },
+          "label": "Porte",
+          "description": "Armoire d'étalons : porte vitrée fermée ou ouverte (userData.shelf.setDoor)."
+        }
+      },
+      "variants": [
+        {
+          "id": "parts",
+          "name": "Pièces détachées",
+          "params": {}
+        },
+        {
+          "id": "parts-empty",
+          "name": "Pièces, presque vide",
+          "params": {
+            "fill": "empty"
+          }
+        },
+        {
+          "id": "prints",
+          "name": "Tirages",
+          "params": {
+            "model": "prints"
+          }
+        },
+        {
+          "id": "standards",
+          "name": "Étalons",
+          "params": {
+            "model": "standards"
+          }
+        },
+        {
+          "id": "standards-open",
+          "name": "Étalons, porte ouverte",
+          "params": {
+            "model": "standards",
+            "door": "open",
+            "fill": "some"
+          }
+        }
+      ],
+      "slug": "furniture-storage-parts-shelf",
+      "path": "src/assets/furniture/storage/parts-shelf.js",
+      "module": "public/catalog/modules/furniture-storage-parts-shelf.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 3506,
+          "vertices": 6540,
+          "drawCalls": 3
+        },
+        "parts": {
+          "triangles": 3506,
+          "vertices": 6540,
+          "drawCalls": 3
+        },
+        "parts-empty": {
+          "triangles": 836,
+          "vertices": 1630,
+          "drawCalls": 3
+        },
+        "prints": {
+          "triangles": 1968,
+          "vertices": 3936,
+          "drawCalls": 3
+        },
+        "standards": {
+          "triangles": 1656,
+          "vertices": 3347,
+          "drawCalls": 3
+        },
+        "standards-open": {
+          "triangles": 1284,
+          "vertices": 2579,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 22595,
+        "standalone": 67457
+      }
+    },
+    {
+      "id": "props/machines/cable-reel",
+      "name": "Touret de câble",
+      "nameEn": "Cable reel",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Touret de l'Atelier du Complexe : deux joues de planches cerclées de fer, moyeu à trou carré, câble de cuivre en spires serrées dont le bout libre serpente au sol sur 1,5 m. Plein, à moitié ou presque vide ; debout ou couché ; cuivre nu ou gainé. Fiche ATE-08.",
+      "tags": [
+        "touret",
+        "bobine",
+        "câble",
+        "cuivre",
+        "spires",
+        "joues",
+        "planches",
+        "cercle de fer",
+        "moyeu",
+        "gaine",
+        "tissu goudronné",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "machine",
+        "intérieur",
+        "cable reel",
+        "cable drum",
+        "spool",
+        "copper wire",
+        "coils",
+        "flanges",
+        "planks",
+        "iron hoop",
+        "hub",
+        "sheath",
+        "tarred cloth",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol sous le centre du touret ; debout, l'axe suit x et le bout libre part vers +z",
+      "footprint": {
+        "radius": 2.1,
+        "height": 1.25
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le tracé du bout libre, les tons des planches, le tour du touret (boulons), les spires du dessus."
+        },
+        "fill": {
+          "type": "enum",
+          "default": "full",
+          "values": [
+            "full",
+            "half",
+            "low"
+          ],
+          "labels": {
+            "full": "Plein",
+            "half": "À moitié",
+            "low": "Presque vide"
+          },
+          "label": "Câble",
+          "description": "Touret plein, à moitié, ou presque vide (le fût de bois apparaît)."
+        },
+        "pose": {
+          "type": "enum",
+          "default": "standing",
+          "values": [
+            "standing",
+            "lying"
+          ],
+          "labels": {
+            "standing": "Debout (sur la tranche)",
+            "lying": "Couché sur une joue"
+          },
+          "label": "Pose",
+          "description": "Debout sur la tranche (il peut rouler) ou couché à plat sur une joue."
+        },
+        "cable": {
+          "type": "enum",
+          "default": "copper",
+          "values": [
+            "copper",
+            "sheathed"
+          ],
+          "labels": {
+            "copper": "Cuivre nu",
+            "sheathed": "Gainé de tissu goudronné"
+          },
+          "label": "Gaine",
+          "description": "Câble de cuivre nu, ou gainé de tissu goudronné."
+        }
+      },
+      "variants": [
+        {
+          "id": "full",
+          "name": "Plein, debout",
+          "params": {}
+        },
+        {
+          "id": "half",
+          "name": "À moitié",
+          "params": {
+            "fill": "half"
+          }
+        },
+        {
+          "id": "low-lying",
+          "name": "Presque vide, couché",
+          "params": {
+            "fill": "low",
+            "pose": "lying"
+          }
+        },
+        {
+          "id": "sheathed",
+          "name": "Câble gainé",
+          "params": {
+            "cable": "sheathed"
+          }
+        }
+      ],
+      "slug": "props-machines-cable-reel",
+      "path": "src/assets/props/machines/cable-reel.js",
+      "module": "public/catalog/modules/props-machines-cable-reel.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1936,
+          "vertices": 2958,
+          "drawCalls": 3
+        },
+        "full": {
+          "triangles": 1936,
+          "vertices": 2958,
+          "drawCalls": 3
+        },
+        "half": {
+          "triangles": 1936,
+          "vertices": 2958,
+          "drawCalls": 3
+        },
+        "low-lying": {
+          "triangles": 1936,
+          "vertices": 2958,
+          "drawCalls": 3
+        },
+        "sheathed": {
+          "triangles": 1936,
+          "vertices": 2958,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 10821,
+        "standalone": 57443
+      }
+    },
+    {
+      "id": "props/machines/oil-drum",
+      "name": "Fût d'huile",
+      "nameEn": "Oil drum",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Fût de l'Atelier du Complexe : tôle bosselée à trois cercles de cuivre, bonde et évent, plaque de laiton gravée ; huile à coulures noires ou électrolyte vert-de-gris à bandeau rouge. Debout, couché sur cales avec robinet et bac, ou trois fûts sur une palette. Fiche ATE-13.",
+      "tags": [
+        "fût",
+        "tonneau",
+        "baril",
+        "huile",
+        "électrolyte",
+        "cercles de cuivre",
+        "bonde",
+        "évent",
+        "plaque de laiton",
+        "coulures",
+        "bosses",
+        "robinet",
+        "bac d'égouttage",
+        "cales",
+        "palette",
+        "avertissement",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "intérieur",
+        "drum",
+        "barrel",
+        "oil",
+        "electrolyte",
+        "copper hoops",
+        "bung",
+        "vent",
+        "brass plate",
+        "drips",
+        "dents",
+        "tap",
+        "drip tray",
+        "chocks",
+        "pallet",
+        "warning band",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre du fût (ou de la palette) ; couché, l'axe suit x et le robinet regarde +x",
+      "footprint": {
+        "radius": 0.8,
+        "height": 0.96
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les bosses, les coulures, le ton de la tôle et le tour du fût (place de la bonde et de la plaque)."
+        },
+        "content": {
+          "type": "enum",
+          "default": "oil",
+          "values": [
+            "oil",
+            "electrolyte"
+          ],
+          "labels": {
+            "oil": "Huile (coulures noires)",
+            "electrolyte": "Électrolyte (vert-de-gris, bandeau rouge)"
+          },
+          "label": "Contenu",
+          "description": "Huile (tôle grise, coulures noires) ou électrolyte (tôle vert-de-gris, croûtes pâles, bandeau rouge)."
+        },
+        "pose": {
+          "type": "enum",
+          "default": "standing",
+          "values": [
+            "standing",
+            "lying",
+            "pallet"
+          ],
+          "labels": {
+            "standing": "Debout",
+            "lying": "Couché sur cales, robinet et bac",
+            "pallet": "Trois fûts sur une palette"
+          },
+          "label": "Pose",
+          "description": "Un fût debout, un fût couché sur cales avec robinet et bac d'égouttage, ou trois fûts sur une palette."
+        }
+      },
+      "variants": [
+        {
+          "id": "oil",
+          "name": "Huile, debout",
+          "params": {}
+        },
+        {
+          "id": "electrolyte",
+          "name": "Électrolyte, debout",
+          "params": {
+            "content": "electrolyte"
+          }
+        },
+        {
+          "id": "lying",
+          "name": "Couché sur cales",
+          "params": {
+            "pose": "lying"
+          }
+        },
+        {
+          "id": "pallet",
+          "name": "Trois fûts sur palette",
+          "params": {
+            "pose": "pallet",
+            "content": "electrolyte"
+          }
+        }
+      ],
+      "slug": "props-machines-oil-drum",
+      "path": "src/assets/props/machines/oil-drum.js",
+      "module": "public/catalog/modules/props-machines-oil-drum.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1180,
+          "vertices": 1925,
+          "drawCalls": 2
+        },
+        "oil": {
+          "triangles": 1180,
+          "vertices": 1925,
+          "drawCalls": 2
+        },
+        "electrolyte": {
+          "triangles": 1212,
+          "vertices": 1959,
+          "drawCalls": 2
+        },
+        "lying": {
+          "triangles": 1348,
+          "vertices": 2253,
+          "drawCalls": 3
+        },
+        "pallet": {
+          "triangles": 3684,
+          "vertices": 5973,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 13270,
+        "standalone": 54689
+      }
+    },
+    {
+      "id": "furniture/tables/light-table",
+      "name": "Table à calques lumineuse",
+      "nameEn": "Light table",
+      "category": "furniture",
+      "subcategory": "tables",
+      "description": "Table à calques de l'Atelier du Complexe : caisson de bronze à plateau inclinable, verre dépoli éclairé par-dessous en ambre pâle (la lumière filtre par les fentes), feuilles de cuivre fin gravées de plans tenues par quatre pinces, règle et compas. Allumée ou éteinte. Fiche ATE-15.",
+      "tags": [
+        "table à calques",
+        "table lumineuse",
+        "plateau inclinable",
+        "verre dépoli",
+        "lumière",
+        "ambre",
+        "feuilles de cuivre",
+        "plans",
+        "gravure",
+        "pinces",
+        "règle",
+        "compas",
+        "caisson",
+        "bronze",
+        "dessin",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "meuble",
+        "intérieur",
+        "light table",
+        "tracing table",
+        "drafting table",
+        "tilting top",
+        "frosted glass",
+        "backlight",
+        "amber glow",
+        "copper sheets",
+        "blueprints",
+        "engraving",
+        "clips",
+        "ruler",
+        "drafting compass",
+        "bronze fittings",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "furniture",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre ; l'avant (charnière) vers +z",
+      "footprint": {
+        "radius": 0.92,
+        "height": 1.25
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les feuilles de cuivre (nombre, place, dessin gravé), la règle et le compas, les tons du bronze."
+        },
+        "state": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Allumée",
+            "off": "Éteinte"
+          },
+          "label": "Lumière",
+          "description": "Verre éclairé par-dessous en ambre pâle, ou éteint (gris laiteux)."
+        },
+        "tilt": {
+          "type": "number",
+          "default": 10,
+          "min": 0,
+          "max": 20,
+          "step": 1,
+          "unit": "°",
+          "label": "Inclinaison",
+          "description": "Le plateau se relève vers l'arrière, charnière à l'avant."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "Allumée, la table éclaire le décor autour d'elle dans le noir (une des 12 lumières de halo de la scène)."
+        }
+      },
+      "variants": [
+        {
+          "id": "on",
+          "name": "Allumée",
+          "params": {}
+        },
+        {
+          "id": "flat",
+          "name": "Plateau à plat",
+          "params": {
+            "tilt": 0
+          }
+        },
+        {
+          "id": "off",
+          "name": "Éteinte, relevée",
+          "params": {
+            "state": "off",
+            "tilt": 20
+          }
+        }
+      ],
+      "slug": "furniture-tables-light-table",
+      "path": "src/assets/furniture/tables/light-table.js",
+      "module": "public/catalog/modules/furniture-tables-light-table.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1080,
+          "vertices": 2160,
+          "drawCalls": 3
+        },
+        "on": {
+          "triangles": 1080,
+          "vertices": 2160,
+          "drawCalls": 3
+        },
+        "flat": {
+          "triangles": 1056,
+          "vertices": 2112,
+          "drawCalls": 3
+        },
+        "off": {
+          "triangles": 1080,
+          "vertices": 2160,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 13100,
+        "standalone": 53182
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",

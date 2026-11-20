@@ -1,6 +1,7 @@
 <!doctype html>
 <!-- Coin de l'Atelier : les assets du lot 9 (établi central et établi d'horloger, tour à métaux, four à bobines,
-     enclume sur souche et bloc d'essai, râtelier à outils) avec l'ossature du Complexe, et le mannequin de 1,80 m.
+     enclume sur souche et bloc d'essai, râtelier à outils) et du lot 10 (outils et trousse, étagère à pièces, touret,
+     fûts, table à calques) avec l'ossature du Complexe, et le mannequin de 1,80 m.
      Options : night=1, zoom, view, px, run=1 (le tour tourne), heat (full, standby, off), vise=1 (l'étau s'ouvre et se
      serre toutes les 3 s). /dev/atelier-corner.html?night=1 -->
 <html lang="fr">
@@ -60,7 +61,17 @@
         group.add(make("furniture/tables/workbench", { seed: 7, kind: "watchmaker" }, -3.75, 1.7, Math.PI / 2));
         group.add(make("furniture/seating/bronze-stool", { seed: 8, model: "workshop" }, -3.0, 1.7));
         // Le bloc d'essai de la salle 4, à droite devant (pour l'échelle), et une lanterne au plafond.
-        group.add(make("props/tools/anvil", { seed: 5, kind: "test-block" }, 2.9, 1.7));
+        group.add(make("props/tools/anvil", { seed: 5, kind: "test-block" }, 1.5, 2.45));
+        // Lot 10 : l'étagère à pièces contre le mur gauche, la mire debout devant ; la trousse et un marteau sur l'établi ;
+        // la table à calques à droite ; le touret et les fûts dans les coins ; un fût couché devant le râtelier.
+        group.add(make("furniture/storage/parts-shelf", { seed: 3 }, -4.05, -0.55, Math.PI / 2));
+        group.add(make("props/tools/artisan-tools", { tool: "survey-staff", pose: "upright", seed: 2 }, -2.6, 1.2));
+        group.add(make("props/tools/artisan-tools", { tool: "kit", seed: 5 }, 0.05, 0.42, 0.08, 0.92));
+        group.add(make("props/tools/artisan-tools", { tool: "chasing-hammer", seed: 3 }, 1.35, 0.75, 0.3, 0.92));
+        group.add(make("furniture/tables/light-table", { seed: 2, halo: night ? "on" : "off" }, 3.15, -0.35, -Math.PI / 2));
+        group.add(make("props/machines/cable-reel", { seed: 4 }, -2.3, 2.3, 0.5));
+        group.add(make("props/machines/oil-drum", { seed: 2, pose: "pallet" }, 3.25, 2.25, 0.3));
+        group.add(make("props/machines/oil-drum", { seed: 6, pose: "lying" }, -0.95, -2.45, 0.1));
         group.add(make("furniture/lighting/filament-chandelier", { seed: 2, halo: night ? "on" : "off", height: 3.4, chain: 1.8 }, 2.4, 0.2));
         // Le mannequin de 1,80 m devant l'établi.
         const mannequin = getAsset("creatures/humanoid/mannequin").create({});

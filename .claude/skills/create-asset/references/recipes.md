@@ -541,3 +541,26 @@ c'est ce fichier qui fait progresser les assets suivants.
   blanc, l'outil pris laisse la forme pleine. Blanc usé : rampe crayeuse qui ne monte pas au blanc pur.
 - **Tags** : « forge », « machine », « bronze » sont les mêmes mots dans les deux langues : « smithy », « heating »,
   « bronze fittings ».
+
+### Le Complexe, lot 10 : Atelier, outils et réserves (outils, étagère à pièces, touret, fût, table à calques)
+
+- **Petits outils (0,2 à 0,45 m)** : dessinés couchés le long de x, à plat, puis posés (couché, debout, en main) par une
+  seule matrice. Section d'au moins 0,03 m et 1,2× la taille réelle : à 1/16 m le pixel, c'est la silhouette vue de
+  dessus qui fait l'outil (tête en T du marteau, U de la scie, éventail du calibre, zigzag du mètre). Debout et en main :
+  `makeBasis` (x → y, y → z, z → x) pour que la longueur monte et que la face regarde +z.
+- **Trousse** : dessiner chaque outil, mesurer sa boîte, les empiler en deux colonnes ; la profondeur de la trousse suit
+  la colonne la plus chargée. Outils « rangés » (pinces fermées, mètre replié, compas fermé). Les boucles de cuir au ton
+  du cuir (−0,6) : plus claires, elles cachaient les outils.
+- **Peinture noir et blanc (mire)** : une seule rampe de la presque-noire au blanc cassé ; les bandes noires à −1,2.
+- **Une couleur à part dans une rampe** (bandeau rouge du fût d'électrolyte) : la mettre en tête de rampe avec un premier
+  seuil presque nul (0,03) ; seul un ton très bas (−3) l'atteint, l'ombre ordinaire jamais. Pas de draw call en plus.
+- **Cercles autour d'un fût** : `ring` (kit), pas un cylindre plein : le disque du dessus d'un cylindre fermé couvrait
+  tout le couvercle d'un aplat de cuivre.
+- **Bacs d'étagère** : caisson plein au dessus sombre (−0,7 = l'intérieur), façade plus haute d'un rebord, plaque de
+  laiton à +0,7 ; contenu en quelques blocs qui dépassent (rouages, ressorts, bobines, cristaux en lueur cyan). Les
+  planches très sombres (−0,78) pour que les bacs ressortent. 35 bacs = pièces rigides (`slide`).
+- **Verre de porte en trame** sur un caisson sombre : 0,24 de couverture et un ton bas, sinon on lit une moustiquaire.
+- **Feuilles sur un verre lumineux** : les feuilles plus sombres que le verre (cuivre à −0,3) ; au même ton, elles se
+  fondent dans l'ambre pâle. Traits gravés = `beam` fins à −0,95.
+- **Joues d'un touret en planches** : la longueur de chaque planche prise sur le cercle donne un pourtour en marches
+  d'un pixel, le cercle de fer (lathe à 20 pans) le referme. Le touret entier est une pièce rigide (`setTurn`).
