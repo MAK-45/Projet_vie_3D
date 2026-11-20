@@ -513,3 +513,31 @@ c'est ce fichier qui fait progresser les assets suivants.
 - **Pièces mobiles nombreuses** : 48 tiroirs et le pupitre = 49 pièces rigides dans le maillage du bronze et celui
   des lueurs (les tranches des cassettes tournent avec le pupitre). Une « vie » tirée du temps (`floor((t + phase) /
   période)` haché avec la graine) : déterministe, sans état à sauver.
+
+### Le Complexe, lot 9 : Atelier, établis et forge (établi, tour, four à bobines, enclume, râtelier)
+
+- **Un étau « bien visible »** : à 0,24 × 0,12 m sur le plateau, c'était une paillette dorée. Il faut qu'il **dépasse du
+  bord avant** : mors fixe sur le plateau, grand mors mobile debout devant la tranche (il descend sous le plateau), vis
+  et manche en T vers l'avant ; dessus des mors au plus clair du bronze (+0,45). Mors mobile, vis et manche = pièces
+  rigides (le manche tourne d'un tour pour 6 mm de course).
+- **Chêne noirci** : la rampe est très sombre ; les façades de tiroirs à +0,12 sur la ceinture et les manches d'outils à
+  +0,45/+0,5 se lisent, sinon tout fond dans le brun. Les petits outils posés (marteau, lime) : 0,3 à 0,35 m, pas moins.
+- **Établi composé** : l'horloger embarque la loupe binoculaire du lot 7 (socle lesté, `setPose` après `create` pour
+  la pencher vers l'échancrure) : 4 draw calls, accepté comme le catalogue.
+- **Courroie qui défile** : pas de pièce rigide ; des segments à tons alternés dont on réécrit `aTone` (deux phases)
+  quand la broche a tourné d'un sixième de tour. Courroie et poulies dans le même plan (axe x des deux poulies) : une
+  poulie de moteur couchée dans un autre plan donne une courroie tordue.
+- **Briques** : `buildQuads` (une façade par brique, un ton chacune, rangs décalés d'un demi-bloc) devant un cœur sombre
+  (−0,75) qui fait les joints. Piège : le cœur plein cache le fond d'une bouche creusée ; le découper autour du creux
+  (un bloc derrière, quatre devant), et poser le plan de feu 6 mm devant le cœur (sinon il se bat avec lui).
+- **Feu qui palpite** : `FORGE_GLOW` (orange profond, à part de `GLOWS`) dans un `glowMixMaterial` à 4 niveaux ; trois
+  plages (bouche, braises, chambre) réécrites par paliers de 1/6 s seulement quand le niveau change. Une chambre
+  cylindrique de lueur derrière 12 anneaux de cuivre : de nuit, le rouge entre les spires est le plus beau du four.
+  Halo orange porté par la bouche (3,6 m à plein feu) : il colore tout le coin de la pièce.
+- **Hauteurs empilées** : écrire les cotes de bas en haut et vérifier que chaque étage reste sous la hauteur totale (la
+  hotte partait au-dessus de son propre sommet : géométrie retournée, invisible).
+- **Râtelier à silhouettes** : la silhouette = les rectangles de l'outil agrandis d'un pixel, peints à plat sur la
+  planche (matériau sans contour, sinon chaque forme est cernée) ; l'outil accroché la couvre et laisse un liseré
+  blanc, l'outil pris laisse la forme pleine. Blanc usé : rampe crayeuse qui ne monte pas au blanc pur.
+- **Tags** : « forge », « machine », « bronze » sont les mêmes mots dans les deux langues : « smithy », « heating »,
+  « bronze fittings ».

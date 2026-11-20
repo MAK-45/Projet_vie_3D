@@ -79,6 +79,13 @@ export const DATA_GLOWS = {
   red: { label: "Rouge", ramp: GLOWS.alarm.ramp, light: GLOWS.alarm.light },
 };
 
+/**
+ * Feu de forge (le Complexe, ATE-03) : bouche du four à bobines, braises, métal porté au rouge. Orange plus profond que
+ * l'ambre des lampes, à part de GLOWS pour ne pas devenir un choix des murs et des lampes. Niveaux 0 (froid) à 3 (blanc
+ * jaune du cœur) ; `light` : couleur de la lumière de halo du four.
+ */
+export const FORGE_GLOW = { label: "Feu de forge", ramp: ["#3a1208", "#a3300c", "#ff6a1c", "#ffc46a"], light: "#ff6a20" };
+
 /** Couvertures posées sur une surface (dessus d'un rocher, d'un mur, d'un toit). Clés du paramètre `cover`. */
 export const COVERS = {
   moss: { label: "Mousse", ramp: ["#22473c", "#33663e", "#4f8a3f", "#86b44a"], ink: "#142a26" },

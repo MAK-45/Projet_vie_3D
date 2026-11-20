@@ -15862,6 +15862,805 @@
       }
     },
     {
+      "id": "furniture/tables/workbench",
+      "name": "Établi",
+      "nameEn": "Workbench",
+      "category": "furniture",
+      "subcategory": "tables",
+      "description": "Établi de l'Atelier du Complexe, en chêne noirci : établi central à plateau de planches, plaque de bronze encastrée, étau de laiton à vis et deux tiroirs ; ou établi d'horloger à plateau échancré, rangée de mini-tiroirs et loupe binoculaire. Rangé, servi ou en plein travail ; l'étau s'ouvre et se serre. Fiches ATE-01, ATE-14.",
+      "tags": [
+        "établi",
+        "établi d'horloger",
+        "étau",
+        "plateau",
+        "chêne noirci",
+        "plaque de bronze",
+        "tiroirs",
+        "mini-tiroirs",
+        "loupe",
+        "outils",
+        "limaille",
+        "taches d'huile",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "mobilier",
+        "pilotable",
+        "intérieur",
+        "workbench",
+        "watchmaker bench",
+        "vise",
+        "bench top",
+        "blackened oak",
+        "bronze plate",
+        "drawers",
+        "small drawers",
+        "magnifier",
+        "tools",
+        "metal filings",
+        "oil stains",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "furniture",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de l'établi ; l'avant (tiroirs, étau, échancrure) regarde +z",
+      "footprint": {
+        "radius": 1.45,
+        "height": 1.4
+      },
+      "animated": [
+        "vise"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tons des planches, le côté de l'étau, les taches d'huile, le tiroir entrouvert, la place des outils et des pièces."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "central",
+          "values": [
+            "central",
+            "watchmaker"
+          ],
+          "labels": {
+            "central": "Établi central (2,6 m, étau, plaque de bronze)",
+            "watchmaker": "Établi d'horloger (plateau en U, mini-tiroirs, loupe)"
+          },
+          "label": "Modèle",
+          "description": "Établi central de l'Atelier, ou établi d'horloger du coin sud-est."
+        },
+        "clutter": {
+          "type": "enum",
+          "default": "used",
+          "values": [
+            "used",
+            "tidy",
+            "busy"
+          ],
+          "labels": {
+            "used": "Servi (quelques outils, une pièce dans l'étau)",
+            "tidy": "Rangé (rien dessus)",
+            "busy": "En plein travail (chargé)"
+          },
+          "label": "Encombrement",
+          "description": "Ce qui traîne dessus : rien, quelques outils et une pièce serrée dans l'étau, ou tout un chantier."
+        }
+      },
+      "variants": [
+        {
+          "id": "central",
+          "name": "Central, servi",
+          "params": {}
+        },
+        {
+          "id": "central-busy",
+          "name": "Central, en plein travail",
+          "params": {
+            "clutter": "busy"
+          }
+        },
+        {
+          "id": "watchmaker",
+          "name": "Horloger, servi",
+          "params": {
+            "kind": "watchmaker"
+          }
+        },
+        {
+          "id": "watchmaker-tidy",
+          "name": "Horloger, rangé",
+          "params": {
+            "kind": "watchmaker",
+            "clutter": "tidy"
+          }
+        }
+      ],
+      "slug": "furniture-tables-workbench",
+      "path": "src/assets/furniture/tables/workbench.js",
+      "module": "public/catalog/modules/furniture-tables-workbench.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js",
+        "src/assets/props/tools/arm-magnifier.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2296,
+          "vertices": 3040,
+          "drawCalls": 2
+        },
+        "central": {
+          "triangles": 2296,
+          "vertices": 3040,
+          "drawCalls": 2
+        },
+        "central-busy": {
+          "triangles": 2568,
+          "vertices": 3700,
+          "drawCalls": 2
+        },
+        "watchmaker": {
+          "triangles": 1898,
+          "vertices": 3212,
+          "drawCalls": 4
+        },
+        "watchmaker-tidy": {
+          "triangles": 1626,
+          "vertices": 2552,
+          "drawCalls": 4
+        }
+      },
+      "bytes": {
+        "source": 22348,
+        "standalone": 77972
+      }
+    },
+    {
+      "id": "props/machines/metal-lathe",
+      "name": "Tour à métaux",
+      "nameEn": "Metal lathe",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Tour à métaux à courroie de l'Atelier du Complexe : banc de fonte sur pieds évasés, poupée à mandrin de bronze et poulie étagée, courroie de cuir vers un petit moteur à bobine de cuivre, chariot porte-outil, contre-pointe à volant. En marche, le mandrin, la pièce et les poulies tournent et la courroie défile. Fiche ATE-02.",
+      "tags": [
+        "tour",
+        "tour à métaux",
+        "mandrin",
+        "poulie étagée",
+        "courroie",
+        "cuir",
+        "contre-pointe",
+        "volant",
+        "chariot",
+        "banc de fonte",
+        "copeaux",
+        "moteur",
+        "bobine",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "machine",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "lathe",
+        "metal lathe",
+        "chuck",
+        "step pulley",
+        "belt",
+        "leather",
+        "tailstock",
+        "handwheel",
+        "carriage",
+        "cast iron bed",
+        "metal chips",
+        "motor",
+        "coil",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "machine tool",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre du banc ; l'axe de la broche suit x (poupée vers −x), l'opérateur se tient côté +z",
+      "footprint": {
+        "radius": 0.95,
+        "height": 1.25
+      },
+      "animated": [
+        "spindle"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la place du chariot et de la contre-pointe, l'usure de la fonte, les copeaux, l'angle de départ du mandrin."
+        },
+        "state": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "running"
+          ],
+          "labels": {
+            "idle": "À l'arrêt",
+            "running": "En marche"
+          },
+          "label": "État",
+          "description": "À l'arrêt, ou en marche : le mandrin, la pièce et les poulies tournent, la courroie défile."
+        },
+        "work": {
+          "type": "enum",
+          "default": "bar",
+          "values": [
+            "bar",
+            "gear",
+            "none"
+          ],
+          "labels": {
+            "bar": "Une barre",
+            "gear": "Une roue dentée",
+            "none": "Rien"
+          },
+          "label": "Pièce",
+          "description": "Ce qui est serré dans le mandrin : une barre tenue par la contre-pointe, une roue dentée, ou rien."
+        }
+      },
+      "variants": [
+        {
+          "id": "bar",
+          "name": "Une barre",
+          "params": {}
+        },
+        {
+          "id": "gear",
+          "name": "Une roue, en marche",
+          "params": {
+            "work": "gear",
+            "state": "running"
+          }
+        },
+        {
+          "id": "none",
+          "name": "À vide",
+          "params": {
+            "work": "none"
+          }
+        }
+      ],
+      "slug": "props-machines-metal-lathe",
+      "path": "src/assets/props/machines/metal-lathe.js",
+      "module": "public/catalog/modules/props-machines-metal-lathe.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2034,
+          "vertices": 3727,
+          "drawCalls": 3
+        },
+        "bar": {
+          "triangles": 2034,
+          "vertices": 3727,
+          "drawCalls": 3
+        },
+        "gear": {
+          "triangles": 2326,
+          "vertices": 4659,
+          "drawCalls": 3
+        },
+        "none": {
+          "triangles": 1970,
+          "vertices": 3623,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 20347,
+        "standalone": 66272
+      }
+    },
+    {
+      "id": "props/machines/coil-furnace",
+      "name": "Four à bobines",
+      "nameEn": "Coil furnace",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Four de l'Atelier du Complexe : cuve de brique réfractaire à bouche orange, chambre de chauffe ceinte d'une bobine de cuivre à 12 spires qui laisse voir le rouge entre elles, hotte noircie de suie, cadran à aiguille, creuset et pince au pied. À plein feu la bouche palpite ; en veille, des braises ; éteint, froid. Fiche ATE-03.",
+      "tags": [
+        "four",
+        "four à bobines",
+        "forge",
+        "fonderie",
+        "brique réfractaire",
+        "bobine",
+        "spires",
+        "cuivre",
+        "bouche",
+        "feu",
+        "braises",
+        "hotte",
+        "suie",
+        "creuset",
+        "pince",
+        "lingots",
+        "cadran",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "machine",
+        "lumière",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "furnace",
+        "coil furnace",
+        "smithy",
+        "foundry",
+        "firebrick",
+        "coil",
+        "windings",
+        "copper",
+        "fire mouth",
+        "fire",
+        "embers",
+        "hood",
+        "soot",
+        "crucible",
+        "tongs",
+        "ingots",
+        "gauge",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "heating",
+        "light",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de la cuve ; la bouche regarde +z",
+      "footprint": {
+        "radius": 1.1,
+        "height": 1.8
+      },
+      "animated": [
+        "fire"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change les tons et les écornures des briques, la suie, le côté de la pince et du creuset, les lingots au pied."
+        },
+        "state": {
+          "type": "enum",
+          "default": "full",
+          "values": [
+            "full",
+            "standby",
+            "off"
+          ],
+          "labels": {
+            "full": "À plein feu",
+            "standby": "En veille (braises)",
+            "off": "Éteint"
+          },
+          "label": "État",
+          "description": "À plein feu (bouche qui palpite, chambre portée au rouge), en veille (braises sourdes), ou éteint."
+        },
+        "halo": {
+          "type": "enum",
+          "default": "off",
+          "values": [
+            "off",
+            "on"
+          ],
+          "labels": {
+            "off": "Sans halo",
+            "on": "Éclaire le décor (dans le noir)"
+          },
+          "label": "Halo",
+          "description": "La bouche éclaire le décor en orange dans le noir (une des 12 lumières de halo de la scène)."
+        }
+      },
+      "variants": [
+        {
+          "id": "full",
+          "name": "À plein feu",
+          "params": {}
+        },
+        {
+          "id": "standby",
+          "name": "En veille",
+          "params": {
+            "state": "standby"
+          }
+        },
+        {
+          "id": "off",
+          "name": "Éteint",
+          "params": {
+            "state": "off"
+          }
+        }
+      ],
+      "slug": "props-machines-coil-furnace",
+      "path": "src/assets/props/machines/coil-furnace.js",
+      "module": "public/catalog/modules/props-machines-coil-furnace.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2862,
+          "vertices": 5658,
+          "drawCalls": 3
+        },
+        "full": {
+          "triangles": 2862,
+          "vertices": 5658,
+          "drawCalls": 3
+        },
+        "standby": {
+          "triangles": 2862,
+          "vertices": 5658,
+          "drawCalls": 3
+        },
+        "off": {
+          "triangles": 2862,
+          "vertices": 5658,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 17908,
+        "standalone": 66364
+      }
+    },
+    {
+      "id": "props/tools/anvil",
+      "name": "Enclume",
+      "nameEn": "Anvil",
+      "category": "props",
+      "subcategory": "tools",
+      "description": "Enclume du Complexe : enclume de fonte à bec et talon, table polie, trou carré, posée sur une souche fendue cerclée de fer (Atelier) ; ou bloc d'acier d'essai sur dalle de pierre, bardé de 8 capteurs de quartz dont les câbles fins partent en bouquet (salle 4). Fiches ATE-04, E4-01.",
+      "tags": [
+        "enclume",
+        "souche",
+        "bec",
+        "talon",
+        "table",
+        "trou carré",
+        "fonte",
+        "cercles de fer",
+        "marteau",
+        "bloc d'essai",
+        "acier",
+        "capteurs",
+        "quartz",
+        "câbles",
+        "dalle",
+        "forge",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "outil",
+        "intérieur",
+        "anvil",
+        "stump",
+        "horn",
+        "heel",
+        "face",
+        "hardy hole",
+        "cast iron",
+        "iron hoops",
+        "hammer",
+        "test block",
+        "steel",
+        "sensors",
+        "quartz crystal",
+        "cables",
+        "stone slab",
+        "smithy",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "tool",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol, au centre de la souche (ou de la dalle) ; le bec de l'enclume pointe vers +x avant la rotation de la graine",
+      "footprint": {
+        "radius": 1.05,
+        "height": 1.05
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'orientation de l'enclume, la souche (hauteur, cernes, fente), les écaillures, le marteau ; pour le bloc, les marques de coups et le bouquet de câbles."
+        },
+        "kind": {
+          "type": "enum",
+          "default": "stump",
+          "values": [
+            "stump",
+            "test-block"
+          ],
+          "labels": {
+            "stump": "Enclume sur souche (Atelier)",
+            "test-block": "Bloc d'essai (salle 4, capteurs)"
+          },
+          "label": "Modèle",
+          "description": "Enclume de forge sur sa souche, ou bloc d'enclume d'essai sur dalle, bardé de capteurs (salle 4)."
+        }
+      },
+      "variants": [
+        {
+          "id": "stump",
+          "name": "Sur souche",
+          "params": {}
+        },
+        {
+          "id": "test-block",
+          "name": "Bloc d'essai",
+          "params": {
+            "kind": "test-block"
+          }
+        }
+      ],
+      "slug": "props-tools-anvil",
+      "path": "src/assets/props/tools/anvil.js",
+      "module": "public/catalog/modules/props-tools-anvil.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 746,
+          "vertices": 1330,
+          "drawCalls": 2
+        },
+        "stump": {
+          "triangles": 746,
+          "vertices": 1330,
+          "drawCalls": 2
+        },
+        "test-block": {
+          "triangles": 1688,
+          "vertices": 1514,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 14673,
+        "standalone": 63047
+      }
+    },
+    {
+      "id": "furniture/storage/tool-rack",
+      "name": "Râtelier à outils",
+      "nameEn": "Tool rack",
+      "category": "furniture",
+      "subcategory": "storage",
+      "description": "Râtelier mural de l'Atelier du Complexe : planche de chêne noirci à crochets de bronze où chaque outil a sa silhouette peinte en blanc usé ; un outil pris laisse sa forme blanche vide. Marteau, clé, pince, scie, compas, équerre... sur deux rangs, et une tablette. Plein, quelques outils pris, presque vide. Fiche ATE-05.",
+      "tags": [
+        "râtelier",
+        "panneau à outils",
+        "outils",
+        "silhouettes",
+        "peinture",
+        "crochets",
+        "marteau",
+        "clé",
+        "pince",
+        "scie",
+        "compas",
+        "équerre",
+        "chêne noirci",
+        "bronze",
+        "mural",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "rangement",
+        "intérieur",
+        "tool rack",
+        "pegboard",
+        "tools",
+        "shadow board",
+        "paint",
+        "hooks",
+        "hammer",
+        "wrench",
+        "pliers",
+        "saw",
+        "compass",
+        "square",
+        "blackened oak",
+        "bronze fittings",
+        "wall mounted",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "storage",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au pied du mur, au milieu de la planche ; le dos contre le mur (z = 0), les outils vers +z ; le bas de la planche à 1,0 m",
+      "footprint": {
+        "radius": 1.05,
+        "height": 2.2
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'ordre des emplacements, les outils manquants, les tons des planches, l'usure de la peinture, le penché des outils."
+        },
+        "fill": {
+          "type": "enum",
+          "default": "some",
+          "values": [
+            "some",
+            "full",
+            "empty"
+          ],
+          "labels": {
+            "some": "Quelques outils pris",
+            "full": "Plein",
+            "empty": "Presque vide"
+          },
+          "label": "Garni",
+          "description": "Tous les outils à leur place, quelques-uns pris (leur silhouette peinte reste vide), ou presque tous pris."
+        }
+      },
+      "variants": [
+        {
+          "id": "some",
+          "name": "Quelques outils pris",
+          "params": {
+            "fill": "some"
+          }
+        },
+        {
+          "id": "full",
+          "name": "Plein",
+          "params": {
+            "fill": "full"
+          }
+        },
+        {
+          "id": "empty",
+          "name": "Presque vide",
+          "params": {
+            "fill": "empty"
+          }
+        }
+      ],
+      "slug": "furniture-storage-tool-rack",
+      "path": "src/assets/furniture/storage/tool-rack.js",
+      "module": "public/catalog/modules/furniture-storage-tool-rack.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 1134,
+          "vertices": 2260,
+          "drawCalls": 3
+        },
+        "some": {
+          "triangles": 1134,
+          "vertices": 2260,
+          "drawCalls": 3
+        },
+        "full": {
+          "triangles": 1266,
+          "vertices": 2524,
+          "drawCalls": 3
+        },
+        "empty": {
+          "triangles": 994,
+          "vertices": 1980,
+          "drawCalls": 3
+        }
+      },
+      "bytes": {
+        "source": 11001,
+        "standalone": 53148
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",

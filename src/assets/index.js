@@ -75,12 +75,17 @@ import * as drawerArchive from "./furniture/storage/drawer-archive.js";
 import * as dataCassette from "./props/books/data-cassette.js";
 import * as rollingLadder from "./buildings/structure/rolling-ladder.js";
 import * as stoneTable from "./furniture/tables/stone-table.js";
+import * as workbench from "./furniture/tables/workbench.js";
 import * as articulatedLamp from "./furniture/lighting/articulated-lamp.js";
 import * as bronzeStool from "./furniture/seating/bronze-stool.js";
 import * as armMagnifier from "./props/tools/arm-magnifier.js";
+import * as anvil from "./props/tools/anvil.js";
 import * as complexCart from "./props/machines/complex-cart.js";
 import * as crankRecorder from "./props/machines/crank-recorder.js";
+import * as metalLathe from "./props/machines/metal-lathe.js";
+import * as coilFurnace from "./props/machines/coil-furnace.js";
 import * as displayCase from "./furniture/storage/display-case.js";
+import * as toolRack from "./furniture/storage/tool-rack.js";
 import * as spiralStair from "./buildings/structure/spiral-stair.js";
 import * as straightStair from "./buildings/structure/straight-stair.js";
 import * as gratingWalkway from "./buildings/structure/grating-walkway.js";
@@ -101,6 +106,7 @@ export const assets = [birch, oak, linden, boulder, buriedRock, snowPatch, mossP
   drawerArchive, dataCassette, rollingLadder, stoneTable, articulatedLamp,
   armMagnifier, bronzeStool, complexCart, crankRecorder, displayCase,
   spiralStair, straightStair, gratingWalkway, cardCatalogue,
+  workbench, metalLathe, coilFurnace, anvil, toolRack,
   summerMeadow, ancientComplex, complexTest,
 ];
 
