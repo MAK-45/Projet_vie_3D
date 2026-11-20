@@ -190,3 +190,23 @@ dépasser.
   buts bloque le personnage : passer par un point dégagé.
 - **Grains de poussière en 3e personne** : une forme de taille fixe dans le monde devient un gros carré à 1 m de la
   caméra ; la réduire avec la distance.
+
+## Le Complexe : l'Atelier (lot 11)
+
+- **Pièce voisine par une porte latérale** : le mur commun appartient à la première pièce ; la seconde le double de
+  2 cm de son côté et ne montre ce doublage que quand on y est (sinon il passe devant le mur de l'autre). La porte,
+  elle, sort du groupe de sa pièce : sinon, la pièce cachée, on voit un trou noir dans le mur (`eastObject` montré
+  avec l'une ou l'autre pièce). Piliers d'angle communs : redoublés avec 2 cm de plus de diamètre.
+- **Ce qui regarde de côté** (murs d'un couloir qui part de la pièce, poutres du plafond) : la règle de coupe `wall`
+  ne les cache pas quand la caméra est dans leur axe ; la règle `view` (origine du côté de la caméra) si. Une poutre
+  à 5 m entre la caméra et le promeneur se cache comme un mur ; le palan accroché à la poutre-rail suit la même règle
+  (sinon il flotte).
+- **Porte gardée, étape d'attente** : une étape d'attente (`wait`) est une halte atteinte à 1,5 m ; la porte s'ouvre à
+  2,4 m. Une attente à plus de 0,9 m de la porte peut boucler sans fin (atteinte avant que la porte ne s'ouvre) :
+  la poser à moins d'un mètre du seuil.
+- **Portique au milieu du passage** : ses semelles bloquent au sol ; une caisse qui monte et descend bloque tant
+  qu'elle est basse (boîte active si `hoist.bottom < 1,7`). La balade le contourne au large.
+- **Budget d'une pièce encombrée** (≈ 30 modèles) : 116 à 123 draw calls au premier jet ; ramené à 91–97 en retirant
+  l'ombre portée des petits objets et des machines basses, en fusionnant deux parcours de chemins de câbles en un
+  modèle (maillages fusionnés par matière), en renonçant à trois modèles qui ne coûtaient qu'un détail (mur à
+  conduit, fût couché, trousse sur l'établi) et à l'ombre du palan haut.

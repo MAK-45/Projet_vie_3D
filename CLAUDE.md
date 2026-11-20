@@ -53,7 +53,8 @@ src/
               kit/ : semis instancié trié par cases (scatter), semis par morceaux d'un monde sans bord
               (streaming-scatter), lumière et ombres de nuages (sky), mer de nuages et brume (cloud-sea), heure et
               météo (atmosphere), tranche d'île et sol en morceaux (terrain).
-              Le Complexe : ancient-complex (le vrai monde, pièce par pièce ; le Sas pour l'instant), complex-test
+              Le Complexe : ancient-complex (le vrai monde, pièce par pièce : Sas, Archives, Atelier, un fichier par
+              pièce), complex-test
               (monde d'essai) ; kit/interior.js (pose instanciée, vue en coupe, halos, collisions).
               Chaque monde est aussi rangé comme asset dans assets/worlds/ (catégorie « Mondes »).
   explorer/   l'explorateur d'un monde (classe Explorer) : réglages, promeneur de 1,80 m, caméras (isométriques ou

@@ -1,9 +1,11 @@
 // Le Complexe (docs/complexe/) : le monde intérieur assemblé pièce par pièce, au fil des lots. Lot 5 : le Sas de
 // Scellement, fidèle à la bible (docs/complexe/PIECES.md, pièce 1), et le vestibule d'où l'on arrive. Lot 8 : les
 // Archives au nord du Sas (pièce 2, construite par `ancient-complex-archives.js`), avec leur mezzanine praticable.
+// Lot 11 : l'Atelier de l'Artisan à l'est des Archives (pièce 3, `ancient-complex-atelier.js`), par la porte de leur
+// mur est ; au nord de l'Atelier, l'amorce du couloir de la Galerie, fermée par une barrière.
 //
-// Une pièce à la fois : les Archives ne se montrent que quand on y est, ou près de la porte nord ouverte (et le Sas
-// de même vu des Archives) ; derrière un mur, le noir.
+// Une pièce à la fois : une pièce ne se montre que quand on y est, ou près de la porte ouverte qui y mène ; derrière
+// un mur, le noir.
 //
 // - Le vestibule (6 × 4 m, 4 m sous plafond) : un bout de galerie de basalte aux glyphes éteints, une lampe portative
 //   laissée allumée. On y part, face à la Porte-Iris.
@@ -23,8 +25,7 @@
 //   rendort le Sas (on peut rejouer la scène). La balade automatique joue ce parcours.
 //
 // Praticable : sol à étages (`heightAt(x, z, y)` : le seuil de l'Iris est une marche de 0,20 m ; l'escalier à vis et la
-// mezzanine des Archives), obstacles en boîtes, portes qui s'ouvrent à l'approche (celle de l'Atelier reste fermée :
-// il n'existe pas encore) ; on ne sort pas des pièces.
+// mezzanine des Archives), obstacles en boîtes, portes qui s'ouvrent à l'approche ; on ne sort pas des pièces.
 //
 // 1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; grille de 2 m (murs sur les x
 // impairs et les z pairs, dalles au centre des cases).
@@ -55,11 +56,13 @@ import { createLampDust } from "../fx/lamp-dust.js";
 import { createDaylight } from "./kit/sky.js";
 import { BoxColliders, createHaloPool, InteriorKit, WalkSurfaces } from "./kit/interior.js";
 import { ARCHIVES, buildArchives } from "./ancient-complex-archives.js";
+import { ATELIER, ATELIER_CORRIDOR, buildAtelier } from "./ancient-complex-atelier.js";
 
 /** Pièces que le réglage `room` sait montrer (les suivantes s'ajoutent au fil des lots). */
 export const COMPLEX_ROOMS = {
   sas: { label: "Le Sas", meters: 10 },
   archives: { label: "Les Archives", meters: 18 },
+  atelier: { label: "L'Atelier", meters: 12 },
 };
 
 /** États du Sas. */
@@ -74,6 +77,7 @@ const ROOMS = {
   sas: { name: "Sas de Scellement", x0: -5, x1: 5, z0: 0, z1: 6, h: 5 },
   vestibule: { name: "Vestibule", x0: -3, x1: 3, z0: 6, z1: 10, h: 4 },
   archives: ARCHIVES,
+  atelier: ATELIER,
 };
 
 // Vue en coupe : les murs, portes et piliers d'angle entre le promeneur et la caméra sont masqués en entier (un mur
@@ -97,8 +101,9 @@ const WAVE_REACH = 13; // m : tout le Sas est allumé
  * Crée le Complexe.
  * @param {object} [options]
  * @param {number} [options.seed] usure et variantes des dalles, niche du mur ouest, leviers, lampe éteinte, malles
- * @param {"sas"|"archives"} [options.room] pièce où l'on commence (le Sas : dans le vestibule ; les Archives : à la
- *   porte du Sas, la vérification déjà faite)
+ * @param {"sas"|"archives"|"atelier"} [options.room] pièce où l'on commence (le Sas : dans le vestibule ; les
+ *   Archives : à la porte du Sas ; l'Atelier : à la porte des Archives ; ailleurs que dans le Sas, la vérification est
+ *   déjà faite)
  * @param {"check"|"awake"|"asleep"} [options.state] état du Sas
  * @param {boolean} [options.diorama] sans lumière (fiche et vignette de l'asset)
  */
@@ -108,7 +113,7 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   if (!(state in SAS_STATES)) state = "check";
   const rng = createRng(seed * 7919 + 501);
   const rooms = ["sas", "vestibule"].map((id) => ({ id, ...ROOMS[id] }));
-  const allRooms = [...rooms, { id: "archives", ...ROOMS.archives }];
+  const allRooms = [...rooms, { id: "archives", ...ROOMS.archives }, { id: "atelier", ...ROOMS.atelier }];
   const R = Object.fromEntries(allRooms.map((r) => [r.id, r]));
   const kit = new InteriorKit();
   const colliders = new BoxColliders();
@@ -126,7 +131,7 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   const GROOVE_ON = "#7c3a16";
 
   const roomAt = (x, z) => allRooms.find((r) => x > r.x0 && x < r.x1 && z > r.z0 && z < r.z1);
-  const bounds = { minX: -6, maxX: 16, minZ: -13, maxZ: 11 };
+  const bounds = { minX: -6, maxX: 28, minZ: -17, maxZ: 11 };
 
   // Pose d'une copie avec, en option, une emprise au sol : largeur × profondeur dans le repère de l'objet, décalée
   // de `oz` vers son +z (meubles muraux : l'origine est au mur).
@@ -408,6 +413,15 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   // --- Les Archives (pièce 2), au nord : leur propre jeu de modèles, montré quand on y est. -------------------------
   const archives = buildArchives({ seed, state, colliders, walk, sources, counts, cutObject });
   group.add(archives.group);
+  // La porte de l'Atelier, au mur est des Archives : elle s'ouvre comme les autres.
+  // Elle se voit des deux côtés : sortie du groupe des Archives, montrée avec l'une ou l'autre pièce.
+  const east = { door: archives.east, x: ARCHIVES.x1, z: -7, role: "east", opening: false };
+  doors.push(east);
+  group.add(archives.eastObject);
+
+  // --- L'Atelier (pièce 3), à l'est des Archives. -------------------------------------------------------------------
+  const atelier = buildAtelier({ seed, state, colliders, sources, counts, cutObject });
+  group.add(atelier.group);
 
   // --- Plafond : voûtes à caissons sur chaque case, vues seulement à la 3e personne, sans ombre portée. ---------------
   const makeCeiling = (list, hookSet, key) => {
@@ -426,22 +440,26 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   };
   const ceiling = makeCeiling(rooms, hooks, 0);
   const archivesCeiling = makeCeiling([R.archives], archives.hooks, 10);
+  const atelierCeiling = makeCeiling([R.atelier], atelier.hooks, 20);
 
-  // Une pièce à la fois : ce qui appartient au Sas (et au vestibule), ce qui appartient aux Archives.
+  // Une pièce à la fois : ce qui appartient au Sas (et au vestibule), aux Archives, à l'Atelier.
   const zones = {
     sas: { parts: [kit.group, deskObject, iris.object], ceiling: ceiling.group, visible: true },
     archives: { parts: [archives.group], ceiling: archivesCeiling.group, visible: true },
+    atelier: { parts: [atelier.group], ceiling: atelierCeiling.group, visible: true },
   };
   let thirdPerson = false;
-  const showZones = (sasOn, archivesOn) => {
-    for (const [zone, on] of [[zones.sas, sasOn], [zones.archives, archivesOn]]) {
-      zone.visible = on;
-      for (const part of zone.parts) part.visible = on;
-      zone.ceiling.visible = on && thirdPerson;
+  const showZones = (on) => {
+    for (const [id, zone] of Object.entries(zones)) {
+      zone.visible = on[id];
+      for (const part of zone.parts) part.visible = on[id];
+      zone.ceiling.visible = on[id] && thirdPerson;
     }
+    archives.eastObject.visible = on.archives || on.atelier;
   };
-  showZones(room !== "archives", room === "archives");
+  showZones({ sas: room === "sas", archives: room === "archives", atelier: room === "atelier" });
   let southShown = true;
+  let westShown = true;
 
   // --- Lumière : lumière de service venue d'en haut, halos des lampes, poussière dans leur cône ---------------------
   let daylight = null;
@@ -458,10 +476,10 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
 
   // --- Vérification ------------------------------------------------------------------------------------------------
   const checking = state === "check";
-  // Départ dans les Archives : la vérification du Sas est déjà faite (on en vient).
+  // Départ dans les Archives ou l'Atelier : la vérification du Sas est déjà faite (on en vient).
   const startRoom = room;
-  if (startRoom === "archives" && checking) reveal.value.w = WAVE_REACH;
-  const sequence = { phase: checking && startRoom !== "archives" ? "idle" : "done", start: 0, lever: 0, radius: reveal.value.w };
+  if (startRoom !== "sas" && checking) reveal.value.w = WAVE_REACH;
+  const sequence = { phase: checking && startRoom === "sas" ? "idle" : "done", start: 0, lever: 0, radius: reveal.value.w };
   // Leviers vérifiés : alternés, un sur deux abaissé (l'inverse de la graine là où elle les avait laissés).
   const verifiedLevers = desk.levers.map((_, i) => i % 2 === 0);
   const setLamp = (l, lit) => {
@@ -537,9 +555,11 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
   // --- Où l'on peut marcher : les pièces, et la baie de l'Iris quand elle est ouverte. -----------------------------
   const passage = { minX: -sill.width / 2 + 0.25, maxX: sill.width / 2 - 0.25, minZ: 5.4, maxZ: 6.6 };
   const northPassage = { minX: -0.5, maxX: 0.5, minZ: -0.7, maxZ: 0.7 };
+  const eastPassage = { minX: ARCHIVES.x1 - 0.7, maxX: ARCHIVES.x1 + 0.7, minZ: -7.5, maxZ: -6.5 };
   const inRect = (x, z, b) => x > b.minX && x < b.maxX && z > b.minZ && z < b.maxZ;
   const walkable = (x, z) =>
-    Boolean(roomAt(x, z)) || (!iris.door.blocking && inRect(x, z, passage)) || (!north.door.blocking && inRect(x, z, northPassage));
+    Boolean(roomAt(x, z)) || (!iris.door.blocking && inRect(x, z, passage)) || (!north.door.blocking && inRect(x, z, northPassage)) ||
+    (!east.door.blocking && inRect(x, z, eastPassage)) || inRect(x, z, ATELIER_CORRIDOR);
 
   // Balade automatique : le parcours de la scène. Une étape gardée (`gate`) attend à `wait` que sa porte s'ouvre
   // (ou que la vérification soit faite) ; l'explorateur y fait halte, puis redemande.
@@ -560,7 +580,7 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
     { x: 0, z: 4.8, pass: true },
     { x: 0, z: 7.4, pass: true, gate: () => !iris.door.blocking, wait: [0, 4.6] },
   ];
-  let routeIndex = startRoom === "archives" ? route.findIndex((step) => step.archives) : 0;
+  let routeIndex = startRoom === "archives" ? route.findIndex((step) => step.archives) : startRoom === "atelier" ? route.findIndex((step) => step.atelier) : 0;
 
   // Le tour des Archives : le catalogue, l'escalier à vis (on entre sous le palier, puis on monte marche à marche),
   // la mezzanine d'un bout à l'autre, la descente, les tables et les échelles, le retour à la porte du Sas.
@@ -604,12 +624,46 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
       { x: 7.3, z: -3.3 }, // au pied d'une échelle roulante
       { x: 3.6, z: -3.2, pass: true },
       { x: 3.6, z: -5.0, pass: true },
+      ...atelierTour(),
       { x: 0, z: -5.0, pass: true },
       { x: 0, z: -1.6, pass: true },
     ];
   }
 
-  const first = startRoom === "archives" ? new THREE.Vector3(0, 0, -1.6) : new THREE.Vector3(0, 0, 8.6);
+  // L'aller-retour à l'Atelier : on longe le catalogue, on passe entre les tables de l'est, la porte s'ouvre ; dans
+  // l'Atelier, le four et l'enclume, le portique (on attend la caisse), le tour, le mur est, l'établi, puis retour.
+  function atelierTour() {
+    const toDoor = [
+      { x: 3.6, z: -7.6, pass: true },
+      { x: 8.6, z: -7.6, pass: true },
+      { x: 9.0, z: -5.0, pass: true },
+      { x: 12.1, z: -5.2, pass: true },
+      { x: 13.4, z: -6.9 }, // devant la porte de l'Atelier, qui s'ouvre
+    ];
+    return [
+      ...toDoor,
+      { x: 16.0, z: -7.0, pass: true, gate: () => !east.door.blocking, wait: [14.2, -7.0], atelier: true },
+      { x: 19.4, z: -7.6 }, // face au four et à l'enclume
+      { x: 20.2, z: -6.3, pass: true },
+      { x: 22.6, z: -6.2 }, // devant le portique : la caisse monte et descend
+      { x: 25.0, z: -6.6, pass: true }, // on le contourne par l'est
+      { x: 25.0, z: -9.7, pass: true },
+      { x: 23.6, z: -10.1 }, // devant le tour
+      { x: 25.0, z: -9.7, pass: true },
+      { x: 25.0, z: -6.4, pass: true },
+      { x: 24.6, z: -5.0 }, // devant la table à calques
+      { x: 23.6, z: -3.5, pass: true },
+      { x: 21.4, z: -3.5 }, // devant l'établi
+      { x: 19.6, z: -3.6, pass: true },
+      { x: 19.3, z: -5.8, pass: true },
+      { x: 16.0, z: -7.0, pass: true },
+      { x: 13.4, z: -6.9, pass: true, gate: () => !east.door.blocking, wait: [15.8, -7.0] },
+      ...toDoor.slice(0, -1).reverse(),
+      { x: 3.6, z: -5.0, pass: true },
+    ];
+  }
+
+  const first = startRoom === "archives" ? new THREE.Vector3(0, 0, -1.6) : startRoom === "atelier" ? new THREE.Vector3(17.6, 0, -7.0) : new THREE.Vector3(0, 0, 8.6);
 
   return {
     group,
@@ -619,13 +673,13 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
     size: room,
     meters: COMPLEX_ROOMS[room].meters,
     bounds,
-    center: startRoom === "archives" ? new THREE.Vector3(6, 0, -6) : new THREE.Vector3(0, 0, 5),
+    center: startRoom === "archives" ? new THREE.Vector3(6, 0, -6) : startRoom === "atelier" ? new THREE.Vector3(21, 0, -7) : new THREE.Vector3(0, 0, 5),
     spawn: first,
     counts,
     rooms,
     interior: true,
-    /** Face au nord au départ : la Porte-Iris. */
-    spawnHeading: Math.PI,
+    /** Face au nord au départ (la Porte-Iris, les Archives) ; dans l'Atelier, face à l'est. */
+    spawnHeading: startRoom === "atelier" ? HALF_PI : Math.PI,
     /** On ne recule pas jusqu'à voir le vide autour des pièces, ni ne se couche au ras du sol. */
     viewLimits: { minZoom: 0.8, minElevation: THREE.MathUtils.degToRad(22) },
     /** Brume : un voile sombre tramé au fond de la pièce (isométrique : compté depuis le point regardé). */
@@ -696,13 +750,22 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
       updateSequence(target, dt);
       updateDoors(target);
       archives.update(time);
+      atelier.update(time);
       kit.update();
-      // Une pièce à la fois : celle où l'on est, et la voisine quand on est près de la porte nord ouverte.
-      const inArchives = target.z < R.sas.z0;
+      // Une pièce à la fois : celle où l'on est, et la voisine quand on est près d'une porte ouverte qui y mène.
+      const inAtelier = target.x > ARCHIVES.x1;
+      const northSide = target.z < R.sas.z0;
+      const inArchives = northSide && !inAtelier;
       const nearNorth = !north.door.blocking && Math.hypot(target.x - north.x, target.z - north.z) < 3;
-      const sasOn = !inArchives || nearNorth, archivesOn = inArchives || nearNorth;
-      if (sasOn !== zones.sas.visible || archivesOn !== zones.archives.visible) showZones(sasOn, archivesOn);
-      if (inArchives !== southShown) archives.setSouthWall((southShown = inArchives));
+      const nearEast = !east.door.blocking && Math.hypot(target.x - east.x, target.z - east.z) < 3;
+      const on = {
+        sas: (!northSide && !inAtelier) || nearNorth,
+        archives: inArchives || nearNorth || nearEast,
+        atelier: inAtelier || nearEast,
+      };
+      if (Object.keys(zones).some((id) => zones[id].visible !== on[id])) showZones(on);
+      if (northSide !== southShown) archives.setSouthWall((southShown = northSide));
+      if (inAtelier !== westShown) atelier.setWestWall((westShown = inAtelier));
       // Les lampes allumées sont celles près du point regardé : devant la caméra en 3e personne.
       if (ceiling.group.visible && camera) {
         camera.getWorldDirection(_focus);
@@ -717,8 +780,8 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
     },
 
     stats() {
-      const a = kit.stats(), b = archives.stats();
-      return { meshes: a.meshes + b.meshes, triangles: a.triangles + b.triangles, models: a.models + b.models, fraction: 1 };
+      const a = kit.stats(), b = archives.stats(), c = atelier.stats();
+      return { meshes: a.meshes + b.meshes + c.meshes, triangles: a.triangles + b.triangles + c.triangles, models: a.models + b.models + c.models, fraction: 1 };
     },
 
     dispose() {
@@ -729,6 +792,8 @@ export function createAncientComplex({ seed = 1, room = "sas", state = "check", 
       ceiling.dispose();
       archives.dispose();
       archivesCeiling.dispose();
+      atelier.dispose();
+      atelierCeiling.dispose();
       for (const object of objects) {
         object.traverse((child) => {
           child.geometry?.dispose();

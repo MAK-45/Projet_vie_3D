@@ -295,14 +295,16 @@ colonnade (18 × 12 m), l'Atelier et sa tranchée sous caillebotis (12 × 10 m),
 
 Le vrai monde du Complexe (`docs/complexe/`), assemblé pièce par pièce au fil des lots. Lot 5 : le **Sas de
 Scellement** (10 × 6 × 5 m, fidèle à `docs/complexe/PIECES.md`) et le **vestibule** d'où l'on arrive (6 × 4 m,
-4 m sous plafond). Lot 8 : les **Archives** (18 × 12 × 7 m) au nord du Sas, avec leur mezzanine praticable.
-Générateur : `src/worlds/ancient-complex.js`, une pièce par fichier ensuite (`ancient-complex-archives.js`) ; outils :
+4 m sous plafond). Lot 8 : les **Archives** (18 × 12 × 7 m) au nord du Sas, avec leur mezzanine praticable. Lot 11 :
+l'**Atelier** (12 × 10 × 5,5 m) à l'est des Archives.
+Générateur : `src/worlds/ancient-complex.js`, une pièce par fichier ensuite (`ancient-complex-archives.js`,
+`ancient-complex-atelier.js`) ; outils :
 `src/worlds/kit/interior.js`, `src/fx/lamp-dust.js`. Le monde d'essai (`complex-test`) reste à part jusqu'au lot 12.
 
 | Réglage | Valeurs |
 |---|---|
 | `seed` | trappe et fissure des dalles, niche du mur ouest (au nord ou au sud du pupitre), leviers, lampe de veille, contenu de la malle |
-| `room` (« Taille » dans l'explorateur) | `sas` (départ dans le vestibule), `archives` (départ à la porte du Sas, vérification faite) |
+| `room` (« Taille » dans l'explorateur) | `sas` (départ dans le vestibule), `archives` (départ à la porte du Sas, vérification faite), `atelier` (départ près de la porte des Archives) |
 | `state` | `check` (vérification, par défaut dans l'explorateur), `awake` (éveillé, par défaut pour la fiche), `asleep` (endormi) |
 
 - **Plan** : Porte-Iris au centre du mur sud (face décorée vers le Sas), porte standard au centre du mur nord (vers
@@ -360,9 +362,23 @@ Générateur : `src/worlds/ancient-complex.js`, une pièce par fichier ensuite (
 - **Les Archives** (lot 8, `ancient-complex-archives.js`) : six rayonnages au nord sous une mezzanine en caillebotis
   à 3,4 m (17 m, consoles de pierre, trois appliques à 6 m au-dessus), escalier à vis au nord-ouest (palier ouvert
   sur la mezzanine), cinq rayonnages au sud avec deux échelles roulantes, vitrines et rayonnage bas à l'ouest, porte
-  de l'Atelier à l'est (fermée), meuble-catalogue au centre entre six colonnes cannelées, quatre tables de lecture
+  de l'Atelier à l'est (ouverte depuis le lot 11), meuble-catalogue au centre entre six colonnes cannelées, quatre tables de lecture
   (lampes, loupes, visionneuse, cassettes, tabourets), deux lanternes, deux chariots. Vie : rouages, un tiroir du
   rayonnage du milieu qui glisse seul, pupitre du catalogue qui tourne. Mesures (capture logicielle, isométrique,
   passe d'ombre comprise) : 76 draw calls et 151 000 triangles dans les Archives, 72 dans le Sas ; à la porte (les
   deux pièces) jusqu'à 190 draw calls, quelques secondes. Les rayonnages et les petits objets des tables ne
   projettent pas d'ombre (une passe d'ombre de moins par modèle) ; un seul modèle par sorte de meuble.
+- **L'Atelier** (lot 11, `ancient-complex-atelier.js`, 12 × 10 × 5,5 m, x de 15 à 27, z de −12 à −2) : à l'est des
+  Archives, par la porte de leur mur est (elle s'ouvre à l'approche). Quatre poutres rivetées à 5,0 m sur corbeaux
+  (la plus au nord en poutre-rail : un palan y roule au-dessus du four, des lingots au crochet), le four à bobines au
+  nord-ouest (sa lueur orange, l'enclume devant la bouche, un touret), au nord la grande baie (porte double ouverte)
+  sur l'amorce du couloir de la Galerie fermée par une barrière à bandes ambre, le tour à métaux et le trio de fûts.
+  Au centre le portique roulant dont la caisse monte, attend et redescend (boucle de 12 s) et l'établi central avec
+  sa lampe d'atelier ; au mur est le râtelier, l'étagère à tirages, la table à calques ; au coin sud-est l'établi
+  d'horloger et l'étagère à pièces ; au sud-ouest le chariot lourd. Chemins de câbles muraux à 2,6 m. Sol taché d'huile
+  autour du four, du tour et du chariot. Endormi : four en veille, tour et portique à l'arrêt, lampes éteintes.
+  Le mur ouest est celui des Archives (7 m), doublé côté Atelier. Réglage `room` = `atelier` : départ à 2,6 m de la
+  porte, face à l'est. Balade : un aller-retour depuis les Archives (four, portique, tour, mur est, établi).
+  Mesures (capture logicielle, téléphone, éveillé, passe d'ombre comprise) : 91 à 97 draw calls et 91 000 à
+  96 000 triangles en isométrique, 50 à 76 draw calls en 3e personne ; à la porte (les deux pièces) 159 draw calls,
+  quelques secondes. Simulation de la balade : rayons 0,30 et 0,45 m, aucun blocage.

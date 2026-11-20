@@ -564,3 +564,23 @@ c'est ce fichier qui fait progresser les assets suivants.
   fondent dans l'ambre pâle. Traits gravés = `beam` fins à −0,95.
 - **Joues d'un touret en planches** : la longueur de chaque planche prise sur le cercle donne un pourtour en marches
   d'un pixel, le cercle de fer (lathe à 20 pans) le referme. Le touret entier est une pièce rigide (`setTurn`).
+
+### Le Complexe, lot 11 : levage (poutre rivetée, portique et pont roulant, chemin de câbles)
+
+- **Profil en I lisible** : ailes un ton plus clair (+0,08) que l'âme en retrait (−0,3) ; le dessus de l'aile haute un
+  cran plus bas (−0,17) pour que ses deux rangées de rivets (quads d'un pixel, +0,3) ressortent ; raidisseurs verticaux
+  au pas de 1,1 à 1,6 m (+0,12) : vus de haut, ce sont eux qui font le rythme. Tronçons de 3 à 4,5 m, un ton chacun,
+  éclisses rivetées aux joints. Rivets et coulures en `buildQuads` (2 triangles chacun) : 12 m de poutre ≈ 1 200
+  triangles.
+- **Chaîne qui s'allonge sans réécrire de géométrie** : tous les maillons sont construits sous le crochet ; chacun est
+  une pièce rigide qui suit le crochet, ou s'écrase en un point dans le palan quand il dépasse le haut de la chaîne.
+  Le motif bouge avec le crochet (la chaîne coulisse pour de vrai). Maillon = barreau sans bouts (8 triangles),
+  tourné d'un quart de tour sur le précédent. Volant de manœuvre : un tour par mètre de chaîne.
+- **Crochet** : un C d'arcs `beam` dans le plan xy, en fonte claire (+0,35 à +0,5) : en fonte sombre, il se perdait
+  dans la chaîne de commande. Charge : lingots sur deux barres de palonnière (un plateau plein les cachait), caisse à
+  planches (quads sombres) et ceintures de fer, élingues en maillons fins.
+- **Profil tiré le long d'un tracé** (`buildSweep`, kit/geometry.js) : polygone (u, v) extrudé le long d'une polyligne
+  du sol, coupes d'onglet aux coudes ; `slicePath` et `measurePath` pour les plaques de couvercle et les pattes. Les
+  pattes d'un chemin mural se posent pan de mur par pan de mur, jamais dans un coin (elles sortaient du mur).
+- **Couleur à part dans une rampe, encore** : la gaine ambre des câbles en tête de la rampe des gaines (ton −3), le
+  cuivre dans le bronze (+0,35) : 2 draw calls pour la goulotte, ses câbles de trois couleurs et ses colliers.

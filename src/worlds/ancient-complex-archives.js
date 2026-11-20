@@ -4,8 +4,8 @@
 // - Mur nord : six rayonnages monumentaux à tiroirs, une mezzanine en caillebotis devant, à 3,4 m, qu'on rejoint par
 //   l'escalier à vis du coin nord-ouest. Les rangs bas se lisent du sol, les rangs hauts depuis la mezzanine.
 // - Mur sud : cinq rayonnages, deux échelles roulantes sur leur rail ; la porte du Sas au sud-ouest.
-// - Mur ouest : deux vitrines de conservation et un rayonnage bas ; mur est : la porte de l'Atelier (fermée : il
-//   n'existe pas encore), un rayonnage bas, un chariot.
+// - Mur ouest : deux vitrines de conservation et un rayonnage bas ; mur est : la porte de l'Atelier (le monde l'ouvre à
+//   l'approche), un rayonnage bas, un chariot.
 // - Au centre : le meuble-catalogue et sa lampe, six colonnes cannelées en deux rangs, quatre tables de lecture avec
 //   leurs lampes, tabourets, loupes, visionneuse et cassettes, deux lanternes suspendues, un chariot de cassettes.
 // - Vie : rouages des rayonnages, un tiroir qui glisse seul de temps en temps sur le rayonnage du milieu, le pupitre
@@ -150,7 +150,7 @@ export function buildArchives({ seed, state, colliders, walk, sources, counts, c
   kit.model("pillar", glyphColumn, { seed: seed + 721, shape: "square", height: r.h, diameter: 0.9, glyphs: "dim" }, { cut: CORNER_CUT, castShadow: true });
   for (const [x, z] of [[r.x0, r.z0], [r.x1, r.z0], [r.x0, r.z1], [r.x1, r.z1]]) put("pillar", x, z, 0, [0.9, 0.9]);
 
-  // La porte de l'Atelier : fermée, verrouillée (l'Atelier viendra au lot 11).
+  // La porte de l'Atelier : fermée au départ ; le monde l'ouvre à l'approche (l'Atelier est construit à part).
   const eastObject = complexDoor.create({ seed: seed * 31 + 21, model: "standard", height: r.h, state: "closed", glyphs: "dim" });
   alone(eastObject, r.x1, EAST_DOOR_Z, -HALF_PI);
   cutObject(eastObject);
@@ -323,6 +323,8 @@ export function buildArchives({ seed, state, colliders, walk, sources, counts, c
     mezzanine: { x: mezzX, z: mezzZ, length: mezzLength, width: MEZZANINE.width, top: MEZZANINE.top },
     catalogue: catalogue.userData.catalogue,
     east: eastObject.userData.door,
+    /** La porte de l'Atelier (le monde la montre avec l'une ou l'autre pièce). */
+    eastObject,
     update,
     /**
      * Montre ou cache le côté sud (mur, linteau de la porte du Sas, rayonnages et échelles) : vu du Sas, porte

@@ -123,7 +123,8 @@ function iProfile(out, rivets, x0, x1, y0, { H = 0.4, W = 0.2, Wb = W, tf = 0.06
  * Crée le portique, le palan ou le pont roulant.
  * @param {object} [given] voir `meta.params`
  * @returns {THREE.Group} `group.userData.hoist` : { model, lift, trolley, setLift(v), liftTo(v), setTrolley(v),
- *   trolleyTo(v), roll(d), hook: Vector3 (bout du crochet, repère de l'asset), feet: [[x, z, rayon]], loop }
+ *   trolleyTo(v), roll(d), hook: Vector3 (bout du crochet, repère de l'asset), bottom (hauteur du bas de la charge),
+ *   feet: [[x, z, rayon]], loop }
  */
 export function create(given = {}) {
   const p = resolveParams(meta.params, given);
@@ -428,6 +429,7 @@ export function create(given = {}) {
       M[LINKS + i].copy(top <= chainTop + 0.01 ? M[HOOK] : hide);
     }
     hookPoint.set(tx + bite.x, hookY + bite.y, 0);
+    hoist.bottom = hookY - drop + 0.02;
     for (const rig of rigs) {
       for (let j = 0; j < count; j++) rig.matrices[j].copy(M[j]);
       rig.apply();

@@ -17761,6 +17761,700 @@
       }
     },
     {
+      "id": "buildings/structure/riveted-beam",
+      "name": "Poutre rivetée",
+      "nameEn": "Riveted beam",
+      "category": "buildings",
+      "subcategory": "structure",
+      "description": "Poutre de plafond du Complexe : profil en I de bronze patiné à rangées de rivets d'un pixel, raidisseurs et éclisses rivetées, de 2 à 24 m. Poutre-rail à aile basse polie pour un palan, ou rail de laiton en T pour le pont roulant et la potence à sonde ; sur corbeaux, consoles, suspentes ou au sol. Fiche ATE-16 (rails de E10-05, ETU-08).",
+      "tags": [
+        "poutre",
+        "poutre rivetée",
+        "profil en i",
+        "rivets",
+        "éclisse",
+        "raidisseur",
+        "rail",
+        "rail de palan",
+        "laiton",
+        "corbeau",
+        "console",
+        "suspente",
+        "plafond",
+        "charpente",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "intérieur",
+        "beam",
+        "riveted beam",
+        "i-beam",
+        "girder",
+        "rivet rows",
+        "splice plate",
+        "stiffener",
+        "runway rail",
+        "brass rail",
+        "corbel",
+        "wall bracket",
+        "hanger rod",
+        "ceiling",
+        "framework",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol sous le milieu de la poutre, qui suit x ; `height` = dessous du profil ; les bouts (corbeaux, consoles de bout) entrent dans des murs en x = ±longueur/2 ; le mur des consoles est en z = −0,42",
+      "footprint": {
+        "radius": 6.1,
+        "height": 5.6
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change la place des joints et des éclisses, le pas des raidisseurs, le ton de chaque tronçon, les coulures de vert-de-gris, quelques rivets manquants."
+        },
+        "model": {
+          "type": "enum",
+          "default": "beam",
+          "values": [
+            "beam",
+            "beam-rail",
+            "rail"
+          ],
+          "labels": {
+            "beam": "Poutre en I",
+            "beam-rail": "Poutre-rail (aile basse pour un palan)",
+            "rail": "Rail de laiton (profil en T)"
+          },
+          "label": "Modèle",
+          "description": "Poutre en I de 0,2 × 0,4 m, poutre-rail à aile basse élargie et polie (un palan y roule), ou rail de laiton en T de 0,12 m (pont roulant, potence à sonde)."
+        },
+        "length": {
+          "type": "number",
+          "default": 12,
+          "min": 2,
+          "max": 24,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Longueur",
+          "description": "Longueur de la poutre ou du rail."
+        },
+        "height": {
+          "type": "number",
+          "default": 5,
+          "min": 0,
+          "max": 14,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Hauteur du dessous du profil (ignorée posée au sol). Plafond de l'Atelier : 5,5 m, poutres à 5,0 m."
+        },
+        "support": {
+          "type": "enum",
+          "default": "corbels",
+          "values": [
+            "corbels",
+            "brackets",
+            "consoles",
+            "hangers",
+            "floor",
+            "none"
+          ],
+          "labels": {
+            "corbels": "Corbeaux de pierre aux bouts",
+            "brackets": "Consoles de bronze aux bouts",
+            "consoles": "Consoles le long d'un mur",
+            "hangers": "Suspentes au plafond",
+            "floor": "Posée au sol",
+            "none": "Sans appui"
+          },
+          "label": "Appui",
+          "description": "Corbeaux de pierre ou consoles de bronze aux deux bouts (les bouts entrent dans le mur), consoles tous les 2 m le long d'un mur (derrière, à 0,42 m de l'axe), suspentes de 0,5 m sous un plafond, posée au sol, ou rien."
+        },
+        "patina": {
+          "type": "enum",
+          "default": "patinated",
+          "values": [
+            "new",
+            "patinated",
+            "verdigris"
+          ],
+          "labels": {
+            "new": "Neuve",
+            "patinated": "Patinée",
+            "verdigris": "Vert-de-gris"
+          },
+          "label": "Patine",
+          "description": "Bronze ou laiton neuf, patiné (vert-de-gris dans l'ombre), ou couvert de vert-de-gris."
+        }
+      },
+      "variants": [
+        {
+          "id": "beam",
+          "name": "Poutre sur corbeaux",
+          "params": {}
+        },
+        {
+          "id": "beam-rail",
+          "name": "Poutre-rail, consoles",
+          "params": {
+            "model": "beam-rail",
+            "length": 8,
+            "support": "brackets"
+          }
+        },
+        {
+          "id": "rail-wall",
+          "name": "Rail de laiton sur consoles",
+          "params": {
+            "model": "rail",
+            "length": 8,
+            "support": "consoles",
+            "patina": "new"
+          }
+        },
+        {
+          "id": "rail-floor",
+          "name": "Rail au sol",
+          "params": {
+            "model": "rail",
+            "length": 4,
+            "support": "floor"
+          }
+        },
+        {
+          "id": "hung",
+          "name": "Suspendue, vert-de-gris",
+          "params": {
+            "length": 6,
+            "support": "hangers",
+            "patina": "verdigris"
+          }
+        }
+      ],
+      "slug": "buildings-structure-riveted-beam",
+      "path": "src/assets/buildings/structure/riveted-beam.js",
+      "module": "public/catalog/modules/buildings-structure-riveted-beam.js",
+      "dependencies": [
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/engine/toon-material.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 912,
+          "vertices": 1820,
+          "drawCalls": 2
+        },
+        "beam": {
+          "triangles": 912,
+          "vertices": 1820,
+          "drawCalls": 2
+        },
+        "beam-rail": {
+          "triangles": 790,
+          "vertices": 1580,
+          "drawCalls": 1
+        },
+        "rail-wall": {
+          "triangles": 372,
+          "vertices": 744,
+          "drawCalls": 1
+        },
+        "rail-floor": {
+          "triangles": 164,
+          "vertices": 328,
+          "drawCalls": 1
+        },
+        "hung": {
+          "triangles": 624,
+          "vertices": 1248,
+          "drawCalls": 1
+        }
+      },
+      "bytes": {
+        "source": 17181,
+        "standalone": 58904
+      }
+    },
+    {
+      "id": "props/machines/hoist-gantry",
+      "name": "Portique et pont roulant",
+      "nameEn": "Hoist gantry and overhead crane",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Levage du Complexe : portique roulant de bronze à chevalets en A sur roulettes, palan à chaîne sous une poutre-rail, ou pont roulant à poutres rivetées jumelles sur rails de laiton. Chaîne en pointillé, volant de manœuvre, moufle et crochet qui montent et descendent avec leur charge (caisse, lingots, roue dentée). Fiches ATE-12, E10-05.",
+      "tags": [
+        "portique",
+        "palan",
+        "pont roulant",
+        "levage",
+        "crochet",
+        "chaîne",
+        "moufle",
+        "volant",
+        "chariot",
+        "roulettes",
+        "poutre-rail",
+        "treuil",
+        "caisse",
+        "lingots",
+        "roue dentée",
+        "atelier",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "animé",
+        "pilotable",
+        "intérieur",
+        "gantry",
+        "chain hoist",
+        "overhead crane",
+        "lifting",
+        "hook",
+        "load chain",
+        "hook block",
+        "hand wheel",
+        "trolley",
+        "casters",
+        "runway beam",
+        "winch",
+        "crate",
+        "copper ingots",
+        "gear blank",
+        "workshop",
+        "ancient complex",
+        "ancient-tech",
+        "animated",
+        "scriptable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; origine au sol sous le milieu de la poutre (portique, palan) ou du pont, qui suit x ; le pont roule le long de z sur des rails en x = ±portée/2",
+      "footprint": {
+        "radius": 5.3,
+        "height": 6.5
+      },
+      "animated": [
+        "hook"
+      ],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change l'usure, la place de repos du chariot et du crochet (un peu autour des réglages), la plaque de charge, la boucle de la chaîne de commande."
+        },
+        "model": {
+          "type": "enum",
+          "default": "gantry",
+          "values": [
+            "gantry",
+            "beam-hoist",
+            "crane"
+          ],
+          "labels": {
+            "gantry": "Portique roulant (3,2 m)",
+            "beam-hoist": "Palan sur poutre-rail",
+            "crane": "Pont roulant"
+          },
+          "label": "Modèle",
+          "description": "Portique de l'Atelier sur roulettes, palan qui roule sous une poutre-rail, ou pont roulant sur deux rails (salle de la Porte)."
+        },
+        "load": {
+          "type": "enum",
+          "default": "crate",
+          "values": [
+            "none",
+            "crate",
+            "ingots",
+            "gear"
+          ],
+          "labels": {
+            "none": "Rien",
+            "crate": "Caisse",
+            "ingots": "Lingots de cuivre",
+            "gear": "Ébauche de roue dentée"
+          },
+          "label": "Charge",
+          "description": "Ce qui pend au crochet."
+        },
+        "lift": {
+          "type": "number",
+          "default": 0.4,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "label": "Crochet",
+          "description": "Hauteur du crochet : 0 en bas (la charge frôle le sol), 1 tout en haut. Pilotable : userData.hoist.setLift(v), liftTo(v)."
+        },
+        "trolley": {
+          "type": "number",
+          "default": 0.5,
+          "min": 0,
+          "max": 1,
+          "step": 0.05,
+          "label": "Chariot",
+          "description": "Place du chariot le long de la poutre (0 à 1). Pilotable : setTrolley(v), trolleyTo(v)."
+        },
+        "state": {
+          "type": "enum",
+          "default": "idle",
+          "values": [
+            "idle",
+            "loop"
+          ],
+          "labels": {
+            "idle": "Immobile",
+            "loop": "En boucle (le crochet monte, attend, redescend)"
+          },
+          "label": "État",
+          "description": "Immobile, ou en boucle : le crochet monte en 4 s, attend 2 s, redescend en 4 s."
+        },
+        "span": {
+          "type": "number",
+          "default": 10,
+          "min": 6,
+          "max": 18,
+          "step": 0.2,
+          "unit": "m",
+          "label": "Portée",
+          "description": "Pont roulant : écart entre les deux rails (17,4 m dans la salle de la Porte)."
+        },
+        "railHeight": {
+          "type": "number",
+          "default": 5,
+          "min": 2.5,
+          "max": 14,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur du rail",
+          "description": "Palan sur poutre : dessus de l'aile basse de la poutre-rail (poutre rivetée à 5,0 m : 5,07) ; pont roulant : dessus des rails (10 m dans la salle de la Porte). Le portique a sa propre hauteur (3,8 m)."
+        },
+        "rails": {
+          "type": "enum",
+          "default": "on",
+          "values": [
+            "on",
+            "off"
+          ],
+          "labels": {
+            "on": "Avec (tronçon de poutre ou de rails)",
+            "off": "Sans (posé sous ceux du monde)"
+          },
+          "label": "Poutre ou rails",
+          "description": "Palan sur poutre et pont roulant : dessiner le tronçon de poutre-rail ou les rails (vitrine), ou non (le monde pose les siens)."
+        }
+      },
+      "variants": [
+        {
+          "id": "gantry",
+          "name": "Portique, caisse",
+          "params": {}
+        },
+        {
+          "id": "gantry-gear",
+          "name": "Portique, roue dentée",
+          "params": {
+            "load": "gear",
+            "lift": 0.6
+          }
+        },
+        {
+          "id": "beam-hoist",
+          "name": "Palan sur poutre",
+          "params": {
+            "model": "beam-hoist",
+            "load": "ingots",
+            "railHeight": 4
+          }
+        },
+        {
+          "id": "crane",
+          "name": "Pont roulant",
+          "params": {
+            "model": "crane",
+            "span": 8,
+            "railHeight": 5,
+            "load": "none",
+            "lift": 0.3
+          }
+        }
+      ],
+      "slug": "props-machines-hoist-gantry",
+      "path": "src/assets/props/machines/hoist-gantry.js",
+      "module": "public/catalog/modules/props-machines-hoist-gantry.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 2338,
+          "vertices": 5147,
+          "drawCalls": 3
+        },
+        "gantry": {
+          "triangles": 2338,
+          "vertices": 5147,
+          "drawCalls": 3
+        },
+        "gantry-gear": {
+          "triangles": 2628,
+          "vertices": 6039,
+          "drawCalls": 2
+        },
+        "beam-hoist": {
+          "triangles": 1772,
+          "vertices": 4191,
+          "drawCalls": 3
+        },
+        "crane": {
+          "triangles": 2808,
+          "vertices": 5160,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 30467,
+        "standalone": 72354
+      }
+    },
+    {
+      "id": "props/machines/cable-tray",
+      "name": "Chemin de câbles",
+      "nameEn": "Cable tray",
+      "category": "props",
+      "subcategory": "machines",
+      "description": "Chemin de câbles du Complexe en modules de 2 m : goulotte de bronze ouverte au mur sur des pattes, 2 à 4 câbles d'un pixel serrés par des colliers de cuir ; ou goulotte basse au sol à couvercles à charnières et pentes d'accès. Droit, coude, T ; parcours entier par points (createRun). Fiches GAL-04, ETU-06.",
+      "tags": [
+        "chemin de câbles",
+        "goulotte",
+        "câbles",
+        "cuivre",
+        "gaine",
+        "collier",
+        "cuir",
+        "couvercle",
+        "charnières",
+        "pente d'accès",
+        "patte",
+        "coude",
+        "module",
+        "galerie",
+        "salle d'étude",
+        "le complexe",
+        "complexe",
+        "ancien-tech",
+        "praticable",
+        "intérieur",
+        "cable tray",
+        "cable trunking",
+        "cables",
+        "copper wire",
+        "sheath",
+        "leather strap",
+        "lid plates",
+        "hinges",
+        "access ramp",
+        "wall bracket",
+        "elbow",
+        "modular",
+        "gallery",
+        "study room",
+        "ancient complex",
+        "ancient-tech",
+        "walkable",
+        "indoor",
+        "procedural"
+      ],
+      "biomes": [
+        "interior"
+      ],
+      "version": 1,
+      "added": "2026-11-20",
+      "units": "1 unité = 1 mètre ; le module suit x, centré sur l'origine au sol. Mural : le mur est le plan z = 0, la goulotte avance vers +z ; coude : le second mur est le plan x = 0 (côté x < 0). Au sol : la goulotte est centrée sur son tracé",
+      "footprint": {
+        "radius": 1.2,
+        "height": 2.5
+      },
+      "animated": [],
+      "params": {
+        "seed": {
+          "type": "int",
+          "default": 1,
+          "min": 0,
+          "max": 9999,
+          "label": "Graine",
+          "description": "Change le nombre (2 à 4) et la couleur des câbles, le collier ouvert, la plaque de couvercle manquante ou décalée, les tons."
+        },
+        "mount": {
+          "type": "enum",
+          "default": "wall",
+          "values": [
+            "wall",
+            "floor"
+          ],
+          "labels": {
+            "wall": "Mural (goulotte ouverte)",
+            "floor": "Au sol (à couvercle)"
+          },
+          "label": "Pose",
+          "description": "Goulotte ouverte au mur sur des pattes (galerie, couloirs), ou goulotte basse à couvercle au sol (salles d'étude)."
+        },
+        "piece": {
+          "type": "enum",
+          "default": "straight",
+          "values": [
+            "straight",
+            "elbow",
+            "tee"
+          ],
+          "labels": {
+            "straight": "Droit",
+            "elbow": "Coude",
+            "tee": "En T"
+          },
+          "label": "Module",
+          "description": "Droit ; coude (mural : angle rentrant de deux murs ; sol : virage à 90°) ; T (mural : descente de 1 m le long du mur ; sol : départ sur le côté)."
+        },
+        "length": {
+          "type": "number",
+          "default": 2,
+          "min": 1,
+          "max": 4,
+          "step": 0.5,
+          "unit": "m",
+          "label": "Longueur",
+          "description": "Longueur du module droit et du tronc du T (les bras du coude font 1 m)."
+        },
+        "height": {
+          "type": "number",
+          "default": 2.4,
+          "min": 0.4,
+          "max": 6,
+          "step": 0.1,
+          "unit": "m",
+          "label": "Hauteur",
+          "description": "Mural : hauteur du fond de la goulotte (2,4 et 2,8 m dans la Galerie, 3,0 m dans les couloirs de liaison)."
+        }
+      },
+      "variants": [
+        {
+          "id": "wall",
+          "name": "Mural, droit",
+          "params": {}
+        },
+        {
+          "id": "wall-elbow",
+          "name": "Mural, coude",
+          "params": {
+            "piece": "elbow"
+          }
+        },
+        {
+          "id": "wall-tee",
+          "name": "Mural, descente",
+          "params": {
+            "piece": "tee"
+          }
+        },
+        {
+          "id": "floor",
+          "name": "Au sol, droit",
+          "params": {
+            "mount": "floor"
+          }
+        },
+        {
+          "id": "floor-tee",
+          "name": "Au sol, en T",
+          "params": {
+            "mount": "floor",
+            "piece": "tee"
+          }
+        }
+      ],
+      "slug": "props-machines-cable-tray",
+      "path": "src/assets/props/machines/cable-tray.js",
+      "module": "public/catalog/modules/props-machines-cable-tray.js",
+      "dependencies": [
+        "src/engine/toon-material.js",
+        "src/assets/kit/geometry.js",
+        "src/assets/kit/palettes.js",
+        "src/assets/kit/complex-parts.js",
+        "src/assets/kit/params.js",
+        "src/assets/kit/rng.js",
+        "src/assets/kit/variation.js"
+      ],
+      "stats": {
+        "default": {
+          "triangles": 240,
+          "vertices": 480,
+          "drawCalls": 2
+        },
+        "wall": {
+          "triangles": 240,
+          "vertices": 480,
+          "drawCalls": 2
+        },
+        "wall-elbow": {
+          "triangles": 288,
+          "vertices": 576,
+          "drawCalls": 2
+        },
+        "wall-tee": {
+          "triangles": 336,
+          "vertices": 672,
+          "drawCalls": 2
+        },
+        "floor": {
+          "triangles": 164,
+          "vertices": 332,
+          "drawCalls": 2
+        },
+        "floor-tee": {
+          "triangles": 300,
+          "vertices": 610,
+          "drawCalls": 2
+        }
+      },
+      "bytes": {
+        "source": 14987,
+        "standalone": 58633
+      }
+    },
+    {
       "id": "worlds/islands/summer-meadow",
       "name": "Prairie d'été",
       "nameEn": "Summer meadow",
@@ -17975,7 +18669,7 @@
       "nameEn": "The Ancient Complex",
       "category": "worlds",
       "subcategory": "interiors",
-      "description": "Le lieu ancien-technologique, vu en coupe, une pièce à la fois. Le Sas de Scellement (10 × 6 × 5 m) et son vestibule : Porte-Iris qui s'ouvre à l'approche puis se scelle derrière soi, pupitre de vérification dont la lueur ambre gagne en vague glyphes, rainures et lampes jusqu'à la porte nord. Derrière elle, les Archives (18 × 12 × 7 m) : rayonnages monumentaux à tiroirs et rouages, mezzanine en caillebotis à 3,4 m qu'on rejoint par un escalier à vis, meuble-catalogue central au pupitre tournant, colonnes cannelées, tables de lecture, échelles roulantes, vitrines, poussière dans la lumière des lampes. Praticable par tous les personnages, étages compris.",
+      "description": "Le lieu ancien-technologique, vu en coupe, une pièce à la fois. Le Sas de Scellement (10 × 6 × 5 m) et son vestibule : Porte-Iris qui s'ouvre à l'approche puis se scelle derrière soi, pupitre de vérification dont la lueur ambre gagne en vague glyphes, rainures et lampes jusqu'à la porte nord. Derrière elle, les Archives (18 × 12 × 7 m) : rayonnages monumentaux à tiroirs et rouages, mezzanine en caillebotis à 3,4 m qu'on rejoint par un escalier à vis, meuble-catalogue central au pupitre tournant, colonnes cannelées, tables de lecture, échelles roulantes, vitrines, poussière dans la lumière des lampes. À l'est, l'Atelier de l'Artisan (12 × 10 × 5,5 m) : poutres rivetées, four à bobines à la lueur orange, portique roulant dont la caisse monte et descend, palan sur poutre-rail, tour à métaux, établis, râtelier, table à calques, fûts et touret. Praticable par tous les personnages, étages compris.",
       "tags": [
         "monde",
         "carte",
@@ -17994,6 +18688,9 @@
         "glyphes",
         "vue en coupe",
         "à explorer",
+        "atelier",
+        "four",
+        "portique",
         "assemblage",
         "scénario",
         "world",
@@ -18011,18 +18708,21 @@
         "glyphs",
         "cutaway",
         "explorable",
+        "workshop",
+        "furnace",
+        "gantry crane",
         "composition",
         "procedural"
       ],
       "biomes": [
         "interior"
       ],
-      "version": 3,
+      "version": 4,
       "added": "2026-11-18",
-      "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10, les Archives de z = −12 à 0 (x de −3 à 15), mezzanine à 3,4 m",
+      "units": "1 unité = 1 mètre ; sol en y = 0 (dessus des dalles) ; x vers l'est, z vers le sud ; le Sas de z = 0 à 6, le vestibule de z = 6 à 10, les Archives de z = −12 à 0 (x de −3 à 15), mezzanine à 3,4 m ; l'Atelier de x = 15 à 27 (z de −12 à −2)",
       "footprint": {
-        "radius": 11,
-        "height": 7
+        "radius": 29,
+        "height": 7.8
       },
       "animated": [
         "door",
@@ -18045,14 +18745,16 @@
           "default": "sas",
           "values": [
             "sas",
-            "archives"
+            "archives",
+            "atelier"
           ],
           "labels": {
             "sas": "Le Sas",
-            "archives": "Les Archives"
+            "archives": "Les Archives",
+            "atelier": "L'Atelier"
           },
           "label": "Pièce",
-          "description": "La pièce montrée (et celle où l'on commence la visite) : le Sas ou les Archives ; l'Atelier et les salles d'étude viendront."
+          "description": "La pièce montrée (et celle où l'on commence la visite) : le Sas, les Archives ou l'Atelier ; la Galerie et les salles d'étude viendront."
         },
         "state": {
           "type": "enum",
@@ -18098,6 +18800,13 @@
           "name": "Les Archives",
           "params": {
             "room": "archives"
+          }
+        },
+        {
+          "id": "atelier",
+          "name": "L'Atelier",
+          "params": {
+            "room": "atelier"
           }
         }
       ],
@@ -18149,38 +18858,56 @@
         "src/assets/props/machines/crank-recorder.js",
         "src/assets/props/tools/arm-magnifier.js",
         "src/worlds/ancient-complex-archives.js",
+        "src/assets/buildings/structure/riveted-beam.js",
+        "src/assets/furniture/storage/parts-shelf.js",
+        "src/assets/furniture/storage/tool-rack.js",
+        "src/assets/furniture/tables/light-table.js",
+        "src/assets/furniture/tables/workbench.js",
+        "src/assets/props/machines/cable-reel.js",
+        "src/assets/props/machines/cable-tray.js",
+        "src/assets/props/machines/coil-furnace.js",
+        "src/assets/props/machines/hoist-gantry.js",
+        "src/assets/props/machines/metal-lathe.js",
+        "src/assets/props/machines/oil-drum.js",
+        "src/assets/props/tools/anvil.js",
+        "src/worlds/ancient-complex-atelier.js",
         "src/worlds/ancient-complex.js"
       ],
       "stats": {
         "default": {
-          "triangles": 74640,
-          "vertices": 142063,
-          "drawCalls": 150
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
         },
         "check": {
-          "triangles": 74640,
-          "vertices": 142063,
-          "drawCalls": 150
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
         },
         "awake": {
-          "triangles": 74640,
-          "vertices": 142063,
-          "drawCalls": 150
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
         },
         "asleep": {
-          "triangles": 74640,
-          "vertices": 142063,
-          "drawCalls": 150
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
         },
         "archives": {
-          "triangles": 74640,
-          "vertices": 142063,
-          "drawCalls": 150
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
+        },
+        "atelier": {
+          "triangles": 117170,
+          "vertices": 221220,
+          "drawCalls": 230
         }
       },
       "bytes": {
-        "source": 4124,
-        "standalone": 497322
+        "source": 4675,
+        "standalone": 683240
       }
     },
     {
